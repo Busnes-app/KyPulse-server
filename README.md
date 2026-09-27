@@ -21,6 +21,10 @@ suite. The first start creates an `admin` user and prints its password to stderr
 
 Watch kyPulse's own `GET /healthz` from outside; kyPulse does not monitor itself.
 
+Watched apps and the alert webhook are set in the UI (admins) or through `/api/targets` and
+`/api/alerts/webhook`; `KYPULSE_ALERT_ALLOW_HTTP` and `KYPULSE_POLL_WORKERS` are the only
+alerting variables.
+
 ## Compose overlays
 
 Append an overlay's filename to `COMPOSE_FILE` in `.env` (never `-f`, which replaces the list

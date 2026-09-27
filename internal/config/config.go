@@ -22,6 +22,8 @@ type Config struct {
 	SSO      SSOConfig      `json:"sso"`
 	Backup   BackupConfig   `json:"backup"`
 	Captcha  CaptchaConfig  `json:"captcha"`
+	Alerts   AlertsConfig   `json:"alerts"`
+	Poll     PollConfig     `json:"poll"`
 }
 
 // ServerConfig defines HTTP and network settings.
@@ -93,6 +95,18 @@ type CaptchaConfig struct {
 	DifficultyPoW int    `json:"difficulty_pow"`
 }
 
+// AlertsConfig governs the outbound webhook.
+type AlertsConfig struct {
+	// AllowHTTP admits a plain-http webhook URL. Off by default: the webhook carries the
+	// alert stream and, for Gotify and ntfy, a token in a header.
+	AllowHTTP bool `json:"allow_http"`
+}
+
+// PollConfig sizes the health poller.
+type PollConfig struct {
+	Workers int `json:"workers"` // concurrent polls; one slow app never delays the rest
+}
+
 // MinDepositInterval is the shortest schedule accepted: each run snapshots the whole database
 // and uploads it, and KyRecovery admits 60 deposits per token per 15 minutes.
 const MinDepositInterval = 15 * time.Minute
@@ -158,6 +172,11 @@ func LoadFromEnv() (*Config, error) {
 		return nil, fmt.Errorf("KYPULSE_TRUSTED_PROXIES: %w", err)
 	}
 
+	pollWorkers := getEnvInt("KYPULSE_POLL_WORKERS", 4)
+	if pollWorkers < 1 || pollWorkers > 32 {
+		return nil, fmt.Errorf("KYPULSE_POLL_WORKERS: must be 1..32, got %d", pollWorkers)
+	}
+
 	cfg := &Config{
 		Server: ServerConfig{
 			Host:         host,
@@ -209,6 +228,8 @@ func LoadFromEnv() (*Config, error) {
 			SecretKey:     getEnv("KYPULSE_CAPTCHA_SECRET_KEY", ""),
 			DifficultyPoW: getEnvInt("KYPULSE_CAPTCHA_POW_DIFFICULTY", 4),
 		},
+		Alerts: AlertsConfig{AllowHTTP: getEnvBool("KYPULSE_ALERT_ALLOW_HTTP", false)},
+		Poll:   PollConfig{Workers: pollWorkers},
 	}
 
 	return cfg, nil

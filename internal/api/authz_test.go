@@ -77,6 +77,9 @@ func TestSettingsExposureByRole(t *testing.T) {
 	if err := st.Settings().SetSetting(context.Background(), "kyrecovery_token_enc", "sealed-ciphertext-blob"); err != nil {
 		t.Fatalf("seed setting: %v", err)
 	}
+	if err := st.Settings().SetSetting(context.Background(), "alert_webhook_enc", "sealed-webhook-blob"); err != nil {
+		t.Fatalf("seed setting: %v", err)
+	}
 
 	decode := func(w *httptest.ResponseRecorder) map[string]any {
 		t.Helper()
@@ -121,6 +124,9 @@ func TestSettingsExposureByRole(t *testing.T) {
 	}
 	if _, found := extra["kyrecovery_token"]; found {
 		t.Errorf("admin settings leaked a legacy plaintext KyRecovery token: %v", admin)
+	}
+	if _, found := extra["alert_webhook_enc"]; found {
+		t.Errorf("admin settings leaked the sealed alert webhook: %v", admin)
 	}
 }
 

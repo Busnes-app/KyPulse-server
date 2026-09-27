@@ -47,6 +47,11 @@ services:
       - KYPULSE_BACKUP_KEEP=${KYPULSE_BACKUP_KEEP:-7}
       - KYPULSE_BACKUP_DEPOSIT_INTERVAL=${KYPULSE_BACKUP_DEPOSIT_INTERVAL:-24h}
       - KYPULSE_BACKUP_ALLOW_PRIVATE_RECOVERY=${KYPULSE_BACKUP_ALLOW_PRIVATE_RECOVERY:-false}
+      # Alerts. The webhook itself is set in the UI and stored sealed; this only admits a
+      # plain-http receiver on your own network (off: HTTPS required).
+      - KYPULSE_ALERT_ALLOW_HTTP=${KYPULSE_ALERT_ALLOW_HTTP:-false}
+      # Concurrent health polls (1..32).
+      - KYPULSE_POLL_WORKERS=${KYPULSE_POLL_WORKERS:-4}
       # Set to the reverse proxy container's own address when one fronts this service, e.g.
       # its address on the Docker network below (never a whole bridge range like 172.16.0.0/12,
       # which trusts every other container). 0.0.0.0/0 and ::/0 are refused at startup.
