@@ -80,10 +80,12 @@ func TestWaitForBackupWorkIsBoundedInBothPhases(t *testing.T) {
 	defer cancel()
 	monitorDone := make(chan struct{})
 	close(monitorDone)
+	kyyardDone := make(chan struct{})
+	close(kyyardDone)
 	returned := make(chan struct{})
 	go func() {
 		defer close(returned)
-		waitForBackupWork(ctx, make(chan struct{}), monitorDone, func() { select {} })
+		waitForBackupWork(ctx, make(chan struct{}), monitorDone, kyyardDone, func() { select {} })
 	}()
 	select {
 	case <-returned:
@@ -102,9 +104,11 @@ func TestWaitForBackupWorkWaitsBothAtOnce(t *testing.T) {
 	defer cancel()
 	monitorDone := make(chan struct{})
 	close(monitorDone)
+	kyyardDone := make(chan struct{})
+	close(kyyardDone)
 	var finished atomic.Bool
 	// backupDone never closes: the scheduled run is the one that hangs.
-	waitForBackupWork(ctx, make(chan struct{}), monitorDone, func() {
+	waitForBackupWork(ctx, make(chan struct{}), monitorDone, kyyardDone, func() {
 		time.Sleep(10 * time.Millisecond)
 		finished.Store(true)
 	})
@@ -120,14 +124,37 @@ func TestWaitForBackupWorkAlsoWaitsForTheMonitor(t *testing.T) {
 	defer cancel()
 	backupDone := make(chan struct{})
 	close(backupDone)
+	kyyardDone := make(chan struct{})
+	close(kyyardDone)
 	returned := make(chan struct{})
 	go func() {
 		defer close(returned)
-		waitForBackupWork(ctx, backupDone, make(chan struct{}), func() {})
+		waitForBackupWork(ctx, backupDone, make(chan struct{}), kyyardDone, func() {})
 	}()
 	select {
 	case <-returned:
 	case <-time.After(5 * time.Second):
 		t.Fatal("waitForBackupWork did not return; an open monitorDone outlived the shared deadline")
+	}
+}
+
+// The KyYard wait is bounded by the same shared deadline too: a kyyardDone that never closes
+// must still let waitForBackupWork return at the deadline.
+func TestWaitForBackupWorkAlsoWaitsForKyYard(t *testing.T) {
+	ctx, cancel := context.WithTimeout(context.Background(), 50*time.Millisecond)
+	defer cancel()
+	backupDone := make(chan struct{})
+	close(backupDone)
+	monitorDone := make(chan struct{})
+	close(monitorDone)
+	returned := make(chan struct{})
+	go func() {
+		defer close(returned)
+		waitForBackupWork(ctx, backupDone, monitorDone, make(chan struct{}), func() {})
+	}()
+	select {
+	case <-returned:
+	case <-time.After(5 * time.Second):
+		t.Fatal("waitForBackupWork did not return; an open kyyardDone outlived the shared deadline")
 	}
 }

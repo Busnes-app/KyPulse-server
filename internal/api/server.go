@@ -16,6 +16,7 @@ import (
 	"github.com/Busnes-app/ky-primitives/recoveryclient"
 	"github.com/Busnes-app/kypulse-server/internal/auth"
 	"github.com/Busnes-app/kypulse-server/internal/config"
+	"github.com/Busnes-app/kypulse-server/internal/kyyard"
 	"github.com/Busnes-app/kypulse-server/internal/monitor"
 	"github.com/Busnes-app/kypulse-server/internal/sso"
 	"github.com/Busnes-app/kypulse-server/internal/store"
@@ -61,6 +62,7 @@ type Server struct {
 	saml       *sso.SAMLServiceProvider
 	recovery   recoveryClient
 	monitor    *monitor.Service
+	kyyard     *kyyard.Service
 	lg         *logging.Logger
 	mux        *http.ServeMux
 	attemptsMu sync.Mutex
@@ -154,7 +156,7 @@ type attemptWindow struct {
 // bytes, so filling the map costs an attacker one slot per IP.
 const attemptsCap = 10000
 
-func NewServer(cfg *config.Config, st store.Store, lg *logging.Logger, mon *monitor.Service) *Server {
+func NewServer(cfg *config.Config, st store.Store, lg *logging.Logger, mon *monitor.Service, yard *kyyard.Service) *Server {
 	sessions := auth.NewSessionManager(st, cfg.Security)
 	kysignon := sso.NewKySignOnClient(cfg.SSO, st)
 	oidc := sso.NewGenericOIDCClient(cfg.SSO, st)
@@ -170,6 +172,7 @@ func NewServer(cfg *config.Config, st store.Store, lg *logging.Logger, mon *moni
 		saml:     saml,
 		recovery: recovery,
 		monitor:  mon,
+		kyyard:   yard,
 		lg:       lg,
 		mux:      http.NewServeMux(),
 		attempts: make(map[string]attemptWindow),
@@ -284,6 +287,13 @@ func (s *Server) routes() {
 	s.mux.HandleFunc("PUT /api/alerts/webhook", s.requireAdmin(s.handleSetWebhook))
 	s.mux.HandleFunc("DELETE /api/alerts/webhook", s.requireAdmin(s.handleDeleteWebhook))
 	s.mux.HandleFunc("POST /api/alerts/webhook/test", s.tracked(s.requireAdmin(s.handleTestWebhook)))
+
+	// KyYard: any session reads the pairing status (the alert bar shows stale); pairing,
+	// unpairing and container suggestions (they prefill the admin's add form) are admin-only.
+	s.mux.HandleFunc("GET /api/kyyard", s.requireSession(s.handleKyYardStatus))
+	s.mux.HandleFunc("POST /api/kyyard/pair", s.tracked(s.requireAdmin(s.handleKyYardPair)))
+	s.mux.HandleFunc("DELETE /api/kyyard", s.requireAdmin(s.handleKyYardUnpair))
+	s.mux.HandleFunc("GET /api/kyyard/containers", s.requireAdmin(s.handleKyYardContainers))
 
 	// Embedded React PWA Frontend
 	s.mux.Handle("/", web.Handler())

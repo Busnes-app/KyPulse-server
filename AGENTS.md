@@ -13,10 +13,10 @@ Design authority: `docs/superpowers/specs/2026-09-26-kypulse-design.md`. Plans l
 
 - `cmd/server/`: process entry, CLI subcommands (`init-admin`, `backup-drill`,
   `export-capsule`, `deposit`, `restore`, `audit-verify`, `version`), the log bridge, the
-  backup scheduler.
+  backup scheduler and the KyYard pull loop.
 - `internal/`: one package per concern; each has its own AGENTS.md.
-- `internal/egress`, `internal/poller`, `internal/alerts`, `internal/notify`, `internal/monitor`:
-  the monitoring backend; each has its own AGENTS.md.
+- `internal/egress`, `internal/poller`, `internal/alerts`, `internal/notify`, `internal/monitor`,
+  `internal/kyyard`: the monitoring backend; each has its own AGENTS.md.
 - `web/`: the React PWA, embedded into the binary from `web/dist`.
 - `scripts/`: smoke test.
 - `docs/RESTORE.md`: restore runbook.
