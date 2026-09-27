@@ -124,7 +124,7 @@ FROM audit_records WHERE seq = ?`), seq).Scan(&r.Seq, &prev, &r.Hash, &r.UserID,
 }
 
 // place determines the chain from the store's current state and names how it found it
-// ("new", "legacy_keyed", "resumed"). Anchor and counts come from one statement, so they are
+// ("new", "legacy_keyed", "resumed"). Anchor, counts and highest sequence come from one statement, so they are
 // one snapshot; the tail is then read by the anchor's sequence, which rows appended since
 // cannot change. It is a pure read except when allowLegacy and the log is all-legacy, in
 // which case keying it is the one write place performs. Unlike resume, place never reads or
@@ -134,8 +134,8 @@ FROM audit_records WHERE seq = ?`), seq).Scan(&r.Seq, &prev, &r.Hash, &r.UserID,
 // transaction, which from inside a caller's transaction would deadlock on SQLite.
 func (a *auditStore) place(ctx context.Context, q dbtx, allowLegacy bool) (*auditchain.Chain, string, error) {
 	var raw sql.NullString
-	var total, unkeyed uint64
-	if err := q.QueryRowContext(ctx, a.store.rebind("SELECT (SELECT value FROM server_settings WHERE key = ?), COUNT(1), COUNT(1) - COUNT(seq) FROM audit_records"), anchorKey).Scan(&raw, &total, &unkeyed); err != nil {
+	var total, unkeyed, maxSeq uint64
+	if err := q.QueryRowContext(ctx, a.store.rebind("SELECT (SELECT value FROM server_settings WHERE key = ?), COUNT(1), COUNT(1) - COUNT(seq), COALESCE(MAX(seq), 0) FROM audit_records"), anchorKey).Scan(&raw, &total, &unkeyed, &maxSeq); err != nil {
 		return nil, "", err
 	}
 	var anchor auditchain.Anchor
@@ -154,7 +154,7 @@ func (a *auditStore) place(ctx context.Context, q dbtx, allowLegacy bool) (*audi
 		return nil, "", fmt.Errorf("%w: no audit records, but the anchor counts %d; the log was emptied", ErrAuditUnplaceable, anchor.Count)
 	case !hasAnchor && unkeyed == total:
 		if !allowLegacy {
-			return nil, "", fmt.Errorf("%w: %d audit records carry no digest and there is no anchor, but the chain was keyed before: the chain columns and the anchor were cleared. This server will not start. Restore the database from backup, or move the records aside to begin a new chain and keep the old ones for the auditor. If this follows a crash during the first start after the upgrade, run `DELETE FROM schema_migrations WHERE version = 6`, drop the columns seq, prev_hash and hash and the index idx_audit_seq from audit_records, and start again; the keying reruns", ErrAuditUnplaceable, total)
+			return nil, "", fmt.Errorf("%w: %d audit records carry no digest and there is no anchor, but the chain was keyed before: the chain columns and the anchor were cleared. This server will not start. Restore the database from backup, or move the records aside to begin a new chain and keep the old ones for the auditor. If this follows a crash during the first start after the upgrade, run `DELETE FROM schema_migrations WHERE version = 6`, drop the index idx_audit_seq, then the columns seq, prev_hash and hash from audit_records, and start again; the keying reruns", ErrAuditUnplaceable, total)
 		}
 		c, err := a.keyLegacy(ctx, q)
 		return c, "legacy_keyed", err
@@ -164,6 +164,9 @@ func (a *auditStore) place(ctx context.Context, q dbtx, allowLegacy bool) (*audi
 		return nil, "", fmt.Errorf("%w: %d audit records carry no digest although the chain is anchored", ErrAuditUnplaceable, unkeyed)
 	case total != anchor.Count:
 		return nil, "", fmt.Errorf("%w: %d audit records but the anchor counts %d", ErrAuditUnplaceable, total, anchor.Count)
+	case maxSeq != anchor.Count:
+		// Unique positive seqs with total == count == max are exactly 1..N.
+		return nil, "", fmt.Errorf("%w: %d audit records but the highest sequence is %d while the anchor counts %d", ErrAuditUnplaceable, total, maxSeq, anchor.Count)
 	}
 	last, err := a.tail(ctx, q, anchor.Count)
 	if err != nil {

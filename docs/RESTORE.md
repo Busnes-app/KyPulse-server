@@ -227,8 +227,8 @@ audit key is not the one that wrote the log, supply the right key; without it, m
 records and the anchor aside to begin a new chain and keep the old ones for the auditor.
 If the server refuses because the records carry no digest and there is no anchor, and this
 follows a crash during the first start after the upgrade, run
-`DELETE FROM schema_migrations WHERE version = 6`, drop the columns seq, prev_hash and hash
-and the index idx_audit_seq from audit_records, and start again; the keying reruns. Never print a key to a terminal or type
+`DELETE FROM schema_migrations WHERE version = 6`, drop the index idx_audit_seq, then the
+columns seq, prev_hash and hash from audit_records, and start again; the keying reruns. Never print a key to a terminal or type
 one on a command line: it lands in scrollback, session recordings and shell history. If you
 must produce the hex form, write it straight into the compose project's `.env` with
 `umask 077` and nothing else on stdout.

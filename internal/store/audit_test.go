@@ -396,3 +396,26 @@ func TestDeletedAnchorFailsNextAppend(t *testing.T) {
 		t.Fatal("Ready must fail without the anchor")
 	}
 }
+
+// A deleted record replaced by a filler above the anchor keeps the count right; the highest
+// sequence must match the anchor too.
+func TestAuditChainRefusesFillerRowAboveAnchor(t *testing.T) {
+	cfg := testdb.Config(t)
+	st := openAudit(t, cfg)
+	logN(t, st, 5)
+	ctx := context.Background()
+	if _, err := st.db.ExecContext(ctx, st.rebind(`DELETE FROM audit_records WHERE seq = ?`), 2); err != nil {
+		t.Fatal(err)
+	}
+	now := time.Now().UTC().Truncate(time.Microsecond)
+	if _, err := st.db.ExecContext(ctx, st.rebind(`INSERT INTO audit_records (user_id, action, resource, details, ip_address, created_at, seq, prev_hash, hash) VALUES (?, ?, ?, ?, ?, ?, ?, '', '')`), "u1", "auth.login", "", "", "", now, 6); err != nil {
+		t.Fatal(err)
+	}
+	if err := st.Audit().Ready(ctx); !errors.Is(err, ErrAuditUnplaceable) {
+		t.Fatalf("Ready with a filler row above the anchor: %v", err)
+	}
+	_ = st.Close()
+	if _, err := Open(ctx, cfg); !errors.Is(err, ErrAuditUnplaceable) {
+		t.Fatalf("a filler row above the anchor must refuse to open: %v", err)
+	}
+}
