@@ -341,3 +341,98 @@ func TestLogUsageAcrossAgeAndSizePruning(t *testing.T) {
 		t.Fatalf("size pruning left activity=%+v usage=%d err=%v", activity, usage(t, s), err)
 	}
 }
+
+func logTestTime(t *testing.T, value string) time.Time {
+	t.Helper()
+	v, err := time.Parse(time.RFC3339Nano, value)
+	if err != nil {
+		t.Fatal(err)
+	}
+	return v
+}
+
+func TestLogAndActivityTimestampZones(t *testing.T) {
+	for _, tc := range []struct{ name, event, from, to string }{
+		{"offset event", "2026-09-27T08:00:00-04:00", "2026-09-27T11:59:00Z", "2026-09-27T12:01:00Z"},
+		{"offset bounds", "2026-09-27T12:00:00Z", "2026-09-27T07:59:00-04:00", "2026-09-27T08:01:00-04:00"},
+	} {
+		t.Run(tc.name, func(t *testing.T) {
+			s := newLogTestStore(t)
+			ctx := context.Background()
+			event, from, to := logTestTime(t, tc.event), logTestTime(t, tc.from), logTestTime(t, tc.to)
+			received := logTestTime(t, "2026-09-27T15:00:00+03:00")
+			batch := LogBatch{
+				Logs:     []LogLine{{Time: event, ReceivedAt: received, Raw: "sample"}},
+				Activity: []Activity{{Time: event, ReceivedAt: received, Action: "sample"}},
+			}
+			if err := s.Logs().Append(ctx, "", batch, 1<<20); err != nil {
+				t.Fatal(err)
+			}
+			logs, err := s.Logs().List(ctx, LogFilter{From: from, To: to})
+			if err != nil {
+				t.Fatal(err)
+			}
+			activity, err := s.Logs().ListActivity(ctx, ActivityFilter{From: from, To: to})
+			if err != nil {
+				t.Fatal(err)
+			}
+			if len(logs) != 1 || len(activity) != 1 {
+				t.Fatalf("within interval: logs=%d activity=%d; want one each", len(logs), len(activity))
+			}
+			for _, stamp := range []time.Time{logs[0].Time, activity[0].Time} {
+				if !stamp.Equal(event) {
+					t.Errorf("event timestamp=%s; want %s", stamp, event)
+				}
+			}
+			for _, stamp := range []time.Time{logs[0].ReceivedAt, activity[0].ReceivedAt} {
+				if !stamp.Equal(received) {
+					t.Errorf("receipt timestamp=%s; want %s", stamp, received)
+				}
+			}
+		})
+	}
+}
+
+func TestLogAndActivityPruneTimestampZones(t *testing.T) {
+	for _, tc := range []struct{ name, received, now string }{
+		{"offset receipt", "2026-09-20T13:59:00+02:00", "2026-09-27T12:00:00Z"},
+		{"offset prune bound", "2026-09-20T11:59:00Z", "2026-09-27T08:00:00-04:00"},
+	} {
+		t.Run(tc.name, func(t *testing.T) {
+			s := newLogTestStore(t)
+			ctx := context.Background()
+			old := logTestTime(t, tc.received)
+			fresh := logTestTime(t, "2026-09-20T12:01:00Z")
+			batch := LogBatch{
+				Logs: []LogLine{
+					{Time: old, ReceivedAt: old, Message: "expired"},
+					{Time: fresh, ReceivedAt: fresh, Message: "fresh"},
+				},
+				Activity: []Activity{
+					{Time: old, ReceivedAt: old, Action: "expired"},
+					{Time: fresh, ReceivedAt: fresh, Action: "fresh"},
+				},
+			}
+			if err := s.Logs().Append(ctx, "", batch, 1<<20); err != nil {
+				t.Fatal(err)
+			}
+			if err := s.Logs().Prune(ctx, logTestTime(t, tc.now), 1<<20); err != nil {
+				t.Fatal(err)
+			}
+			logs, err := s.Logs().List(ctx, LogFilter{})
+			if err != nil {
+				t.Fatal(err)
+			}
+			activity, err := s.Logs().ListActivity(ctx, ActivityFilter{})
+			if err != nil {
+				t.Fatal(err)
+			}
+			if len(logs) != 1 || logs[0].Message != "fresh" || len(activity) != 1 || activity[0].Action != "fresh" {
+				t.Fatalf("pruned rows: logs=%+v activity=%+v", logs, activity)
+			}
+			if got, want := usage(t, s), logs[0].Bytes+activity[0].Bytes; got != want {
+				t.Fatalf("usage=%d want %d", got, want)
+			}
+		})
+	}
+}

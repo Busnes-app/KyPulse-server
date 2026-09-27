@@ -166,6 +166,8 @@ func (l *logStore) Append(ctx context.Context, sourceID string, batch LogBatch, 
 	var added int64
 	for i := range batch.Logs {
 		r := &batch.Logs[i]
+		r.Time = r.Time.UTC()
+		r.ReceivedAt = r.ReceivedAt.UTC()
 		r.SourceID = sourceID
 		r.Bytes = logBytes(*r)
 		q := l.store.rebind(`INSERT INTO log_lines(time,received_at,source_id,source,target_id,app,level,event,message,raw,truncated,bytes) VALUES(?,?,?,?,?,?,?,?,?,?,?,?)`)
@@ -186,6 +188,8 @@ func (l *logStore) Append(ctx context.Context, sourceID string, batch LogBatch, 
 	}
 	for i := range batch.Activity {
 		r := &batch.Activity[i]
+		r.Time = r.Time.UTC()
+		r.ReceivedAt = r.ReceivedAt.UTC()
 		r.SourceID = sourceID
 		r.Bytes = activityBytes(*r)
 		if r.ExternalKey != "" {
@@ -242,7 +246,7 @@ func (l *logStore) Prune(ctx context.Context, now time.Time, maxBytes int64) err
 }
 func (l *logStore) pruneTx(ctx context.Context, tx *sql.Tx, now time.Time, maxBytes, total int64) error {
 	if !now.IsZero() {
-		cutoff := now.Add(-7 * 24 * time.Hour)
+		cutoff := now.UTC().Add(-7 * 24 * time.Hour)
 		for _, table := range []string{"log_lines", "activity"} {
 			var expired int64
 			if err := tx.QueryRowContext(ctx, l.store.rebind("SELECT COALESCE(SUM(bytes),0) FROM "+table+" WHERE received_at < ?"), cutoff).Scan(&expired); err != nil {
@@ -386,11 +390,11 @@ func (l *logStore) ListActivity(ctx context.Context, f ActivityFilter) ([]Activi
 func addRange(where *[]string, args *[]any, from, to time.Time, before int64) {
 	if !from.IsZero() {
 		*where = append(*where, "time >= ?")
-		*args = append(*args, from)
+		*args = append(*args, from.UTC())
 	}
 	if !to.IsZero() {
 		*where = append(*where, "time <= ?")
-		*args = append(*args, to)
+		*args = append(*args, to.UTC())
 	}
 	if before > 0 {
 		*where = append(*where, "id < ?")
