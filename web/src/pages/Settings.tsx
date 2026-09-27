@@ -1,6 +1,7 @@
 import React from 'react';
 import { Settings as SettingsIcon, Database, Palette } from 'lucide-react';
 import { ThemeSwitcher } from '../components/ThemeSwitcher';
+import { WebhookForm } from '../components/WebhookForm';
 
 interface SettingsProps {
   settings: any;
@@ -8,7 +9,7 @@ interface SettingsProps {
   onChanged: () => void;
 }
 
-export const Settings: React.FC<SettingsProps> = ({ settings }) => {
+export const Settings: React.FC<SettingsProps> = ({ settings, user, onChanged }) => {
   return (
     <div style={{ maxWidth: '1080px', margin: '0 auto', padding: '32px 20px' }}>
       <div style={{ marginBottom: '24px' }}>
@@ -22,6 +23,7 @@ export const Settings: React.FC<SettingsProps> = ({ settings }) => {
       </div>
 
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 480px), 1fr))', gap: '20px' }}>
+        {user.role === 'admin' && <WebhookForm onChanged={onChanged} />}
         {/* Pluggable Database Card */}
         <div className="panel">
           <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '12px' }}>
