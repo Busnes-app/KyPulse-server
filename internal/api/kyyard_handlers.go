@@ -32,7 +32,11 @@ type pairRequest struct {
 
 // handleKyYardPair claims the code and seals the token. The URL is validated by the egress
 // guard (loopback, link-local and metadata addresses refused; http only by opt-in) before any
-// request; the audit row names host and organization, never the code or the token.
+// request, and a dial-time refusal (a name that resolves to one of the same addresses) is
+// reported the same way, 400; the audit row names host and organization, never the code or
+// the token. Pairing while already paired replaces the sealed row here (audited
+// `replaced=true`); the previous token stays valid in KyYard until an operator revokes it
+// there.
 func (s *Server) handleKyYardPair(w http.ResponseWriter, r *http.Request) {
 	var req pairRequest
 	if err := json.NewDecoder(http.MaxBytesReader(w, r.Body, 4<<10)).Decode(&req); err != nil {
@@ -63,16 +67,27 @@ func (s *Server) handleKyYardPair(w http.ResponseWriter, r *http.Request) {
 			s.writeError(w, http.StatusForbidden, "KyYard refused the pairing code")
 		case errors.Is(err, kyyard.ErrRateLimited):
 			s.writeError(w, http.StatusTooManyRequests, "KyYard is rate-limiting pairing attempts; wait a minute")
+		case errors.Is(err, egress.ErrRefusedAddress):
+			// The pre-flight check let the URL through (a name, not a literal IP), but it
+			// resolved to a loopback, link-local or reserved address at dial time.
+			s.writeError(w, http.StatusBadRequest, "KyYard URL: "+err.Error())
 		default:
 			s.writeJSON(w, http.StatusBadGateway, map[string]string{"error": "Could not reach KyYard", "reason": kyyard.Reason(err)})
 		}
 		return
 	}
+	// A pairing that already exists is replaced, not refused: the sealed row is write-once
+	// only in the sense that it always holds one KyYard, and the operator who claimed a new
+	// code from the KyYard side clearly means to move to it. The old token is not revoked
+	// here -- that happens in KyYard -- so it is audited, not silently dropped.
+	_, existed, loadErr := s.kyyard.Pairing.Load(ctx)
+	replaced := existed || loadErr != nil
 	if err := s.kyyard.Pairing.Save(ctx, cfg); err != nil {
-		s.writeError(w, http.StatusInternalServerError, "Failed to save the pairing")
+		s.audit(ctx, actor, r, "admin.kyyard_pair", "", fmt.Sprintf("outcome=failure host=%s org=%s reason=save", auditValue(u.Host), auditValue(cfg.OrganizationID)))
+		s.writeError(w, http.StatusInternalServerError, "KyYard already issued a token for this pairing; it could not be saved here. Revoke it in KyYard (Members -> Service tokens) before retrying")
 		return
 	}
-	s.audit(ctx, actor, r, "admin.kyyard_pair", "", fmt.Sprintf("outcome=success host=%s org=%s allow_http=%v", auditValue(u.Host), auditValue(cfg.OrganizationID), s.config.KyYard.AllowHTTP))
+	s.audit(ctx, actor, r, "admin.kyyard_pair", "", fmt.Sprintf("outcome=success host=%s org=%s allow_http=%v replaced=%v", auditValue(u.Host), auditValue(cfg.OrganizationID), s.config.KyYard.AllowHTTP, replaced))
 	_ = s.kyyard.PullNow(ctx) // the first snapshot; a failure shows as stale with its reason
 	s.writeJSON(w, http.StatusOK, s.kyyard.Status(time.Now()))
 }

@@ -3,23 +3,33 @@ package api_test
 import (
 	"context"
 	"encoding/json"
+	"errors"
+	"io"
 	"net/http"
+	"net/url"
 	"strings"
 	"sync"
 	"testing"
 
+	"github.com/Busnes-app/ky-primitives/logging"
 	"github.com/Busnes-app/kypulse-server/internal/api"
+	"github.com/Busnes-app/kypulse-server/internal/config"
 	"github.com/Busnes-app/kypulse-server/internal/egress"
+	"github.com/Busnes-app/kypulse-server/internal/kyyard"
 	"github.com/Busnes-app/kypulse-server/internal/store"
+	"github.com/Busnes-app/kypulse-server/internal/testdb"
 )
 
 // fakeYard answers by URL suffix; copied from internal/kyyard's own test fixture. token is
-// exposed so a test can assert an audit row or a response never carries it.
+// exposed so a test can assert an audit row or a response never carries it. err, when set,
+// is returned from every call instead of an answer -- a transport failure, standing in for
+// what the real egress.Client would hand back from a dial or a read.
 type fakeYard struct {
 	answers map[string]struct {
 		code int
 		body any
 	}
+	err   error
 	token string
 	mu    sync.Mutex
 }
@@ -35,6 +45,9 @@ func (f *fakeYard) Post(_ context.Context, rawURL, _ string, _ []byte, _ map[str
 func (f *fakeYard) answer(rawURL string) (*egress.Response, error) {
 	f.mu.Lock()
 	defer f.mu.Unlock()
+	if f.err != nil {
+		return nil, f.err
+	}
 	for suffix, a := range f.answers {
 		if len(rawURL) >= len(suffix) && rawURL[len(rawURL)-len(suffix):] == suffix {
 			b, _ := json.Marshal(a.body)
@@ -84,8 +97,7 @@ func monitorFixtureWithYard(t *testing.T) (*api.Server, store.Store, *http.Cooki
 }
 
 func TestKyYardStatusUnpairedAndPairRefusals(t *testing.T) {
-	srv, st, admin, viewer := monitorFixture(t)
-	_ = st
+	srv, _, admin, viewer := monitorFixture(t)
 	s := decodeMap(t, do(t, srv, "GET", "/api/kyyard", viewer))
 	if s["paired"] != false {
 		t.Fatalf("unpaired status: %v", s)
@@ -169,5 +181,220 @@ func TestKyYardPairUnpairAndFacts(t *testing.T) {
 	}
 	if d := decodeMap(t, do(t, srv, "GET", "/api/targets/"+id, viewer)); d["kyyard"] != nil {
 		t.Fatalf("facts after unpair: %v", d["kyyard"])
+	}
+}
+
+func TestKyYardPairReplacesAnExistingPairing(t *testing.T) {
+	srv, st, admin, _, _ := monitorFixtureWithYard(t)
+	first := doJSON(t, srv, "POST", "/api/kyyard/pair", admin, map[string]any{"url": "https://yard.lan", "pairing_code": "123456"})
+	if first.Code != http.StatusOK {
+		t.Fatalf("first pair: %d %s", first.Code, first.Body)
+	}
+	second := doJSON(t, srv, "POST", "/api/kyyard/pair", admin, map[string]any{"url": "https://yard.lan", "pairing_code": "123456"})
+	if second.Code != http.StatusOK {
+		t.Fatalf("second pair: %d %s", second.Code, second.Body)
+	}
+	rows, _, _ := st.Audit().ListAuditRecords(context.Background(), 0, 20)
+	var successes []*store.AuditRecord
+	for _, r := range rows {
+		if r.Action == "admin.kyyard_pair" && strings.Contains(r.Details, "outcome=success") {
+			successes = append(successes, r)
+		}
+	}
+	// ListAuditRecords orders newest first: successes[0] is the second (replacing) pairing.
+	if len(successes) != 2 {
+		t.Fatalf("expected two successful pairing rows, got %d", len(successes))
+	}
+	if !strings.Contains(successes[0].Details, "replaced=true") {
+		t.Fatalf("second (replacing) pairing must be audited replaced=true: %q", successes[0].Details)
+	}
+	if strings.Contains(successes[1].Details, "replaced=true") {
+		t.Fatalf("first pairing must not be replaced: %q", successes[1].Details)
+	}
+}
+
+// TestKyYardClaimErrorMapping pins the status, body and audit row for each way a claim can
+// fail before a token is even issued.
+func TestKyYardClaimErrorMapping(t *testing.T) {
+	cases := []struct {
+		name       string
+		code       int
+		body       any
+		wantStatus int
+		wantReason string // checked against the 502 body's "reason" field; ignored otherwise
+	}{
+		{"refused", 403, map[string]string{"error": "no"}, http.StatusForbidden, ""},
+		{"rate_limited", 429, map[string]string{"error": "slow down"}, http.StatusTooManyRequests, ""},
+		{"upstream_error", 500, nil, http.StatusBadGateway, "status_500"},
+	}
+	for _, tc := range cases {
+		t.Run(tc.name, func(t *testing.T) {
+			fake := &fakeYard{answers: map[string]struct {
+				code int
+				body any
+			}{"/api/service-tokens/claim": {tc.code, tc.body}}}
+			srv, st, _ := setupTestServerWith(t, nil, fake)
+			admin := loginAs(t, srv, st, "alice", "admin")
+			w := doJSON(t, srv, "POST", "/api/kyyard/pair", admin, map[string]any{"url": "https://yard.lan", "pairing_code": "123456"})
+			if w.Code != tc.wantStatus {
+				t.Fatalf("status: got %d want %d body=%s", w.Code, tc.wantStatus, w.Body)
+			}
+			if tc.name == "refused" && !strings.Contains(strings.ToLower(w.Body.String()), "refused") {
+				t.Fatalf("body must say refused: %s", w.Body)
+			}
+			if tc.wantStatus == http.StatusBadGateway {
+				var body map[string]string
+				if err := json.Unmarshal(w.Body.Bytes(), &body); err != nil {
+					t.Fatalf("decode: %v", err)
+				}
+				if len(body) != 2 {
+					t.Fatalf("body must carry only error and reason: %v", body)
+				}
+				if body["reason"] != tc.wantReason {
+					t.Fatalf("reason: got %q want %q", body["reason"], tc.wantReason)
+				}
+			}
+			rows, _, _ := st.Audit().ListAuditRecords(context.Background(), 0, 20)
+			var found bool
+			for _, r := range rows {
+				if r.Action != "admin.kyyard_pair" {
+					continue
+				}
+				found = true
+				if !strings.Contains(r.Details, "outcome=failure") {
+					t.Fatalf("details must record the failure: %q", r.Details)
+				}
+				if strings.Contains(r.Details, "123456") {
+					t.Fatalf("audit leaks the pairing code: %q", r.Details)
+				}
+			}
+			if !found {
+				t.Fatal("no failure audit row")
+			}
+		})
+	}
+}
+
+// TestKyYardPairTransportErrorIsBadGateway covers a network failure below the HTTP layer
+// (the fake stands in for the real egress.Client's dial/read errors): 502, reason from the
+// egress vocabulary, and an audited failure naming that reason.
+func TestKyYardPairTransportErrorIsBadGateway(t *testing.T) {
+	fake := &fakeYard{err: errors.New("dial tcp 10.0.0.5:443: connect: connection refused")}
+	srv, st, _ := setupTestServerWith(t, nil, fake)
+	admin := loginAs(t, srv, st, "alice", "admin")
+	w := doJSON(t, srv, "POST", "/api/kyyard/pair", admin, map[string]any{"url": "https://yard.lan", "pairing_code": "123456"})
+	if w.Code != http.StatusBadGateway {
+		t.Fatalf("status: %d %s", w.Code, w.Body)
+	}
+	var body map[string]string
+	if err := json.Unmarshal(w.Body.Bytes(), &body); err != nil {
+		t.Fatalf("decode: %v", err)
+	}
+	if len(body) != 2 || body["reason"] != "refused" {
+		t.Fatalf("body: %v", body)
+	}
+	rows, _, _ := st.Audit().ListAuditRecords(context.Background(), 0, 20)
+	var found bool
+	for _, r := range rows {
+		if r.Action == "admin.kyyard_pair" && strings.Contains(r.Details, "reason=refused") {
+			found = true
+		}
+	}
+	if !found {
+		t.Fatal("no failure row naming the transport reason")
+	}
+}
+
+// TestKyYardPairRefusesADialTimeAddress is the case ValidateURL's pre-flight check cannot
+// catch: a name, not a literal IP, that only resolves to a refused address. The fake's error
+// is wrapped in a *url.Error the way the real egress.Client's http.Client wraps a failed
+// dial, so this also proves errors.Is unwraps through it.
+func TestKyYardPairRefusesADialTimeAddress(t *testing.T) {
+	fake := &fakeYard{err: &url.Error{Op: "Post", URL: "https://yard.lan/api/service-tokens/claim", Err: egress.ErrRefusedAddress}}
+	srv, st, _ := setupTestServerWith(t, nil, fake)
+	admin := loginAs(t, srv, st, "alice", "admin")
+	w := doJSON(t, srv, "POST", "/api/kyyard/pair", admin, map[string]any{"url": "https://yard.lan", "pairing_code": "123456"})
+	if w.Code != http.StatusBadRequest {
+		t.Fatalf("status: %d %s", w.Code, w.Body)
+	}
+	rows, _, _ := st.Audit().ListAuditRecords(context.Background(), 0, 20)
+	var found bool
+	for _, r := range rows {
+		if r.Action == "admin.kyyard_pair" && strings.Contains(r.Details, "reason=address_refused") {
+			found = true
+		}
+	}
+	if !found {
+		t.Fatal("no failure row naming address_refused")
+	}
+}
+
+// failingSettings makes every write fail, to test a pairing whose claim succeeds but whose
+// sealed row cannot be saved.
+type failingSettings struct{ store.SettingsStore }
+
+func (failingSettings) SetSetting(context.Context, string, string) error {
+	return errors.New("disk full")
+}
+
+// serverWithFailingKyYardSave is setupTestServerWith, except the KyYard pairing's settings
+// store refuses every write: the claim can still succeed, only Save cannot.
+func serverWithFailingKyYardSave(t *testing.T, yardHTTP kyyard.HTTP) (*api.Server, store.Store) {
+	t.Helper()
+	t.Setenv("KYPULSE_DATA_DIR", t.TempDir())
+	cfg, _ := config.LoadFromEnv()
+	db := testdb.Config(t)
+	db.DataDir = cfg.Database.DataDir
+	cfg.Database = db
+	cfg.Captcha.Provider = "none"
+
+	st, err := store.Open(context.Background(), cfg.Database)
+	if err != nil {
+		t.Fatalf("failed to open store: %v", err)
+	}
+	t.Cleanup(func() { _ = st.Close() })
+
+	lg, err := logging.New(logging.Config{App: "kypulse", Out: io.Discard})
+	if err != nil {
+		t.Fatalf("logger: %v", err)
+	}
+	mon := newTestMonitor(t, cfg, st, lg)
+	pairing, err := kyyard.NewPairing(cfg, failingSettings{st.Settings()})
+	if err != nil {
+		t.Fatalf("kyyard pairing: %v", err)
+	}
+	yard := &kyyard.Service{Pairing: pairing, HTTP: yardHTTP, Logger: lg}
+	return api.NewServer(cfg, st, lg, mon, yard), st
+}
+
+func TestKyYardPairSaveFailureIsAuditedAndReported(t *testing.T) {
+	fake := pairedYard()
+	srv, st := serverWithFailingKyYardSave(t, fake)
+	admin := loginAs(t, srv, st, "alice", "admin")
+	w := doJSON(t, srv, "POST", "/api/kyyard/pair", admin, map[string]any{"url": "https://yard.lan", "pairing_code": "123456"})
+	if w.Code != http.StatusInternalServerError {
+		t.Fatalf("status: %d %s", w.Code, w.Body)
+	}
+	body := strings.ToLower(w.Body.String())
+	if !strings.Contains(body, "kyyard") || !strings.Contains(body, "revoke") {
+		t.Fatalf("500 must say the token must be revoked in KyYard: %s", w.Body)
+	}
+	rows, _, _ := st.Audit().ListAuditRecords(context.Background(), 0, 20)
+	var found bool
+	for _, r := range rows {
+		if r.Action != "admin.kyyard_pair" {
+			continue
+		}
+		found = true
+		if !strings.Contains(r.Details, "outcome=failure") || !strings.Contains(r.Details, `host="yard.lan"`) ||
+			!strings.Contains(r.Details, `org="org_a"`) || !strings.Contains(r.Details, "reason=save") {
+			t.Fatalf("details: %q", r.Details)
+		}
+		if strings.Contains(r.Details, fake.token) || strings.Contains(r.Details, "123456") {
+			t.Fatalf("audit leaks a secret: %q", r.Details)
+		}
+	}
+	if !found {
+		t.Fatal("no failure audit row")
 	}
 }

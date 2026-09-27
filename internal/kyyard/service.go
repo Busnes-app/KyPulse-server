@@ -36,6 +36,10 @@ type Service struct {
 	Logger  *logging.Logger
 	Now     func() time.Time
 
+	// pullMu single-flights PullNow: the handler's first pull right after a pairing and the
+	// loop's own tick must not run concurrently and race each other's commit.
+	pullMu sync.Mutex
+
 	mu        sync.Mutex
 	gen       uint64 // bumped by Clear; a commit from a pull started before the bump is discarded
 	paired    bool
@@ -79,20 +83,27 @@ func (s *Service) Run(ctx context.Context, every time.Duration, done chan<- stru
 // PullNow reads the pairing, then endpoints, inventory and samples. A failure keeps the last
 // snapshot and records its reason. Unpaired is a no-op that clears nothing (Clear does).
 //
-// The network calls run unlocked; an unpair (Clear) racing an in-flight pull must not have
-// its clear overwritten by that pull's stale commit. gen is captured right after the load
-// succeeds and re-checked before every locked write; a mismatch discards the commit silently.
+// pullMu single-flights the whole call: the handler's first pull right after a successful
+// pairing and the loop's next tick must not run concurrently, or one's commit could clobber
+// the other's. The network calls still run unlocked with respect to s.mu; an unpair (Clear)
+// racing an in-flight pull must not have its clear overwritten by that pull's stale commit.
+// gen is captured under s.mu before the pairing is even loaded -- not after the load succeeds
+// -- so an unpair landing between the load and the read is caught too, and re-checked before
+// every locked write; a mismatch discards the commit silently.
 func (s *Service) PullNow(ctx context.Context) error {
+	s.pullMu.Lock()
+	defer s.pullMu.Unlock()
+
+	gen := s.currentGen()
 	cfg, ok, err := s.Pairing.Load(ctx)
 	if err != nil {
-		s.fail(s.currentGen(), "unreadable")
+		s.fail(gen, "unreadable")
 		return err
 	}
 	if !ok {
 		s.Clear()
 		return nil
 	}
-	gen := s.currentGen()
 	c := &Client{HTTP: s.HTTP, Config: cfg}
 	eps, err := c.Endpoints(ctx)
 	if err != nil {
