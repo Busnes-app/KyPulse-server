@@ -47,7 +47,8 @@ func (s *Service) now() time.Time {
 	return time.Now()
 }
 
-// Track decodes a target's stored track. A target that has never been polled is pending.
+// Track decodes a target's stored track and overlays the silence columns, which are the
+// source of truth for silencing: they are never carried in the track JSON.
 func Track(t *store.Target) alerts.Track {
 	var tr alerts.Track
 	if t.TrackJSON != "" {
@@ -56,6 +57,11 @@ func Track(t *store.Target) alerts.Track {
 	if tr.State == "" {
 		tr.State, tr.Since = alerts.Pending, t.CreatedAt
 	}
+	tr.SilencedUntil = time.Time{}
+	if t.SilencedUntil != nil {
+		tr.SilencedUntil = *t.SilencedUntil
+	}
+	tr.UntilFixed = t.UntilFixed
 	return tr
 }
 
@@ -87,8 +93,17 @@ func (s *Service) Observe(ctx context.Context, o poller.Observation) {
 	if err != nil {
 		return // deleted while in flight
 	}
-	track, tr := alerts.Next(Track(tg), o.Result, o.At)
+	before := Track(tg)
+	track, tr := alerts.Next(before, o.Result, o.At)
 	decision, track := alerts.Decide(track, tr, o.At)
+
+	if before.UntilFixed && !track.UntilFixed {
+		// Recovery cleared the silence: the columns are the source of truth, so clear them
+		// too, not just the in-memory track.
+		_ = s.Store.Targets().SetSilence(ctx, tg.ID, nil, false)
+	}
+	// The silence columns own this state; never let a stale copy ride along in the JSON.
+	track.SilencedUntil, track.UntilFixed = time.Time{}, false
 
 	trackJSON, _ := json.Marshal(track)
 	resultJSON, _ := json.Marshal(o.Result)
@@ -127,12 +142,25 @@ func (s *Service) Observe(ctx context.Context, o poller.Observation) {
 // event and in the delivery status, and audits it. It never returns an error: the send's
 // result is data, not a failure of the observation.
 func (s *Service) deliver(ctx context.Context, targetID string, eventID int64, msg notify.Message) {
-	cfg, ok, err := s.Webhooks.Load(ctx)
-	if err != nil || !ok {
-		return // no webhook configured: nothing to send, nothing to record
-	}
 	sendCtx, cancel := context.WithTimeout(context.WithoutCancel(ctx), sendBudget)
 	defer cancel()
+
+	cfg, ok, err := s.Webhooks.Load(ctx)
+	if err != nil {
+		// The webhook is configured but unreadable (e.g. a rotated deployment key): this is
+		// a delivery failure, not a "nothing to send" no-op, so it is logged and recorded
+		// like any other failed send.
+		s.Logger.Log(ctx, evAlertFailed, logging.TargetID(targetID), logging.Err(err))
+		status := DeliveryStatus{At: s.now(), OK: false, Error: "webhook unreadable"}
+		_ = s.Webhooks.SetStatus(sendCtx, status)
+		if eventID != 0 {
+			_ = s.Store.Targets().SetEventNotified(sendCtx, eventID, false, "webhook unreadable")
+		}
+		return
+	}
+	if !ok {
+		return // no webhook configured: nothing to send, nothing to record
+	}
 	sendErr := s.Notifier.Send(sendCtx, cfg, msg)
 	status := DeliveryStatus{At: s.now(), OK: sendErr == nil}
 	action, details := "alert.sent", "target="+targetID+" state="+msg.State
@@ -150,20 +178,15 @@ func (s *Service) deliver(ctx context.Context, targetID string, eventID int64, m
 	_ = s.Store.Audit().LogAudit(sendCtx, &store.AuditRecord{UserID: "system", Action: action, Resource: targetID, Details: details})
 }
 
-// Silence edits only the track's silence fields, so a poll landing in between loses nothing.
+// Silence writes only the target's silence columns, the source of truth for silencing, so a
+// poll landing in between never overwrites or loses it.
 func (s *Service) Silence(ctx context.Context, id string, d time.Duration, untilFixed bool) error {
-	tg, err := s.Store.Targets().GetTarget(ctx, id)
-	if err != nil {
-		return err
-	}
-	track := Track(tg)
-	track.UntilFixed = untilFixed
-	track.SilencedUntil = time.Time{}
+	var until *time.Time
 	if d > 0 {
-		track.SilencedUntil = s.now().Add(d)
+		u := s.now().Add(d)
+		until = &u
 	}
-	b, _ := json.Marshal(track)
-	return s.Store.Targets().SetTrack(ctx, id, string(b))
+	return s.Store.Targets().SetSilence(ctx, id, until, untilFixed)
 }
 
 // SendTest delivers a test message and records the delivery status. The error is returned

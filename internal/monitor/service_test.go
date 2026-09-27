@@ -5,10 +5,12 @@ import (
 	"encoding/json"
 	"errors"
 	"io"
+	"strings"
 	"testing"
 	"time"
 
 	"github.com/Busnes-app/ky-primitives/logging"
+	"github.com/Busnes-app/ky-primitives/recoveryclient"
 	"github.com/Busnes-app/kypulse-server/internal/egress"
 	"github.com/Busnes-app/kypulse-server/internal/monitor"
 	"github.com/Busnes-app/kypulse-server/internal/notify"
@@ -138,6 +140,31 @@ func TestObserveRecordsAFailedSend(t *testing.T) {
 	}
 }
 
+func TestObserveRecordsAnUnreadableWebhook(t *testing.T) {
+	svc, st, poster, now := newService(t)
+	ctx := context.Background()
+	_ = st.Targets().CreateTarget(ctx, &store.Target{ID: "a", Name: "KyVault", URL: "https://a/", IntervalSec: 30, Enabled: true})
+	other, err := recoveryclient.NewAESGCMSealer([]byte(strings.Repeat("k", 32)), "kypulse:setting:alert_webhook")
+	if err != nil {
+		t.Fatal(err)
+	}
+	svc.Webhooks.Sealer = other
+	for i := 0; i < 3; i++ {
+		observe(svc, "a", poller.Down, now.Add(time.Duration(i)*30*time.Second))
+	}
+	events, _, _ := st.Targets().ListEvents(ctx, "a", 0, 1)
+	if events[0].Notified || events[0].NotifyError != "webhook unreadable" {
+		t.Fatalf("unreadable webhook not recorded: %+v", events[0])
+	}
+	s, ok, _ := svc.Webhooks.Status(ctx)
+	if !ok || s.OK || s.Error != "webhook unreadable" {
+		t.Fatalf("delivery status: %+v", s)
+	}
+	if poster.calls != 0 {
+		t.Fatal("must not attempt delivery when the webhook cannot be read")
+	}
+}
+
 func TestSilenceStopsSendsAndUntilFixedClears(t *testing.T) {
 	svc, st, poster, now := newService(t)
 	ctx := context.Background()
@@ -150,20 +177,21 @@ func TestSilenceStopsSendsAndUntilFixedClears(t *testing.T) {
 		observe(svc, "a", poller.Down, now.Add(time.Duration(i)*30*time.Second))
 	}
 	tg, _ := st.Targets().GetTarget(ctx, "a")
-	if tg.State != "down" || poster.calls != 0 || !monitor.Track(tg).UntilFixed {
-		t.Fatalf("silenced down: state=%s calls=%d track=%+v", tg.State, poster.calls, monitor.Track(tg))
+	if tg.State != "down" || poster.calls != 0 || !tg.UntilFixed || !monitor.Track(tg).UntilFixed {
+		t.Fatalf("silenced down: state=%s calls=%d untilFixed=%v track=%+v", tg.State, poster.calls, tg.UntilFixed, monitor.Track(tg))
 	}
 	observe(svc, "a", poller.OK, now.Add(4*30*time.Second))
 	observe(svc, "a", poller.OK, now.Add(5*30*time.Second))
 	tg, _ = st.Targets().GetTarget(ctx, "a")
-	if tg.State != "ok" || poster.calls != 1 || poster.sent[0].State != "ok" || monitor.Track(tg).UntilFixed {
-		t.Fatalf("recovery: state=%s calls=%d track=%+v", tg.State, poster.calls, monitor.Track(tg))
+	if tg.State != "ok" || poster.calls != 1 || poster.sent[0].State != "ok" || tg.UntilFixed || monitor.Track(tg).UntilFixed {
+		t.Fatalf("recovery: state=%s calls=%d untilFixed=%v track=%+v", tg.State, poster.calls, tg.UntilFixed, monitor.Track(tg))
 	}
 	if err := svc.Silence(ctx, "a", time.Hour, false); err != nil {
 		t.Fatal(err)
 	}
-	if tr := monitor.Track(func() *store.Target { x, _ := st.Targets().GetTarget(ctx, "a"); return x }()); !tr.SilencedUntil.Equal(now.Add(time.Hour)) {
-		t.Fatalf("timed silence: %+v", tr)
+	tg, _ = st.Targets().GetTarget(ctx, "a")
+	if tg.SilencedUntil == nil || !tg.SilencedUntil.Equal(now.Add(time.Hour)) || !monitor.Track(tg).SilencedUntil.Equal(now.Add(time.Hour)) {
+		t.Fatalf("timed silence: %+v", tg)
 	}
 	if err := svc.Silence(ctx, "missing", time.Hour, false); !errors.Is(err, store.ErrNotFound) {
 		t.Fatalf("missing target: %v", err)

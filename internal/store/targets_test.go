@@ -46,12 +46,27 @@ func TestTargetLifecycle(t *testing.T) {
 	if got.State != "down" || got.Cause != "refused" || got.LastPolledAt == nil || !got.LastPolledAt.Equal(now) || got.LastLatencyMS != 12 || got.TrackJSON != `{"state":"down"}` {
 		t.Fatalf("after poll: %+v", got)
 	}
-	if err := st.Targets().SetTrack(ctx, "tgt_1", `{"state":"down","until_fixed":true}`); err != nil {
+	until := now.Add(time.Hour)
+	if err := st.Targets().SetSilence(ctx, "tgt_1", &until, false); err != nil {
 		t.Fatal(err)
 	}
 	got, _ = st.Targets().GetTarget(ctx, "tgt_1")
-	if got.TrackJSON != `{"state":"down","until_fixed":true}` {
-		t.Fatalf("set track: %q", got.TrackJSON)
+	if got.SilencedUntil == nil || !got.SilencedUntil.Equal(until) || got.UntilFixed {
+		t.Fatalf("set silence: %+v", got)
+	}
+	if err := st.Targets().SetSilence(ctx, "tgt_1", nil, true); err != nil {
+		t.Fatal(err)
+	}
+	got, _ = st.Targets().GetTarget(ctx, "tgt_1")
+	if got.SilencedUntil != nil || !got.UntilFixed {
+		t.Fatalf("until fixed: %+v", got)
+	}
+	if err := st.Targets().SetSilence(ctx, "tgt_1", nil, false); err != nil {
+		t.Fatal(err)
+	}
+	got, _ = st.Targets().GetTarget(ctx, "tgt_1")
+	if got.SilencedUntil != nil || got.UntilFixed {
+		t.Fatalf("clear silence: %+v", got)
 	}
 
 	if err := st.Targets().DeleteTarget(ctx, "tgt_1"); err != nil {

@@ -12,6 +12,8 @@ Owns `Service` (Due, Observe, Silence, SendTest), `Webhooks` (sealed webhook con
 - The webhook is sealed under `kypulse:setting:alert_webhook`; `alert_webhook_status` is plaintext and holds no secret.
 - Messages link to `AppURL/#/apps/<id>`; step 2c makes that route exist.
 - Due is computed in Go from `ListTargets`, not in dialect-specific SQL.
+- Silence lives in the target's `silenced_until`/`until_fixed` columns, not in the track JSON: `Silence` writes only those columns, so a poll landing in between never overwrites or loses it. `Track` overlays the columns onto the decoded track for `alerts.Decide`; a recovery that clears `until_fixed` also clears the columns.
+- An unreadable webhook (loaded but fails to open, e.g. a rotated deployment key) is a delivery failure, not a silent no-op: it is logged, recorded in `alert_webhook_status`, and marks the event's `notify_error` as `"webhook unreadable"`.
 
 ## Verification
 - `go test -race ./internal/monitor/`

@@ -3,6 +3,7 @@ package store
 import (
 	"context"
 	"errors"
+	"time"
 )
 
 var (
@@ -87,8 +88,8 @@ type TargetStore interface {
 	UpdateTarget(ctx context.Context, t *Target) error  // name, url, interval, enabled, container only
 	DeleteTarget(ctx context.Context, id string) error  // cascades events
 	RecordPoll(ctx context.Context, id string, u PollUpdate) error
-	SetTrack(ctx context.Context, id string, trackJSON string) error // silences edit the track between polls
-	RecordEvent(ctx context.Context, e *TargetEvent) error           // sets e.ID
+	SetSilence(ctx context.Context, id string, until *time.Time, untilFixed bool) error // nil until and false clear it
+	RecordEvent(ctx context.Context, e *TargetEvent) error                              // sets e.ID
 	SetEventNotified(ctx context.Context, id int64, notified bool, notifyError string) error
 	ListEvents(ctx context.Context, targetID string, offset, limit int) ([]*TargetEvent, int, error) // targetID "" = all; newest first
 }

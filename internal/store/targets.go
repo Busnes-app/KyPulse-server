@@ -32,16 +32,19 @@ func (t *targetStore) CreateTarget(ctx context.Context, tg *Target) error {
 	q := t.store.rebind(`
 INSERT INTO targets (
     id, name, url, interval_sec, enabled, container, state, state_since, cause,
-    track_json, last_result, last_polled_at, last_latency_ms, created_at, updated_at
-) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+    silenced_until, until_fixed, track_json, last_result, last_polled_at, last_latency_ms, created_at, updated_at
+) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
 `)
-	var lastPolled sql.NullTime
+	var lastPolled, silencedUntil sql.NullTime
 	if tg.LastPolledAt != nil {
 		lastPolled = sql.NullTime{Time: *tg.LastPolledAt, Valid: true}
 	}
+	if tg.SilencedUntil != nil {
+		silencedUntil = sql.NullTime{Time: *tg.SilencedUntil, Valid: true}
+	}
 	_, err := t.store.db.ExecContext(ctx, q,
 		tg.ID, tg.Name, tg.URL, tg.IntervalSec, tg.Enabled, tg.Container, tg.State, tg.StateSince, tg.Cause,
-		tg.TrackJSON, tg.LastResult, lastPolled, tg.LastLatencyMS, tg.CreatedAt, tg.UpdatedAt,
+		silencedUntil, tg.UntilFixed, tg.TrackJSON, tg.LastResult, lastPolled, tg.LastLatencyMS, tg.CreatedAt, tg.UpdatedAt,
 	)
 	if err != nil {
 		if strings.Contains(err.Error(), "UNIQUE") || strings.Contains(err.Error(), "duplicate key") {
@@ -54,10 +57,10 @@ INSERT INTO targets (
 
 func (t *targetStore) scanTarget(row interface{ Scan(...any) error }) (*Target, error) {
 	var tg Target
-	var lastPolled sql.NullTime
+	var lastPolled, silencedUntil sql.NullTime
 	err := row.Scan(
 		&tg.ID, &tg.Name, &tg.URL, &tg.IntervalSec, &tg.Enabled, &tg.Container, &tg.State, &tg.StateSince, &tg.Cause,
-		&tg.TrackJSON, &tg.LastResult, &lastPolled, &tg.LastLatencyMS, &tg.CreatedAt, &tg.UpdatedAt,
+		&silencedUntil, &tg.UntilFixed, &tg.TrackJSON, &tg.LastResult, &lastPolled, &tg.LastLatencyMS, &tg.CreatedAt, &tg.UpdatedAt,
 	)
 	if err != nil {
 		if errorsIs(err, sql.ErrNoRows) {
@@ -68,11 +71,14 @@ func (t *targetStore) scanTarget(row interface{ Scan(...any) error }) (*Target, 
 	if lastPolled.Valid {
 		tg.LastPolledAt = &lastPolled.Time
 	}
+	if silencedUntil.Valid {
+		tg.SilencedUntil = &silencedUntil.Time
+	}
 	return &tg, nil
 }
 
 const targetColumns = `id, name, url, interval_sec, enabled, container, state, state_since, cause,
-       track_json, last_result, last_polled_at, last_latency_ms, created_at, updated_at`
+       silenced_until, until_fixed, track_json, last_result, last_polled_at, last_latency_ms, created_at, updated_at`
 
 func (t *targetStore) GetTarget(ctx context.Context, id string) (*Target, error) {
 	q := t.store.rebind(`SELECT ` + targetColumns + ` FROM targets WHERE id = ?`)
@@ -146,9 +152,13 @@ WHERE id = ?
 	return nil
 }
 
-func (t *targetStore) SetTrack(ctx context.Context, id string, trackJSON string) error {
-	q := t.store.rebind("UPDATE targets SET track_json = ?, updated_at = ? WHERE id = ?")
-	res, err := t.store.db.ExecContext(ctx, q, trackJSON, time.Now().UTC(), id)
+func (t *targetStore) SetSilence(ctx context.Context, id string, until *time.Time, untilFixed bool) error {
+	q := t.store.rebind("UPDATE targets SET silenced_until = ?, until_fixed = ?, updated_at = ? WHERE id = ?")
+	var u sql.NullTime
+	if until != nil {
+		u = sql.NullTime{Time: *until, Valid: true}
+	}
+	res, err := t.store.db.ExecContext(ctx, q, u, untilFixed, time.Now().UTC(), id)
 	if err != nil {
 		return err
 	}

@@ -72,6 +72,8 @@ type Target struct {
 	State         string     `json:"state"`               // pending|ok|degraded|down, denormalised from Track
 	StateSince    time.Time  `json:"state_since"`
 	Cause         string     `json:"cause,omitempty"`
+	SilencedUntil *time.Time `json:"silenced_until,omitempty"`
+	UntilFixed    bool       `json:"until_fixed"`
 	TrackJSON     string     `json:"-"`
 	LastResult    string     `json:"last_result"` // poller.Result JSON, "" before the first poll
 	LastPolledAt  *time.Time `json:"last_polled_at,omitempty"`
