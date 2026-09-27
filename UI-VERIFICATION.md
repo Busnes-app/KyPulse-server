@@ -1,47 +1,34 @@
-# Shared UI verification
+# UI verification
 
-> Scaffold evidence from ky_server_base (ky-ui 0.2.0 vendor sync); kyPulse's own screens
-> replace this in step 2c.
-
-## Change
-
-Include the base as a required consumer so future products inherit verified shared assets. Shared assets are pinned to ky-ui 0.2.0 with content hashes. Product layouts, saved theme keys and named presets remain local.
+kyPulse's own screens (step 2c): alert bar, Status, Alerts, app detail, webhook form.
 
 ## Capture conditions
 
-Captured 2026-09-25 from this branch, using the application UI (not a design mockup). Overview in a real scratch server using scaffold defaults.
-
-OS-following Busnes Light and Dark were captured at 1280×900 and 390×844 CSS pixels. Browser device scaling may make PNG dimensions larger. Document width stayed within the viewport in these captured states; local navigation/table scrolling is intentional. Screenshots show the selected-page accent, not a complete accessibility audit.
-
-The subsequent browser-regression change moves worker registration into the JS bundle; production CSP is unchanged. Activation now passes against the real server. HTML refreshes online, and caching excludes dynamic/auth routes.
+Captured by `web/browser/monitor.spec.mjs` against the real Go server with disposable SQLite
+data, production CSP and real login, at 1280×900 and 390×900 in Busnes Light and Dark. The
+watched app is a fake `ky.health/1` server on the runner's LAN address; the webhook is the
+same server answering 500.
 
 ## Checks
 
-7 frontend tests and production build passed. Central ky-ui sync --check verified all ten consumers. Screenshot coverage is Busnes Light/Dark; existing named choices are retained, but not every named palette/page combination was visually exercised.
+`npm test` (vitest: router, monitor helpers and client, AlertBar, Status, Alerts, AppDetail,
+WebhookForm, Backup, ChangePassword) and `npm run test:browser` (shell spec plus the monitor
+spec: empty install, add app, down after three polls, red bar linking to the detail page,
+checks, silence until fixed, Alerts table and silences, webhook saved, test send failing,
+"Alerts not being delivered", recovery to green with the silence cleared, delete back to
+Status, no horizontal overflow). Viewer-role rendering of Status, Alerts and the detail page
+is covered by component tests; the `#/backup` redirect and the Settings webhook gate rely on
+the server's 403s (`internal/api` authorisation tests).
 
 ## Screenshots
 
-| Light | Dark |
+| | |
 | --- | --- |
-| ![Desktop light](docs/ky-ui-light-desktop.png) | ![Desktop dark](docs/ky-ui-dark-desktop.png) |
-| ![Mobile light](docs/ky-ui-light-mobile.png) | ![Mobile dark](docs/ky-ui-dark-mobile.png) |
+| ![Status, one app down, light desktop](docs/status-down-light-desktop.png) | ![Status, all healthy, dark mobile](docs/status-ok-dark-mobile.png) |
+| ![App detail while down, light desktop](docs/detail-down-light-desktop.png) | ![Alerts, dark desktop](docs/alerts-dark-desktop.png) |
 
 ## Reproduce
 
-### Automated regression coverage
-
-`web/browser/ui.spec.mjs` runs against a freshly built Go server with disposable SQLite data, real login and production CSP at 390×900 and 1280×900 in both OS themes. CI retains screenshots and failure traces for seven days and requires the browser job before publishing.
-
-The assertions cover worker activation and stale-shell refresh, invalid-login errors, theme persistence and cross-tab/OS transitions, Paper-to-Busnes switching, selected navigation/focus, Settings overflow, and pairing dialog containment/Escape/focus return. The tests exposed and fixed the old 480px minimum Settings column and non-modal pairing behavior. These are workflow checks, not all-page E2E or full accessibility coverage.
-
-Representative captures from the automated run (2026-09-25; scratch pairing codes expire and the server is deleted afterward):
-
-| Mobile Settings — light |
-| --- |
-| ![Settings fits mobile](docs/browser-settings-light-mobile.png) |
-
-Build the frontend, then run `go build -o .browser/server ./cmd/server` from the repo root and `cd web && npx playwright install chromium && npm run test:browser`.
-
-### Manual inspection
-
-Run npm ci, npm test (where configured), and npm run build in web/, then start the product with isolated local preview data following its README. Use System theme, emulate OS light/dark, and inspect both viewport sizes. Do not point preview instances at production data. For KyVault, use a configured development KyIdentity or explicitly labeled read-only browser fixtures; never bypass backend authentication.
+Build the frontend, run `go build -o .browser/server ./cmd/server` at the repo root, then
+`cd web && npx playwright install chromium && npm run test:browser`. The monitor spec skips on
+a machine with no private IPv4 interface.

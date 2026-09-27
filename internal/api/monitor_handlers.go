@@ -300,7 +300,9 @@ func (s *Server) handleStatus(w http.ResponseWriter, r *http.Request) {
 
 	_, configured, err := s.monitor.Webhooks.Load(r.Context())
 	if err != nil {
-		configured = false
+		// A webhook row exists but cannot be opened (e.g. rotated key): still "configured",
+		// since delivery is broken, not absent.
+		configured = true
 	}
 	webhook := map[string]any{"configured": configured, "last": nil}
 	if last, ok, err := s.monitor.Webhooks.Status(r.Context()); err == nil && ok {
@@ -393,10 +395,10 @@ func (s *Server) handleDeleteWebhook(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusNoContent)
 }
 
-// testSendBudget bounds a manual test send: the notifier's own backoff runs up to ~20s, and
-// this outlives it on a context detached from the request so a slow receiver never races the
-// listener's 15s WriteTimeout into reporting the wrong thing.
-const testSendBudget = 25 * time.Second
+// testSendBudget bounds a manual test send: one attempt through the egress client's own 5 s
+// timeout, on a context detached from the request so a slow receiver still gets a recorded,
+// reported outcome inside the listener's 15 s WriteTimeout.
+const testSendBudget = 10 * time.Second
 
 func (s *Server) handleTestWebhook(w http.ResponseWriter, r *http.Request) {
 	ctx, cancel := context.WithTimeout(context.WithoutCancel(r.Context()), testSendBudget)

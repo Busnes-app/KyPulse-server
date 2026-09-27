@@ -1,22 +1,24 @@
 import React from 'react';
-import { LogOut, Settings as SettingsIcon, LayoutDashboard, Archive } from 'lucide-react';
+import { LogOut, Settings as SettingsIcon, Activity, Bell, Archive } from 'lucide-react';
 import { ThemeSwitcher } from './ThemeSwitcher';
+import { hrefFor } from '../router';
 
 interface AppHeaderProps {
   appName: string;
-  activeTab: string;
-  onTabChange: (tab: string) => void;
-  user: any;
+  activePath: string;
+  user: { role: string; display_name?: string; username?: string } | null;
   onLogout: () => void;
 }
 
-export const AppHeader: React.FC<AppHeaderProps> = ({ appName, activeTab, onTabChange, user, onLogout }) => {
-  const navItems = [
-    { id: 'dashboard', label: 'Overview', icon: LayoutDashboard, admin: false },
-    { id: 'backup', label: 'Backup', icon: Archive, admin: true },
-    { id: 'settings', label: 'Settings & DB', icon: SettingsIcon, admin: false },
-  ].filter((item) => !item.admin || user?.role === 'admin');
+export const navItems = [
+  { path: '/status', label: 'Status', icon: Activity, admin: false },
+  { path: '/alerts', label: 'Alerts', icon: Bell, admin: false },
+  { path: '/backup', label: 'Backup', icon: Archive, admin: true },
+  { path: '/settings', label: 'Settings & DB', icon: SettingsIcon, admin: false },
+];
 
+export const AppHeader: React.FC<AppHeaderProps> = ({ appName, activePath, user, onLogout }) => {
+  const items = navItems.filter((item) => !item.admin || user?.role === 'admin');
   return (
     <header className="app-header">
       <div className="app-brand">
@@ -25,19 +27,20 @@ export const AppHeader: React.FC<AppHeaderProps> = ({ appName, activeTab, onTabC
       </div>
 
       <nav className="app-nav" aria-label="Primary">
-        {navItems.map((item) => {
+        {items.map((item) => {
           const Icon = item.icon;
-          const active = activeTab === item.id;
+          // An app detail page belongs to Status.
+          const active = activePath === item.path || (item.path === '/status' && activePath.startsWith('/apps/'));
           return (
-            <button
-              key={item.id}
-              onClick={() => onTabChange(item.id)}
+            <a
+              key={item.path}
+              href={hrefFor(item.path)}
               className={active ? 'ky-nav-item active' : 'ky-nav-item'}
               aria-current={active ? 'page' : undefined}
             >
               <Icon size={16} />
               <span>{item.label}</span>
-            </button>
+            </a>
           );
         })}
       </nav>

@@ -30,7 +30,7 @@ Owns HTTP routing, request parsing, session cookie validation, CORS headers, and
 
 | Method | Path | Auth | Response |
 |---|---|---|---|
-| GET | `/api/status` | session | `{checked_at, total, ok, degraded, down, pending, paused, problems:[{id,name,state,since,cause}], webhook:{configured, last}}`; disabled targets count only as `paused`, never as a state or a problem |
+| GET | `/api/status` | session | `{checked_at, total, ok, degraded, down, pending, paused, problems:[{id,name,state,since,cause}], webhook:{configured, last}}`; disabled targets count only as `paused`, never as a state or a problem; `configured` is true whenever a webhook row exists, including one that cannot be opened (`Webhooks.Load` error) — delivery is broken, not absent |
 | GET | `/api/targets` | session | `{targets:[target + silenced_until, until_fixed, basic]}` |
 | GET | `/api/targets/{id}` | session | `{target, last_result, events:[last 20]}` |
 | POST | `/api/targets` | admin | 201 `{target}`; 400 validation; 409 duplicate name |
@@ -41,7 +41,7 @@ Owns HTTP routing, request parsing, session cookie validation, CORS headers, and
 | GET | `/api/alerts/webhook` | admin | `{configured, preset, url, has_token, last}`; never the token |
 | PUT | `/api/alerts/webhook` | admin | body `{preset,url,token,clear_token}`; an empty `token` keeps the stored one only when preset and URL host are unchanged, `clear_token` always stores none; 400 on `notify.Validate` failure |
 | DELETE | `/api/alerts/webhook` | admin | 204 |
-| POST | `/api/alerts/webhook/test` | admin | `{ok:true}`; 412 no webhook; 502 `{error: notify.Reason}` on failed delivery, never the error text |
+| POST | `/api/alerts/webhook/test` | admin | `{ok:true}`; 412 no webhook; 502 `{error: notify.Reason}` on failed delivery, never the error text; one attempt, no retries |
 
 - `GET /healthz` is public: `health.Handler("kypulse", lg, database ping)` from ky-primitives, `ky.health/1`, 200 for ok/degraded and 503 for down, cached 5 s by the lib. It is the route an external monitor should watch; kyPulse does not monitor itself. `NewServer(cfg, st, lg, mon)` takes the logger as its third argument and the `*monitor.Service` as its fourth; `health.Handler` panics on a nil logger.
 

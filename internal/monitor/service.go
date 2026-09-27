@@ -294,7 +294,10 @@ func (s *Service) SendTest(ctx context.Context) error {
 		return ErrNoWebhook
 	}
 	msg := notify.Message{App: "kyPulse", State: "ok", Previous: "ok", Time: s.now(), URL: s.AppURL, Test: true}
-	sendErr := s.Notifier.Send(ctx, cfg, msg)
+	// A test is a diagnostic the admin is waiting on: one attempt, answered within the request.
+	once := *s.Notifier
+	once.Backoff = nil
+	sendErr := once.Send(ctx, cfg, msg)
 	_ = s.Webhooks.SetStatus(ctx, DeliveryStatus{At: s.now(), OK: sendErr == nil, Error: notify.Reason(sendErr)})
 	return sendErr
 }

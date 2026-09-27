@@ -10,7 +10,8 @@ Owns user interface components, service worker caching, PWA installation manifes
 - Web themes default to the Busnes.app cream/light and charcoal/dark palettes with orange accents, following the OS until a browser-local choice is saved. Preserve existing named themes and saved choices.
 - A signed-in user with `must_change_password` sees only password replacement and sign-out. Replacement uses `secureFetch`, returns to login after session revocation, and never exposes the normal navigation before completion.
 - Strict TypeScript type safety without unused imports.
-- The authenticated shell uses a persistent sidebar; the selected page is marked by a quiet surface and slim accent rail, with a horizontal overflow navigation on small screens.
+- The authenticated shell uses a persistent sidebar of `<a>` links; the selected page is marked by a quiet surface, slim accent rail and `aria-current="page"`, with a horizontal overflow navigation on small screens.
+- Navigation is hash-routed (`#/status`, `#/alerts`, `#/apps/<id>`, `#/backup`, `#/settings`) by `src/router.ts`; there is no other navigation state. `App` polls `/api/status` every 15 s for the `AlertBar` shown above every page; pages fetch their own data through `src/monitor.ts` and call `onChanged` after a write. Admin-only controls render only for `role === 'admin'`; the server enforces it.
 - Dynamic theme selection applies `data-theme` attribute to the root HTML document and persists to `localStorage`.
 - Authenticated state-changing requests use `secureFetch` so the `ky_csrf` cookie is mirrored into `X-CSRF-Token`.
 - Register the service worker from the production JS bundle; keep `script-src 'self'` intact.
@@ -19,6 +20,7 @@ Owns user interface components, service worker caching, PWA installation manifes
 
 ## Verification
 - Browser setup: build the frontend, run `go build -o .browser/server ./cmd/server` at the repo root, then `cd web && npx playwright install chromium && npm run test:browser`. CI also installs browser OS dependencies.
+- `browser/monitor.spec.mjs` covers Status, Alerts, app detail and the webhook form against a fake app the spec runs itself; it needs a private IPv4 interface on the runner (the egress guard refuses loopback) and skips without one.
 - `make test-web` or `cd web && npm ci && npm test`, then `npm run build` (vitest with jsdom; `src/pages/Backup.test.tsx` renders the recovery screen against a stubbed status route). Commit `web/dist` after a build; CI diffs it.
 
 ## Shared browser UI

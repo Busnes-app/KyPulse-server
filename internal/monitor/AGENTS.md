@@ -13,11 +13,12 @@ Owns `Service` (Due, Observe, Start, Drain, DueFailed, Silence, SendTest), `Webh
 - Each send runs on a context detached from the loop with a 60 s budget; outcomes are recorded on a context of their own so a cut-off send is still recorded. Every send and failure is an audit row (`alert.sent`, `alert.send_failed`, actor `system`).
 - `RecordPoll` and `RecordEvent` are two statements; a crash between them loses at most one event row, and the next poll re-derives the state.
 - The webhook is sealed under `kypulse:setting:alert_webhook`; `alert_webhook_status` is plaintext and holds no secret.
-- Messages link to `AppURL/#/apps/<id>`; step 2c makes that route exist.
+- Messages link to `AppURL/#/apps/<id>`, the app detail page.
 - Due is computed in Go from `ListTargets`, not in dialect-specific SQL.
 - Silence lives in the target's `silenced_until`/`until_fixed` columns, not in the track JSON: `Silence` writes only those columns, so a poll landing in between never overwrites or loses it. `Track` overlays the columns onto the decoded track for `alerts.Decide`; a recovery that clears `until_fixed` also clears the columns.
 - Status, `notify_error` and audit details hold `notify.Reason(err)`, never `err.Error()`.
 - An unreadable webhook (`Webhooks.Load` returns `notify.ErrUnreadable`, e.g. a rotated deployment key) is a delivery failure, not a silent no-op: logged, recorded in `alert_webhook_status`, `notify_error` `unreadable`, and audited as `alert.send_failed` with `reason=unreadable`.
+- `SendTest` makes one attempt with no retries, so the answer arrives inside the HTTP request.
 
 ## Verification
 - `go test -race ./internal/monitor/`

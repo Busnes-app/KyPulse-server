@@ -407,6 +407,21 @@ func TestSendTestRecordsStatus(t *testing.T) {
 	}
 }
 
+func TestSendTestMakesOneAttempt(t *testing.T) {
+	svc, _, poster, _ := newService(t)
+	poster.codes = []int{500, 500, 500, 500}
+	err := svc.SendTest(context.Background())
+	if err == nil || poster.calls != 1 {
+		t.Fatalf("err=%v calls=%d, want one failed attempt", err, poster.calls)
+	}
+	if notify.Reason(err) != "receiver_500" {
+		t.Fatalf("reason = %q", notify.Reason(err))
+	}
+	if st, ok, _ := svc.Webhooks.Status(context.Background()); !ok || st.OK || st.Error != "receiver_500" {
+		t.Fatalf("status: %+v %v", st, ok)
+	}
+}
+
 func TestObserveIgnoresADeletedTarget(t *testing.T) {
 	svc, _, poster, now := newService(t)
 	observe(svc, "gone", poller.Down, *now) // must not panic or send

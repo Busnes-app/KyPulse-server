@@ -122,8 +122,9 @@ body {
 .app-brand { display: flex; align-items: center; gap: .7rem; padding: .25rem .5rem 1rem; color: var(--ink-strong); font-size: 1.15rem; font-weight: 700; }
 .app-brand img { border-radius: .45rem; flex: none; }
 .app-nav { display: flex; flex-direction: column; gap: .2rem; }
-.app-nav button { justify-content: flex-start; width: 100%; border: 0; border-left: 3px solid transparent; border-radius: .45rem; padding: .6rem .65rem; background: transparent; color: var(--ink); font-size: .86rem; text-align: left; }
-.app-nav button:hover { background: var(--panel-hover); color: var(--ink-strong); }
+.app-nav a, .app-nav button { justify-content: flex-start; width: 100%; border: 0; border-left: 3px solid transparent; border-radius: .45rem; padding: .6rem .65rem; background: transparent; color: var(--ink); font-size: .86rem; text-align: left; }
+.app-nav a:hover, .app-nav button:hover { background: var(--panel-hover); color: var(--ink-strong); }
+.app-nav a { display: inline-flex; align-items: center; gap: 8px; text-decoration: none; font-weight: 600; font-family: var(--font-sans); }
 /* Selected, hover and focus states are supplied by ky-ui/navigation.css. */
 .app-header-actions { display: flex; flex-direction: column; gap: .65rem; margin-top: auto; }
 .app-pair { justify-content: flex-start; width: 100%; font-size: .82rem; }
@@ -133,7 +134,7 @@ body {
 .app-user-copy > div:last-child { color: var(--ink); font-size: .7rem; }
 .app-logout { padding: .45rem; color: var(--danger); }
 .app-main { min-width: 0; }
-@media (max-width: 720px) { .app-shell { display: block; } .app-header { position: sticky; height: auto; padding: .75rem 1rem; border-right: 0; border-bottom: 1px solid var(--line); } .app-brand { padding: 0; } .app-nav { flex-direction: row; overflow-x: auto; } .app-nav button { width: auto; flex: 0 0 auto; border-left: 0; border-bottom: 3px solid transparent; white-space: nowrap; } .app-nav button.active { border-bottom-color: var(--accent); } .app-header-actions { flex-direction: row; margin-top: 0; align-items: center; } .app-pair { width: auto; } .app-user { border-top: 0; border-left: 1px solid var(--line); padding: 0 0 0 .65rem; } .app-user-copy { display: none; } }
+@media (max-width: 720px) { .app-shell { display: block; } .app-header { position: sticky; height: auto; padding: .75rem 1rem; border-right: 0; border-bottom: 1px solid var(--line); } .app-brand { padding: 0; } .app-nav { flex-direction: row; overflow-x: auto; } .app-nav a, .app-nav button { width: auto; flex: 0 0 auto; border-left: 0; border-bottom: 3px solid transparent; white-space: nowrap; } .app-nav a.active, .app-nav button.active { border-bottom-color: var(--accent); } .app-header-actions { flex-direction: row; margin-top: 0; align-items: center; } .app-pair { width: auto; } .app-user { border-top: 0; border-left: 1px solid var(--line); padding: 0 0 0 .65rem; } .app-user-copy { display: none; } }
 
 code, pre, .font-mono {
   font-family: var(--font-mono);
@@ -433,3 +434,45 @@ dialog.modal-window::backdrop {
 }
 .theme-selector:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; }
 .auth-theme { padding: 12px; text-align: right; }
+
+/* ---------- kyPulse: alert bar, status grid, detail ---------- */
+
+.alert-bar { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 16px; padding: 10px 20px; border-bottom: 1px solid var(--line); font-size: 14px; color: var(--ink-strong); }
+.alert-bar-line { display: inline-flex; align-items: center; gap: 8px; }
+.alert-bar a { color: inherit; font-weight: 600; }
+.alert-bar-ok { background: rgba(16, 185, 129, 0.12); color: var(--success); }
+.alert-bar-down { background: rgba(239, 68, 68, 0.14); color: var(--danger); }
+.alert-bar-neutral { background: var(--panel-hover); color: var(--ink); }
+.alert-bar-delivery { color: var(--ink-strong); background: var(--accent-soft); border: 1px solid var(--accent); border-radius: 6px; padding: 2px 8px; font-size: 13px; }
+.alert-bar-link { margin-left: auto; }
+
+.status-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 14px; }
+.status-tile { display: flex; flex-direction: column; gap: 6px; text-align: left; background: var(--panel); border: 1px solid var(--line); border-radius: 8px; padding: 14px 16px; color: var(--ink-strong); font-weight: 400; }
+.status-tile:hover { background: var(--panel-hover); opacity: 1; }
+.status-tile-name { display: flex; align-items: center; gap: 8px; font-weight: 600; font-size: 15px; }
+.status-tile-meta { font-size: 12px; color: var(--ink); }
+.dot { width: 10px; height: 10px; border-radius: 50%; flex: none; background: var(--ink); }
+.dot-ok { background: var(--success); }
+.dot-degraded { background: #f59e0b; }
+.dot-down { background: var(--danger); }
+.dot-pending, .dot-paused { background: var(--line); border: 1px solid var(--ink); }
+.state-ok { color: var(--success); }
+.state-degraded { color: #b45309; }
+.state-down { color: var(--danger); }
+.state-pending, .state-paused { color: var(--ink); }
+
+.banner { display: flex; flex-wrap: wrap; align-items: center; gap: 12px; padding: 16px 20px; border-radius: 8px; border: 1px solid var(--line); margin-bottom: 20px; }
+.banner-ok { background: rgba(16, 185, 129, 0.12); }
+.banner-degraded { background: rgba(245, 158, 11, 0.14); }
+.banner-down { background: rgba(239, 68, 68, 0.14); }
+.banner-pending, .banner-paused { background: var(--panel-hover); }
+.banner h2 { font-size: 20px; text-transform: capitalize; }
+
+.events { width: 100%; border-collapse: collapse; font-size: 13px; }
+.events th, .events td { text-align: left; padding: 8px 10px; border-top: 1px solid var(--line); vertical-align: top; }
+.events th { color: var(--ink); font-weight: 600; font-size: 12px; text-transform: uppercase; letter-spacing: .04em; border-top: 0; }
+.form-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 12px; margin-bottom: 12px; }
+.form-grid label { display: flex; flex-direction: column; gap: 4px; font-size: 13px; color: var(--ink); }
+.form-error { color: var(--danger); font-size: 13px; margin: 0 0 12px; }
+.form-ok { color: var(--success); font-size: 13px; margin: 0 0 12px; }
+@media (max-width: 720px) { .alert-bar { padding: 8px 12px; } .alert-bar-link { margin-left: 0; } }
