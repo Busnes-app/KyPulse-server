@@ -30,7 +30,7 @@ test('production CSP, worker, themes, keyboard and responsive shell', async ({ p
   await page.getByRole('button', { name: 'Sign In', exact: true }).click();
   const nav = page.getByRole('navigation', { name: 'Primary' });
   await expect(nav).toBeVisible();
-  await expect(page.getByRole('heading', { name: /Welcome/ })).toBeVisible();
+  await expect(page.getByRole('heading', { name: 'Status' })).toBeVisible();
   await fits(page);
   const theme = page.getByLabel('Color theme');
   await theme.selectOption('paper');
@@ -49,12 +49,12 @@ test('production CSP, worker, themes, keyboard and responsive shell', async ({ p
   await page.emulateMedia({ colorScheme: 'light' });
   await expect(page.locator('body')).toHaveCSS('background-color', 'rgb(248, 246, 240)');
   await page.emulateMedia({ colorScheme: testInfo.project.use.colorScheme });
-  await nav.getByRole('button').first().focus();
+  await nav.getByRole('link').first().focus();
   await page.keyboard.press('Tab');
-  await expect(nav.getByRole('button').nth(1)).toBeFocused();
-  await expect(nav.getByRole('button').nth(1)).toHaveCSS('outline-style', 'solid');
-  await nav.getByRole('button', { name: 'Settings & DB' }).click();
-  await expect(nav.getByRole('button', { name: 'Settings & DB' })).toHaveAttribute('aria-current', 'page');
+  await expect(nav.getByRole('link').nth(1)).toBeFocused();
+  await expect(nav.getByRole('link').nth(1)).toHaveCSS('outline-style', 'solid');
+  await nav.getByRole('link', { name: 'Settings & DB' }).click();
+  await expect(nav.getByRole('link', { name: 'Settings & DB' })).toHaveAttribute('aria-current', 'page');
   await expect(page.getByRole('heading', { name: 'System Settings & Architecture' })).toBeVisible();
   await fits(page);
   await page.evaluate(() => fetch('/browser-regression-uncached'));

@@ -7,6 +7,15 @@ reports, and never changes the apps it watches.
 
 Design: `docs/superpowers/specs/2026-09-26-kypulse-design.md`.
 
+## Screens
+
+Status shows every watched app as a grid, broken apps first. Alerts lists state transitions,
+deliveries and silences. Each app has a detail page with its current state and history, and
+buttons to silence for 1h, 8h or until fixed. An alert bar surfaces active problems above
+every page. Settings & DB holds the alert webhook form (admin) alongside database info.
+Admins get every screen and control; viewers get Status, Alerts, app detail and a read-only
+Settings & DB.
+
 ## Run
 
 ```sh
