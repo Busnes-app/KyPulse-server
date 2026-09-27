@@ -8,6 +8,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
+	"net/http"
 	"net/http/httptest"
 	"strings"
 	"testing"
@@ -216,6 +217,23 @@ func TestLogReadsAreAdminOnlyAndSanitized(t *testing.T) {
 	w = do(t, srv, "GET", "/api/logs?text=%25%5F", admin)
 	if err := json.Unmarshal(w.Body.Bytes(), &page); err != nil || len(page.Items) != 1 || strings.ContainsAny(page.Items[0].Raw, "\x1b\x7f") {
 		t.Fatalf("literal/sanitize: %d %+v %v", w.Code, page, err)
+	}
+}
+
+func TestLogReadRejectsMalformedQueryEncoding(t *testing.T) {
+	srv, st, _ := setupTestServer(t)
+	admin := loginAs(t, srv, st, "queryadmin", "admin")
+	for _, path := range []string{
+		"/api/logs?text=%GG",
+		"/api/logs?limit=%GG",
+		"/api/logs?app=valid&level=%GG",
+		"/api/activity?actor=%GG",
+		"/api/activity?limit=%GG",
+		"/api/activity?app=valid&outcome=%GG",
+	} {
+		if w := do(t, srv, "GET", path, admin); w.Code != http.StatusBadRequest {
+			t.Errorf("%s: got %d, want 400", path, w.Code)
+		}
 	}
 }
 

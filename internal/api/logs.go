@@ -5,6 +5,7 @@ import (
 	"io"
 	"mime"
 	"net/http"
+	"net/url"
 	"strconv"
 	"strings"
 	"time"
@@ -137,7 +138,10 @@ func parseLogQuery(r *http.Request, activity bool) (logQuery, error) {
 		allowed["level"] = true
 		allowed["text"] = true
 	}
-	v := r.URL.Query()
+	v, err := url.ParseQuery(r.URL.RawQuery)
+	if err != nil {
+		return q, errors.New("invalid query encoding")
+	}
 	for key, values := range v {
 		if !allowed[key] || len(values) != 1 || !utf8.ValidString(values[0]) || strings.ContainsRune(values[0], 0) {
 			return q, errors.New("invalid filter")
