@@ -63,6 +63,12 @@ func newService(t *testing.T) (*monitor.Service, store.Store, *fakePoster, *time
 // newServiceSized starts the sender with a queue of size (0 = default) and drains it on cleanup.
 func newServiceSized(t *testing.T, size int) (*monitor.Service, store.Store, *fakePoster, *time.Time) {
 	t.Helper()
+	return newServiceCtx(t, context.Background(), size)
+}
+
+// newServiceCtx is newServiceSized with the sender running under ctx.
+func newServiceCtx(t *testing.T, ctx context.Context, size int) (*monitor.Service, store.Store, *fakePoster, *time.Time) {
+	t.Helper()
 	cfg, st := testStore(t)
 	w, _ := monitor.NewWebhooks(cfg, st.Settings())
 	if err := w.Save(context.Background(), notify.Config{Preset: notify.Generic, URL: "https://hooks.lan/x"}); err != nil {
@@ -74,7 +80,7 @@ func newServiceSized(t *testing.T, size int) (*monitor.Service, store.Store, *fa
 	svc := &monitor.Service{Store: st, Webhooks: w, Logger: lg, AppURL: "https://pulse.lan",
 		Notifier: &notify.Notifier{Post: poster, Backoff: []time.Duration{time.Millisecond}},
 		Now:      func() time.Time { return now }, QueueSize: size}
-	svc.Start(context.Background())
+	svc.Start(ctx)
 	t.Cleanup(svc.Drain)
 	return svc, st, poster, &now
 }
@@ -289,6 +295,70 @@ func TestQueueOverflowDropsAndRecords(t *testing.T) {
 	}
 	if poster.calls != 2 {
 		t.Fatalf("calls = %d, want a and b only", poster.calls)
+	}
+}
+
+func TestShutdownCancelsQueuedDeliveries(t *testing.T) {
+	ctx, cancel := context.WithCancel(context.Background())
+	svc, st, poster, now := newServiceCtx(t, ctx, 4)
+	release := blockPoster(t, poster, 2)
+	oneDownFromDown(t, st, "a", *now)
+	oneDownFromDown(t, st, "b", *now)
+	observeAsync(svc, "a", poller.Down, *now)
+	<-poster.entered // the sender holds a
+	observeAsync(svc, "b", poller.Down, *now)
+	cancel()  // the process is stopping
+	release() // a finishes
+	svc.Drain()
+	if poster.calls != 1 {
+		t.Fatalf("calls = %d, want a only", poster.calls)
+	}
+	ev, _, _ := st.Targets().ListEvents(context.Background(), "b", 0, 1)
+	if len(ev) != 1 || ev[0].Notified || ev[0].NotifyError != "cancelled" {
+		t.Fatalf("queued event: %+v", ev)
+	}
+	rows, _, _ := st.Audit().ListAuditRecords(context.Background(), 0, 10)
+	var seen bool
+	for _, r := range rows {
+		seen = seen || (r.Action == "alert.send_failed" && r.Resource == "b" && strings.Contains(r.Details, "reason=cancelled"))
+	}
+	if !seen {
+		t.Fatalf("no cancelled audit row: %+v", rows)
+	}
+}
+
+// ctxPoster hangs until its context ends, like a receiver that never answers.
+type ctxPoster struct{ entered chan struct{} }
+
+func (p *ctxPoster) Post(ctx context.Context, _ string, _ string, _ []byte, _ map[string]string) (*egress.Response, error) {
+	p.entered <- struct{}{}
+	<-ctx.Done()
+	return nil, ctx.Err()
+}
+
+func TestShutdownCutsInFlightSendAfterGrace(t *testing.T) {
+	ctx, cancel := context.WithCancel(context.Background())
+	svc, st, _, now := newServiceCtx(t, ctx, 0)
+	poster := &ctxPoster{entered: make(chan struct{}, 1)}
+	svc.Notifier = &notify.Notifier{Post: poster, Backoff: []time.Duration{time.Hour}}
+	svc.ShutdownGrace = 50 * time.Millisecond
+	oneDownFromDown(t, st, "a", *now)
+	observeAsync(svc, "a", poller.Down, *now)
+	<-poster.entered
+	cancel()
+	drained := make(chan struct{})
+	go func() { svc.Drain(); close(drained) }()
+	select {
+	case <-drained:
+	case <-time.After(10 * time.Second):
+		t.Fatal("Drain waited past the shutdown grace")
+	}
+	ev, _, _ := st.Targets().ListEvents(context.Background(), "a", 0, 1)
+	if len(ev) != 1 || ev[0].Notified || ev[0].NotifyError != "cancelled" {
+		t.Fatalf("in-flight event: %+v", ev)
+	}
+	if status, ok, _ := svc.Webhooks.Status(context.Background()); !ok || status.OK || status.Error != "cancelled" {
+		t.Fatalf("status: %+v %v", status, ok)
 	}
 }
 
