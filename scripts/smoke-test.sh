@@ -10,6 +10,7 @@ WORK="$(mktemp -d)"
 PORT="${KYPULSE_SMOKE_PORT:-18080}"
 BASE="http://127.0.0.1:${PORT}"
 ADMIN_PASS="SmokeTestAdminPass123!"
+FINAL_PASS="FinalSmokePassword123!"
 SERVER_PID=""
 FAILURES=0
 
@@ -147,9 +148,9 @@ check "reset login cannot read backup state" "$(status -b "$WORK/cookies" "$BASE
 CSRF="$(awk '$6 == "ky_csrf" { print $7 }' "$WORK/cookies")"
 check "operator password replacement succeeds" \
   "$(status -b "$WORK/cookies" -H "X-CSRF-Token: $CSRF" -H 'Content-Type: application/json' \
-    -d '{"current_password":"OperatorResetPass789!","new_password":"FinalSmokePassword123!"}' "$BASE/api/auth/change-password")" "200"
+    -d '{"current_password":"OperatorResetPass789!","new_password":"'"$FINAL_PASS"'"}' "$BASE/api/auth/change-password")" "200"
 LOGIN_BODY="$(curl -s -c "$WORK/cookies" -H 'Content-Type: application/json' \
-  -d '{"username":"admin","password":"FinalSmokePassword123!"}' "$BASE/api/auth/login")"
+  -d '{"username":"admin","password":"'"$FINAL_PASS"'"}' "$BASE/api/auth/login")"
 contains "reset replacement signs in" "$LOGIN_BODY" '"authenticated":true'
 contains "admin settings include db_driver" "$(curl -s -b "$WORK/cookies" "$BASE/api/settings")" '"db_driver"'
 check "deposit CLI refuses without a key" \
@@ -175,7 +176,7 @@ with sqlite3.connect(sys.argv[1]) as db:
                          created_at, updated_at FROM users WHERE username='admin'""")
 PY
 VIEWER_LOGIN="$(curl -s -c "$WORK/viewer-cookies" -H 'Content-Type: application/json' \
-  -d '{"username":"smoke-viewer","password":"FinalSmokePassword123!"}' "$BASE/api/auth/login")"
+  -d '{"username":"smoke-viewer","password":"'"$FINAL_PASS"'"}' "$BASE/api/auth/login")"
 contains "viewer signs in" "$VIEWER_LOGIN" '"role":"viewer"'
 TARGET_ID="$(curl -s -b "$WORK/cookies" "$BASE/api/targets" | python3 -c 'import json,sys; print(next(t["id"] for t in json.load(sys.stdin)["targets"] if t["name"] == "self"))')"
 PAIRING="$(curl -s -b "$WORK/cookies" -H "X-CSRF-Token: $CSRF" -H 'Content-Type: application/json' \
