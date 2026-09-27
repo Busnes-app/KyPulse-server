@@ -10,10 +10,9 @@ import (
 
 // Target is what the poller needs to know about a watched app.
 type Target struct {
-	ID       string
-	Name     string
-	URL      string
-	Interval time.Duration
+	ID   string
+	Name string
+	URL  string
 }
 
 // Observation is one completed poll, handed to Observe.
@@ -36,6 +35,7 @@ type Poller struct {
 	Workers int
 	Due     func(ctx context.Context, now time.Time) ([]Target, error)
 	Observe func(ctx context.Context, o Observation)
+	OnError func(err error) // a failed Due; may be nil
 
 	once     sync.Once
 	slots    chan struct{}
@@ -53,9 +53,7 @@ func (p *Poller) init() {
 }
 
 // Run ticks until ctx ends, then waits for the polls in flight, so the caller can close the
-// store after Run returns. A tick dispatches every due target it can seat; the rest wait for
-// the next tick rather than queueing, so a burst of slow apps degrades to late polls, never
-// to unbounded goroutines.
+// store after Run returns. Ticks that fire while a Tick is blocked on a worker are dropped.
 func (p *Poller) Run(ctx context.Context, tick time.Duration) {
 	p.init()
 	t := time.NewTicker(tick)
@@ -71,12 +69,16 @@ func (p *Poller) Run(ctx context.Context, tick time.Duration) {
 	}
 }
 
-// Tick dispatches one round and returns without waiting for the polls to finish. A target
-// already in flight is skipped, so a poll that outlives its interval cannot stack.
+// Tick seats every due target, blocking for a free worker, and returns without waiting for
+// the last polls to finish. A target already in flight is skipped, so a poll that outlives
+// its interval cannot stack.
 func (p *Poller) Tick(ctx context.Context, now time.Time) {
 	p.init()
 	due, err := p.Due(ctx, now)
 	if err != nil {
+		if p.OnError != nil {
+			p.OnError(err)
+		}
 		return
 	}
 	for _, tg := range due {
@@ -85,9 +87,9 @@ func (p *Poller) Tick(ctx context.Context, now time.Time) {
 		}
 		select {
 		case p.slots <- struct{}{}:
-		default:
+		case <-ctx.Done():
 			p.inflight.Delete(tg.ID)
-			return // every worker is busy; the rest keep their place until the next tick
+			return
 		}
 		p.wg.Add(1)
 		go p.poll(ctx, tg)

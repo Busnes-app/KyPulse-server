@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"errors"
+	"fmt"
 	"io"
 	"net/url"
 	"strings"
@@ -21,14 +22,20 @@ import (
 )
 
 type fakePoster struct {
-	mu    sync.Mutex
-	sent  []notify.Message // decoded from the generic preset body
-	codes []int
-	err   error // returned by every call when set
-	calls int
+	block   chan struct{} // when set, each call signals entered and waits for block to close
+	entered chan struct{}
+	mu      sync.Mutex
+	sent    []notify.Message // decoded from the generic preset body
+	codes   []int
+	err     error // returned by every call when set
+	calls   int
 }
 
 func (f *fakePoster) Post(_ context.Context, _ string, _ string, body []byte, _ map[string]string) (*egress.Response, error) {
+	if f.block != nil {
+		f.entered <- struct{}{}
+		<-f.block
+	}
 	f.mu.Lock()
 	defer f.mu.Unlock()
 	f.calls++
@@ -50,6 +57,12 @@ func (f *fakePoster) Post(_ context.Context, _ string, _ string, body []byte, _ 
 
 func newService(t *testing.T) (*monitor.Service, store.Store, *fakePoster, *time.Time) {
 	t.Helper()
+	return newServiceSized(t, 0)
+}
+
+// newServiceSized starts the sender with a queue of size (0 = default) and drains it on cleanup.
+func newServiceSized(t *testing.T, size int) (*monitor.Service, store.Store, *fakePoster, *time.Time) {
+	t.Helper()
 	cfg, st := testStore(t)
 	w, _ := monitor.NewWebhooks(cfg, st.Settings())
 	if err := w.Save(context.Background(), notify.Config{Preset: notify.Generic, URL: "https://hooks.lan/x"}); err != nil {
@@ -60,13 +73,31 @@ func newService(t *testing.T) (*monitor.Service, store.Store, *fakePoster, *time
 	now := time.Date(2026, 9, 26, 10, 0, 0, 0, time.UTC)
 	svc := &monitor.Service{Store: st, Webhooks: w, Logger: lg, AppURL: "https://pulse.lan",
 		Notifier: &notify.Notifier{Post: poster, Backoff: []time.Duration{time.Millisecond}},
-		Now:      func() time.Time { return now }}
+		Now:      func() time.Time { return now }, QueueSize: size}
+	svc.Start(context.Background())
+	t.Cleanup(svc.Drain)
 	return svc, st, poster, &now
 }
 
+// observe applies one poll and waits for any delivery it queued.
 func observe(svc *monitor.Service, id string, state poller.State, at time.Time) {
+	observeAsync(svc, id, state, at)
+	monitor.Flush(svc)
+}
+
+func observeAsync(svc *monitor.Service, id string, state poller.State, at time.Time) {
 	svc.Observe(context.Background(), poller.Observation{Target: poller.Target{ID: id, Name: "KyVault"},
 		Result: poller.Result{State: state, Cause: "refused"}, At: at, Latency: 12 * time.Millisecond})
+}
+
+// oneDownFromDown creates a target that is ok with two down polls behind it, so the next down
+// poll is the transition that sends.
+func oneDownFromDown(t *testing.T, st store.Store, id string, at time.Time) {
+	t.Helper()
+	track := fmt.Sprintf(`{"state":"ok","since":%q,"down_streak":2}`, at.Add(-time.Hour).Format(time.RFC3339))
+	if err := st.Targets().CreateTarget(context.Background(), &store.Target{ID: id, Name: id, URL: "https://" + id + "/", IntervalSec: 30, Enabled: true, State: "ok", TrackJSON: track}); err != nil {
+		t.Fatal(err)
+	}
 }
 
 func TestDueHonoursIntervalAndEnabled(t *testing.T) {
@@ -75,7 +106,7 @@ func TestDueHonoursIntervalAndEnabled(t *testing.T) {
 	_ = st.Targets().CreateTarget(ctx, &store.Target{ID: "a", Name: "a", URL: "https://a/", IntervalSec: 30, Enabled: true})
 	_ = st.Targets().CreateTarget(ctx, &store.Target{ID: "b", Name: "b", URL: "https://b/", IntervalSec: 30, Enabled: false})
 	due, err := svc.Due(ctx, *now)
-	if err != nil || len(due) != 1 || due[0].ID != "a" || due[0].Interval != 30*time.Second {
+	if err != nil || len(due) != 1 || due[0].ID != "a" {
 		t.Fatalf("never polled: %+v %v", due, err)
 	}
 	observe(svc, "a", poller.OK, *now)
@@ -199,6 +230,46 @@ func TestSendErrorsNeverCarryTheURL(t *testing.T) {
 		if strings.Contains(v, "SECRETTOKEN") {
 			t.Errorf("%s carries the webhook URL: %q", what, v)
 		}
+	}
+}
+
+func TestSlowDeliveryDoesNotBlockObserve(t *testing.T) {
+	svc, st, poster, now := newService(t)
+	poster.block, poster.entered = make(chan struct{}), make(chan struct{}, 2)
+	oneDownFromDown(t, st, "a", *now)
+	oneDownFromDown(t, st, "b", *now)
+	start := time.Now()
+	observeAsync(svc, "a", poller.Down, *now)
+	observeAsync(svc, "b", poller.Down, *now)
+	if elapsed := time.Since(start); elapsed > 100*time.Millisecond {
+		t.Fatalf("Observe waited on a blocked receiver: %v", elapsed)
+	}
+	<-poster.entered
+	close(poster.block)
+	monitor.Flush(svc)
+	if poster.calls != 2 {
+		t.Fatalf("calls = %d, want 2", poster.calls)
+	}
+}
+
+func TestQueueOverflowDropsAndRecords(t *testing.T) {
+	svc, st, poster, now := newServiceSized(t, 1)
+	poster.block, poster.entered = make(chan struct{}), make(chan struct{}, 3)
+	for _, id := range []string{"a", "b", "c"} {
+		oneDownFromDown(t, st, id, *now)
+	}
+	observeAsync(svc, "a", poller.Down, *now)
+	<-poster.entered                          // the sender holds a
+	observeAsync(svc, "b", poller.Down, *now) // fills the queue
+	observeAsync(svc, "c", poller.Down, *now) // dropped
+	close(poster.block)
+	monitor.Flush(svc)
+	ev, _, _ := st.Targets().ListEvents(context.Background(), "c", 0, 1)
+	if len(ev) != 1 || ev[0].Notified || ev[0].NotifyError != "queue_full" {
+		t.Fatalf("dropped event: %+v", ev)
+	}
+	if poster.calls != 2 {
+		t.Fatalf("calls = %d, want a and b only", poster.calls)
 	}
 }
 

@@ -32,13 +32,16 @@ func newMonitor(cfg *config.Config, st store.Store, lg *logging.Logger) (*monito
 		Workers: cfg.Poll.Workers,
 		Due:     svc.Due,
 		Observe: svc.Observe,
+		OnError: svc.DueFailed,
 	}
 	return svc, p, nil
 }
 
 // monitorLoop runs the poller until ctx ends and closes done once in-flight polls have
-// finished, so runServer can close the store behind it.
-func monitorLoop(ctx context.Context, p *poller.Poller, done chan<- struct{}) {
+// finished and queued alerts are delivered, so runServer can close the store behind it.
+func monitorLoop(ctx context.Context, svc *monitor.Service, p *poller.Poller, done chan<- struct{}) {
 	defer close(done)
+	svc.Start(ctx)
 	p.Run(ctx, pollTick)
+	svc.Drain()
 }

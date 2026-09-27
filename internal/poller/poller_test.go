@@ -3,6 +3,7 @@ package poller
 import (
 	"context"
 	"errors"
+	"fmt"
 	"sync"
 	"testing"
 	"time"
@@ -88,46 +89,77 @@ func TestInFlightTargetIsNotPolledAgain(t *testing.T) {
 	close(g.release)
 }
 
-func TestFullPoolLeavesTargetsForTheNextTick(t *testing.T) {
-	g := &fakeGetter{release: make(chan struct{})}
-	obs := make(chan Observation, 8)
+// dueTargets returns n due targets named t0..t<n-1>.
+func dueTargets(n int) func(context.Context, time.Time) ([]Target, error) {
+	return func(context.Context, time.Time) ([]Target, error) {
+		out := make([]Target, n)
+		for i := range out {
+			out[i] = Target{ID: fmt.Sprint("t", i), URL: fmt.Sprintf("http://t%d.lan/healthz", i)}
+		}
+		return out, nil
+	}
+}
+
+func TestTickSeatsEveryDueTargetWithOneWorker(t *testing.T) {
+	g := &fakeGetter{}
+	obs := make(chan Observation, 2)
+	p := &Poller{Get: g, Workers: 1, Due: dueTargets(2), Observe: func(_ context.Context, o Observation) { obs <- o }}
+	p.Tick(context.Background(), time.Now())
+	seen := map[string]bool{}
+	for range 2 {
+		select {
+		case o := <-obs:
+			seen[o.Target.ID] = true
+		case <-time.After(2 * time.Second):
+			t.Fatalf("one tick seated only %v", seen)
+		}
+	}
+}
+
+func TestThirtyTargetsFourWorkersOneTick(t *testing.T) {
 	var mu sync.Mutex
-	due := []Target{{ID: "a", URL: "http://a.lan/healthz"}, {ID: "b", URL: "http://b.lan/healthz"}}
-	p := &Poller{Get: g, Workers: 1,
-		Due: func(context.Context, time.Time) ([]Target, error) {
-			mu.Lock()
-			defer mu.Unlock()
-			return append([]Target(nil), due...), nil
-		},
-		Observe: func(_ context.Context, o Observation) { obs <- o },
+	seen := map[string]bool{}
+	p := &Poller{Workers: 4, Due: dueTargets(30),
+		Get: getterFunc(func(context.Context, string) (*egress.Response, error) {
+			time.Sleep(10 * time.Millisecond)
+			return &egress.Response{StatusCode: 200}, nil
+		}),
+		Observe: func(_ context.Context, o Observation) { mu.Lock(); seen[o.Target.ID] = true; mu.Unlock() },
 	}
 	p.Tick(context.Background(), time.Now())
-	time.Sleep(20 * time.Millisecond)
-	if g.count("http://a.lan/healthz") != 1 || g.count("http://b.lan/healthz") != 0 {
-		t.Fatalf("one worker must seat exactly one target: a=%d b=%d", g.count("http://a.lan/healthz"), g.count("http://b.lan/healthz"))
-	}
-	close(g.release)
-	<-obs
-	mu.Lock()
-	due = due[1:] // a has been polled; only b is due now
-	mu.Unlock()
-	// The slot is released just after Observe returns; tick until b is seated.
 	deadline := time.Now().Add(2 * time.Second)
-	for g.count("http://b.lan/healthz") == 0 && time.Now().Before(deadline) {
-		p.Tick(context.Background(), time.Now())
+	for {
+		mu.Lock()
+		n := len(seen)
+		mu.Unlock()
+		if n == 30 {
+			return
+		}
+		if time.Now().After(deadline) {
+			t.Fatalf("observed %d of 30 targets after one tick", n)
+		}
 		time.Sleep(5 * time.Millisecond)
 	}
-	select {
-	case o := <-obs:
-		if o.Target.ID != "b" {
-			t.Fatalf("unexpected %+v", o)
-		}
-	case <-time.After(2 * time.Second):
-		t.Fatal("next tick did not poll b")
+}
+
+func TestTickReportsADueError(t *testing.T) {
+	var got error
+	p := &Poller{Get: &fakeGetter{}, Observe: func(context.Context, Observation) {},
+		Due:     func(context.Context, time.Time) ([]Target, error) { return nil, errors.New("db gone") },
+		OnError: func(err error) { got = err },
 	}
-	if g.count("http://b.lan/healthz") != 1 || g.count("http://a.lan/healthz") != 1 {
-		t.Fatalf("counts a=%d b=%d", g.count("http://a.lan/healthz"), g.count("http://b.lan/healthz"))
+	p.Tick(context.Background(), time.Now())
+	if got == nil {
+		t.Fatal("a Due error was not reported")
 	}
+	p.OnError = nil
+	p.Tick(context.Background(), time.Now()) // nil OnError must not panic
+}
+
+type getterFunc func(context.Context, string) (*egress.Response, error)
+
+func (f getterFunc) Get(ctx context.Context, url string) (*egress.Response, error) {
+	return f(ctx, url)
 }
 
 func TestRunStopsWithContextAfterDrainingPolls(t *testing.T) {

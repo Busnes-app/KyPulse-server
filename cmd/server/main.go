@@ -125,7 +125,7 @@ func runServer(lg *logging.Logger) {
 	backupDone := make(chan struct{})
 	go backupLoop(ctx, cfg, st, backupDone)
 	monitorDone := make(chan struct{})
-	go monitorLoop(ctx, pl, monitorDone)
+	go monitorLoop(ctx, mon, pl, monitorDone)
 
 	addr := fmt.Sprintf("%s:%d", cfg.Server.Host, cfg.Server.Port)
 	httpServer := &http.Server{
@@ -199,7 +199,7 @@ func waitForBackupWork(ctx context.Context, backupDone, monitorDone <-chan struc
 	select {
 	case <-monitorDone:
 	case <-ctx.Done():
-		log.Printf("[KYPULSE] abandoning polls still running after %s", backupWaitTimeout)
+		log.Printf("[KYPULSE] abandoning polls and queued alerts still running after %s", backupWaitTimeout)
 	}
 }
 

@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"errors"
 	"log/slog"
+	"sync"
 	"time"
 
 	"github.com/Busnes-app/ky-primitives/logging"
@@ -19,6 +20,8 @@ var (
 	evAlertSent      = logging.DeclareEvent("alert_sent", "alert delivered to the webhook", slog.LevelInfo)
 	evAlertFailed    = logging.DeclareEvent("alert_send_failed", "alert could not be delivered", slog.LevelWarn)
 	evPollStoreError = logging.DeclareEvent("poll_store_error", "poll result could not be stored", slog.LevelError)
+	evAlertDropped   = logging.DeclareEvent("alert_dropped", "alert dropped: the delivery queue is full", slog.LevelWarn)
+	evPollDueFailed  = logging.DeclareEvent("poll_due_failed", "could not list the targets due for a poll", slog.LevelError)
 	fState           = logging.DeclareString("state")
 	fPrevious        = logging.DeclareString("previous")
 )
@@ -31,12 +34,65 @@ var ErrNoWebhook = errors.New("monitor: no webhook is configured")
 
 // Service is the monitoring loop's brain. One per process.
 type Service struct {
-	Store    store.Store
-	Webhooks *Webhooks
-	Notifier *notify.Notifier
-	Logger   *logging.Logger
-	AppURL   string
-	Now      func() time.Time
+	Store     store.Store
+	Webhooks  *Webhooks
+	Notifier  *notify.Notifier
+	Logger    *logging.Logger
+	AppURL    string
+	Now       func() time.Time
+	QueueSize int // deliveries waiting for the sender; default 64
+
+	once   sync.Once
+	queue  chan delivery
+	sender sync.WaitGroup
+}
+
+// delivery is one queued message. done is a flush marker for tests: the sender closes it
+// instead of sending.
+type delivery struct {
+	targetID string
+	eventID  int64
+	msg      notify.Message
+	done     chan struct{}
+}
+
+func (s *Service) init() {
+	s.once.Do(func() {
+		if s.QueueSize <= 0 {
+			s.QueueSize = 64
+		}
+		s.queue = make(chan delivery, s.QueueSize)
+	})
+}
+
+// Start launches the one sender goroutine. Observe only enqueues, so a slow receiver never
+// holds a poll worker.
+func (s *Service) Start(ctx context.Context) {
+	s.init()
+	s.sender.Add(1)
+	go func() {
+		defer s.sender.Done()
+		for d := range s.queue {
+			if d.done != nil {
+				close(d.done)
+				continue
+			}
+			s.send(ctx, d)
+		}
+	}()
+}
+
+// Drain closes the queue and waits for the sender to deliver what is left. Call it once, after
+// the poller has stopped: an Observe after Drain panics.
+func (s *Service) Drain() {
+	s.init()
+	close(s.queue)
+	s.sender.Wait()
+}
+
+// DueFailed is the poller's OnError.
+func (s *Service) DueFailed(err error) {
+	s.Logger.Log(context.Background(), evPollDueFailed, logging.Err(err))
 }
 
 func (s *Service) now() time.Time {
@@ -80,13 +136,13 @@ func (s *Service) Due(ctx context.Context, now time.Time) ([]poller.Target, erro
 		if t.LastPolledAt != nil && now.Before(t.LastPolledAt.Add(interval)) {
 			continue
 		}
-		due = append(due, poller.Target{ID: t.ID, Name: t.Name, URL: t.URL, Interval: interval})
+		due = append(due, poller.Target{ID: t.ID, Name: t.Name, URL: t.URL})
 	}
 	return due, nil
 }
 
-// Observe applies one poll: state machine, persistence, event, webhook. The store is written
-// before anything is sent, so a failed send never loses the state change.
+// Observe applies one poll: state machine, persistence, event, and a queued webhook. The store
+// is written before anything is queued, so a failed send never loses the state change.
 func (s *Service) Observe(ctx context.Context, o poller.Observation) {
 	tg, err := s.Store.Targets().GetTarget(ctx, o.Target.ID)
 	if err != nil {
@@ -134,13 +190,20 @@ func (s *Service) Observe(ctx context.Context, o poller.Observation) {
 	}
 	msg := notify.Message{App: tg.Name, State: ev.ToState, Previous: ev.FromState, Reason: ev.Cause,
 		Time: o.At, URL: s.AppURL + "/#/apps/" + tg.ID, Reminder: decision.Reminder}
-	s.deliver(ctx, tg.ID, ev.ID, msg)
+	s.init()
+	select {
+	case s.queue <- delivery{targetID: tg.ID, eventID: ev.ID, msg: msg}:
+	default:
+		// Drop the newest: the queued ones are older news the operator is already owed.
+		s.Logger.Log(ctx, evAlertDropped, logging.TargetID(tg.ID), logging.Count(1))
+		_ = s.Store.Targets().SetEventNotified(ctx, ev.ID, false, "queue_full")
+	}
 }
 
-// deliver sends one message on a context detached from the poll, records the outcome on the
-// event and in the delivery status, and audits it. It never returns an error: the send's
-// result is data, not a failure of the observation.
-func (s *Service) deliver(ctx context.Context, targetID string, eventID int64, msg notify.Message) {
+// send delivers one message on a context detached from the loop, records the outcome on the
+// event and in the delivery status, and audits it. The result is data, not an error.
+func (s *Service) send(ctx context.Context, d delivery) {
+	targetID, eventID, msg := d.targetID, d.eventID, d.msg
 	sendCtx, cancel := context.WithTimeout(context.WithoutCancel(ctx), sendBudget)
 	defer cancel()
 
@@ -162,9 +225,7 @@ func (s *Service) deliver(ctx context.Context, targetID string, eventID int64, m
 		s.Logger.Log(sendCtx, evAlertSent, logging.TargetID(targetID), fState(msg.State))
 	}
 	_ = s.Webhooks.SetStatus(sendCtx, status)
-	if eventID != 0 {
-		_ = s.Store.Targets().SetEventNotified(sendCtx, eventID, err == nil, status.Error)
-	}
+	_ = s.Store.Targets().SetEventNotified(sendCtx, eventID, err == nil, status.Error)
 	_ = s.Store.Audit().LogAudit(sendCtx, &store.AuditRecord{UserID: "system", Action: action, Resource: targetID, Details: details})
 }
 
