@@ -44,7 +44,7 @@ describe('KyYardCard', () => {
     expect(await screen.findByText(/Unpaired/)).toBeTruthy();
   });
 
-  it('flips from "first pull pending" to "fresh" once the first pull lands, polling every 2s', async () => {
+  it('flips from "first pull pending" to "fresh" once the first pull lands, polling every 5s', async () => {
     vi.useFakeTimers();
     let calls = 0;
     const fn = vi.fn(async (input: RequestInfo | URL, init?: RequestInit) => {
@@ -68,8 +68,40 @@ describe('KyYardCard', () => {
         await vi.advanceTimersByTimeAsync(0);
       });
       expect(screen.getByText('first pull pending')).toBeTruthy();
-      await act(async () => { await vi.advanceTimersByTimeAsync(2000); });
+      await act(async () => { await vi.advanceTimersByTimeAsync(4999); });
+      expect(screen.getByText('first pull pending')).toBeTruthy();
+      await act(async () => { await vi.advanceTimersByTimeAsync(1); });
       expect(screen.getByText('fresh')).toBeTruthy();
+    } finally {
+      vi.useRealTimers();
+    }
+  });
+
+  it('keeps polling past 30s while pending, and stops on unpair', async () => {
+    vi.useFakeTimers();
+    let paired = true;
+    const fn = vi.fn(async (input: RequestInfo | URL, init?: RequestInit) => {
+      const key = `${init?.method ?? 'GET'} ${String(input)}`;
+      if (key === 'GET /api/kyyard') return new Response(JSON.stringify(paired ? { paired: true, stale: true, fetched_at: null } : unpaired));
+      if (key === 'DELETE /api/kyyard') { paired = false; return new Response(null, { status: 204 }); }
+      throw new Error(key);
+    });
+    vi.stubGlobal('fetch', fn);
+    vi.stubGlobal('confirm', vi.fn(() => true));
+    const gets = () => fn.mock.calls.filter(([u, init]) => String(u) === '/api/kyyard' && !(init as RequestInit | undefined)?.method).length;
+    try {
+      render(<KyYardCard onChanged={() => {}} />);
+      await act(async () => { await vi.advanceTimersByTimeAsync(0); });
+      await act(async () => { await vi.advanceTimersByTimeAsync(60_000); });
+      expect(gets()).toBe(1 + 12);
+      await act(async () => {
+        fireEvent.click(screen.getByRole('button', { name: /Unpair/ }));
+        await vi.advanceTimersByTimeAsync(0);
+      });
+      expect(screen.getByText(/Unpaired/)).toBeTruthy();
+      const after = gets();
+      await act(async () => { await vi.advanceTimersByTimeAsync(30_000); });
+      expect(gets()).toBe(after);
     } finally {
       vi.useRealTimers();
     }

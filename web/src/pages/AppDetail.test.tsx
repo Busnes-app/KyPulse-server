@@ -86,7 +86,8 @@ describe('AppDetail', () => {
     const facts = {
       link: 'kyvault', endpoint_id: 'ep_1', endpoint_name: 'ep_1', container_id: 'c1', name: 'kyvault', image: 'kyvault:latest',
       state: 'exited', status: 'Exited (1) 2 minutes ago', health: 'unhealthy', exit_code: 1, observed_at: '2026-09-27T09:59:00Z',
-      memory_bytes: 104857600, memory_limit: 0, restart_count: 5, restarts_last_hour: 2, stale: false,
+      endpoint_offline: false, has_sample: true, sample_at: new Date(Date.now() - 3 * 60_000).toISOString(),
+      memory_bytes: 104857600, memory_limit: 0, restart_count: 5, restarts_last_hour: 2, history_minutes: 60, stale: false,
     };
     const fn = vi.fn(async (input: RequestInfo | URL) => {
       const key = String(input);
@@ -100,6 +101,7 @@ describe('AppDetail', () => {
     expect(screen.getByText('unhealthy')).toBeTruthy();
     expect(screen.getByText(/exit 1/)).toBeTruthy();
     expect(screen.getByText(/in the last hour/)).toBeTruthy();
+    expect(screen.getAllByText(/sampled 3m ago/).length).toBeGreaterThan(0);
   });
 
   it('says the linked container was not seen in KyYard when paired but no facts', async () => {

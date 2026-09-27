@@ -21,9 +21,11 @@ export const TargetForm: React.FC<TargetFormProps> = ({ initial, submitLabel, su
   const [error, setError] = useState('');
   const [busy, setBusy] = useState(false);
 
-  const useSuggestion = (s: Suggestion) => {
-    setContainer(s.link);
-    if (!name.trim()) setName(s.name);
+  // Picking a datalist entry (an exact link match) prefills an empty name.
+  const pickContainer = (value: string) => {
+    setContainer(value);
+    const s = suggestions?.find((x) => x.link === value);
+    if (s && !name.trim()) setName(s.name);
   };
 
   const submit = async (e: React.FormEvent) => {
@@ -49,7 +51,7 @@ export const TargetForm: React.FC<TargetFormProps> = ({ initial, submitLabel, su
           <input type="checkbox" style={{ width: 'auto' }} checked={enabled} onChange={(e) => setEnabled(e.target.checked)} />Enabled
         </label>
         <label>KyYard container
-          <input list="kyyard-suggestions" value={container} onChange={(e) => setContainer(e.target.value)} placeholder="endpoint/name" />
+          <input list="kyyard-suggestions" value={container} onChange={(e) => pickContainer(e.target.value)} placeholder="endpoint/name" />
         </label>
         {suggestions && suggestions.length > 0 && (
           <datalist id="kyyard-suggestions">
@@ -57,16 +59,6 @@ export const TargetForm: React.FC<TargetFormProps> = ({ initial, submitLabel, su
           </datalist>
         )}
       </div>
-      {suggestions && suggestions.length > 0 && (
-        <div className="dr-hint">
-          {suggestions.map((s) => (
-            <span key={s.link} style={{ marginRight: 8 }}>
-              <span className="dr-mono">{s.link}</span>{' '}
-              <button type="button" className="btn-secondary" aria-label={`Use ${s.link}`} onClick={() => useSuggestion(s)}>Use</button>
-            </span>
-          ))}
-        </div>
-      )}
       {error && <p className="form-error" role="alert">{error}</p>}
       <div className="dr-actions">
         <button type="submit" disabled={busy}>{busy ? <Loader2 size={14} className="animate-spin" /> : null}{busy ? 'Saving…' : submitLabel}</button>

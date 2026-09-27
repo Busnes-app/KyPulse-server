@@ -114,10 +114,15 @@ export interface ContainerFacts {
   health: string;
   exit_code?: number;
   observed_at: string;
+  endpoint_offline: boolean;
+  // Memory and restarts mean something only when has_sample; KyYard samples running containers only.
+  has_sample: boolean;
+  sample_at?: string;
   memory_bytes: number;
   memory_limit: number;
   restart_count: number;
   restarts_last_hour: number;
+  history_minutes: number;
   stale: boolean;
 }
 

@@ -74,7 +74,7 @@ describe('Status', () => {
     expect(await screen.findByText(/No apps are watched yet/)).toBeTruthy();
   });
 
-  it('prefills name and container from a KyYard suggestion', async () => {
+  it('prefills an empty name when a KyYard datalist entry is picked', async () => {
     const fetchMock = stub([
       [/GET \/api\/targets$/, { targets: [] }],
       [/GET \/api\/kyyard\/containers$/, [{ link: 'ep_1/kyvault', endpoint_name: 'ep_1', name: 'kyvault', image: 'kyvault:latest', state: 'running' }]],
@@ -82,7 +82,10 @@ describe('Status', () => {
     ]);
     render(<Status user={{ role: 'admin' }} onChanged={() => {}} />);
     fireEvent.click(await screen.findByRole('button', { name: /Add app/ }));
-    fireEvent.click(await screen.findByRole('button', { name: 'Use ep_1/kyvault' }));
+    await waitFor(() => expect(fetchMock.mock.calls.some(([u]) => String(u) === '/api/kyyard/containers')).toBe(true));
+    expect(screen.queryByRole('button', { name: /Use/ })).toBeNull();
+    await waitFor(() => expect(document.querySelector('#kyyard-suggestions option[value="ep_1/kyvault"]')).toBeTruthy());
+    fireEvent.change(screen.getByLabelText('KyYard container'), { target: { value: 'ep_1/kyvault' } });
     expect((screen.getByLabelText('Name') as HTMLInputElement).value).toBe('kyvault');
     expect((screen.getByLabelText('KyYard container') as HTMLInputElement).value).toBe('ep_1/kyvault');
     fireEvent.change(screen.getByLabelText('Health URL'), { target: { value: 'https://kyvault.lan/healthz' } });
