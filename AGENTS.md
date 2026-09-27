@@ -14,6 +14,7 @@ Design authority: `docs/superpowers/specs/2026-09-26-kypulse-design.md`. Plans l
 - `cmd/server/`: process entry, CLI subcommands (`init-admin`, `backup-drill`,
   `export-capsule`, `deposit`, `restore`, `audit-verify`, `version`), the log bridge, the
   backup scheduler and the KyYard pull loop.
+- `cmd/kypulse-send/`: sender pairing CLI; input commands arrive with their readers.
 - `internal/`: one package per concern; each has its own AGENTS.md.
 - `internal/egress`, `internal/poller`, `internal/alerts`, `internal/notify`, `internal/monitor`,
   `internal/kyyard`: the monitoring backend; each has its own AGENTS.md.
@@ -73,6 +74,7 @@ Design authority: `docs/superpowers/specs/2026-09-26-kypulse-design.md`. Plans l
 - `internal/testdb/AGENTS.md`: isolated test databases.
 - `internal/logstore/AGENTS.md`: bounded log parsing and display sanitization.
 - `internal/ingest/AGENTS.md`: bounded NDJSON batch validation.
+- `internal/sender/AGENTS.md`: sender pairing, owned state, bounded delivery and checkpoints.
 - `internal/egress/AGENTS.md`: the one outbound HTTP client.
 - `internal/poller/AGENTS.md`: health polling and response normalisation.
 - `internal/alerts/AGENTS.md`: alert thresholds, transitions, reminders, silences.
