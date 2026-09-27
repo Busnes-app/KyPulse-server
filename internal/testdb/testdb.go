@@ -7,6 +7,7 @@ package testdb
 
 import (
 	"context"
+	"crypto/rand"
 	"database/sql"
 	"os"
 	"path/filepath"
@@ -17,6 +18,16 @@ import (
 	"github.com/google/uuid"
 )
 
+// auditKey mints a per-test chain key; the store refuses to open without one.
+func auditKey(t *testing.T) []byte {
+	t.Helper()
+	key := make([]byte, 32)
+	if _, err := rand.Read(key); err != nil {
+		t.Fatalf("testdb: audit key: %v", err)
+	}
+	return key
+}
+
 // Config returns a database config pointing at an isolated, empty database.
 func Config(t *testing.T) config.DatabaseConfig {
 	t.Helper()
@@ -24,8 +35,9 @@ func Config(t *testing.T) config.DatabaseConfig {
 	dsn := os.Getenv("KYPULSE_TEST_POSTGRES_DSN")
 	if dsn == "" {
 		return config.DatabaseConfig{
-			Driver: "sqlite",
-			DSN:    filepath.Join(t.TempDir(), "test.db"),
+			Driver:   "sqlite",
+			DSN:      filepath.Join(t.TempDir(), "test.db"),
+			AuditKey: auditKey(t),
 		}
 	}
 	return postgresConfig(t, dsn)
@@ -57,7 +69,8 @@ func postgresConfig(t *testing.T, dsn string) config.DatabaseConfig {
 	}
 
 	return config.DatabaseConfig{
-		Driver: "postgres",
-		DSN:    dsn + sep + "search_path=" + schema,
+		Driver:   "postgres",
+		DSN:      dsn + sep + "search_path=" + schema,
+		AuditKey: auditKey(t),
 	}
 }
