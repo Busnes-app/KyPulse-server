@@ -66,7 +66,7 @@ type batch struct {
 type result struct{ err error }
 
 func itemSize(item Item) int {
-	return len(item.Record.Line) + len(item.Position.Input) + len(item.Position.Timestamp) + len(item.Position.Fingerprint) + 128
+	return len(item.Record.Line) + len(item.Position.Input) + len(item.Position.Stream) + len(item.Position.Timestamp) + len(item.Position.Fingerprint) + 128
 }
 
 func clip(item Item) Item {
@@ -190,7 +190,7 @@ func (s *Sender) Run(ctx context.Context, input <-chan Item) error {
 				continue
 			}
 			item = clip(item)
-			if item.Position.Kind != "file" && item.Position.Kind != "docker" && item.Position.Kind != "stdin" || item.Position.Input == "" || len(item.Position.Input) > 512 || len(item.Position.Timestamp) > 64 {
+			if item.Position.Kind != "file" && item.Position.Kind != "docker" && item.Position.Kind != "stdin" || item.Position.Input == "" || len(item.Position.Input) > 512 || len(item.Position.Timestamp) > 64 || item.Position.Kind == "docker" && item.Position.Stream != "stdout" && item.Position.Stream != "stderr" {
 				return errors.New("sender: invalid input position")
 			}
 			key := PositionKey(item.Position)

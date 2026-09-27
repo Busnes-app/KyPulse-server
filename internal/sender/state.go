@@ -21,6 +21,7 @@ type Position struct {
 	Offset      int64  `json:"offset,omitempty"`
 	Fingerprint string `json:"fingerprint,omitempty"`
 	Timestamp   string `json:"timestamp,omitempty"`
+	Stream      string `json:"stream,omitempty"`
 	Ordinal     int    `json:"ordinal,omitempty"`
 }
 
@@ -30,7 +31,12 @@ type State struct {
 	Positions map[string]Position `json:"positions"`
 }
 
-func PositionKey(p Position) string { return p.Kind + ":" + p.Input }
+func PositionKey(p Position) string {
+	if p.Kind == "docker" {
+		return p.Kind + ":" + p.Input + ":" + p.Stream
+	}
+	return p.Kind + ":" + p.Input
+}
 
 func DefaultStateDir() (string, error) {
 	if base := os.Getenv("XDG_STATE_HOME"); base != "" {

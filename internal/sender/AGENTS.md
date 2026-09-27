@@ -7,8 +7,8 @@ Pairs a source and delivers bounded NDJSON batches with acknowledged input posit
 ## Ownership
 
 `pair.go` claims a source. `state.go` owns owner-only state, token and Linux lifetime lock.
-`sender.go` owns queueing, overflow markers, retry and checkpoint transitions. `file.go`
-and `stdin.go` feed `Item` values into `Run`; Docker input is a later task.
+`sender.go` owns queueing, overflow markers, retry and checkpoint transitions. `file.go`,
+`stdin.go` and `docker.go` feed `Item` values into `Run`.
 
 ## Local Contracts
 
@@ -19,6 +19,10 @@ and `stdin.go` feed `Item` values into `Run`; Docker input is a later task.
   siblings for a matching renamed file; missing or mismatched history replays from zero
   with a gap marker. Truncation resets to zero. Identical suffixes and a truncate and
   regrow wholly between polls remain indistinguishable to this observer.
+- Docker resolves each configured name to an immutable container ID. Checkpoints key by
+  ID and stdout/stderr stream, with an inclusive timestamp and equal-time ordinal for
+  each stream. TTY logs are a single raw stdout stream. Docker history may be rotated or
+  unavailable, so source gaps remain possible even with an acknowledged checkpoint.
 - Stdin and the outage queue live in memory and cannot survive a crash. File and Docker
   checkpoints replay only while upstream history exists. Overflow deliberately drops
   records and emits a marker, so delivery has no unconditional no-loss guarantee.

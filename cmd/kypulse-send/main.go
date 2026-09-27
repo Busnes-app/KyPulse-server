@@ -10,6 +10,7 @@ import (
 	"os"
 	"os/signal"
 	"path/filepath"
+	"strings"
 	"sync"
 	"syscall"
 	"time"
@@ -48,10 +49,7 @@ func runWith(args []string, stdin io.ReadCloser, http sender.HTTP) error {
 	if len(args) == 0 {
 		return errors.New("usage: kypulse-send pair|file|docker|stdin")
 	}
-	if args[0] == "docker" {
-		return fmt.Errorf("sender: %s input is not available in this build", args[0])
-	}
-	if args[0] != "pair" && args[0] != "file" && args[0] != "stdin" {
+	if args[0] != "pair" && args[0] != "file" && args[0] != "stdin" && args[0] != "docker" {
 		return fmt.Errorf("sender: unknown command %s", args[0])
 	}
 	dir, err := sender.DefaultStateDir()
@@ -65,6 +63,8 @@ func runWith(args []string, stdin io.ReadCloser, http sender.HTTP) error {
 	name := flags.String("name", "", "source name")
 	stateDir := flags.String("state-dir", dir, "sender state directory")
 	path := flags.String("path", "", "file to follow")
+	containers := flags.String("container", "", "comma-separated Docker containers")
+	socket := flags.String("socket", "/var/run/docker.sock", "Docker Unix socket")
 	if err := flags.Parse(args[1:]); err != nil {
 		return err
 	}
@@ -72,6 +72,15 @@ func runWith(args []string, stdin io.ReadCloser, http sender.HTTP) error {
 		return errors.New("sender: unexpected arguments")
 	}
 	if args[0] != "pair" {
+		if args[0] == "docker" && *containers == "" {
+			return errors.New("sender: --container is required")
+		}
+		if args[0] != "docker" && (*containers != "" || *socket != "/var/run/docker.sock") {
+			return errors.New("sender: Docker flags are only valid for docker")
+		}
+		if args[0] == "docker" && *path != "" {
+			return errors.New("sender: --path is only valid for file")
+		}
 		if args[0] == "file" && *path == "" {
 			return errors.New("sender: --path is required")
 		}
@@ -87,10 +96,10 @@ func runWith(args []string, stdin io.ReadCloser, http sender.HTTP) error {
 				return err
 			}
 		}
-		return runInput(args[0], *path, *stateDir, stdin, http)
+		return runInput(args[0], *path, *containers, *socket, *stateDir, stdin, http)
 	}
-	if *path != "" {
-		return errors.New("sender: --path is only valid for file")
+	if *path != "" || *containers != "" || *socket != "/var/run/docker.sock" {
+		return errors.New("sender: input flags are only valid for inputs")
 	}
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
@@ -102,7 +111,7 @@ func runWith(args []string, stdin io.ReadCloser, http sender.HTTP) error {
 	return nil
 }
 
-func runInput(kind, path, dir string, stdin io.ReadCloser, http sender.HTTP) error {
+func runInput(kind, path, containers, socket, dir string, stdin io.ReadCloser, http sender.HTTP) error {
 	state, token, err := sender.LoadState(dir)
 	if err != nil {
 		return err
@@ -114,6 +123,37 @@ func runInput(kind, path, dir string, stdin io.ReadCloser, http sender.HTTP) err
 	defer stop()
 	readerCtx, cancelReader := context.WithCancel(signalCtx)
 	defer cancelReader()
+	var ids []string
+	if kind == "docker" {
+		names := map[string]bool{}
+		for _, name := range strings.Split(containers, ",") {
+			name = strings.TrimSpace(name)
+			if name == "" {
+				return errors.New("sender: empty Docker container name")
+			}
+			names[name] = true
+		}
+		if len(names) > 32 {
+			return errors.New("sender: too many Docker containers (max 32)")
+		}
+		seenNames := map[string]bool{}
+		seenIDs := map[string]bool{}
+		for _, name := range strings.Split(containers, ",") {
+			name = strings.TrimSpace(name)
+			if seenNames[name] {
+				continue
+			}
+			id, err := sender.ResolveDocker(readerCtx, socket, name)
+			if err != nil {
+				return err
+			}
+			if !seenIDs[id] {
+				ids = append(ids, id)
+				seenIDs[id] = true
+			}
+			seenNames[name] = true
+		}
+	}
 	deliveryCtx, cancelDelivery := context.WithCancel(context.Background())
 	defer cancelDelivery()
 	items := make(chan sender.Item, 128)
@@ -129,10 +169,24 @@ func runInput(kind, path, dir string, stdin io.ReadCloser, http sender.HTTP) err
 	}
 	go func() {
 		defer close(items)
-		if kind == "stdin" {
+		switch kind {
+		case "stdin":
 			readerDone <- sender.ReadStdin(readerCtx, stdin, items)
-		} else {
+		case "file":
 			readerDone <- sender.ReadFile(readerCtx, path, state.Positions[sender.PositionKey(sender.Position{Kind: "file", Input: path})], items)
+		case "docker":
+			results := make(chan error, len(ids))
+			for _, id := range ids {
+				go func() { results <- sender.FollowDocker(readerCtx, socket, id, state.Positions, items) }()
+			}
+			var first error
+			for range ids {
+				if err := <-results; err != nil && first == nil {
+					first = err
+					cancelReader()
+				}
+			}
+			readerDone <- first
 		}
 	}()
 	s := sender.Sender{HTTP: http, StateDir: dir, Token: token, State: state}

@@ -16,7 +16,8 @@ Design: [`docs/superpowers/specs/2026-09-26-kypulse-design.md`](docs/superpowers
 | KyYard pairing, container facts, stale marking | done |
 | kyPulse's own tamper-evident audit trail | done |
 | Source pairing, log ingest, admin log and activity APIs, retention | done |
-| `kypulse-send`, Logs and Activity tabs, KyYard log and audit-feed pulls | planned (client build step) |
+| `kypulse-send` Linux sender | done |
+| Logs and Activity tabs, KyYard log and audit-feed pulls | planned (client build step) |
 
 ## Quick start
 
@@ -88,6 +89,42 @@ limited to five attempts per minute per client IP and 30 globally; 429 also incl
 `Retry-After`. Admins can read `GET /api/logs` and `GET /api/activity` with descending ID
 pages (`limit` defaults to 100, maximum 200; `before_id` is exclusive). Both return
 `{"items":[...],"next_before_id":0}` when no next page exists; viewers get 403.
+
+### Linux sender
+
+`make build` produces `kypulse` and `kypulse-send`. Pair a source using the admin's
+six-digit code, then run one input mode with the same owner-only state directory:
+
+```sh
+kypulse-send pair --url https://pulse.example.com --code 123456 --name host-app
+kypulse-send file --path /var/log/app.log
+app 2>&1 | kypulse-send stdin
+kypulse-send docker --container app,worker --socket /var/run/docker.sock
+```
+
+The sender requires Linux. Its default state is `$XDG_STATE_HOME/kypulse-send` or
+`~/.local/state/kypulse-send`; the directory is mode 0700, the token and checkpoint are
+mode 0600, and one process holds its lock. Use `--state-dir` on each command for another
+source. kyPulse can revoke a source by deleting it from the admin source list, after
+which delivery gets 401. TLS uses the host's normal system root certificates.
+
+One bounded queue combines all configured inputs. It sends every 2 s or at 500 lines,
+splitting earlier at the encoded 1 MiB request limit. Up to 16 MiB is held in memory;
+overflow discards oldest lines and sends a `dropped N lines` marker. Checkpoints advance
+only after a successful request. A crash can replay acknowledged lines when the checkpoint
+was not saved; stdin and the queue are lost on restart. File input follows rename rotation
+and truncation, but deleted history and an indistinguishable inode reuse can leave gaps or
+duplicates. Docker resolves names to immutable IDs and follows stdout and stderr separately,
+up to 32 distinct containers. It requests history inclusively from the earliest saved
+Unix-second timestamp, then skips only acknowledged equal-time line ordinals in each stream.
+Docker log rotation or unavailable history can leave gaps that its API cannot prove; the
+sender reports malformed or oversized frames as errors or gap markers. A TTY container has
+one merged raw stdout stream.
+
+Docker socket access is root-equivalent. Prefer a read-only socket proxy exposing only
+`/version`, versioned container inspect and logs routes. Mounting a Docker socket with `:ro`
+does not make its API read-only. The sender accepts only a local Unix socket, never a remote
+Docker URL.
 
 ## Watching apps
 

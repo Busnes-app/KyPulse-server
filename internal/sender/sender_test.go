@@ -323,3 +323,33 @@ func TestCancellationStopsRetry(t *testing.T) {
 		t.Fatalf("calls=%d err=%v", calls, err)
 	}
 }
+
+func TestDockerStreamsShareQueueButCheckpointIndependently(t *testing.T) {
+	dir := filepath.Join(t.TempDir(), "state")
+	calls := 0
+	s := Sender{HTTP: postFunc(func(body []byte) (*egress.Response, error) {
+		calls++
+		if calls == 2 {
+			return &egress.Response{StatusCode: 503}, nil
+		}
+		return &egress.Response{StatusCode: 204}, nil
+	}), StateDir: dir, Token: make([]byte, 32), State: State{URL: "https://example.com", SourceID: "one", Positions: map[string]Position{}}, wait: func(context.Context, time.Duration) error { return nil }}
+	prepareSender(t, &s)
+	items := make(chan Item, 501)
+	quiet := Position{Kind: "docker", Input: "quiet", Stream: "stderr", Timestamp: "2026-09-27T12:00:00Z", Ordinal: 1}
+	items <- Item{Record: ingest.Record{Line: "quiet"}, Position: quiet}
+	for i := 1; i <= 500; i++ {
+		items <- Item{Record: ingest.Record{Line: "busy"}, Position: Position{Kind: "docker", Input: "busy", Stream: "stdout", Timestamp: "2026-09-27T12:00:00Z", Ordinal: i}}
+	}
+	close(items)
+	if err := s.Run(context.Background(), items); err != nil {
+		t.Fatal(err)
+	}
+	saved, _, err := LoadState(dir)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if calls < 3 || saved.Positions[PositionKey(quiet)] != quiet || saved.Positions["docker:busy:stdout"].Ordinal != 500 || len(saved.Positions) != 2 {
+		t.Fatalf("calls=%d positions=%+v", calls, saved.Positions)
+	}
+}

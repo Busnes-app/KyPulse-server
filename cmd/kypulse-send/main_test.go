@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"errors"
+	"fmt"
 	"io"
 	"path/filepath"
 	"strings"
@@ -99,5 +100,24 @@ func TestCLITerminalFailureJoinsStdin(t *testing.T) {
 		}
 	case <-time.After(4 * time.Second):
 		t.Fatal("sender failed to stop reader")
+	}
+}
+
+func TestDockerContainerLimitBeforeSocketAccess(t *testing.T) {
+	dir := filepath.Join(t.TempDir(), "state")
+	state := sender.State{URL: "https://example.com", SourceID: "test", Positions: map[string]sender.Position{}}
+	if err := sender.SaveState(dir, state); err != nil {
+		t.Fatal(err)
+	}
+	if err := keyfile.Store(filepath.Join(dir, "token"), make([]byte, 32), keyfile.Hex); err != nil {
+		t.Fatal(err)
+	}
+	var names []string
+	for i := range 33 {
+		names = append(names, fmt.Sprintf("container-%d", i))
+	}
+	err := runWith([]string{"docker", "--state-dir", dir, "--container", strings.Join(names, ","), "--socket", "/missing/docker.sock"}, nil, &fakeHTTP{})
+	if err == nil || !strings.Contains(err.Error(), "max 32") {
+		t.Fatalf("limit: %v", err)
 	}
 }
