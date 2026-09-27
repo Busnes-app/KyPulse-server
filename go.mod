@@ -5,7 +5,6 @@ go 1.26.6
 require (
 	github.com/Busnes-app/ky-primitives v0.9.0
 	github.com/coreos/go-oidc/v3 v3.21.0
-	github.com/elimity-com/scim v0.0.0-20260728105928-2641426a1539
 	github.com/google/uuid v1.6.0
 	github.com/jackc/pgx/v5 v5.11.0
 	golang.org/x/oauth2 v0.37.0
@@ -21,10 +20,7 @@ require (
 	github.com/jackc/puddle/v2 v2.2.2 // indirect
 	github.com/mattn/go-isatty v0.0.24 // indirect
 	github.com/ncruces/go-strftime v1.0.0 // indirect
-	github.com/q-uint/parser v0.3.1 // indirect
-	github.com/q-uint/xsd-datetime v1.0.0 // indirect
 	github.com/remyoudompheng/bigfft v0.0.0-20230129092748-24d4a6f8daec // indirect
-	github.com/scim2/filter-parser/v2 v2.3.1 // indirect
 	golang.org/x/crypto v0.55.0 // indirect
 	golang.org/x/sync v0.22.0 // indirect
 	golang.org/x/text v0.41.0 // indirect

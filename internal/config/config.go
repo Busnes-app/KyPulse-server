@@ -20,7 +20,6 @@ type Config struct {
 	Database DatabaseConfig `json:"database"`
 	Security SecurityConfig `json:"security"`
 	SSO      SSOConfig      `json:"sso"`
-	SCIM     SCIMConfig     `json:"scim"`
 	Backup   BackupConfig   `json:"backup"`
 	Captcha  CaptchaConfig  `json:"captcha"`
 }
@@ -71,12 +70,6 @@ type SSOConfig struct {
 	SAMLEntityID        string `json:"saml_entity_id"`
 	SAMLMetadataURL     string `json:"saml_metadata_url"`
 	AutoProvision       bool   `json:"auto_provision"`
-}
-
-// SCIMConfig holds settings for RFC 7643/7644 inbound user provisioning.
-type SCIMConfig struct {
-	Enabled     bool   `json:"enabled"`
-	BearerToken string `json:"bearer_token"`
 }
 
 // BackupConfig holds parameters for KyBackup capsules & recovery drills.
@@ -200,10 +193,6 @@ func LoadFromEnv() (*Config, error) {
 			SAMLEntityID:        getEnv("KYPULSE_SAML_ENTITY_ID", ""),
 			SAMLMetadataURL:     getEnv("KYPULSE_SAML_METADATA_URL", ""),
 			AutoProvision:       getEnvBool("KYPULSE_SSO_AUTO_PROVISION", true),
-		},
-		SCIM: SCIMConfig{
-			Enabled:     getEnvBool("KYPULSE_SCIM_ENABLED", true),
-			BearerToken: getEnv("KYPULSE_SCIM_TOKEN", generateRandomHex(24)),
 		},
 		Backup: BackupConfig{
 			Dir:                  getEnv("KYPULSE_BACKUP_DIR", ""),

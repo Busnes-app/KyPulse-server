@@ -52,7 +52,6 @@ services:
       # which trusts every other container). 0.0.0.0/0 and ::/0 are refused at startup.
       # - KYPULSE_TRUSTED_PROXIES=172.18.0.2/32
       - KYPULSE_SSO_ENABLED=true
-      - KYPULSE_SCIM_ENABLED=true
     volumes:
       - ./data:/app/data
       - ./backups:/app/backups

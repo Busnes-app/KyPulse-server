@@ -13,8 +13,6 @@ import (
 	"github.com/Busnes-app/ky-primitives/recoveryclient"
 	"github.com/Busnes-app/kypulse-server/internal/auth"
 	"github.com/Busnes-app/kypulse-server/internal/config"
-	"github.com/Busnes-app/kypulse-server/internal/devices"
-	"github.com/Busnes-app/kypulse-server/internal/scim"
 	"github.com/Busnes-app/kypulse-server/internal/sso"
 	"github.com/Busnes-app/kypulse-server/internal/store"
 	"github.com/Busnes-app/kypulse-server/web"
@@ -31,11 +29,9 @@ type Server struct {
 	config     *config.Config
 	store      store.Store
 	sessions   *auth.SessionManager
-	pairing    *devices.PairingService
 	kysignon   *sso.KySignOnClient
 	oidc       *sso.GenericOIDCClient
 	saml       *sso.SAMLServiceProvider
-	scim       *scim.Server
 	recovery   recoveryClient
 	mux        *http.ServeMux
 	attemptsMu sync.Mutex
@@ -131,22 +127,18 @@ const attemptsCap = 10000
 
 func NewServer(cfg *config.Config, st store.Store) *Server {
 	sessions := auth.NewSessionManager(st, cfg.Security)
-	pairing := devices.NewPairingService(st, cfg.Server.AppName, cfg.Server.AppURL)
 	kysignon := sso.NewKySignOnClient(cfg.SSO, st)
 	oidc := sso.NewGenericOIDCClient(cfg.SSO, st)
 	saml := sso.NewSAMLServiceProvider(cfg.SSO.SAMLEntityID, cfg.Server.AppURL+"/saml/acs")
-	scimSrv := scim.NewServer(st, cfg.SCIM, cfg.Server.AppURL)
 	recovery := recoveryclient.NewClient(recoveryclient.Options{AllowPrivate: cfg.Backup.AllowPrivateRecovery})
 
 	s := &Server{
 		config:   cfg,
 		store:    st,
 		sessions: sessions,
-		pairing:  pairing,
 		kysignon: kysignon,
 		oidc:     oidc,
 		saml:     saml,
-		scim:     scimSrv,
 		recovery: recovery,
 		mux:      http.NewServeMux(),
 		attempts: make(map[string]attemptWindow),
@@ -218,11 +210,6 @@ func (s *Server) routes() {
 	s.mux.HandleFunc("/api/sso/kysignon/sync", s.handleKySignOnSyncWebhook)
 	s.mux.HandleFunc("/saml/metadata", s.handleSAMLMetadata)
 
-	// Devices & Ephemeral QR Pairing
-	s.mux.HandleFunc("/api/devices/pair/init", s.requireAuthenticated(s.handlePairInit))
-	s.mux.HandleFunc("/api/devices/pair/verify", s.handlePairVerify)
-	s.mux.HandleFunc("/api/devices/pair/poll", s.handlePairPoll)
-
 	// Feature 0 KyBackup & Restore Drills. Capsules carry site data and keys: admins only.
 	// Method patterns: only the declared method reaches a handler. Export is a POST so the
 	// CSRF check covers a download that carries the whole instance.
@@ -238,9 +225,6 @@ func (s *Server) routes() {
 	// Settings & Theme. The read endpoint tiers its own payload by role.
 	s.mux.HandleFunc("/api/settings", s.handleGetSettings)
 	s.mux.HandleFunc("/api/settings/theme", s.requireAdmin(s.handleSetTheme))
-
-	// SCIM 2.0 routes
-	s.scim.RegisterRoutes(s.mux)
 
 	// Embedded React PWA Frontend
 	s.mux.Handle("/", web.Handler())
@@ -260,20 +244,6 @@ func (s *Server) requireAdmin(h http.HandlerFunc) http.HandlerFunc {
 		}
 		if user.Role != "admin" {
 			s.writeError(w, http.StatusForbidden, "Administrator role required")
-			return
-		}
-		h(w, r)
-	}
-}
-
-func (s *Server) requireAuthenticated(h http.HandlerFunc) http.HandlerFunc {
-	return func(w http.ResponseWriter, r *http.Request) {
-		if _, _, err := s.sessions.AuthenticateRequest(r); err != nil {
-			if errors.Is(err, auth.ErrPasswordChangeRequired) {
-				s.writeJSON(w, http.StatusForbidden, map[string]string{"error": "Change your password before continuing", "code": "password_change_required"})
-			} else {
-				s.writeError(w, http.StatusUnauthorized, "Authentication required")
-			}
 			return
 		}
 		h(w, r)
@@ -313,12 +283,6 @@ func (s *Server) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	}
 	if r.Body != nil {
 		r.Body = http.MaxBytesReader(w, r.Body, 1<<20)
-	}
-
-	// SCIM middleware
-	if strings.HasPrefix(r.URL.Path, "/scim/v2") {
-		s.scim.AuthMiddleware(s.mux).ServeHTTP(w, r)
-		return
 	}
 
 	s.mux.ServeHTTP(w, r)

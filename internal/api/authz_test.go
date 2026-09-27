@@ -68,10 +68,10 @@ func do(t *testing.T, srv *api.Server, method, path string, cookie *http.Cookie)
 }
 
 // Settings drive the login screen, so part of the payload is public. Secrets
-// (SCIM bearer token, recovery token) live in extra_settings and must not be.
+// (the webhook secret, the recovery token) live in extra_settings and must not be.
 func TestSettingsExposureByRole(t *testing.T) {
 	srv, st, _ := setupTestServer(t)
-	if err := st.Settings().SetSetting(context.Background(), "scim_token", "super-secret-bearer"); err != nil {
+	if err := st.Settings().SetSetting(context.Background(), "webhook_secret", "super-secret-value"); err != nil {
 		t.Fatalf("seed setting: %v", err)
 	}
 	if err := st.Settings().SetSetting(context.Background(), "kyrecovery_token_enc", "sealed-ciphertext-blob"); err != nil {
@@ -99,8 +99,8 @@ func TestSettingsExposureByRole(t *testing.T) {
 			t.Errorf("anonymous settings leaked %q: %v", secret, anon)
 		}
 	}
-	if bytes.Contains(do(t, srv, "GET", "/api/settings", nil).Body.Bytes(), []byte("super-secret-bearer")) {
-		t.Error("anonymous settings leaked the SCIM bearer token")
+	if bytes.Contains(do(t, srv, "GET", "/api/settings", nil).Body.Bytes(), []byte("super-secret-value")) {
+		t.Error("anonymous settings leaked a stored secret")
 	}
 
 	member := decode(do(t, srv, "GET", "/api/settings", loginAs(t, srv, st, "bob", "user")))
@@ -113,7 +113,7 @@ func TestSettingsExposureByRole(t *testing.T) {
 
 	admin := decode(do(t, srv, "GET", "/api/settings", loginAs(t, srv, st, "alice", "admin")))
 	extra, ok := admin["extra_settings"].(map[string]any)
-	if !ok || extra["scim_token"] != "super-secret-bearer" {
+	if !ok || extra["webhook_secret"] != "super-secret-value" {
 		t.Errorf("admin should still see extra_settings, got %v", admin)
 	}
 	if _, found := extra["kyrecovery_token_enc"]; found {

@@ -56,34 +56,6 @@ CREATE TABLE IF NOT EXISTS sessions (
 CREATE INDEX IF NOT EXISTS idx_sessions_user_id ON sessions(user_id);
 CREATE INDEX IF NOT EXISTS idx_sessions_expires_at ON sessions(expires_at);
 
-CREATE TABLE IF NOT EXISTS device_pairings (
-    secret TEXT PRIMARY KEY,
-    code TEXT NOT NULL UNIQUE,
-    user_id TEXT NOT NULL DEFAULT '',
-    device_name TEXT NOT NULL DEFAULT '',
-    platform TEXT NOT NULL DEFAULT '',
-    push_token TEXT NOT NULL DEFAULT '',
-    status TEXT NOT NULL DEFAULT 'pending',
-    created_at DATETIME NOT NULL,
-    expires_at DATETIME NOT NULL
-);
-CREATE INDEX IF NOT EXISTS idx_pairings_code ON device_pairings(code);
-CREATE INDEX IF NOT EXISTS idx_pairings_expires ON device_pairings(expires_at);
-
-CREATE TABLE IF NOT EXISTS groups (
-    id TEXT PRIMARY KEY,
-    display_name TEXT NOT NULL UNIQUE,
-    external_id TEXT NOT NULL DEFAULT '',
-    created_at DATETIME NOT NULL,
-    updated_at DATETIME NOT NULL
-);
-
-CREATE TABLE IF NOT EXISTS group_members (
-    group_id TEXT NOT NULL REFERENCES groups(id) ON DELETE CASCADE,
-    user_id TEXT NOT NULL REFERENCES users(id) ON DELETE CASCADE,
-    PRIMARY KEY (group_id, user_id)
-);
-
 CREATE TABLE IF NOT EXISTS audit_records (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     user_id TEXT NOT NULL DEFAULT '',
@@ -136,34 +108,6 @@ CREATE TABLE IF NOT EXISTS sessions (
 );
 CREATE INDEX IF NOT EXISTS idx_sessions_user_id ON sessions(user_id);
 CREATE INDEX IF NOT EXISTS idx_sessions_expires_at ON sessions(expires_at);
-
-CREATE TABLE IF NOT EXISTS device_pairings (
-    secret VARCHAR(64) PRIMARY KEY,
-    code VARCHAR(16) NOT NULL UNIQUE,
-    user_id VARCHAR(64) NOT NULL DEFAULT '',
-    device_name VARCHAR(255) NOT NULL DEFAULT '',
-    platform VARCHAR(32) NOT NULL DEFAULT '',
-    push_token TEXT NOT NULL DEFAULT '',
-    status VARCHAR(32) NOT NULL DEFAULT 'pending',
-    created_at TIMESTAMPTZ NOT NULL,
-    expires_at TIMESTAMPTZ NOT NULL
-);
-CREATE INDEX IF NOT EXISTS idx_pairings_code ON device_pairings(code);
-CREATE INDEX IF NOT EXISTS idx_pairings_expires ON device_pairings(expires_at);
-
-CREATE TABLE IF NOT EXISTS groups (
-    id VARCHAR(64) PRIMARY KEY,
-    display_name VARCHAR(255) NOT NULL UNIQUE,
-    external_id VARCHAR(255) NOT NULL DEFAULT '',
-    created_at TIMESTAMPTZ NOT NULL,
-    updated_at TIMESTAMPTZ NOT NULL
-);
-
-CREATE TABLE IF NOT EXISTS group_members (
-    group_id VARCHAR(64) NOT NULL REFERENCES groups(id) ON DELETE CASCADE,
-    user_id VARCHAR(64) NOT NULL REFERENCES users(id) ON DELETE CASCADE,
-    PRIMARY KEY (group_id, user_id)
-);
 
 CREATE TABLE IF NOT EXISTS audit_records (
     id BIGSERIAL PRIMARY KEY,
