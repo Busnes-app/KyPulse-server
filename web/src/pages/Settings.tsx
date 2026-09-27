@@ -4,6 +4,8 @@ import { ThemeSwitcher } from '../components/ThemeSwitcher';
 
 interface SettingsProps {
   settings: any;
+  user: { role: string };
+  onChanged: () => void;
 }
 
 export const Settings: React.FC<SettingsProps> = ({ settings }) => {
