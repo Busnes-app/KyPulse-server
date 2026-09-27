@@ -59,3 +59,47 @@ type Setting struct {
 	Value     string    `json:"value"`
 	UpdatedAt time.Time `json:"updated_at"`
 }
+
+// Target is a watched app. Track and LastResult are JSON the monitor package owns
+// (alerts.Track and poller.Result); the store never decodes them.
+type Target struct {
+	ID            string     `json:"id"`
+	Name          string     `json:"name"`
+	URL           string     `json:"url"`
+	IntervalSec   int        `json:"interval_sec"`
+	Enabled       bool       `json:"enabled"`
+	Container     string     `json:"container,omitempty"` // KyYard container link, unused until step 3
+	State         string     `json:"state"`               // pending|ok|degraded|down, denormalised from Track
+	StateSince    time.Time  `json:"state_since"`
+	Cause         string     `json:"cause,omitempty"`
+	TrackJSON     string     `json:"-"`
+	LastResult    string     `json:"last_result"` // poller.Result JSON, "" before the first poll
+	LastPolledAt  *time.Time `json:"last_polled_at,omitempty"`
+	LastLatencyMS int64      `json:"last_latency_ms"`
+	CreatedAt     time.Time  `json:"created_at"`
+	UpdatedAt     time.Time  `json:"updated_at"`
+}
+
+// TargetEvent is one transition or reminder, the unit the Alerts tab lists.
+type TargetEvent struct {
+	ID          int64     `json:"id"`
+	TargetID    string    `json:"target_id"`
+	At          time.Time `json:"at"`
+	FromState   string    `json:"from"`
+	ToState     string    `json:"to"`
+	Cause       string    `json:"cause,omitempty"`
+	Reminder    bool      `json:"reminder"`
+	Notified    bool      `json:"notified"`
+	NotifyError string    `json:"notify_error,omitempty"`
+}
+
+// PollUpdate is what one observation writes back.
+type PollUpdate struct {
+	PolledAt   time.Time
+	LatencyMS  int64
+	LastResult string
+	TrackJSON  string
+	State      string
+	StateSince time.Time
+	Cause      string
+}

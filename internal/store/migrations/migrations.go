@@ -161,6 +161,74 @@ ALTER TABLE mfa_challenges ADD COLUMN password_hash TEXT NOT NULL DEFAULT '';`,
 		Postgres: `DELETE FROM mfa_challenges;
 ALTER TABLE mfa_challenges ADD COLUMN password_hash TEXT NOT NULL DEFAULT '';`,
 	},
+	{
+		Version: 5,
+		Name:    "targets",
+		SQLite: `
+CREATE TABLE IF NOT EXISTS targets (
+    id TEXT PRIMARY KEY,
+    name TEXT NOT NULL UNIQUE,
+    url TEXT NOT NULL,
+    interval_sec INTEGER NOT NULL DEFAULT 30,
+    enabled INTEGER NOT NULL DEFAULT 1,
+    container TEXT NOT NULL DEFAULT '',
+    state TEXT NOT NULL DEFAULT 'pending',
+    state_since DATETIME NOT NULL,
+    cause TEXT NOT NULL DEFAULT '',
+    track_json TEXT NOT NULL DEFAULT '',
+    last_result TEXT NOT NULL DEFAULT '',
+    last_polled_at DATETIME,
+    last_latency_ms INTEGER NOT NULL DEFAULT 0,
+    created_at DATETIME NOT NULL,
+    updated_at DATETIME NOT NULL
+);
+CREATE TABLE IF NOT EXISTS target_events (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    target_id TEXT NOT NULL REFERENCES targets(id) ON DELETE CASCADE,
+    at DATETIME NOT NULL,
+    from_state TEXT NOT NULL,
+    to_state TEXT NOT NULL,
+    cause TEXT NOT NULL DEFAULT '',
+    reminder INTEGER NOT NULL DEFAULT 0,
+    notified INTEGER NOT NULL DEFAULT 0,
+    notify_error TEXT NOT NULL DEFAULT ''
+);
+CREATE INDEX IF NOT EXISTS idx_target_events_target_at ON target_events(target_id, at);
+CREATE INDEX IF NOT EXISTS idx_target_events_at ON target_events(at);
+`,
+		Postgres: `
+CREATE TABLE IF NOT EXISTS targets (
+    id VARCHAR(64) PRIMARY KEY,
+    name VARCHAR(128) NOT NULL UNIQUE,
+    url TEXT NOT NULL,
+    interval_sec INTEGER NOT NULL DEFAULT 30,
+    enabled BOOLEAN NOT NULL DEFAULT TRUE,
+    container VARCHAR(255) NOT NULL DEFAULT '',
+    state VARCHAR(16) NOT NULL DEFAULT 'pending',
+    state_since TIMESTAMPTZ NOT NULL,
+    cause VARCHAR(64) NOT NULL DEFAULT '',
+    track_json TEXT NOT NULL DEFAULT '',
+    last_result TEXT NOT NULL DEFAULT '',
+    last_polled_at TIMESTAMPTZ,
+    last_latency_ms BIGINT NOT NULL DEFAULT 0,
+    created_at TIMESTAMPTZ NOT NULL,
+    updated_at TIMESTAMPTZ NOT NULL
+);
+CREATE TABLE IF NOT EXISTS target_events (
+    id BIGSERIAL PRIMARY KEY,
+    target_id VARCHAR(64) NOT NULL REFERENCES targets(id) ON DELETE CASCADE,
+    at TIMESTAMPTZ NOT NULL,
+    from_state VARCHAR(16) NOT NULL,
+    to_state VARCHAR(16) NOT NULL,
+    cause VARCHAR(64) NOT NULL DEFAULT '',
+    reminder BOOLEAN NOT NULL DEFAULT FALSE,
+    notified BOOLEAN NOT NULL DEFAULT FALSE,
+    notify_error TEXT NOT NULL DEFAULT ''
+);
+CREATE INDEX IF NOT EXISTS idx_target_events_target_at ON target_events(target_id, at);
+CREATE INDEX IF NOT EXISTS idx_target_events_at ON target_events(at);
+`,
+	},
 }
 
 // Run executes all pending migrations for the specified database driver.
