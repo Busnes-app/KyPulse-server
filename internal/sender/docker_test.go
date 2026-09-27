@@ -94,8 +94,15 @@ func TestDockerReplaySameTimestampAndStreams(t *testing.T) {
 	if err := ReadDocker(ctx, socket, "my-container", start, resumed); err != nil {
 		t.Fatal(err)
 	}
-	if len(resumed) != 2 || (<-resumed).Position.Ordinal != 2 || (<-resumed).Position.Ordinal != 3 {
-		t.Fatalf("resume: %d", len(resumed))
+	remaining := map[int]bool{}
+	for len(resumed) > 0 {
+		row := <-resumed
+		if row.Position.Stream == "stdout" {
+			remaining[row.Position.Ordinal] = true
+		}
+	}
+	if !remaining[2] || !remaining[3] {
+		t.Fatalf("remaining equal-time rows missing: %v", remaining)
 	}
 	mu.Lock()
 	defer mu.Unlock()
@@ -104,6 +111,47 @@ func TestDockerReplaySameTimestampAndStreams(t *testing.T) {
 	}
 	if !strings.Contains(queries[1], fmt.Sprintf("since=%d", first.Record.Time.Unix())) || !strings.Contains(queries[1], "follow=1") || !strings.Contains(queries[1], "timestamps=1") {
 		t.Fatalf("queries: %v", queries)
+	}
+}
+
+func TestDockerRotationKeepsRemainingEqualTimestampRows(t *testing.T) {
+	var calls int
+	socket := fakeDocker(t, func(w http.ResponseWriter, r *http.Request) {
+		calls++
+		count := 3
+		if calls > 1 {
+			count = 2 // the acknowledged first row rotated away
+		}
+		for range count {
+			_, _ = w.Write(frame(1, dockerTime+" same\n"))
+		}
+	})
+	first := make(chan Item, 3)
+	if err := ReadDocker(context.Background(), socket, "a", nil, first); err != nil {
+		t.Fatal(err)
+	}
+	checkpoint := (<-first).Position
+	replayed := make(chan Item, 3)
+	if err := ReadDocker(context.Background(), socket, "a", map[string]Position{PositionKey(checkpoint): checkpoint}, replayed); err != nil {
+		t.Fatal(err)
+	}
+	if len(replayed) != 2 || (<-replayed).Record.Line != "same" || (<-replayed).Record.Line != "same" {
+		t.Fatalf("remaining equal-time rows lost: %d", len(replayed))
+	}
+}
+
+func TestDockerMissingCheckpointTimestampMarksGap(t *testing.T) {
+	later := "2026-09-27T12:00:01Z"
+	socket := fakeDocker(t, func(w http.ResponseWriter, r *http.Request) {
+		_, _ = w.Write(frame(1, later+" new\n"))
+	})
+	checkpoint := Position{Kind: "docker", Input: dockerID, Stream: "stdout", Timestamp: dockerTime, Ordinal: 1}
+	out := make(chan Item, 3)
+	if err := ReadDocker(context.Background(), socket, "a", map[string]Position{PositionKey(checkpoint): checkpoint}, out); err != nil {
+		t.Fatal(err)
+	}
+	if len(out) != 2 || !strings.Contains((<-out).Record.Line, "gap") || (<-out).Record.Line != "new" {
+		t.Fatalf("missing checkpoint was silent: %d", len(out))
 	}
 }
 
@@ -171,34 +219,43 @@ func TestDockerRefusalAndCancellation(t *testing.T) {
 func TestDockerReconnectUsesEmittedPosition(t *testing.T) {
 	var mu sync.Mutex
 	var calls int
+	var queries []string
 	socket := fakeDocker(t, func(w http.ResponseWriter, r *http.Request) {
 		mu.Lock()
 		calls++
+		queries = append(queries, r.URL.RawQuery)
 		mu.Unlock()
 		_, _ = w.Write(frame(1, dockerTime+" same\n"+dockerTime+" same\n"))
+		_, _ = w.Write(frame(2, dockerTime+" error\n"))
 	})
 	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
 	defer cancel()
 	out := make(chan Item, 8)
 	done := make(chan error, 1)
 	go func() { done <- FollowDocker(ctx, socket, "a", nil, out) }()
-	for i := 0; i < 2; i++ {
+	for i := 0; i < 3; i++ {
 		select {
 		case <-out:
 		case <-ctx.Done():
 			t.Fatal("initial lines missing")
 		}
 	}
-	select {
-	case row := <-out:
-		t.Fatalf("reconnected reader duplicated line: %+v", row)
-	case <-time.After(1300 * time.Millisecond):
+	for i := 0; i < 3; i++ {
+		select {
+		case row := <-out:
+			if row.Record.Line != "same" && row.Record.Line != "error" {
+				t.Fatalf("unexpected replay row: %+v", row)
+			}
+		case <-ctx.Done():
+			t.Fatal("reconnect omitted boundary replay")
+		}
 	}
 	mu.Lock()
 	seen := calls
+	seenQueries := append([]string(nil), queries...)
 	mu.Unlock()
-	if seen < 2 {
-		t.Fatalf("no reconnect: %d requests", seen)
+	if seen < 2 || !strings.Contains(seenQueries[1], fmt.Sprintf("since=%d", mustDockerTime(t).Unix())) {
+		t.Fatalf("reconnect cursor: calls=%d queries=%v", seen, seenQueries)
 	}
 	cancel()
 	select {
@@ -206,4 +263,13 @@ func TestDockerReconnectUsesEmittedPosition(t *testing.T) {
 	case <-time.After(time.Second):
 		t.Fatal("reconnect reader ignored cancellation")
 	}
+}
+
+func mustDockerTime(t *testing.T) time.Time {
+	t.Helper()
+	parsed, err := time.Parse(time.RFC3339Nano, dockerTime)
+	if err != nil {
+		t.Fatal(err)
+	}
+	return parsed
 }

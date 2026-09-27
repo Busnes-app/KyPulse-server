@@ -116,10 +116,12 @@ was not saved; stdin and the queue are lost on restart. File input follows renam
 and truncation, but deleted history and an indistinguishable inode reuse can leave gaps or
 duplicates. Docker resolves names to immutable IDs and follows stdout and stderr separately,
 up to 32 distinct containers. It requests history inclusively from the earliest saved
-Unix-second timestamp, then skips only acknowledged equal-time line ordinals in each stream.
-Docker log rotation or unavailable history can leave gaps that its API cannot prove; the
-sender reports malformed or oversized frames as errors or gap markers. A TTY container has
-one merged raw stdout stream.
+Unix-second timestamp. It replays every line at the checkpoint timestamp, including
+acknowledged lines, because rotation can remove an earlier line and renumber equal-time
+occurrences. This can produce duplicates after restart or reconnect. If newer lines arrive
+without the saved timestamp, the sender emits a gap marker. Docker cannot prove every
+history loss; malformed or oversized frames produce errors or gap markers. A TTY container
+has one merged raw stdout stream.
 
 Docker socket access is root-equivalent. Prefer a read-only socket proxy exposing only
 `/version`, versioned container inspect and logs routes. Mounting a Docker socket with `:ro`

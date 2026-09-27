@@ -20,9 +20,10 @@ Pairs a source and delivers bounded NDJSON batches with acknowledged input posit
   with a gap marker. Truncation resets to zero. Identical suffixes and a truncate and
   regrow wholly between polls remain indistinguishable to this observer.
 - Docker resolves each configured name to an immutable container ID. Checkpoints key by
-  ID and stdout/stderr stream, with an inclusive timestamp and equal-time ordinal for
-  each stream. TTY logs are a single raw stdout stream. Docker history may be rotated or
-  unavailable, so source gaps remain possible even with an acknowledged checkpoint.
+  ID and stdout/stderr stream, with an inclusive timestamp and recorded equal-time ordinal
+  for each stream. Boundary lines replay even when acknowledged, because Docker cannot
+  verify the historical prefix after rotation. A missing checkpoint timestamp emits a
+  gap marker once a newer line appears. TTY logs are a single raw stdout stream.
 - Stdin and the outage queue live in memory and cannot survive a crash. File and Docker
   checkpoints replay only while upstream history exists. Overflow deliberately drops
   records and emits a marker, so delivery has no unconditional no-loss guarantee.

@@ -114,7 +114,8 @@ func ResolveDocker(ctx context.Context, socket, name string) (string, error) {
 }
 
 // ReadDocker follows one container. The start map is keyed by ID and stream.
-// Docker's `since` is second-granular, so equal-timestamp ordinals are checked per stream.
+// Docker's `since` is second-granular. Equal-time lines replay because Docker
+// cannot prove that earlier lines at that timestamp still exist after rotation.
 func ReadDocker(ctx context.Context, socket, container string, start map[string]Position, out chan<- Item) error {
 	return readDocker(ctx, socket, container, start, nil, out)
 }
@@ -256,13 +257,15 @@ func readDocker(ctx context.Context, socket, container string, start, latest map
 }
 
 type dockerLines struct {
-	stream    string
-	saved     Position
-	emit      func(string, ingest.Record, string, int) error
-	buf       []byte
-	truncated bool
-	last      string
-	ordinal   int
+	stream       string
+	saved        Position
+	emit         func(string, ingest.Record, string, int) error
+	buf          []byte
+	truncated    bool
+	last         string
+	ordinal      int
+	boundarySeen bool
+	gapReported  bool
 }
 
 func (l *dockerLines) Write(p []byte) (int, error) {
@@ -321,8 +324,16 @@ func (l *dockerLines) flushLine(complete bool) error {
 	if l.saved.Timestamp != "" {
 		old, err := time.Parse(time.RFC3339Nano, l.saved.Timestamp)
 		if err == nil {
-			if t.Before(old) || t.Equal(old) && l.ordinal <= l.saved.Ordinal {
+			if t.Before(old) {
 				return nil
+			}
+			if t.Equal(old) {
+				l.boundarySeen = true
+			} else if !l.boundarySeen && !l.gapReported {
+				l.gapReported = true
+				if err := l.emit(l.stream, ingest.Record{Line: "gap: Docker checkpoint timestamp is absent from available history"}, l.saved.Timestamp, l.saved.Ordinal); err != nil {
+					return err
+				}
 			}
 		}
 	}
