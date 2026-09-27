@@ -66,7 +66,7 @@ type batch struct {
 type result struct{ err error }
 
 func itemSize(item Item) int {
-	return len(item.Record.Line) + len(item.Position.Input) + len(item.Position.Timestamp) + 128
+	return len(item.Record.Line) + len(item.Position.Input) + len(item.Position.Timestamp) + len(item.Position.Fingerprint) + 128
 }
 
 func clip(item Item) Item {

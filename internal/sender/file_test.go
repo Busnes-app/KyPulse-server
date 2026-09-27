@@ -5,6 +5,7 @@ import (
 	"os"
 	"path/filepath"
 	"strings"
+	"syscall"
 	"testing"
 	"time"
 )
@@ -43,13 +44,22 @@ func TestFileOffsetPartialAndOversize(t *testing.T) {
 		t.Fatal(err)
 	}
 	fi, _ := os.Stat(path)
-	ch, _ := followFile(t, path, Position{Kind: "file", Input: path, Device: device(fi), Inode: inode(fi), Offset: 5})
+	f, err := os.Open(path)
+	if err != nil {
+		t.Fatal(err)
+	}
+	fingerprint, err := fingerprintAt(f, 5)
+	f.Close()
+	if err != nil {
+		t.Fatal(err)
+	}
+	ch, _ := followFile(t, path, Position{Kind: "file", Input: path, Device: device(fi), Inode: inode(fi), Offset: 5, Fingerprint: fingerprint})
 	select {
 	case item := <-ch:
 		t.Fatalf("premature record: %+v", item)
 	case <-time.After(350 * time.Millisecond):
 	}
-	f, err := os.OpenFile(path, os.O_APPEND|os.O_WRONLY, 0)
+	f, err = os.OpenFile(path, os.O_APPEND|os.O_WRONLY, 0)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -187,5 +197,53 @@ func TestFileShutdownFlushesPartial(t *testing.T) {
 	case <-done:
 	case <-time.After(time.Second):
 		t.Fatal("reader did not stop")
+	}
+}
+
+func TestFileReusedInodeDoesNotSkipNewPrefix(t *testing.T) {
+	path := filepath.Join(t.TempDir(), "app.log")
+	if err := os.WriteFile(path, []byte("old\n"), 0600); err != nil {
+		t.Fatal(err)
+	}
+	ch, cancel := followFile(t, path, Position{})
+	saved := nextFile(t, ch).Position
+	cancel()
+	// O_TRUNC preserves device and inode, then regrows beyond the saved offset.
+	if err := os.WriteFile(path, []byte("new-prefix\nnew-tail\n"), 0600); err != nil {
+		t.Fatal(err)
+	}
+	ch, _ = followFile(t, path, saved)
+	gap, first := nextFile(t, ch), nextFile(t, ch)
+	if !strings.Contains(gap.Record.Line, "gap") || first.Record.Line != "new-prefix" || first.Position.Offset != 11 {
+		t.Fatalf("reused inode: %+v %+v", gap, first)
+	}
+	legacy := saved
+	legacy.Fingerprint = ""
+	ch, _ = followFile(t, path, legacy)
+	gap, first = nextFile(t, ch), nextFile(t, ch)
+	if !strings.Contains(gap.Record.Line, "gap") || first.Record.Line != "new-prefix" {
+		t.Fatalf("missing fingerprint: %+v %+v", gap, first)
+	}
+}
+
+func TestFileFIFODoesNotBlockCancellation(t *testing.T) {
+	path := filepath.Join(t.TempDir(), "pipe")
+	if err := syscall.Mkfifo(path, 0600); err != nil {
+		t.Fatal(err)
+	}
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
+	done := make(chan error, 1)
+	go func() { done <- ReadFile(ctx, path, Position{}, make(chan Item)) }()
+	time.Sleep(50 * time.Millisecond)
+	cancel()
+	select {
+	case err := <-done:
+		if err == nil {
+			t.Fatal("FIFO accepted")
+		}
+	case <-time.After(time.Second):
+		cancel()
+		t.Fatal("FIFO reader blocked")
 	}
 }

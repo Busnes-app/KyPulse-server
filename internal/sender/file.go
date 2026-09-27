@@ -2,6 +2,8 @@ package sender
 
 import (
 	"context"
+	"crypto/sha256"
+	"encoding/hex"
 	"errors"
 	"fmt"
 	"os"
@@ -18,6 +20,63 @@ func samePosition(fi os.FileInfo, p Position) bool {
 	return device(fi) == p.Device && inode(fi) == p.Inode
 }
 
+// fingerprintAt binds a checkpoint to the last 64 consumed bytes. A matching
+// suffix cannot distinguish all histories, but a mismatch prevents a silent skip.
+func fingerprintAt(f *os.File, offset int64) (string, error) {
+	if offset < 0 {
+		return "", errors.New("sender: negative file offset")
+	}
+	start := offset - int64(64)
+	if start < 0 {
+		start = 0
+	}
+	buf := make([]byte, offset-start)
+	if len(buf) > 0 {
+		if _, err := f.ReadAt(buf, start); err != nil {
+			return "", err
+		}
+	}
+	sum := sha256.Sum256(buf)
+	return hex.EncodeToString(sum[:]), nil
+}
+
+func openRegular(path string) (*os.File, os.FileInfo, error) {
+	before, err := os.Stat(path)
+	if err != nil {
+		return nil, nil, err
+	}
+	if !before.Mode().IsRegular() {
+		return nil, nil, fmt.Errorf("sender: file input is not regular: %s", path)
+	}
+	fd, err := syscall.Open(path, syscall.O_RDONLY|syscall.O_CLOEXEC|syscall.O_NONBLOCK, 0)
+	if err != nil {
+		return nil, nil, err
+	}
+	f := os.NewFile(uintptr(fd), path)
+	fi, err := f.Stat()
+	if err != nil {
+		f.Close()
+		return nil, nil, err
+	}
+	if !fi.Mode().IsRegular() {
+		f.Close()
+		return nil, nil, fmt.Errorf("sender: file input is not regular: %s", path)
+	}
+	if !os.SameFile(before, fi) {
+		f.Close()
+		return nil, nil, os.ErrNotExist
+	}
+	return f, fi, nil
+}
+
+func matchesSaved(f *os.File, fi os.FileInfo, p Position) bool {
+	if !samePosition(fi, p) || fi.Size() < p.Offset || p.Fingerprint == "" {
+		return false
+	}
+	actual, err := fingerprintAt(f, p.Offset)
+	return err == nil && actual == p.Fingerprint
+}
+
 func sibling(path string, p Position) string {
 	entries, err := os.ReadDir(filepath.Dir(path))
 	if err != nil {
@@ -25,9 +84,13 @@ func sibling(path string, p Position) string {
 	}
 	for _, entry := range entries {
 		candidate := filepath.Join(filepath.Dir(path), entry.Name())
-		fi, err := os.Stat(candidate)
-		if err == nil && fi.Mode().IsRegular() && samePosition(fi, p) {
+		f, fi, err := openRegular(candidate)
+		if err == nil && matchesSaved(f, fi, p) {
+			f.Close()
 			return candidate
+		}
+		if f != nil {
+			f.Close()
 		}
 	}
 	return ""
@@ -50,6 +113,7 @@ func ReadFile(ctx context.Context, path string, start Position, out chan<- Item)
 	emit := func(row ingest.Record, offset int64) error {
 		p := identity
 		p.Offset = offset
+		p.Fingerprint, _ = fingerprintAt(f, offset)
 		select {
 		case out <- Item{Record: row, Position: p}:
 			return nil
@@ -79,6 +143,7 @@ func ReadFile(ctx context.Context, path string, start Position, out chan<- Item)
 			if lines != nil && lines.partial() {
 				p := identity
 				p.Offset = base + lines.total
+				p.Fingerprint, _ = fingerprintAt(f, p.Offset)
 				select {
 				case out <- Item{Record: lines.finish(), Position: p}:
 				case <-time.After(time.Second):
@@ -92,14 +157,11 @@ func ReadFile(ctx context.Context, path string, start Position, out chan<- Item)
 				return err
 			}
 			candidate := path
+			gap := false
 			if pending && (err != nil || !samePosition(configured, start)) {
 				candidate = sibling(path, start)
 				if candidate == "" && err == nil { // Upstream history vanished; mark the gap before reading replacement.
-					identity = Position{Kind: "file", Input: path, Device: device(configured), Inode: inode(configured)}
-					if e := emit(ingest.Record{Line: "gap: previous file history unavailable"}, 0); e != nil {
-						return e
-					}
-					pending = false
+					gap = true
 					candidate = path
 				}
 			}
@@ -109,7 +171,7 @@ func ReadFile(ctx context.Context, path string, start Position, out chan<- Item)
 				}
 				continue
 			}
-			opened, e := os.Open(candidate)
+			opened, fi, e := openRegular(candidate)
 			if errors.Is(e, os.ErrNotExist) {
 				if e := poll(); e != nil {
 					return e
@@ -119,30 +181,27 @@ func ReadFile(ctx context.Context, path string, start Position, out chan<- Item)
 			if e != nil {
 				return e
 			}
-			fi, e := opened.Stat()
-			if e != nil {
-				opened.Close()
-				return e
-			}
-			if !fi.Mode().IsRegular() {
-				opened.Close()
-				return fmt.Errorf("sender: file input is not regular: %s", candidate)
-			}
 			offset := int64(0)
-			if pending && samePosition(fi, start) {
+			if pending && matchesSaved(opened, fi, start) {
 				offset = start.Offset
-				if fi.Size() < offset {
-					offset = 0
-				}
-			}
-			if _, e = opened.Seek(offset, 0); e != nil {
+			} else if pending && candidate != path {
 				opened.Close()
-				return e
+				continue // sibling changed after discovery
+			} else if pending {
+				gap = true
 			}
 			f = opened
+			identity = Position{Kind: "file", Input: path, Device: device(fi), Inode: inode(fi)}
+			if gap {
+				if e := emit(ingest.Record{Line: "gap: previous file history unavailable"}, 0); e != nil {
+					return e
+				}
+			}
+			if _, e = f.Seek(offset, 0); e != nil {
+				return e
+			}
 			lines = newLineReader(f)
 			base = offset
-			identity = Position{Kind: "file", Input: path, Device: device(fi), Inode: inode(fi)}
 			pending = false
 		}
 		row, ok, err := lines.read()
@@ -173,7 +232,7 @@ func ReadFile(ctx context.Context, path string, start Position, out chan<- Item)
 				}
 			}
 			if shrunk && !changed {
-				if err := emit(ingest.Record{Line: "gap: file was truncated"}, offset); err != nil {
+				if err := emit(ingest.Record{Line: "gap: file was truncated"}, 0); err != nil {
 					return err
 				}
 			}

@@ -14,13 +14,14 @@ import (
 )
 
 type Position struct {
-	Kind      string `json:"kind"`
-	Input     string `json:"input"`
-	Device    uint64 `json:"device,omitempty"`
-	Inode     uint64 `json:"inode,omitempty"`
-	Offset    int64  `json:"offset,omitempty"`
-	Timestamp string `json:"timestamp,omitempty"`
-	Ordinal   int    `json:"ordinal,omitempty"`
+	Kind        string `json:"kind"`
+	Input       string `json:"input"`
+	Device      uint64 `json:"device,omitempty"`
+	Inode       uint64 `json:"inode,omitempty"`
+	Offset      int64  `json:"offset,omitempty"`
+	Fingerprint string `json:"fingerprint,omitempty"`
+	Timestamp   string `json:"timestamp,omitempty"`
+	Ordinal     int    `json:"ordinal,omitempty"`
 }
 
 type State struct {

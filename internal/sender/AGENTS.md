@@ -14,10 +14,11 @@ and `stdin.go` feed `Item` values into `Run`; Docker input is a later task.
 
 - `PositionKey` identifies one configured stream. Readers clip lines to 16 KiB while
   draining any remainder, then give `Run` a complete position for each line.
-- File checkpoints use absolute path, device, inode and consumed byte offset. The reader
-  finishes a renamed open file before switching to its replacement; a restart searches
-  siblings for the saved inode. Truncation resets to zero. A truncate and regrow wholly
-  between polls can evade size/inode detection.
+- File checkpoints use absolute path, device, inode, consumed byte offset and a hash of
+  the last 64 consumed bytes. A restart validates that hash before seeking and searches
+  siblings for a matching renamed file; missing or mismatched history replays from zero
+  with a gap marker. Truncation resets to zero. Identical suffixes and a truncate and
+  regrow wholly between polls remain indistinguishable to this observer.
 - Stdin and the outage queue live in memory and cannot survive a crash. File and Docker
   checkpoints replay only while upstream history exists. Overflow deliberately drops
   records and emits a marker, so delivery has no unconditional no-loss guarantee.
