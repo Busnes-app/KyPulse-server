@@ -101,18 +101,20 @@ type Decision struct {
 
 // Decide says whether a webhook goes out now. A transition into a problem or back to OK is
 // sent once; while the problem persists, a reminder goes out every ReminderEvery. Silence
-// stops the webhook only; the transition is still recorded and shown on screen.
+// stops the webhook only; the transition is still recorded and shown on screen, and it still
+// stamps LastNotified, so once the silence lapses the hourly reminder resumes counting from
+// the transition rather than never firing for that incident.
 func Decide(t Track, tr *Transition, now time.Time) (Decision, Track) {
 	silenced := t.UntilFixed || now.Before(t.SilencedUntil)
 	if tr != nil {
 		if tr.From == Pending && tr.To == OK {
 			return Decision{}, t // a new target coming up is not news
 		}
+		if tr.To != OK {
+			t.LastNotified = now // reminders count from here, silenced or not; a recovery has nothing to remind
+		}
 		if silenced && tr.To != OK {
 			return Decision{}, t
-		}
-		if tr.To != OK {
-			t.LastNotified = now // reminders count from here; a recovery has nothing to remind
 		}
 		return Decision{Send: true}, t
 	}

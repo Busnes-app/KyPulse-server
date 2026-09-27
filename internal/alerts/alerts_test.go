@@ -139,8 +139,34 @@ func TestSilenceStopsWebhooksNotTransitions(t *testing.T) {
 	// Silence expires: the hourly reminder resumes from the transition.
 	now = t0.Add(9 * time.Hour)
 	d, _ = Decide(tr, nil, now)
+	if !d.Send || !d.Reminder {
+		t.Fatal("silence lapsed with the app still down: the reminder resumes")
+	}
+}
+
+func TestReminderResumesAfterASilenceLapses(t *testing.T) {
+	tr := Track{SilencedUntil: t0.Add(30 * time.Minute)}
+	now := t0
+	var trans *Transition
+	for _, s := range []poller.State{OK, Down, Down} {
+		tr, _ = Next(tr, poller.Result{State: s}, now)
+		now = now.Add(30 * time.Second)
+	}
+	// The third Down is the transition; Decide is called with the same 'now', so
+	// LastNotified and the transition timestamp agree exactly.
+	tr, trans = Next(tr, poller.Result{State: Down}, now)
+	d, tr := Decide(tr, trans, now)
 	if d.Send {
-		t.Fatal("no notification was ever sent, so there is nothing to remind about")
+		t.Fatal("silenced at the transition: must not send")
+	}
+	transitionAt := now
+	at31 := transitionAt.Add(31 * time.Minute)
+	if d, _ := Decide(tr, nil, at31); d.Send {
+		t.Fatalf("31 min: silence is over but the hourly reminder is not due yet: %+v", d)
+	}
+	at60 := transitionAt.Add(60 * time.Minute)
+	if d, _ := Decide(tr, nil, at60); !d.Send || !d.Reminder {
+		t.Fatalf("60 min: the reminder should fire: %+v", d)
 	}
 }
 

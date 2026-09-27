@@ -110,6 +110,7 @@ func Build(c Config, m Message) (Request, error) {
 		body, _ := json.Marshal(map[string]any{"title": m.Title(), "message": m.text(), "priority": prio})
 		return Request{URL: strings.TrimRight(c.URL, "/") + "/message", ContentType: "application/json", Headers: h, Body: body}, nil
 	case Discord:
+		// Discord's webhook URL already carries its secret; c.Token is unused here.
 		body, _ := json.Marshal(map[string]string{"content": m.text()})
 		return Request{URL: c.URL, ContentType: "application/json", Headers: h, Body: body}, nil
 	case Generic:
