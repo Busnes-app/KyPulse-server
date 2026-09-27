@@ -233,6 +233,22 @@ CREATE INDEX IF NOT EXISTS idx_target_events_target_at ON target_events(target_i
 CREATE INDEX IF NOT EXISTS idx_target_events_at ON target_events(at);
 `,
 	},
+	{
+		Version: 6,
+		Name:    "audit_chain",
+		SQLite: `
+ALTER TABLE audit_records ADD COLUMN seq INTEGER;
+ALTER TABLE audit_records ADD COLUMN prev_hash TEXT NOT NULL DEFAULT '';
+ALTER TABLE audit_records ADD COLUMN hash TEXT NOT NULL DEFAULT '';
+CREATE UNIQUE INDEX IF NOT EXISTS idx_audit_seq ON audit_records(seq);
+`,
+		Postgres: `
+ALTER TABLE audit_records ADD COLUMN seq BIGINT;
+ALTER TABLE audit_records ADD COLUMN prev_hash VARCHAR(64) NOT NULL DEFAULT '';
+ALTER TABLE audit_records ADD COLUMN hash VARCHAR(64) NOT NULL DEFAULT '';
+CREATE UNIQUE INDEX IF NOT EXISTS idx_audit_seq ON audit_records(seq);
+`,
+	},
 }
 
 // Run executes all pending migrations for the specified database driver.

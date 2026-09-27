@@ -169,7 +169,7 @@ func TestSnapshotSeesUncheckpointedCommit(t *testing.T) {
 	if err := os.WriteFile(restored, f.Data, 0600); err != nil {
 		t.Fatal(err)
 	}
-	copyStore, err := store.Open(ctx, config.DatabaseConfig{Driver: "sqlite", DSN: restored})
+	copyStore, err := store.Open(ctx, config.DatabaseConfig{Driver: "sqlite", DSN: restored, AuditKey: cfg.Database.AuditKey})
 	if err != nil {
 		t.Fatalf("snapshot does not open: %v", err)
 	}

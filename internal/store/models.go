@@ -51,6 +51,14 @@ type AuditRecord struct {
 	Details   string    `json:"details,omitempty"`
 	IPAddress string    `json:"ip_address"`
 	CreatedAt time.Time `json:"created_at"`
+	Seq       uint64    `json:"seq"`  // chain position, 1-based; 0 only on a row written before the chain
+	Hash      string    `json:"hash"` // this record's digest; prev_hash is not exposed
+}
+
+// ChainStatus is what VerifyChain reports about an intact audit chain.
+type ChainStatus struct {
+	Count uint64 `json:"count"`
+	Head  string `json:"head"`
 }
 
 // Setting represents a durable server-wide key-value configuration entry.
