@@ -68,7 +68,8 @@ Top-level tabs: **Status**, **Alerts**, **Activity**, **Logs**. Activity and Log
 ## 1. Health contract (`ky-primitives/health`)
 
 Each app serves `GET /healthz` with no auth. It returns 200 when the status is `ok` or
-`degraded`, and 503 when `down`.
+`degraded`, and 503 when `down`. Those codes suit a readiness probe or a monitor. Liveness
+probes stay on a route that checks nothing: restarting an app does not fix its dependency.
 
 ```json
 {
@@ -84,7 +85,9 @@ Each app serves `GET /healthz` with no auth. It returns 200 when the status is `
 ```
 
 - `status` is the worst check status. A service with no checks is `ok`.
-- A check is a function returning `error`, with a per-check deadline defaulting to 2 s.
+- A check is a function returning `error`, with a per-check deadline defaulting to 2 s and
+  capped at 4 s (`MaxTimeout`), so a slow check can never hold `/healthz` past kyPulse's
+  own 5 s request timeout.
   - A timeout is `down` with reason `timeout`.
   - A check still running from a previous poll is not started again; it reports `timeout`.
   - A panicking check is `down`.
