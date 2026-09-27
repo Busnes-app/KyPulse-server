@@ -14,12 +14,10 @@ import (
 
 	"github.com/Busnes-app/ky-primitives/capsule"
 	"github.com/Busnes-app/ky-primitives/recoveryclient"
-	"github.com/Busnes-app/ky_server_base/internal/backup"
-	"github.com/Busnes-app/ky_server_base/internal/store"
+	"github.com/Busnes-app/kypulse-server/internal/backup"
+	"github.com/Busnes-app/kypulse-server/internal/config"
+	"github.com/Busnes-app/kypulse-server/internal/store"
 )
-
-// appVersion is what the capsule manifest records for this build.
-const appVersion = "1.0.0"
 
 // errRecoveryKeyMismatch answers a swapped recovery.pub: the pin in the database and the key
 // on disk disagree, so refuse rather than seal a capsule nobody's custodians can open.
@@ -27,7 +25,7 @@ const errRecoveryKeyMismatch = "Recovery key file does not match the pinned key 
 
 // privateRecoveryHint names the opt-in, so a refused LAN destination is not a dead end. Both
 // the pairing and the run refusals end with it.
-const privateRecoveryHint = " (set KY_BACKUP_ALLOW_PRIVATE_RECOVERY=true for a KyRecovery on your own network)"
+const privateRecoveryHint = " (set KYPULSE_BACKUP_ALLOW_PRIVATE_RECOVERY=true for a KyRecovery on your own network)"
 
 // depositWriteBudget is how long the admin's connection may stay open for the receipt: the
 // upload budget plus room for sealing. The listener's WriteTimeout is sized for JSON replies.
@@ -104,7 +102,7 @@ func (s *Server) handleBackupDrill(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	ctx := r.Context()
-	payload, err := backup.Collect(ctx, s.config, appVersion)
+	payload, err := backup.Collect(ctx, s.config, config.AppVersion)
 	if errors.Is(err, backup.ErrNoDatabaseSnapshot) {
 		// An honest failed drill, not a 500: the operator needs to read why no backup exists.
 		s.writeJSON(w, http.StatusOK, &recoveryclient.DrillResult{Passed: false, ErrorMessage: err.Error(),
@@ -151,7 +149,7 @@ func (s *Server) handleExportCapsule(w http.ResponseWriter, r *http.Request) {
 		s.writeError(w, http.StatusInternalServerError, "Failed to load recovery key")
 		return
 	}
-	payload, err := backup.Collect(ctx, s.config, appVersion)
+	payload, err := backup.Collect(ctx, s.config, config.AppVersion)
 	if errors.Is(err, backup.ErrNoDatabaseSnapshot) {
 		s.writeError(w, http.StatusPreconditionFailed, err.Error())
 		return
@@ -283,14 +281,14 @@ func (s *Server) handleRunBackup(w http.ResponseWriter, r *http.Request) {
 	actor := s.actorID(r)
 	ctx := context.WithoutCancel(r.Context())
 
-	rc, err := backup.RunConfig(s.config, appVersion)
+	rc, err := backup.RunConfig(s.config, config.AppVersion)
 	if err != nil {
 		s.writeError(w, http.StatusInternalServerError, "Failed to prepare backup configuration")
 		return
 	}
 	settings := backup.Settings(ctx, s.store.Settings())
 	res, err := recoveryclient.Run(ctx, rc, settings, func() (recoveryclient.Payload, error) {
-		return backup.Collect(ctx, s.config, appVersion)
+		return backup.Collect(ctx, s.config, config.AppVersion)
 	}, s.recovery)
 
 	action, outcome, details := recoveryclient.Outcome(res, err)
@@ -318,7 +316,7 @@ func (s *Server) handleRunBackup(w http.ResponseWriter, r *http.Request) {
 			// all. A configuration fact the operator must read, not a server fault.
 			s.writeError(w, http.StatusPreconditionFailed, err.Error())
 		case errors.Is(err, recoveryclient.ErrNoDestination):
-			s.writeError(w, http.StatusPreconditionFailed, "Nowhere to put a capsule: pair with KyRecovery or set KY_BACKUP_DIR")
+			s.writeError(w, http.StatusPreconditionFailed, "Nowhere to put a capsule: pair with KyRecovery or set KYPULSE_BACKUP_DIR")
 		case errors.Is(err, recoveryclient.ErrInProgress):
 			s.writeError(w, http.StatusConflict, "A backup is already in progress")
 		case errors.Is(err, recoveryclient.ErrKeyMismatch):
@@ -475,7 +473,7 @@ func (s *Server) handleBackupStatus(w http.ResponseWriter, r *http.Request) {
 		"paired":                 false,
 		"key_pinned":             false,
 		"app_name":               s.config.Server.AppName,
-		"app_version":            appVersion,
+		"app_version":            config.AppVersion,
 		"allow_private_recovery": s.config.Backup.AllowPrivateRecovery,
 		// Only the SQLite path can snapshot a database into a capsule; the screen says so.
 		"database_driver": s.config.Database.Driver,

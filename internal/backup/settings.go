@@ -5,11 +5,11 @@ import (
 	"errors"
 
 	"github.com/Busnes-app/ky-primitives/recoveryclient"
-	"github.com/Busnes-app/ky_server_base/internal/config"
-	"github.com/Busnes-app/ky_server_base/internal/store"
+	"github.com/Busnes-app/kypulse-server/internal/config"
+	"github.com/Busnes-app/kypulse-server/internal/store"
 )
 
-const recoveryTokenLabel = "ky_server_base:setting:kyrecovery_token"
+const recoveryTokenLabel = "kypulse:setting:kyrecovery_token"
 
 type settingsAdapter struct {
 	ctx context.Context

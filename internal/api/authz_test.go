@@ -9,9 +9,9 @@ import (
 	"testing"
 
 	"github.com/Busnes-app/ky-primitives/password"
-	"github.com/Busnes-app/ky_server_base/internal/api"
-	"github.com/Busnes-app/ky_server_base/internal/auth"
-	"github.com/Busnes-app/ky_server_base/internal/store"
+	"github.com/Busnes-app/kypulse-server/internal/api"
+	"github.com/Busnes-app/kypulse-server/internal/auth"
+	"github.com/Busnes-app/kypulse-server/internal/store"
 )
 
 // loginAs creates a user with the given role and returns its session cookie.
@@ -68,10 +68,10 @@ func do(t *testing.T, srv *api.Server, method, path string, cookie *http.Cookie)
 }
 
 // Settings drive the login screen, so part of the payload is public. Secrets
-// (SCIM bearer token, recovery token) live in extra_settings and must not be.
+// (the webhook secret, the recovery token) live in extra_settings and must not be.
 func TestSettingsExposureByRole(t *testing.T) {
 	srv, st, _ := setupTestServer(t)
-	if err := st.Settings().SetSetting(context.Background(), "scim_token", "super-secret-bearer"); err != nil {
+	if err := st.Settings().SetSetting(context.Background(), "webhook_secret", "super-secret-value"); err != nil {
 		t.Fatalf("seed setting: %v", err)
 	}
 	if err := st.Settings().SetSetting(context.Background(), "kyrecovery_token_enc", "sealed-ciphertext-blob"); err != nil {
@@ -99,11 +99,11 @@ func TestSettingsExposureByRole(t *testing.T) {
 			t.Errorf("anonymous settings leaked %q: %v", secret, anon)
 		}
 	}
-	if bytes.Contains(do(t, srv, "GET", "/api/settings", nil).Body.Bytes(), []byte("super-secret-bearer")) {
-		t.Error("anonymous settings leaked the SCIM bearer token")
+	if bytes.Contains(do(t, srv, "GET", "/api/settings", nil).Body.Bytes(), []byte("super-secret-value")) {
+		t.Error("anonymous settings leaked a stored secret")
 	}
 
-	member := decode(do(t, srv, "GET", "/api/settings", loginAs(t, srv, st, "bob", "user")))
+	member := decode(do(t, srv, "GET", "/api/settings", loginAs(t, srv, st, "bob", "viewer")))
 	if member["db_driver"] == nil {
 		t.Errorf("authenticated settings should include db_driver, got %v", member)
 	}
@@ -113,7 +113,7 @@ func TestSettingsExposureByRole(t *testing.T) {
 
 	admin := decode(do(t, srv, "GET", "/api/settings", loginAs(t, srv, st, "alice", "admin")))
 	extra, ok := admin["extra_settings"].(map[string]any)
-	if !ok || extra["scim_token"] != "super-secret-bearer" {
+	if !ok || extra["webhook_secret"] != "super-secret-value" {
 		t.Errorf("admin should still see extra_settings, got %v", admin)
 	}
 	if _, found := extra["kyrecovery_token_enc"]; found {
@@ -148,7 +148,7 @@ func TestPrivilegedEndpointsRequireAdmin(t *testing.T) {
 				t.Errorf("anonymous: got %d, want 401", got)
 			}
 
-			member := loginAs(t, srv, st, "bob", "user")
+			member := loginAs(t, srv, st, "bob", "viewer")
 			if got := do(t, srv, tc.method, tc.path, member).Code; got != http.StatusForbidden {
 				t.Errorf("non-admin: got %d, want 403", got)
 			}
@@ -159,5 +159,51 @@ func TestPrivilegedEndpointsRequireAdmin(t *testing.T) {
 				t.Errorf("admin was blocked: got %d", got)
 			}
 		})
+	}
+}
+
+func TestHealthzIsPublicAndReportsTheDatabase(t *testing.T) {
+	srv, _, _ := setupTestServer(t)
+	w := do(t, srv, "GET", "/healthz", nil)
+	if w.Code != http.StatusOK {
+		t.Fatalf("got %d: %s", w.Code, w.Body.String())
+	}
+	var resp struct {
+		Schema  string `json:"schema"`
+		Service string `json:"service"`
+		Status  string `json:"status"`
+		Checks  []struct {
+			Name   string `json:"name"`
+			Status string `json:"status"`
+		} `json:"checks"`
+	}
+	if err := json.Unmarshal(w.Body.Bytes(), &resp); err != nil {
+		t.Fatalf("decode: %v", err)
+	}
+	if resp.Schema != "ky.health/1" || resp.Service != "kypulse" || resp.Status != "ok" {
+		t.Errorf("unexpected body: %s", w.Body.String())
+	}
+	if len(resp.Checks) != 1 || resp.Checks[0].Name != "database" || resp.Checks[0].Status != "ok" {
+		t.Errorf("checks = %+v", resp.Checks)
+	}
+}
+
+func TestHealthzReportsDatabaseDown(t *testing.T) {
+	srv, st, cfg := setupTestServer(t)
+	if err := st.Close(); err != nil {
+		t.Fatal(err)
+	}
+	w := do(t, srv, "GET", "/healthz", nil)
+	if w.Code != http.StatusServiceUnavailable {
+		t.Fatalf("got %d: %s", w.Code, w.Body.String())
+	}
+	body := w.Body.String()
+	if !bytes.Contains([]byte(body), []byte(`"name":"database","status":"down"`)) {
+		t.Errorf("database check not down: %s", body)
+	}
+	for _, leak := range []string{cfg.Database.DSN, "sql: database is closed", cfg.Database.DataDir} {
+		if leak != "" && bytes.Contains([]byte(body), []byte(leak)) {
+			t.Errorf("healthz leaks %q: %s", leak, body)
+		}
 	}
 }

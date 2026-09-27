@@ -11,17 +11,17 @@ import (
 	"testing"
 	"time"
 
-	"github.com/Busnes-app/ky_server_base/internal/backup"
+	"github.com/Busnes-app/kypulse-server/internal/backup"
 	"golang.org/x/sys/unix"
 )
 
 // A separate process holds the same lock used by the HTTP/CLI wrapper. Killing it
 // proves the kernel releases ownership without a stale lock-file recovery scheme.
 func TestDrillLockProcess(t *testing.T) {
-	if os.Getenv("KY_DRILL_LOCK_HELPER") != "1" {
+	if os.Getenv("KYPULSE_DRILL_LOCK_HELPER") != "1" {
 		return
 	}
-	dir := os.Getenv("KY_DRILL_LOCK_DIR")
+	dir := os.Getenv("KYPULSE_DRILL_LOCK_DIR")
 	f, err := os.OpenFile(filepath.Join(dir, "drill.lock"), os.O_CREATE|os.O_RDWR, 0600)
 	if err != nil {
 		t.Fatal(err)
@@ -35,8 +35,8 @@ func TestDrillLockProcess(t *testing.T) {
 }
 
 func TestRunDrillSerializesProcessesAndReleasesAfterExit(t *testing.T) {
-	t.Setenv("KY_PORT", "8080")
-	t.Setenv("KY_DB_DRIVER", "sqlite")
+	t.Setenv("KYPULSE_PORT", "8080")
+	t.Setenv("KYPULSE_DB_DRIVER", "sqlite")
 	cfg, _ := payloadConfig(t)
 	payload, err := backup.Collect(context.Background(), cfg, "test")
 	if err != nil {
@@ -58,7 +58,7 @@ func TestRunDrillSerializesProcessesAndReleasesAfterExit(t *testing.T) {
 	ctx, cancel := context.WithTimeout(context.Background(), 15*time.Second)
 	defer cancel()
 	cmd := exec.CommandContext(ctx, os.Args[0], "-test.run=^TestDrillLockProcess$")
-	cmd.Env = append(os.Environ(), "KY_DRILL_LOCK_HELPER=1", "KY_DRILL_LOCK_DIR="+cfg.Database.DataDir)
+	cmd.Env = append(os.Environ(), "KYPULSE_DRILL_LOCK_HELPER=1", "KYPULSE_DRILL_LOCK_DIR="+cfg.Database.DataDir)
 	cmd.Stderr = os.Stderr
 	stdin, err := cmd.StdinPipe()
 	if err != nil {

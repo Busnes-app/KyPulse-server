@@ -7,8 +7,8 @@ build-web:
 	@cd web && npm ci && npm run build
 
 build:
-	@echo "==> Compiling ky_server_base binary..."
-	@go build -o ky_server_base ./cmd/server
+	@echo "==> Compiling kypulse binary..."
+	@go build -o kypulse ./cmd/server
 
 test:
 	@echo "==> Running test suite..."
@@ -22,7 +22,7 @@ test-race:
 # Runs the same suite against PostgreSQL; needs a reachable server.
 test-postgres:
 	@echo "==> Running test suite against PostgreSQL..."
-	@KY_TEST_POSTGRES_DSN="$${KY_TEST_POSTGRES_DSN:-postgres://postgres:postgrespassword@127.0.0.1:5432/ky_server?sslmode=disable}" go test -count=1 ./...
+	@KYPULSE_TEST_POSTGRES_DSN="$${KYPULSE_TEST_POSTGRES_DSN:-postgres://postgres:postgrespassword@127.0.0.1:5432/kypulse?sslmode=disable}" go test -count=1 ./...
 
 test-web:
 	@echo "==> Running frontend test suite..."
@@ -46,10 +46,10 @@ ci: tidy-check lint test-race test-web smoke
 	@echo "==> Local CI checks passed"
 
 run: build
-	@./ky_server_base
+	@./kypulse
 
 docker-build:
-	@docker build -t ky_server_base .
+	@docker build -t kypulse .
 
 clean:
-	@rm -rf ky_server_base web/dist web/node_modules data/ backups/ coverage.out
+	@rm -rf kypulse web/dist web/node_modules data/ backups/ coverage.out

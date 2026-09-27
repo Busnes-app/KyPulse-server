@@ -19,11 +19,12 @@ import (
 	"time"
 
 	"github.com/Busnes-app/ky-primitives/capsule"
+	"github.com/Busnes-app/ky-primitives/logging"
 	"github.com/Busnes-app/ky-primitives/recoveryclient"
 	"github.com/Busnes-app/ky-primitives/recoverykey"
-	"github.com/Busnes-app/ky_server_base/internal/api"
-	"github.com/Busnes-app/ky_server_base/internal/auth"
-	"github.com/Busnes-app/ky_server_base/internal/store"
+	"github.com/Busnes-app/kypulse-server/internal/api"
+	"github.com/Busnes-app/kypulse-server/internal/auth"
+	"github.com/Busnes-app/kypulse-server/internal/store"
 )
 
 // adminDo is adminPost with a method and a JSON body.
@@ -133,7 +134,7 @@ func TestRunWithPinnedKeyAndNoDestination(t *testing.T) {
 		t.Fatal(w.Body.String())
 	}
 	w := adminPost(t, srv, session, "/api/backup/deposit")
-	if w.Code != http.StatusPreconditionFailed || !strings.Contains(w.Body.String(), "pair with KyRecovery or set KY_BACKUP_DIR") {
+	if w.Code != http.StatusPreconditionFailed || !strings.Contains(w.Body.String(), "pair with KyRecovery or set KYPULSE_BACKUP_DIR") {
 		t.Fatalf("no destination: got %d: %s", w.Code, w.Body.String())
 	}
 	if fake.got != nil {
@@ -317,8 +318,8 @@ func TestExportCapsuleOnlyPOST(t *testing.T) {
 }
 
 func TestDrillReportsBusyAndRunsDecodedChecks(t *testing.T) {
-	t.Setenv("KY_PORT", "8080")
-	t.Setenv("KY_DB_DRIVER", "sqlite")
+	t.Setenv("KYPULSE_PORT", "8080")
+	t.Setenv("KYPULSE_DB_DRIVER", "sqlite")
 	srv, st, cfg := setupSQLiteServer(t)
 	session := loginAs(t, srv, st, "drill-admin", "admin")
 	f, err := os.OpenFile(filepath.Join(cfg.Database.DataDir, "drill.lock"), os.O_CREATE|os.O_RDWR, 0600)
@@ -347,7 +348,7 @@ func TestDrillReportsBusyAndRunsDecodedChecks(t *testing.T) {
 	if !result.Passed {
 		t.Fatalf("drill failed: %+v", result)
 	}
-	for _, name := range []string{"Required Files", "SQLite Integrity: data/ky_server.db", "Environment: KY_PORT", "Environment: KY_DB_DRIVER"} {
+	for _, name := range []string{"Required Files", "SQLite Integrity: data/kypulse.db", "Environment: KYPULSE_PORT", "Environment: KYPULSE_DB_DRIVER"} {
 		found := false
 		for _, check := range result.Checks {
 			if check.Name == name && check.Passed {
@@ -383,7 +384,7 @@ func TestRunRefusesAPrivateDestination(t *testing.T) {
 	if w.Code != http.StatusPreconditionFailed {
 		t.Fatalf("private destination: got %d, want 412: %s", w.Code, w.Body.String())
 	}
-	if !strings.Contains(w.Body.String(), "KY_BACKUP_ALLOW_PRIVATE_RECOVERY") {
+	if !strings.Contains(w.Body.String(), "KYPULSE_BACKUP_ALLOW_PRIVATE_RECOVERY") {
 		t.Errorf("body does not name the switch: %s", w.Body.String())
 	}
 }
@@ -686,7 +687,11 @@ func TestDetachedRegistrationCoversTheAuthLookup(t *testing.T) {
 	session := loginAs(t, srv, st, "alice", "admin")
 
 	blocked := &blockingSessions{SessionStore: st.Sessions(), entered: make(chan struct{}), release: make(chan struct{})}
-	stalled := api.NewServer(cfg, &blockingSessionStore{Store: st, sessions: blocked})
+	lg, err := logging.New(logging.Config{App: "kypulse", Out: io.Discard})
+	if err != nil {
+		t.Fatalf("logger: %v", err)
+	}
+	stalled := api.NewServer(cfg, &blockingSessionStore{Store: st, sessions: blocked}, lg)
 
 	go func() {
 		body, _ := json.Marshal(map[string]string{"public_key": "", "threshold": ""})

@@ -10,6 +10,7 @@ import (
 	"errors"
 	"fmt"
 	"github.com/Busnes-app/ky-primitives/capsule"
+	"io"
 	"net/http"
 	"net/http/httptest"
 	"os"
@@ -20,22 +21,23 @@ import (
 	"time"
 
 	"github.com/Busnes-app/ky-primitives/keyfile"
+	"github.com/Busnes-app/ky-primitives/logging"
 	"github.com/Busnes-app/ky-primitives/password"
 	"github.com/Busnes-app/ky-primitives/recoveryclient"
 	"github.com/Busnes-app/ky-primitives/recoverykey"
 	"github.com/Busnes-app/ky-primitives/totp"
-	"github.com/Busnes-app/ky_server_base/internal/api"
-	"github.com/Busnes-app/ky_server_base/internal/auth"
-	"github.com/Busnes-app/ky_server_base/internal/backup"
-	"github.com/Busnes-app/ky_server_base/internal/config"
-	"github.com/Busnes-app/ky_server_base/internal/crypto"
-	"github.com/Busnes-app/ky_server_base/internal/store"
-	"github.com/Busnes-app/ky_server_base/internal/testdb"
+	"github.com/Busnes-app/kypulse-server/internal/api"
+	"github.com/Busnes-app/kypulse-server/internal/auth"
+	"github.com/Busnes-app/kypulse-server/internal/backup"
+	"github.com/Busnes-app/kypulse-server/internal/config"
+	"github.com/Busnes-app/kypulse-server/internal/crypto"
+	"github.com/Busnes-app/kypulse-server/internal/store"
+	"github.com/Busnes-app/kypulse-server/internal/testdb"
 )
 
 func setupTestServer(t *testing.T) (*api.Server, store.Store, *config.Config) {
 	t.Helper()
-	t.Setenv("KY_DATA_DIR", t.TempDir())
+	t.Setenv("KYPULSE_DATA_DIR", t.TempDir())
 	cfg, _ := config.LoadFromEnv()
 	db := testdb.Config(t)
 	db.DataDir = cfg.Database.DataDir // testdb only picks the backend; keep the temp data dir
@@ -48,7 +50,11 @@ func setupTestServer(t *testing.T) (*api.Server, store.Store, *config.Config) {
 	}
 	t.Cleanup(func() { _ = st.Close() })
 
-	srv := api.NewServer(cfg, st)
+	lg, err := logging.New(logging.Config{App: "kypulse", Out: io.Discard})
+	if err != nil {
+		t.Fatalf("logger: %v", err)
+	}
+	srv := api.NewServer(cfg, st, lg)
 	return srv, st, cfg
 }
 
@@ -125,18 +131,7 @@ func TestAuthAndSessionEndpoints(t *testing.T) {
 		t.Fatalf("settings expected 200 OK, got %d", w.Code)
 	}
 
-	// 4. /api/devices/pair/init
-	pairReq := httptest.NewRequest("POST", "/api/devices/pair/init", nil)
-	pairReq.AddCookie(sessionCookie)
-	pairReq.AddCookie(csrfCookie)
-	pairReq.Header.Set(auth.HeaderCSRF, csrfCookie.Value)
-	w = httptest.NewRecorder()
-	srv.ServeHTTP(w, pairReq)
-	if w.Code != http.StatusOK {
-		t.Fatalf("pair init expected 200 OK, got %d", w.Code)
-	}
-
-	// 5. /api/backup/drill
+	// 4. /api/backup/drill
 	drillReq := httptest.NewRequest("POST", "/api/backup/drill", nil)
 	drillReq.AddCookie(sessionCookie)
 	drillReq.AddCookie(csrfCookie)
@@ -152,7 +147,7 @@ func TestLoginRejectsUnparseableStoredHash(t *testing.T) {
 	srv, st, _ := setupTestServer(t)
 	_ = st.Users().CreateUser(context.Background(), &store.User{
 		ID: "usr_bad", Username: "bad", PasswordHash: "not-a-phc-string",
-		Role: "user", Status: "active", SSOProvider: "local",
+		Role: store.RoleViewer, Status: "active", SSOProvider: "local",
 	})
 	body, _ := json.Marshal(map[string]string{"username": "bad", "password": "whatever-long-enough"})
 	req := httptest.NewRequest("POST", "/api/auth/login", bytes.NewReader(body))
@@ -211,7 +206,7 @@ func TestMFATOTPRefusesReplay(t *testing.T) {
 	secret, _ := totp.GenerateSecret()
 	enc, _ := crypto.EncryptAESGCM([]byte(secret), cfg.Security.EncryptionKey)
 	_ = st.Users().CreateUser(ctx, &store.User{
-		ID: "usr_mfa", Username: "mfa", Role: "user", Status: "active", SSOProvider: "local",
+		ID: "usr_mfa", Username: "mfa", Role: store.RoleViewer, Status: "active", SSOProvider: "local",
 		TOTPEnabled: true, TOTPSecretEnc: enc,
 	})
 	code, _ := totp.Code(secret, time.Now())
@@ -478,51 +473,6 @@ func TestMFALimiterKeyIsBounded(t *testing.T) {
 	}
 }
 
-// The poll route is unauthenticated: anyone holding a secret must not learn the code, the
-// user behind it, or the device's push token.
-func TestPairPollProjectsTheRecord(t *testing.T) {
-	srv, st, _ := setupTestServer(t)
-
-	pairing := &store.DevicePairing{
-		Code:       "424242",
-		Secret:     "s3cr3t-pairing-secret",
-		UserID:     "usr_alice",
-		DeviceName: "Alice Phone",
-		Platform:   "android",
-		PushToken:  "push-token-value",
-		Status:     "pending",
-		CreatedAt:  time.Now().UTC(),
-		ExpiresAt:  time.Now().UTC().Add(90 * time.Second),
-	}
-	if err := st.Devices().CreatePairing(context.Background(), pairing); err != nil {
-		t.Fatal(err)
-	}
-
-	req := httptest.NewRequest("GET", "/api/devices/pair/poll?secret="+pairing.Secret, nil)
-	w := httptest.NewRecorder()
-	srv.ServeHTTP(w, req)
-	if w.Code != http.StatusOK {
-		t.Fatalf("poll expected 200, got %d: %s", w.Code, w.Body.String())
-	}
-
-	body := w.Body.String()
-	for _, leak := range []string{"secret", "push_token", "code", "user_id", pairing.Secret, pairing.Code, pairing.PushToken, pairing.UserID} {
-		if strings.Contains(body, leak) {
-			t.Errorf("poll response leaks %q: %s", leak, body)
-		}
-	}
-	var got map[string]any
-	if err := json.Unmarshal(w.Body.Bytes(), &got); err != nil {
-		t.Fatal(err)
-	}
-	if got["status"] != "pending" || got["device_name"] != "Alice Phone" {
-		t.Errorf("poll response lost the fields the client needs: %v", got)
-	}
-	if _, ok := got["expires_at"]; !ok {
-		t.Errorf("poll response has no expires_at: %v", got)
-	}
-}
-
 // Eviction must not favour long windows. Login windows are a minute and MFA windows a minute,
 // but any caller that can mint keys at all would starve whichever window is shortest.
 func TestFullLimiterStillThrottlesLogin(t *testing.T) {
@@ -575,7 +525,7 @@ func TestMFAPerAccountWindow(t *testing.T) {
 	passHash, _ := password.Hash("SuperSecretPass123!")
 	if err := st.Users().CreateUser(ctx, &store.User{
 		ID: "usr_carol", Username: "carol", Email: "carol@busnes.app",
-		PasswordHash: passHash, Role: "user", Status: "active", SSOProvider: "local",
+		PasswordHash: passHash, Role: store.RoleViewer, Status: "active", SSOProvider: "local",
 	}); err != nil {
 		t.Fatal(err)
 	}
@@ -651,7 +601,7 @@ func TestLimiterIgnoresForgedForwardedFor(t *testing.T) {
 // Behind a configured trusted proxy the peer is the proxy for every request. Without the
 // forwarded client in the key, one bucket would cover the whole instance.
 func TestLimiterSplitsPerForwardedClientBehindTrustedProxy(t *testing.T) {
-	t.Setenv("KY_TRUSTED_PROXIES", "192.0.2.0/24")
+	t.Setenv("KYPULSE_TRUSTED_PROXIES", "192.0.2.0/24")
 	srv, _, _ := setupTestServer(t)
 
 	for i := 1; i <= 20; i++ {
@@ -669,7 +619,7 @@ func TestLimiterSplitsPerForwardedClientBehindTrustedProxy(t *testing.T) {
 // A chain that ends in another trusted proxy names no client we can attribute to, so the
 // requests fall back to the peer and share the proxy's own window.
 func TestLimiterFallsBackWhenTheChainIsAllTrusted(t *testing.T) {
-	t.Setenv("KY_TRUSTED_PROXIES", "192.0.2.0/24")
+	t.Setenv("KYPULSE_TRUSTED_PROXIES", "192.0.2.0/24")
 	srv, _, _ := setupTestServer(t)
 
 	for i := 1; i <= 20; i++ {
@@ -697,7 +647,7 @@ func TestSessionIPIgnoresForgedForwardedFor(t *testing.T) {
 	hash, _ := password.Hash("SuperSecretPass123!")
 	if err := st.Users().CreateUser(context.Background(), &store.User{
 		ID: "usr_dave", Username: "dave", PasswordHash: hash,
-		Role: "user", Status: "active", SSOProvider: "local",
+		Role: store.RoleViewer, Status: "active", SSOProvider: "local",
 	}); err != nil {
 		t.Fatal(err)
 	}
@@ -782,7 +732,7 @@ func storePairing(t *testing.T, cfg *config.Config, st store.Store, url, token s
 // only the SQLite path can. The Postgres CI job would otherwise (correctly) refuse them.
 func setupSQLiteServer(t *testing.T) (*api.Server, store.Store, *config.Config) {
 	t.Helper()
-	t.Setenv("KY_TEST_POSTGRES_DSN", "")
+	t.Setenv("KYPULSE_TEST_POSTGRES_DSN", "")
 	return setupTestServer(t)
 }
 
@@ -974,7 +924,7 @@ func TestMFAChallengeRejectedAfterPasswordRotation(t *testing.T) {
 	secret, _ := totp.GenerateSecret()
 	enc, _ := crypto.EncryptAESGCM([]byte(secret), cfg.Security.EncryptionKey)
 	if err := st.Users().CreateUser(ctx, &store.User{
-		ID: "usr_mfa", Username: "mfa", Role: "user", Status: "active", SSOProvider: "local",
+		ID: "usr_mfa", Username: "mfa", Role: store.RoleViewer, Status: "active", SSOProvider: "local",
 		PasswordHash: "old", TOTPEnabled: true, TOTPSecretEnc: enc,
 	}); err != nil {
 		t.Fatal(err)

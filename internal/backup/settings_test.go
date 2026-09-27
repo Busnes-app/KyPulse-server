@@ -11,9 +11,9 @@ import (
 	"testing"
 
 	"github.com/Busnes-app/ky-primitives/recoveryclient"
-	"github.com/Busnes-app/ky_server_base/internal/backup"
-	"github.com/Busnes-app/ky_server_base/internal/config"
-	"github.com/Busnes-app/ky_server_base/internal/store"
+	"github.com/Busnes-app/kypulse-server/internal/backup"
+	"github.com/Busnes-app/kypulse-server/internal/config"
+	"github.com/Busnes-app/kypulse-server/internal/store"
 )
 
 // sqliteInstance is a fresh SQLite store in a temp data dir, the way every backup adapter
@@ -26,7 +26,7 @@ func sqliteInstance(t *testing.T) (*config.Config, store.Store) {
 	cfg.Server.Port = 8080
 	cfg.Database.Driver = "sqlite"
 	cfg.Database.DataDir = dir
-	cfg.Database.DSN = filepath.Join(dir, "ky_server.db") + "?_pragma=busy_timeout(5000)&_pragma=journal_mode(WAL)&_pragma=foreign_keys(ON)"
+	cfg.Database.DSN = filepath.Join(dir, "kypulse.db") + "?_pragma=busy_timeout(5000)&_pragma=journal_mode(WAL)&_pragma=foreign_keys(ON)"
 	cfg.Security.EncryptionKey = bytes.Repeat([]byte{1}, 32)
 	st, err := store.Open(context.Background(), cfg.Database)
 	if err != nil {

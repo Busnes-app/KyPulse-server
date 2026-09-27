@@ -11,9 +11,9 @@ type User struct {
 	Email              string     `json:"email"`
 	DisplayName        string     `json:"display_name"`
 	PasswordHash       string     `json:"-"`            // Never serialized to JSON
-	Role               string     `json:"role"`         // "admin", "user", "manager"
+	Role               string     `json:"role"`         // RoleAdmin or RoleViewer
 	Status             string     `json:"status"`       // "active", "suspended", "inactive"
-	SSOProvider        string     `json:"sso_provider"` // "local", "kysignon", "oidc", "saml", "scim"
+	SSOProvider        string     `json:"sso_provider"` // "local", "kysignon", "oidc", "saml"
 	SSOSubject         string     `json:"sso_subject,omitempty"`
 	TOTPSecretEnc      string     `json:"-"` // AES-256-GCM encrypted
 	TOTPEnabled        bool       `json:"totp_enabled"`
@@ -42,36 +42,11 @@ type MFAChallenge struct {
 	ExpiresAt time.Time
 }
 
-// DevicePairing represents a 90-second ephemeral session to link mobile/PWA wrappers.
-type DevicePairing struct {
-	// Code, Secret and PushToken never serialise: this record is reached by unauthenticated
-	// pair/verify and pair/poll callers. A handler that must return one needs its own type.
-	Code       string    `json:"-"` // 6-digit verification code
-	Secret     string    `json:"-"` // Ephemeral secret for exchange
-	UserID     string    `json:"user_id,omitempty"`
-	DeviceName string    `json:"device_name,omitempty"`
-	Platform   string    `json:"platform,omitempty"` // "android", "ios", "pwa", "desktop"
-	PushToken  string    `json:"-"`
-	Status     string    `json:"status"` // "pending", "approved", "consumed", "expired"
-	CreatedAt  time.Time `json:"created_at"`
-	ExpiresAt  time.Time `json:"expires_at"`
-}
-
-// Group represents a SCIM/RBAC user group.
-type Group struct {
-	ID          string    `json:"id"`
-	DisplayName string    `json:"display_name"`
-	ExternalID  string    `json:"external_id,omitempty"`
-	Members     []string  `json:"members,omitempty"` // User IDs
-	CreatedAt   time.Time `json:"created_at"`
-	UpdatedAt   time.Time `json:"updated_at"`
-}
-
 // AuditRecord logs security and operational events with tamper-evident structure.
 type AuditRecord struct {
 	ID        int64     `json:"id"`
 	UserID    string    `json:"user_id"`
-	Action    string    `json:"action"` // e.g. "auth.login", "scim.user_created"
+	Action    string    `json:"action"` // e.g. "auth.login", "admin.backup_run"
 	Resource  string    `json:"resource"`
 	Details   string    `json:"details,omitempty"`
 	IPAddress string    `json:"ip_address"`

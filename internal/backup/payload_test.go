@@ -10,9 +10,9 @@ import (
 	"testing"
 
 	"github.com/Busnes-app/ky-primitives/recoveryclient"
-	"github.com/Busnes-app/ky_server_base/internal/backup"
-	"github.com/Busnes-app/ky_server_base/internal/config"
-	"github.com/Busnes-app/ky_server_base/internal/store"
+	"github.com/Busnes-app/kypulse-server/internal/backup"
+	"github.com/Busnes-app/kypulse-server/internal/config"
+	"github.com/Busnes-app/kypulse-server/internal/store"
 )
 
 // payloadConfig is a real SQLite store in a temp data dir: the collectors snapshot the live
@@ -126,9 +126,9 @@ func TestSnapshotSeesUncheckpointedCommit(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	f := findFile(payload.Files, "data/ky_server.db")
+	f := findFile(payload.Files, "data/kypulse.db")
 	if f == nil {
-		t.Fatal("no data/ky_server.db in the payload")
+		t.Fatal("no data/kypulse.db in the payload")
 	}
 	restored := filepath.Join(t.TempDir(), "restored.db")
 	if err := os.WriteFile(restored, f.Data, 0600); err != nil {

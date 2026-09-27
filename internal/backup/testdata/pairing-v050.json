@@ -3,7 +3,7 @@
   "Settings": {
     "kyrecovery_key_id": "74979393feeeb9453a58370669ef087b9294fc0f1982c97f4ab6043d657a0d7c",
     "kyrecovery_threshold": "2",
-    "kyrecovery_token_enc": "fjbkcl9xBjnkxDYofIMP8s5RufYzrTG7By98vybALS0GDXSiHB/j5053o7h6puju",
+    "kyrecovery_token_enc": "sHf9qAzhNrTXlFUNvNcHpbdNugaRJqZuf0c3LJ6jkB3hksfx6qL0dIyU6xAtO0Gp",
     "kyrecovery_total_shares": "3",
     "kyrecovery_url": "https://recovery.example.test"
   },

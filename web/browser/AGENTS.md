@@ -11,7 +11,7 @@ This directory owns test setup, disposable server launch and UI assertions. The 
 ## Local Contracts
 
 - Never reuse a development or production server. Launch the compiled `.browser/server` with a minimal environment and an owned temporary data directory; remove that directory on exit.
-- Use loopback only, with `KY_APP_URL` matching the test origin. Bootstrap credentials are disposable test values, not deployment defaults.
+- Use loopback only, with `KYPULSE_APP_URL` matching the test origin. Bootstrap credentials are disposable test values, not deployment defaults.
 - Test light/dark at 390px and 1280px, using real authentication and API state. Do not disable service workers, relax CSP/CSRF, or substitute mocked responses.
 - Screenshots and failure traces live in ignored `test-results/` and CI artifacts, not production assets.
 

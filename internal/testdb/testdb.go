@@ -1,6 +1,6 @@
 // Package testdb hands tests an isolated database configuration.
 //
-// Default backend is a throwaway SQLite file. Set KY_TEST_POSTGRES_DSN to run
+// Default backend is a throwaway SQLite file. Set KYPULSE_TEST_POSTGRES_DSN to run
 // the same tests against a real Postgres instance; each caller gets its own
 // schema, dropped on cleanup.
 package testdb
@@ -13,7 +13,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/Busnes-app/ky_server_base/internal/config"
+	"github.com/Busnes-app/kypulse-server/internal/config"
 	"github.com/google/uuid"
 )
 
@@ -21,7 +21,7 @@ import (
 func Config(t *testing.T) config.DatabaseConfig {
 	t.Helper()
 
-	dsn := os.Getenv("KY_TEST_POSTGRES_DSN")
+	dsn := os.Getenv("KYPULSE_TEST_POSTGRES_DSN")
 	if dsn == "" {
 		return config.DatabaseConfig{
 			Driver: "sqlite",

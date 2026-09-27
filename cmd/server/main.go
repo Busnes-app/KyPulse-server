@@ -13,19 +13,23 @@ import (
 	"syscall"
 	"time"
 
+	"github.com/Busnes-app/ky-primitives/logging"
 	"github.com/Busnes-app/ky-primitives/password"
 	"github.com/Busnes-app/ky-primitives/recoveryclient"
-	"github.com/Busnes-app/ky_server_base/internal/api"
-	"github.com/Busnes-app/ky_server_base/internal/backup"
-	"github.com/Busnes-app/ky_server_base/internal/config"
-	"github.com/Busnes-app/ky_server_base/internal/crypto"
-	"github.com/Busnes-app/ky_server_base/internal/store"
+	"github.com/Busnes-app/kypulse-server/internal/api"
+	"github.com/Busnes-app/kypulse-server/internal/backup"
+	"github.com/Busnes-app/kypulse-server/internal/config"
+	"github.com/Busnes-app/kypulse-server/internal/crypto"
+	"github.com/Busnes-app/kypulse-server/internal/store"
 )
 
-// appVersion is what the capsule manifest records for this build.
-const appVersion = "1.0.0"
-
 func main() {
+	lg, err := newLogger(os.Stderr)
+	if err != nil {
+		fmt.Fprintln(os.Stderr, err)
+		os.Exit(1)
+	}
+
 	if len(os.Args) > 1 {
 		switch os.Args[1] {
 		case "init-admin":
@@ -44,12 +48,12 @@ func main() {
 			runRestore(os.Args[2:])
 			return
 		case "version":
-			fmt.Println("ky_server_base v1.0.0 (Busnes.app base platform)")
+			fmt.Println("kypulse v0.1.0 (Busnes.app kyPulse)")
 			return
 		}
 	}
 
-	runServer()
+	runServer(lg)
 }
 
 // shutdownTimeout drains in-flight HTTP requests. Short on purpose: it is spent before the
@@ -63,13 +67,13 @@ const shutdownTimeout = 5 * time.Second
 // TestComposeGracePeriodCoversTheShutdownBudget holds the two in step.
 const backupWaitTimeout = 17 * time.Minute
 
-func runServer() {
+func runServer(lg *logging.Logger) {
 	cfg, err := config.LoadFromEnv()
 	if err != nil {
-		log.Fatalf("Failed to load configuration: %v", err)
+		fatal("Failed to load configuration: %v", err)
 	}
 	if cfg.Backup.AllowPrivateRecovery {
-		log.Printf("[BACKUP] KY_BACKUP_ALLOW_PRIVATE_RECOVERY is on: RFC1918 and CGNAT destinations admitted; loopback, link-local and other reserved addresses remain refused (HTTPS still required)")
+		log.Printf("[BACKUP] KYPULSE_BACKUP_ALLOW_PRIVATE_RECOVERY is on: RFC1918 and CGNAT destinations admitted; loopback, link-local and other reserved addresses remain refused (HTTPS still required)")
 	}
 
 	ctx, cancel := context.WithCancel(context.Background())
@@ -77,21 +81,24 @@ func runServer() {
 
 	st, err := store.Open(ctx, cfg.Database)
 	if err != nil {
-		log.Fatalf("Failed to initialize database (%s): %v", cfg.Database.Driver, err)
+		fatal("Failed to initialize database (%s): %v", cfg.Database.Driver, err)
 	}
 	defer st.Close()
 
 	// Ensure default admin user exists if database is empty
 	count, _ := st.Users().CountUsers(ctx)
 	if count == 0 {
-		adminPass := os.Getenv("KY_ADMIN_PASSWORD")
+		adminPass := os.Getenv("KYPULSE_ADMIN_PASSWORD")
 		if adminPass == "" {
 			adminPass = crypto.RandomHex(12)
-			log.Printf("[SECURITY] Initial bootstrap: Created admin account. Username: admin | Password: %s", adminPass)
+			// Deliberately outside the logger: one-time, forced password change, suppressed
+			// when KYPULSE_ADMIN_PASSWORD is set. A JSON line at any level could be gated or
+			// truncated; this operator needs it unconditionally.
+			fmt.Fprintf(os.Stderr, "[SECURITY] Initial bootstrap: Created admin account. Username: admin | Password: %s\n", adminPass)
 		}
 		hash, err := password.Hash(adminPass)
 		if err != nil {
-			log.Fatalf("Failed to hash bootstrap admin password: %v", err)
+			fatal("Failed to hash bootstrap admin password: %v", err)
 		}
 		if err := st.Users().CreateUser(ctx, &store.User{
 			ID:                 fmt.Sprintf("usr_%s", crypto.RandomHex(12)),
@@ -103,11 +110,11 @@ func runServer() {
 			SSOProvider:        "local",
 			MustChangePassword: true,
 		}); err != nil {
-			log.Fatalf("Failed to create bootstrap admin: %v", err)
+			fatal("Failed to create bootstrap admin: %v", err)
 		}
 	}
 
-	srv := api.NewServer(cfg, st)
+	srv := api.NewServer(cfg, st, lg)
 	backupDone := make(chan struct{})
 	go backupLoop(ctx, cfg, st, backupDone)
 
@@ -124,14 +131,14 @@ func runServer() {
 	signal.Notify(stop, os.Interrupt, syscall.SIGTERM)
 
 	go func() {
-		log.Printf("[KY-BASE] %s listening on http://%s (DB: %s)", cfg.Server.AppName, addr, cfg.Database.Driver)
+		log.Printf("[KYPULSE] %s listening on http://%s (DB: %s)", cfg.Server.AppName, addr, cfg.Database.Driver)
 		if err := httpServer.ListenAndServe(); err != nil && err != http.ErrServerClosed {
-			log.Fatalf("HTTP server error: %v", err)
+			fatal("HTTP server error: %v", err)
 		}
 	}()
 
 	<-stop
-	log.Println("[KY-BASE] Shutting down gracefully...")
+	log.Println("[KYPULSE] Shutting down gracefully...")
 
 	shutdownCtx, shutdownCancel := context.WithTimeout(context.Background(), shutdownTimeout)
 	defer shutdownCancel()
@@ -143,7 +150,7 @@ func runServer() {
 	waitCtx, waitCancel := context.WithTimeout(context.Background(), backupWaitTimeout)
 	defer waitCancel()
 	waitForBackupWork(waitCtx, backupDone, srv.WaitDetached)
-	log.Println("[KY-BASE] Server stopped")
+	log.Println("[KYPULSE] Server stopped")
 }
 
 // waitForBackupWork blocks until the scheduler loop and every detached handler have finished,
@@ -166,30 +173,30 @@ func waitForBackupWork(ctx context.Context, backupDone <-chan struct{}, waitDeta
 	select {
 	case <-backupDone:
 	default:
-		log.Println("[KY-BASE] waiting for the scheduled backup in flight...")
+		log.Println("[KYPULSE] waiting for the scheduled backup in flight...")
 		select {
 		case <-backupDone:
 		case <-ctx.Done():
-			log.Printf("[KY-BASE] abandoning a scheduled deposit still running after %s; its receipt may be unrecorded", backupWaitTimeout)
+			log.Printf("[KYPULSE] abandoning a scheduled deposit still running after %s; its receipt may be unrecorded", backupWaitTimeout)
 		}
 	}
 	select {
 	case <-handlersDone:
 	case <-ctx.Done():
-		log.Printf("[KY-BASE] abandoning a detached backup handler still running after %s; its writes may be unrecorded", backupWaitTimeout)
+		log.Printf("[KYPULSE] abandoning a detached backup handler still running after %s; its writes may be unrecorded", backupWaitTimeout)
 	}
 }
 
 // runBackup seals one capsule and delivers it to every configured destination, for the CLI:
 // it builds its own RunConfig because a one-shot failure is reported to the operator and ends.
 func runBackup(ctx context.Context, cfg *config.Config, st store.Store) (recoveryclient.Result, error) {
-	rc, err := backup.RunConfig(cfg, appVersion)
+	rc, err := backup.RunConfig(cfg, config.AppVersion)
 	if err != nil {
 		return recoveryclient.Result{}, err
 	}
 	client := recoveryclient.NewClient(recoveryclient.Options{AllowPrivate: cfg.Backup.AllowPrivateRecovery})
 	return recoveryclient.Run(ctx, rc, backup.Settings(ctx, st.Settings()),
-		func() (recoveryclient.Payload, error) { return backup.Collect(ctx, cfg, appVersion) }, client)
+		func() (recoveryclient.Payload, error) { return backup.Collect(ctx, cfg, config.AppVersion) }, client)
 }
 
 // backupLoop polls the admin's schedule once a minute; a change in the UI needs no restart
@@ -201,7 +208,7 @@ func backupLoop(ctx context.Context, cfg *config.Config, st store.Store, done ch
 	// Built once: a deployment key that cannot seal is a configuration fault, not a run that
 	// might succeed next minute. Run never gets far enough to stamp the attempt, so retrying
 	// would log and audit a failure every tick forever.
-	rc, err := backup.RunConfig(cfg, appVersion)
+	rc, err := backup.RunConfig(cfg, config.AppVersion)
 	if err != nil {
 		log.Printf("[BACKUP] scheduler disabled: %v", err)
 		return
@@ -225,7 +232,7 @@ func backupLoop(ctx context.Context, cfg *config.Config, st store.Store, done ch
 		}
 		runCtx := context.WithoutCancel(ctx)
 		res, err := recoveryclient.Run(runCtx, rc, backup.Settings(runCtx, st.Settings()),
-			func() (recoveryclient.Payload, error) { return backup.Collect(runCtx, cfg, appVersion) }, client)
+			func() (recoveryclient.Payload, error) { return backup.Collect(runCtx, cfg, config.AppVersion) }, client)
 		if errors.Is(err, recoveryclient.ErrNotPaired) || errors.Is(err, recoveryclient.ErrNoDestination) {
 			continue // never configured; nothing to report
 		}
@@ -250,19 +257,19 @@ func recordRun(ctx context.Context, st store.Store, actor string, res recoverycl
 func runDeposit() {
 	cfg, err := config.LoadFromEnv()
 	if err != nil {
-		log.Fatalf("Failed to load configuration: %v", err)
+		fatal("Failed to load configuration: %v", err)
 	}
 	ctx := context.Background()
 	st, err := store.Open(ctx, cfg.Database)
 	if err != nil {
-		log.Fatalf("DB error: %v", err)
+		fatal("DB error: %v", err)
 	}
 	defer st.Close()
 
 	res, err := runBackup(ctx, cfg, st)
 	recordRun(ctx, st, "cli", res, err)
 	if err != nil {
-		log.Fatalf("Backup: %v", err)
+		fatal("Backup: %v", err)
 	}
 	if res.Receipt != nil {
 		log.Printf("✓ Capsule %s deposited at %s; digest %s", res.Manifest.CapsuleID, res.Receipt.DepositedAt.Format(time.RFC3339), res.Receipt.Digest)
@@ -276,29 +283,29 @@ func runInitAdmin(args []string) {
 	_ = fs.Parse(args)
 
 	if *passwordFlag == "" || len(*passwordFlag) < 12 {
-		log.Fatal("Error: -password is required and must be at least 12 characters")
+		fatal("Error: -password is required and must be at least 12 characters")
 	}
 
 	cfg, err := config.LoadFromEnv()
 	if err != nil {
-		log.Fatalf("Failed to load configuration: %v", err)
+		fatal("Failed to load configuration: %v", err)
 	}
 	ctx := context.Background()
 	st, err := store.Open(ctx, cfg.Database)
 	if err != nil {
-		log.Fatalf("DB error: %v", err)
+		fatal("DB error: %v", err)
 	}
 	defer st.Close()
 
 	hash, err := password.Hash(*passwordFlag)
 	if err != nil {
-		log.Fatalf("Password hashing error: %v", err)
+		fatal("Password hashing error: %v", err)
 	}
 
 	existing, err := st.Users().GetUserByUsername(ctx, *username)
 	if err == nil && existing != nil {
 		if err := st.Users().ResetAdminPassword(ctx, existing.ID, hash); err != nil {
-			log.Fatalf("Failed to update admin: %v", err)
+			fatal("Failed to update admin: %v", err)
 		}
 		log.Printf("✓ Admin user %q password successfully reset", *username)
 		return
@@ -316,16 +323,16 @@ func runInitAdmin(args []string) {
 	}
 
 	if err := st.Users().CreateUser(ctx, user); err != nil {
-		log.Fatalf("Failed to create admin: %v", err)
+		fatal("Failed to create admin: %v", err)
 	}
 	log.Printf("✓ Admin user %q created successfully", *username)
 }
 
 // collectFiles is what every CLI seal uses; the sealed-only members are safe here and nowhere else.
 func collectFiles(ctx context.Context, cfg *config.Config) recoveryclient.Payload {
-	payload, err := backup.Collect(ctx, cfg, appVersion)
+	payload, err := backup.Collect(ctx, cfg, config.AppVersion)
 	if err != nil {
-		log.Fatalf("Failed to collect backup files: %v", err)
+		fatal("Failed to collect backup files: %v", err)
 	}
 	return payload
 }
@@ -333,19 +340,19 @@ func collectFiles(ctx context.Context, cfg *config.Config) recoveryclient.Payloa
 func runBackupDrill(args []string) {
 	cfg, err := config.LoadFromEnv()
 	if err != nil {
-		log.Fatalf("Failed to load configuration: %v", err)
+		fatal("Failed to load configuration: %v", err)
 	}
 	ctx := context.Background()
 	st, err := store.Open(ctx, cfg.Database)
 	if err != nil {
-		log.Fatalf("DB error: %v", err)
+		fatal("DB error: %v", err)
 	}
 	defer st.Close()
 
 	payload := collectFiles(ctx, cfg)
 	result, err := backup.RunDrill(ctx, cfg, payload)
 	if err != nil {
-		log.Fatalf("Drill execution error: %v", err)
+		fatal("Drill execution error: %v", err)
 	}
 
 	fmt.Printf("\n=== Feature 0: KyBackup Restore Drill Summary ===\n")
@@ -368,29 +375,29 @@ func runExportCapsule(args []string) {
 
 	cfg, err := config.LoadFromEnv()
 	if err != nil {
-		log.Fatalf("Failed to load configuration: %v", err)
+		fatal("Failed to load configuration: %v", err)
 	}
 	ctx := context.Background()
 	st, err := store.Open(ctx, cfg.Database)
 	if err != nil {
-		log.Fatalf("DB error: %v", err)
+		fatal("DB error: %v", err)
 	}
 	defer st.Close()
 
 	key, err := recoveryclient.LoadRecoveryKey(cfg.Database.DataDir, backup.Settings(ctx, st.Settings()))
 	if err != nil {
-		log.Fatalf("Recovery key: %v", err)
+		fatal("Recovery key: %v", err)
 	}
 	raw, m, err := recoveryclient.Seal(collectFiles(ctx, cfg), key)
 	if err != nil {
-		log.Fatalf("Seal: %v", err)
+		fatal("Seal: %v", err)
 	}
 	path := *out
 	if path == "" {
 		path = recoveryclient.FilenameSafe(m.CapsuleID) + ".kycap"
 	}
 	if err := os.WriteFile(path, raw, 0600); err != nil {
-		log.Fatalf("Write: %v", err)
+		fatal("Write: %v", err)
 	}
 	log.Printf("✓ Capsule %s sealed to recovery key %s, written to %s (%d bytes)", m.CapsuleID, m.RecoveryKeyID, path, len(raw))
 }
@@ -412,9 +419,9 @@ func runRestore(args []string) {
 	fs := flag.NewFlagSet("restore", flag.ExitOnError)
 	capsulePath := fs.String("capsule", "", "path to the .kycap file")
 	target := fs.String("to", "", "empty directory to restore into")
-	service := fs.String("service", "", "expected service name (default: $KY_APP_NAME)")
+	service := fs.String("service", "", "expected service name (default: $KYPULSE_APP_NAME)")
 	fs.Usage = func() {
-		fmt.Fprint(os.Stderr, "Usage: ky_server_base restore -capsule <file.kycap> -to <dir> [-service <name>]\n\n"+
+		fmt.Fprint(os.Stderr, "Usage: kypulse restore -capsule <file.kycap> -to <dir> [-service <name>]\n\n"+
 			"Custodian shares are read from stdin, one ky2-... share per line, and never from\n"+
 			"the command line: argv is world-readable and lands in shell history.\n\n")
 		fs.PrintDefaults()
@@ -427,13 +434,13 @@ func runRestore(args []string) {
 	if *service == "" {
 		// Not config.LoadFromEnv: it mints <DataDir>/encryption.key as a side effect, and a
 		// recovery host has no business growing a key of its own mid-ceremony.
-		*service = os.Getenv("KY_APP_NAME")
+		*service = os.Getenv("KYPULSE_APP_NAME")
 	}
 	if *service == "" {
 		*service = config.DefaultAppName
 	}
 	if *service == "" {
-		log.Fatal("Error: -service is required when KY_APP_NAME is not set")
+		fatal("Error: -service is required when KYPULSE_APP_NAME is not set")
 	}
 
 	if stdinIsTerminal() {
@@ -441,12 +448,12 @@ func runRestore(args []string) {
 	}
 	shares, err := recoveryclient.ReadShares(os.Stdin)
 	if err != nil {
-		log.Fatalf("Reading shares: %v", err)
+		fatal("Reading shares: %v", err)
 	}
 	if len(shares) == 0 {
-		log.Fatal("Error: no custodian shares on stdin")
+		fatal("Error: no custodian shares on stdin")
 	}
 	if err := restore(*capsulePath, *target, *service, shares, os.Stdout); err != nil {
-		log.Fatalf("Restore failed: %v", err)
+		fatal("Restore failed: %v", err)
 	}
 }

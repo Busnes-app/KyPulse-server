@@ -9,11 +9,11 @@ import (
 	"testing"
 	"time"
 
-	"github.com/Busnes-app/ky_server_base/internal/config"
-	"github.com/Busnes-app/ky_server_base/internal/crypto"
-	"github.com/Busnes-app/ky_server_base/internal/sso"
-	"github.com/Busnes-app/ky_server_base/internal/store"
-	"github.com/Busnes-app/ky_server_base/internal/testdb"
+	"github.com/Busnes-app/kypulse-server/internal/config"
+	"github.com/Busnes-app/kypulse-server/internal/crypto"
+	"github.com/Busnes-app/kypulse-server/internal/sso"
+	"github.com/Busnes-app/kypulse-server/internal/store"
+	"github.com/Busnes-app/kypulse-server/internal/testdb"
 )
 
 func TestOAuthAuthorizationURLUsesDiscoveryAndPKCE(t *testing.T) {
@@ -64,7 +64,7 @@ func TestKySignOnWebhookSync(t *testing.T) {
 		Username:    "bob",
 		Email:       "bob@busnes.app",
 		DisplayName: "Bob Engineer",
-		Role:        "user",
+		Role:        "viewer",
 		Status:      "active",
 		Timestamp:   time.Now().Unix(),
 	}
@@ -109,4 +109,20 @@ func TestSAMLServiceProvider(t *testing.T) {
 		}
 	}
 
+}
+
+func TestRoleForMapsUnknownRolesToViewer(t *testing.T) {
+	cases := map[string]string{
+		"admin":   "admin",
+		"viewer":  "viewer",
+		"user":    "viewer",
+		"manager": "viewer",
+		"":        "viewer",
+		"Admin":   "viewer",
+	}
+	for claimed, want := range cases {
+		if got := sso.RoleFor(claimed); got != want {
+			t.Errorf("RoleFor(%q) = %q, want %q", claimed, got, want)
+		}
+	}
 }

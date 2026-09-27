@@ -24,7 +24,7 @@ const PAIRED = {
   threshold: 2,
   total_shares: 3,
   database_driver: 'sqlite',
-  members: ['data/ky_server.db'],
+  members: ['data/kypulse.db'],
 };
 
 afterEach(() => {
@@ -38,7 +38,7 @@ describe('Backup', () => {
     render(<Backup />);
     expect(await screen.findByText(/nowhere to go/i)).toBeTruthy();
     expect(screen.getByText(/automatic backups are off/i)).toBeTruthy();
-    expect(screen.getByText(/KY_BACKUP_DIR not set/)).toBeTruthy();
+    expect(screen.getByText(/KYPULSE_BACKUP_DIR not set/)).toBeTruthy();
   });
 
   it('never renders the token', async () => {
@@ -51,12 +51,12 @@ describe('Backup', () => {
       threshold: 2,
       total_shares: 3,
       database_driver: 'sqlite',
-      members: ['data/ky_server.db'],
+      members: ['data/kypulse.db'],
     });
     const { container } = render(<Backup />);
     expect(await screen.findByText('https://recovery.example')).toBeTruthy();
     expect(container.textContent).not.toMatch(/token/i);
-    expect(screen.getByText('data/ky_server.db')).toBeTruthy();
+    expect(screen.getByText('data/kypulse.db')).toBeTruthy();
     expect(screen.getByRole('button', { name: /unpair/i })).toBeTruthy();
   });
 

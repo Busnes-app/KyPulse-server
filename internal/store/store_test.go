@@ -6,8 +6,8 @@ import (
 	"testing"
 	"time"
 
-	"github.com/Busnes-app/ky_server_base/internal/store"
-	"github.com/Busnes-app/ky_server_base/internal/testdb"
+	"github.com/Busnes-app/kypulse-server/internal/store"
+	"github.com/Busnes-app/kypulse-server/internal/testdb"
 	"github.com/google/uuid"
 )
 
@@ -80,12 +80,12 @@ func TestUserStoreLifecycle(t *testing.T) {
 
 	// 5. Update
 	user.DisplayName = "Alice Operations"
-	user.Role = "manager"
+	user.Role = store.RoleViewer
 	if err := st.Users().UpdateUser(ctx, user); err != nil {
 		t.Fatalf("UpdateUser error: %v", err)
 	}
 	gotUpdated, _ := st.Users().GetUserByID(ctx, userID)
-	if gotUpdated.DisplayName != "Alice Operations" || gotUpdated.Role != "manager" {
+	if gotUpdated.DisplayName != "Alice Operations" || gotUpdated.Role != store.RoleViewer {
 		t.Errorf("update not reflected: %+v", gotUpdated)
 	}
 
@@ -115,7 +115,7 @@ func TestSessionStoreLifecycle(t *testing.T) {
 	user := &store.User{
 		ID:       userID,
 		Username: "bob",
-		Role:     "user",
+		Role:     store.RoleViewer,
 		Status:   "active",
 	}
 	_ = st.Users().CreateUser(ctx, user)
@@ -147,81 +147,6 @@ func TestSessionStoreLifecycle(t *testing.T) {
 	}
 	if _, err := st.Sessions().GetSession(ctx, tokenHash); err != store.ErrNotFound {
 		t.Fatalf("expected ErrNotFound after delete, got %v", err)
-	}
-}
-
-func TestDevicePairingLifecycle(t *testing.T) {
-	ctx := context.Background()
-	st := newTestStore(t)
-
-	pairing := &store.DevicePairing{
-		Secret:     "secret-pairing-token-abc",
-		Code:       "849201",
-		DeviceName: "Yoshi's Pixel 9",
-		Platform:   "android",
-		Status:     "pending",
-		CreatedAt:  time.Now().UTC(),
-		ExpiresAt:  time.Now().UTC().Add(90 * time.Second),
-	}
-
-	if err := st.Devices().CreatePairing(ctx, pairing); err != nil {
-		t.Fatalf("CreatePairing error: %v", err)
-	}
-
-	byCode, err := st.Devices().GetPairingByCode(ctx, "849201")
-	if err != nil {
-		t.Fatalf("GetPairingByCode error: %v", err)
-	}
-	if byCode.Secret != "secret-pairing-token-abc" {
-		t.Errorf("unexpected secret: %s", byCode.Secret)
-	}
-
-	if err := st.Devices().ConsumePairing(ctx, pairing.Secret, "Pixel", "android", "fcm-token-xyz"); err != nil {
-		t.Fatalf("ConsumePairing error: %v", err)
-	}
-
-	updated, _ := st.Devices().GetPairingBySecret(ctx, pairing.Secret)
-	if updated.Status != "consumed" || updated.PushToken != "fcm-token-xyz" {
-		t.Errorf("pairing update failed: %+v", updated)
-	}
-}
-
-func TestGroupStoreAndMembers(t *testing.T) {
-	ctx := context.Background()
-	st := newTestStore(t)
-
-	u1 := &store.User{ID: uuid.NewString(), Username: "u1", Role: "user", Status: "active"}
-	u2 := &store.User{ID: uuid.NewString(), Username: "u2", Role: "user", Status: "active"}
-	_ = st.Users().CreateUser(ctx, u1)
-	_ = st.Users().CreateUser(ctx, u2)
-
-	grp := &store.Group{
-		ID:          uuid.NewString(),
-		DisplayName: "Engineering",
-		ExternalID:  "okta-grp-eng-001",
-	}
-
-	if err := st.Groups().CreateGroup(ctx, grp); err != nil {
-		t.Fatalf("CreateGroup error: %v", err)
-	}
-
-	_ = st.Groups().AddGroupMember(ctx, grp.ID, u1.ID)
-	_ = st.Groups().AddGroupMember(ctx, grp.ID, u2.ID)
-
-	got, err := st.Groups().GetGroupByID(ctx, grp.ID)
-	if err != nil {
-		t.Fatalf("GetGroupByID error: %v", err)
-	}
-	if len(got.Members) != 2 {
-		t.Errorf("expected 2 members, got %d", len(got.Members))
-	}
-
-	u1Groups, err := st.Groups().GetUserGroups(ctx, u1.ID)
-	if err != nil {
-		t.Fatalf("GetUserGroups error: %v", err)
-	}
-	if len(u1Groups) != 1 || u1Groups[0].DisplayName != "Engineering" {
-		t.Errorf("unexpected user groups: %+v", u1Groups)
 	}
 }
 
@@ -259,7 +184,7 @@ func TestAuditAndSettings(t *testing.T) {
 func TestSpendTOTPCounterRefusesReplay(t *testing.T) {
 	st := newTestStore(t)
 	ctx := context.Background()
-	u := &store.User{ID: "usr_t", Username: "t", Role: "user", Status: "active", SSOProvider: "local"}
+	u := &store.User{ID: "usr_t", Username: "t", Role: store.RoleViewer, Status: "active", SSOProvider: "local"}
 	if err := st.Users().CreateUser(ctx, u); err != nil {
 		t.Fatal(err)
 	}
@@ -292,5 +217,30 @@ func TestDeleteSettingIsIdempotent(t *testing.T) {
 	_ = st.Settings().DeleteSetting(ctx, "k")
 	if _, err := st.Settings().GetSetting(ctx, "k"); !errors.Is(err, store.ErrNotFound) {
 		t.Fatalf("want ErrNotFound, got %v", err)
+	}
+}
+
+func TestUserRoleIsAdminOrViewer(t *testing.T) {
+	ctx := context.Background()
+	st := newTestStore(t)
+
+	for _, role := range []string{"user", "manager", "", "Admin"} {
+		err := st.Users().CreateUser(ctx, &store.User{ID: "usr_" + role, Username: "u" + role, Role: role, Status: "active"})
+		if !errors.Is(err, store.ErrInvalidRole) {
+			t.Errorf("CreateUser with role %q: got %v, want ErrInvalidRole", role, err)
+		}
+	}
+
+	viewer := &store.User{ID: "usr_v", Username: "v", Role: store.RoleViewer, Status: "active"}
+	if err := st.Users().CreateUser(ctx, viewer); err != nil {
+		t.Fatalf("CreateUser viewer: %v", err)
+	}
+	viewer.Role = "manager"
+	if err := st.Users().UpdateUser(ctx, viewer); !errors.Is(err, store.ErrInvalidRole) {
+		t.Errorf("UpdateUser to manager: got %v, want ErrInvalidRole", err)
+	}
+	viewer.Role = store.RoleAdmin
+	if err := st.Users().UpdateUser(ctx, viewer); err != nil {
+		t.Errorf("UpdateUser to admin: %v", err)
 	}
 }

@@ -3,6 +3,8 @@ package sso
 import (
 	"errors"
 	"time"
+
+	"github.com/Busnes-app/kypulse-server/internal/store"
 )
 
 var (
@@ -19,6 +21,16 @@ type IdentityClaims struct {
 	PreferredUsername string `json:"preferred_username"`
 	Role              string `json:"role,omitempty"`
 	Provider          string `json:"provider"` // "kysignon", "oidc", "saml"
+}
+
+// RoleFor maps a role asserted by an identity provider onto kyPulse's two roles. Only an
+// exact "admin" grants admin; every other value, including a missing one, is a viewer, so a
+// provider that speaks another product's role vocabulary cannot grant privilege by accident.
+func RoleFor(claimed string) string {
+	if claimed == store.RoleAdmin {
+		return store.RoleAdmin
+	}
+	return store.RoleViewer
 }
 
 // SSOState represents ephemeral state held during OAuth/OIDC authorization flow.

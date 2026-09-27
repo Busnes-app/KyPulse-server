@@ -3,7 +3,7 @@ package api
 import (
 	"time"
 
-	"github.com/Busnes-app/ky_server_base/internal/store"
+	"github.com/Busnes-app/kypulse-server/internal/store"
 )
 
 // SetRecoveryClientForTest replaces the KyRecovery pairing client. Test-only: this file is not

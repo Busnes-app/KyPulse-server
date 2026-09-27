@@ -1,4 +1,4 @@
-const CACHE_NAME = 'ky-base-pwa-busnes-v3';
+const CACHE_NAME = 'kypulse-pwa-v1';
 const ASSETS_TO_CACHE = [
   '/',
   '/index.html',
@@ -33,7 +33,7 @@ self.addEventListener('fetch', (event) => {
   const url = new URL(event.request.url);
   if (event.request.method !== 'GET' || url.origin !== self.location.origin) return;
   const shell = url.pathname === '/' || url.pathname === '/index.html';
-  // Allow public shell/assets only, never API, SCIM, SSO or future dynamic routes.
+  // Allow public shell/assets only, never API, SSO or future dynamic routes.
   if (!shell && url.pathname !== '/manifest.json' && !url.pathname.startsWith('/assets/')) return;
 
   event.respondWith((async () => {
