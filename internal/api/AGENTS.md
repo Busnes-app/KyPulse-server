@@ -12,7 +12,8 @@ Owns HTTP routing, request parsing, session cookie validation, CORS headers, and
 - Non-API routes fall back to serving `web.Handler()` for client-side SPA routing.
 - New routes are unauthenticated only by deliberate choice; privileged ones are registered wrapped in `s.requireAdmin` in `routes()`, so the trust level of every route is readable in one place.
 - Backup routes and theme writes are admin-only: capsules and settings carry site data and secrets. The scaffold has no step-up; admin-only plus `TestPrivilegedEndpointsRequireAdmin` is its equivalent for every destructive backup route. Routes are registered with method patterns, and because the SPA catch-all answers any method, tests pin that a wrong method never reaches a backup handler rather than expecting 405.
-- Viewer reads use `s.requireSession`; monitoring writes and the webhook use `s.requireAdmin`. The webhook token is write-only: never in `GET /api/alerts/webhook`, `/api/settings` (sealed `_enc` rows are filtered by suffix) or `/api/status`. Audit actions: `admin.target_create|update|delete|silence`, `admin.webhook_set|delete|test`; `alert.sent|send_failed` are written by `internal/monitor` with actor `system`.
+- Viewer reads use `s.requireSession`; monitoring writes and the webhook use `s.requireAdmin`. The webhook token is write-only: never in `GET /api/alerts/webhook`, `/api/settings` (sealed `_enc` rows are filtered by suffix) or `/api/status`. Audit actions: `admin.target_create|update|delete|silence`, `admin.webhook_set|delete|test`; `alert.sent|send_failed` are written by `internal/monitor` with actor `system`. A webhook URL is never audited: `admin.webhook_set` records `preset`, `scheme`, `host` and `allow_http`.
+- Every audit row goes through `s.audit`, which bounds both text fields and logs `audit_write_failed` when the row cannot be written.
 
 | Method | Path | Handler | Response |
 |---|---|---|---|
@@ -33,14 +34,14 @@ Owns HTTP routing, request parsing, session cookie validation, CORS headers, and
 | GET | `/api/targets` | session | `{targets:[target + silenced_until, until_fixed, basic]}` |
 | GET | `/api/targets/{id}` | session | `{target, last_result, events:[last 20]}` |
 | POST | `/api/targets` | admin | 201 `{target}`; 400 validation; 409 duplicate name |
-| PUT | `/api/targets/{id}` | admin | `{target}` |
+| PUT | `/api/targets/{id}` | admin | `{target}`; an omitted `interval_sec` keeps the stored one |
 | DELETE | `/api/targets/{id}` | admin | 204 |
 | POST | `/api/targets/{id}/silence` | admin | body `{"for":"1h"\|"8h"\|"until_fixed"\|"off"}`; `{silenced_until, until_fixed}` |
 | GET | `/api/alerts` | session | `{events, total}`, `?target=&offset=&limit=` (limit ≤ 200, default 50) |
 | GET | `/api/alerts/webhook` | admin | `{configured, preset, url, has_token, last}`; never the token |
-| PUT | `/api/alerts/webhook` | admin | body `{preset,url,token}`; empty `token` keeps the stored one; 400 on `notify.Validate` failure |
+| PUT | `/api/alerts/webhook` | admin | body `{preset,url,token,clear_token}`; an empty `token` keeps the stored one only when preset and URL host are unchanged, `clear_token` always stores none; 400 on `notify.Validate` failure |
 | DELETE | `/api/alerts/webhook` | admin | 204 |
-| POST | `/api/alerts/webhook/test` | admin | `{ok:true}`; 412 no webhook; 502 `{error}` on failed delivery |
+| POST | `/api/alerts/webhook/test` | admin | `{ok:true}`; 412 no webhook; 502 `{error: notify.Reason}` on failed delivery, never the error text |
 
 - `GET /healthz` is public: `health.Handler("kypulse", lg, database ping)` from ky-primitives, `ky.health/1`, 200 for ok/degraded and 503 for down, cached 5 s by the lib. It is the route an external monitor should watch; kyPulse does not monitor itself. `NewServer(cfg, st, lg, mon)` takes the logger as its third argument and the `*monitor.Service` as its fourth; `health.Handler` panics on a nil logger.
 

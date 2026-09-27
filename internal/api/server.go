@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"errors"
+	"log/slog"
 	"net/http"
 	"net/url"
 	"strings"
@@ -20,6 +21,24 @@ import (
 	"github.com/Busnes-app/kypulse-server/internal/store"
 	"github.com/Busnes-app/kypulse-server/web"
 )
+
+var evAuditWriteFailed = logging.DeclareEvent("audit_write_failed", "audit row could not be written", slog.LevelError)
+
+// audit records an admin or backup action against the acting user. Details never carry a
+// token, a webhook URL or capsule bytes; both text fields are bounded and printable before
+// they are stored, since a resource may be an operator-typed URL and details may quote a
+// remote body.
+func (s *Server) audit(ctx context.Context, userID string, r *http.Request, action, resource, details string) {
+	if err := s.store.Audit().LogAudit(ctx, &store.AuditRecord{
+		UserID:    userID,
+		Action:    action,
+		Resource:  recoveryclient.AuditSafe(resource),
+		Details:   recoveryclient.AuditSafe(details),
+		IPAddress: s.requestIP(r),
+	}); err != nil {
+		s.lg.Log(ctx, evAuditWriteFailed, logging.Action(action), logging.Err(err))
+	}
+}
 
 // recoveryClient is the KyRecovery client as the handlers use it, narrowed so tests can stand
 // in a fake without reaching the network.

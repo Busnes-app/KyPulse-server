@@ -73,6 +73,13 @@ func TestTargetCRUDAndValidation(t *testing.T) {
 	if got.Name != "KyVault prod" || got.IntervalSec != 60 || got.Enabled {
 		t.Fatalf("stored: %+v", got)
 	}
+	// A rename that omits interval_sec keeps the stored interval.
+	if w := doJSON(t, srv, "PUT", "/api/targets/"+id, admin, map[string]any{"name": "KyVault", "url": "http://vault.lan/healthz"}); w.Code != http.StatusOK {
+		t.Fatalf("rename: %d %s", w.Code, w.Body.String())
+	}
+	if got, _ = st.Targets().GetTarget(context.Background(), id); got.Name != "KyVault" || got.IntervalSec != 60 {
+		t.Fatalf("after rename: %+v", got)
+	}
 
 	viewer := loginAs(t, srv, st, "bob", "viewer")
 	list := decodeMap(t, do(t, srv, "GET", "/api/targets", viewer))
@@ -142,11 +149,37 @@ func TestWebhookTokenIsWriteOnly(t *testing.T) {
 	if got["configured"] != true || got["has_token"] != true || got["preset"] != "gotify" || got["url"] != "https://gotify.lan" {
 		t.Fatalf("get: %v", got)
 	}
-	// An empty token on update keeps the stored one.
-	doJSON(t, srv, "PUT", "/api/alerts/webhook", admin, map[string]string{"preset": "gotify", "url": "https://gotify2.lan", "token": ""})
-	got = decodeMap(t, do(t, srv, "GET", "/api/alerts/webhook", admin))
-	if got["url"] != "https://gotify2.lan" || got["has_token"] != true {
-		t.Fatalf("after update: %v", got)
+	put := func(body map[string]any) map[string]any {
+		t.Helper()
+		if w := doJSON(t, srv, "PUT", "/api/alerts/webhook", admin, body); w.Code != http.StatusOK {
+			t.Fatalf("put %v: %d %s", body, w.Code, w.Body.String())
+		}
+		return decodeMap(t, do(t, srv, "GET", "/api/alerts/webhook", admin))
+	}
+	// Same preset and host, empty token: the stored token stays.
+	if got := put(map[string]any{"preset": "gotify", "url": "https://gotify.lan/other", "token": ""}); got["has_token"] != true {
+		t.Fatalf("same host: %v", got)
+	}
+	// A different host must not inherit it.
+	if got := put(map[string]any{"preset": "gotify", "url": "https://gotify2.lan", "token": ""}); got["url"] != "https://gotify2.lan" || got["has_token"] != false {
+		t.Fatalf("changed host: %v", got)
+	}
+	put(map[string]any{"preset": "gotify", "url": "https://gotify2.lan", "token": "gk-2"})
+	if got := put(map[string]any{"preset": "gotify", "url": "https://gotify2.lan", "clear_token": true}); got["has_token"] != false {
+		t.Fatalf("clear_token: %v", got)
+	}
+	rows, _, _ := st.Audit().ListAuditRecords(context.Background(), 0, 50)
+	sets := 0
+	for _, row := range rows {
+		if row.Action == "admin.webhook_set" {
+			sets++
+		}
+		if row.Action == "admin.webhook_set" && (strings.Contains(row.Details, "https://") || !strings.Contains(row.Details, `host="gotify`)) {
+			t.Errorf("webhook_set audit must name the host only: %q", row.Details)
+		}
+	}
+	if sets < 5 {
+		t.Fatalf("webhook_set audit rows: %d", sets)
 	}
 	for _, bad := range []map[string]string{
 		{"preset": "slack", "url": "https://x.lan"},

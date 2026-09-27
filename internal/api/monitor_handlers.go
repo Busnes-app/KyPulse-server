@@ -6,6 +6,7 @@ import (
 	"errors"
 	"fmt"
 	"net/http"
+	"net/url"
 	"regexp"
 	"sort"
 	"strconv"
@@ -31,10 +32,9 @@ type targetInput struct {
 	Container   string `json:"container"`
 }
 
-// validateTargetInput checks an admin's target write. allowHTTP is unused for the URL check:
-// health targets may always be plain http, unlike the admin-configured KYPULSE_ALERT_ALLOW_HTTP
-// that gates the outbound webhook.
-func validateTargetInput(in targetInput, allowHTTP bool) error {
+// validateTargetInput checks an admin's target write. Health targets may always be plain
+// http; KYPULSE_ALERT_ALLOW_HTTP gates only the outbound webhook.
+func validateTargetInput(in targetInput) error {
 	if !targetNameRe.MatchString(in.Name) {
 		return errors.New("name must be 1-64 characters, starting with a letter or digit")
 	}
@@ -124,7 +124,7 @@ func (s *Server) handleCreateTarget(w http.ResponseWriter, r *http.Request) {
 		s.writeError(w, http.StatusBadRequest, "Invalid JSON request body")
 		return
 	}
-	if err := validateTargetInput(in, s.config.Alerts.AllowHTTP); err != nil {
+	if err := validateTargetInput(in); err != nil {
 		s.writeTargetError(w, err)
 		return
 	}
@@ -145,7 +145,7 @@ func (s *Server) handleCreateTarget(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	actor := s.actorID(r)
-	s.auditMonitor(r.Context(), actor, r, "admin.target_create", t.ID,
+	s.audit(r.Context(), actor, r, "admin.target_create", t.ID,
 		fmt.Sprintf("name=%s url=%s", auditValue(t.Name), auditValue(t.URL)))
 	s.writeJSON(w, http.StatusCreated, map[string]any{"target": targetView(t)})
 }
@@ -157,12 +157,15 @@ func (s *Server) handleUpdateTarget(w http.ResponseWriter, r *http.Request) {
 		s.writeError(w, http.StatusBadRequest, "Invalid JSON request body")
 		return
 	}
-	if err := validateTargetInput(in, s.config.Alerts.AllowHTTP); err != nil {
+	existing, err := s.store.Targets().GetTarget(r.Context(), id)
+	if err != nil {
 		s.writeTargetError(w, err)
 		return
 	}
-	existing, err := s.store.Targets().GetTarget(r.Context(), id)
-	if err != nil {
+	if in.IntervalSec == 0 {
+		in.IntervalSec = existing.IntervalSec // omitted: keep the stored interval
+	}
+	if err := validateTargetInput(in); err != nil {
 		s.writeTargetError(w, err)
 		return
 	}
@@ -177,7 +180,7 @@ func (s *Server) handleUpdateTarget(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	actor := s.actorID(r)
-	s.auditMonitor(r.Context(), actor, r, "admin.target_update", id,
+	s.audit(r.Context(), actor, r, "admin.target_update", id,
 		fmt.Sprintf("name=%s url=%s", auditValue(existing.Name), auditValue(existing.URL)))
 	s.writeJSON(w, http.StatusOK, map[string]any{"target": targetView(existing)})
 }
@@ -189,7 +192,7 @@ func (s *Server) handleDeleteTarget(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	actor := s.actorID(r)
-	s.auditMonitor(r.Context(), actor, r, "admin.target_delete", id, "")
+	s.audit(r.Context(), actor, r, "admin.target_delete", id, "")
 	w.WriteHeader(http.StatusNoContent)
 }
 
@@ -228,7 +231,7 @@ func (s *Server) handleSilence(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	actor := s.actorID(r)
-	s.auditMonitor(r.Context(), actor, r, "admin.target_silence", id, "for="+auditValue(req.For))
+	s.audit(r.Context(), actor, r, "admin.target_silence", id, "for="+auditValue(req.For))
 	s.writeJSON(w, http.StatusOK, map[string]any{"silenced_until": t.SilencedUntil, "until_fixed": t.UntilFixed})
 }
 
@@ -330,9 +333,18 @@ func (s *Server) handleGetWebhook(w http.ResponseWriter, r *http.Request) {
 }
 
 type webhookRequest struct {
-	Preset string `json:"preset"`
-	URL    string `json:"url"`
-	Token  string `json:"token"`
+	Preset     string `json:"preset"`
+	URL        string `json:"url"`
+	Token      string `json:"token"`
+	ClearToken bool   `json:"clear_token"`
+}
+
+// sameReceiver reports whether a stored token may ride along to the new config: same preset
+// and same URL host, so an edit cannot hand the token to a different server.
+func sameReceiver(old notify.Config, preset, rawURL string) bool {
+	a, errA := url.Parse(old.URL)
+	b, errB := url.Parse(rawURL)
+	return errA == nil && errB == nil && old.Preset == notify.Preset(preset) && a.Host == b.Host
 }
 
 func (s *Server) handleSetWebhook(w http.ResponseWriter, r *http.Request) {
@@ -342,8 +354,10 @@ func (s *Server) handleSetWebhook(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	token := req.Token
-	if token == "" {
-		if existing, ok, err := s.monitor.Webhooks.Load(r.Context()); err == nil && ok {
+	if req.ClearToken {
+		token = ""
+	} else if token == "" {
+		if existing, ok, err := s.monitor.Webhooks.Load(r.Context()); err == nil && ok && sameReceiver(existing, req.Preset, req.URL) {
 			token = existing.Token
 		}
 	}
@@ -356,9 +370,11 @@ func (s *Server) handleSetWebhook(w http.ResponseWriter, r *http.Request) {
 		s.writeError(w, http.StatusInternalServerError, "Failed to save the webhook")
 		return
 	}
+	// The URL itself stays out of the audit: for Discord and ntfy it is the credential.
+	u, _ := url.Parse(cfg.URL)
 	actor := s.actorID(r)
-	s.auditMonitor(r.Context(), actor, r, "admin.webhook_set", "",
-		fmt.Sprintf("preset=%s url=%s allow_http=%v", auditValue(req.Preset), auditValue(req.URL), s.config.Alerts.AllowHTTP))
+	s.audit(r.Context(), actor, r, "admin.webhook_set", "",
+		fmt.Sprintf("preset=%s scheme=%s host=%s allow_http=%v", auditValue(req.Preset), auditValue(u.Scheme), auditValue(u.Host), s.config.Alerts.AllowHTTP))
 	s.writeJSON(w, http.StatusOK, map[string]any{"configured": true, "preset": cfg.Preset, "url": cfg.URL, "has_token": cfg.Token != ""})
 }
 
@@ -368,7 +384,7 @@ func (s *Server) handleDeleteWebhook(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	actor := s.actorID(r)
-	s.auditMonitor(r.Context(), actor, r, "admin.webhook_delete", "", "")
+	s.audit(r.Context(), actor, r, "admin.webhook_delete", "", "")
 	w.WriteHeader(http.StatusNoContent)
 }
 
@@ -386,7 +402,7 @@ func (s *Server) handleTestWebhook(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		details = "outcome=failure reason=" + notify.Reason(err)
 	}
-	s.auditMonitor(ctx, actor, r, "admin.webhook_test", "", details)
+	s.audit(ctx, actor, r, "admin.webhook_test", "", details)
 	switch {
 	case errors.Is(err, monitor.ErrNoWebhook):
 		s.writeError(w, http.StatusPreconditionFailed, "No webhook is configured")
@@ -395,9 +411,4 @@ func (s *Server) handleTestWebhook(w http.ResponseWriter, r *http.Request) {
 	default:
 		s.writeJSON(w, http.StatusOK, map[string]bool{"ok": true})
 	}
-}
-
-// auditMonitor records a monitoring admin action. Details never carry the webhook token.
-func (s *Server) auditMonitor(ctx context.Context, userID string, r *http.Request, action, resource, details string) {
-	s.auditBackup(ctx, userID, r, action, resource, details)
 }
