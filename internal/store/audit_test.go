@@ -137,12 +137,26 @@ func TestAuditLegacyRowsAreKeyedOnFirstOpen(t *testing.T) {
 }
 
 func TestAuditForgetResumesFromDisk(t *testing.T) {
+	ctx := context.Background()
 	st := openAudit(t, testdb.Config(t))
 	logN(t, st, 2)
-	st.audit.forget()
+
+	tx, err := st.db.BeginTx(ctx, nil)
+	if err != nil {
+		t.Fatal(err)
+	}
+	finish, err := st.audit.append(ctx, tx, &AuditRecord{UserID: "u1", Action: "test.event", Resource: "r", IPAddress: "10.0.0.1"})
+	if err != nil {
+		t.Fatal(err)
+	}
+	if err := tx.Rollback(); err != nil {
+		t.Fatal(err)
+	}
+	finish(false)
+
 	logN(t, st, 1)
-	if status, err := st.Audit().VerifyChain(context.Background()); err != nil || status.Count != 3 {
-		t.Fatalf("after forget: %+v %v", status, err)
+	if status, err := st.Audit().VerifyChain(ctx); err != nil || status.Count != 3 {
+		t.Fatalf("after a rolled-back append: %+v %v", status, err)
 	}
 }
 
@@ -162,5 +176,61 @@ func TestPasswordChangeRowIsChained(t *testing.T) {
 	}
 	if _, err := st.Audit().VerifyChain(ctx); err != nil {
 		t.Fatal(err)
+	}
+}
+
+func TestAuditChainRefusesToOpenAfterMiddleDeletion(t *testing.T) {
+	cfg := testdb.Config(t)
+	st := openAudit(t, cfg)
+	logN(t, st, 3)
+	ctx := context.Background()
+	if _, err := st.db.ExecContext(ctx, st.rebind(`DELETE FROM audit_records WHERE seq = ?`), 2); err != nil {
+		t.Fatal(err)
+	}
+	_ = st.Close()
+	if _, err := Open(ctx, cfg); !errors.Is(err, ErrAuditUnplaceable) {
+		t.Fatalf("a record deleted from the middle must refuse to open: %v", err)
+	}
+}
+
+func TestAuditChainRefusesEmptiedLog(t *testing.T) {
+	cfg := testdb.Config(t)
+	st := openAudit(t, cfg)
+	logN(t, st, 2)
+	ctx := context.Background()
+	if _, err := st.db.ExecContext(ctx, `DELETE FROM audit_records`); err != nil {
+		t.Fatal(err)
+	}
+	_ = st.Close()
+	if _, err := Open(ctx, cfg); !errors.Is(err, ErrAuditUnplaceable) {
+		t.Fatalf("an emptied log must refuse to open: %v", err)
+	}
+}
+
+func TestAuditChainRefusesMixedRows(t *testing.T) {
+	cfg := testdb.Config(t)
+	st := openAudit(t, cfg)
+	logN(t, st, 2)
+	ctx := context.Background()
+	now := time.Now().UTC().Truncate(time.Microsecond)
+	if _, err := st.db.ExecContext(ctx, st.rebind(`INSERT INTO audit_records (user_id, action, resource, details, ip_address, created_at) VALUES (?, ?, ?, ?, ?, ?)`), "u1", "auth.login", "", "", "", now); err != nil {
+		t.Fatal(err)
+	}
+	_ = st.Close()
+	if _, err := Open(ctx, cfg); !errors.Is(err, ErrAuditUnplaceable) {
+		t.Fatalf("a keyed log with an unkeyed row mixed in must refuse to open: %v", err)
+	}
+}
+
+func TestVerifyChainRefusesUnkeyedRows(t *testing.T) {
+	st := openAudit(t, testdb.Config(t))
+	logN(t, st, 2)
+	ctx := context.Background()
+	now := time.Now().UTC().Truncate(time.Microsecond)
+	if _, err := st.db.ExecContext(ctx, st.rebind(`INSERT INTO audit_records (user_id, action, resource, details, ip_address, created_at) VALUES (?, ?, ?, ?, ?, ?)`), "u1", "auth.login", "", "", "", now); err != nil {
+		t.Fatal(err)
+	}
+	if _, err := st.Audit().VerifyChain(ctx); err == nil {
+		t.Fatal("an unkeyed row alongside a keyed chain must fail verification")
 	}
 }

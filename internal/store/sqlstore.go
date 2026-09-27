@@ -363,7 +363,10 @@ type sessionStore struct {
 
 // withPassword serializes credential-derived grants with password replacement.
 // Updating the same user row takes a write lock on both supported databases.
-func (s *SQLStore) withPassword(ctx context.Context, userID, expectedHash string, apply func(*sql.Tx) error) error {
+// apply may return a non-nil finish, which withPassword calls with the commit outcome once
+// the transaction is settled — that is how a caller chaining an audit row keeps the chain's
+// lock held until its own write is durable or rolled back.
+func (s *SQLStore) withPassword(ctx context.Context, userID, expectedHash string, apply func(*sql.Tx) (finish func(bool), err error)) error {
 	tx, err := s.db.BeginTx(ctx, nil)
 	if err != nil {
 		return err
@@ -380,36 +383,37 @@ func (s *SQLStore) withPassword(ctx context.Context, userID, expectedHash string
 	if n != 1 {
 		return ErrNotFound
 	}
-	if err := apply(tx); err != nil {
+	finish, err := apply(tx)
+	if err != nil {
 		return err
 	}
-	if err := tx.Commit(); err != nil {
-		s.audit.forget()
-		return err
+	err = tx.Commit()
+	if finish != nil {
+		finish(err == nil)
 	}
-	return nil
+	return err
 }
 
 func (s *sessionStore) CreateSession(ctx context.Context, sess *Session, expectedPasswordHash string) error {
-	return s.store.withPassword(ctx, sess.UserID, expectedPasswordHash, func(tx *sql.Tx) error {
+	return s.store.withPassword(ctx, sess.UserID, expectedPasswordHash, func(tx *sql.Tx) (func(bool), error) {
 		_, err := tx.ExecContext(ctx, s.store.rebind(`INSERT INTO sessions (token_hash, user_id, user_agent, ip_address, created_at, expires_at) VALUES (?, ?, ?, ?, ?, ?)`), sess.TokenHash, sess.UserID, sess.UserAgent, sess.IPAddress, sess.CreatedAt, sess.ExpiresAt)
-		return err
+		return nil, err
 	})
 }
 
 func (u *userStore) CompletePasswordChange(ctx context.Context, userID, oldHash, newHash, ip string) error {
-	return u.store.withPassword(ctx, userID, oldHash, func(tx *sql.Tx) error {
+	return u.store.withPassword(ctx, userID, oldHash, func(tx *sql.Tx) (func(bool), error) {
 		now := time.Now().UTC()
 		result, err := tx.ExecContext(ctx, u.store.rebind(`UPDATE users SET password_hash = ?, must_change_password = ?, updated_at = ? WHERE id = ? AND must_change_password = ? AND sso_provider = 'local'`), newHash, false, now, userID, true)
 		if err != nil {
-			return err
+			return nil, err
 		}
 		n, err := result.RowsAffected()
 		if err != nil {
-			return err
+			return nil, err
 		}
 		if n != 1 {
-			return ErrNotFound
+			return nil, ErrNotFound
 		}
 		return u.revokePasswordGrants(ctx, tx, userID, "forced replacement; sessions revoked", ip, now)
 	})
@@ -434,20 +438,22 @@ func (u *userStore) ResetAdminPassword(ctx context.Context, userID, newHash stri
 	if n != 1 {
 		return ErrNotFound
 	}
-	if err := u.revokePasswordGrants(ctx, tx, userID, "operator reset; sessions revoked", "", now); err != nil {
+	finish, err := u.revokePasswordGrants(ctx, tx, userID, "operator reset; sessions revoked", "", now)
+	if err != nil {
 		return err
 	}
-	if err := tx.Commit(); err != nil {
-		u.store.audit.forget()
-		return err
-	}
-	return nil
+	err = tx.Commit()
+	finish(err == nil)
+	return err
 }
 
-func (u *userStore) revokePasswordGrants(ctx context.Context, tx *sql.Tx, userID, details, ip string, now time.Time) error {
+// revokePasswordGrants deletes sessions and MFA challenges and chains the audit row on tx.
+// finish must be called by the caller with the transaction's commit outcome once it is
+// settled; it releases the audit chain lock this call took.
+func (u *userStore) revokePasswordGrants(ctx context.Context, tx *sql.Tx, userID, details, ip string, now time.Time) (finish func(bool), err error) {
 	for _, table := range []string{"sessions", "mfa_challenges"} {
 		if _, err := tx.ExecContext(ctx, u.store.rebind("DELETE FROM "+table+" WHERE user_id = ?"), userID); err != nil {
-			return err
+			return nil, err
 		}
 	}
 	return u.store.audit.append(ctx, tx, &AuditRecord{UserID: userID, Action: "auth.password_changed", Resource: "user", Details: details, IPAddress: ip, CreatedAt: now})
@@ -495,9 +501,9 @@ func (s *sessionStore) CleanExpiredSessions(ctx context.Context) error {
 }
 
 func (s *sessionStore) CreateMFAChallenge(ctx context.Context, challenge *MFAChallenge, expectedPasswordHash string) error {
-	return s.store.withPassword(ctx, challenge.UserID, expectedPasswordHash, func(tx *sql.Tx) error {
+	return s.store.withPassword(ctx, challenge.UserID, expectedPasswordHash, func(tx *sql.Tx) (func(bool), error) {
 		_, err := tx.ExecContext(ctx, s.store.rebind("INSERT INTO mfa_challenges (token_hash, user_id, expires_at, password_hash) VALUES (?, ?, ?, ?)"), challenge.TokenHash, challenge.UserID, challenge.ExpiresAt, expectedPasswordHash)
-		return err
+		return nil, err
 	})
 }
 

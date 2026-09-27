@@ -56,21 +56,10 @@ func stamp(r *AuditRecord) {
 
 // open places the chain at start: a new log, a legacy log keyed once, or the stored tail.
 func (a *auditStore) open(ctx context.Context) error {
-	if len(a.key) < 32 {
-		return fmt.Errorf("audit: chain key is %d bytes, want 32", len(a.key))
-	}
 	a.mu.Lock()
 	defer a.mu.Unlock()
 	_, err := a.resume(ctx, a.store.db, true)
 	return err
-}
-
-// forget drops the in-memory chain after a write the store did not confirm; the next append
-// re-reads the tail from disk instead of chaining onto a record that may not exist.
-func (a *auditStore) forget() {
-	a.mu.Lock()
-	a.chain = nil
-	a.mu.Unlock()
 }
 
 func (a *auditStore) loadAnchor(ctx context.Context, q dbtx) (auditchain.Anchor, bool, error) {
@@ -111,13 +100,14 @@ FROM audit_records WHERE seq IS NOT NULL ORDER BY seq DESC LIMIT 1`).Scan(&r.Seq
 	return auditchain.Record{Seq: r.Seq, Prev: prev, Hash: r.Hash, Fields: fieldsOf(&r)}, nil
 }
 
-// resume returns the chain, placing it from the store when it is not in memory. mu is held.
+// place determines the chain from the store's current state: a new log, a legacy log keyed
+// once, or the stored tail. It is a pure read except when pool and the log is all-legacy, in
+// which case keying it is the one write place performs. Unlike resume, place never reads or
+// writes a.chain, which is what lets Ready call it without mu.
+//
 // pool says q is the connection pool, which keying a legacy log needs (it opens its own
 // transaction); from inside a caller's transaction that would deadlock on SQLite.
-func (a *auditStore) resume(ctx context.Context, q dbtx, pool bool) (*auditchain.Chain, error) {
-	if a.chain != nil {
-		return a.chain, nil
-	}
+func (a *auditStore) place(ctx context.Context, q dbtx, pool bool) (*auditchain.Chain, error) {
 	anchor, hasAnchor, err := a.loadAnchor(ctx, q)
 	if err != nil {
 		return nil, err
@@ -128,12 +118,7 @@ func (a *auditStore) resume(ctx context.Context, q dbtx, pool bool) (*auditchain
 	}
 	switch {
 	case total == 0 && (!hasAnchor || anchor.Count == 0):
-		c, err := auditchain.New(a.key)
-		if err != nil {
-			return nil, err
-		}
-		a.chain = c
-		return c, nil
+		return auditchain.New(a.key)
 	case total == 0:
 		return nil, fmt.Errorf("%w: no audit records, but the anchor counts %d; the log was emptied", ErrAuditUnplaceable, anchor.Count)
 	case !hasAnchor && unkeyed == total:
@@ -145,6 +130,8 @@ func (a *auditStore) resume(ctx context.Context, q dbtx, pool bool) (*auditchain
 		return nil, fmt.Errorf("%w: %d keyed audit records but no anchor row (%s); a truncated log cannot be told from an intact one, so this server will not start. Restore the row from backup, or move the records aside to begin a new chain and keep the old ones for the auditor", ErrAuditUnplaceable, total, anchorKey)
 	case unkeyed > 0:
 		return nil, fmt.Errorf("%w: %d audit records carry no digest although the chain is anchored", ErrAuditUnplaceable, unkeyed)
+	case total != anchor.Count:
+		return nil, fmt.Errorf("%w: %d audit records but the anchor counts %d", ErrAuditUnplaceable, total, anchor.Count)
 	}
 	last, err := a.tail(ctx, q)
 	if err != nil {
@@ -153,6 +140,19 @@ func (a *auditStore) resume(ctx context.Context, q dbtx, pool bool) (*auditchain
 	c, err := auditchain.Resume(a.key, last, anchor)
 	if err != nil {
 		return nil, fmt.Errorf("%w: %v", ErrAuditUnplaceable, err)
+	}
+	return c, nil
+}
+
+// resume returns the chain, memoising it in a.chain once placed. Callers other than Ready
+// must hold mu: it reads and writes a.chain, which a concurrent append also touches.
+func (a *auditStore) resume(ctx context.Context, q dbtx, pool bool) (*auditchain.Chain, error) {
+	if a.chain != nil {
+		return a.chain, nil
+	}
+	c, err := a.place(ctx, q, pool)
+	if err != nil {
+		return nil, err
 	}
 	a.chain = c
 	return c, nil
@@ -205,12 +205,7 @@ func (a *auditStore) keyLegacy(ctx context.Context, q dbtx) (*auditchain.Chain, 
 	if err := tx.Commit(); err != nil {
 		return nil, err
 	}
-	c, err := auditchain.Resume(a.key, records[len(records)-1], anchor)
-	if err != nil {
-		return nil, err
-	}
-	a.chain = c
-	return c, nil
+	return auditchain.Resume(a.key, records[len(records)-1], anchor)
 }
 
 // mustTime parses the RFC3339Nano stamp fieldsOf produced; it cannot fail for our own output.
@@ -222,15 +217,22 @@ func mustTime(s string) time.Time {
 	return t
 }
 
-// append chains r and writes it and the anchor on tx. The caller commits; if that commit
-// fails it must call forget, because the chain has advanced past what the store holds.
-func (a *auditStore) append(ctx context.Context, tx *sql.Tx, r *AuditRecord) error {
+// append chains r and writes it and the anchor on tx. On success it returns with mu still
+// held and hands back finish, which the caller must call exactly once with the transaction's
+// commit outcome: finish releases mu, and clears the chain first if the commit did not
+// happen, so the next append re-reads the tail from disk instead of chaining onto a record
+// that may not exist. Holding mu until finish — rather than releasing it here — is what stops
+// a second append from chaining onto this one before it is durable: on Postgres, unlike
+// SQLite, a second connection could otherwise start its own append while this transaction is
+// still open.
+func (a *auditStore) append(ctx context.Context, tx *sql.Tx, r *AuditRecord) (finish func(committed bool), err error) {
 	stamp(r)
 	a.mu.Lock()
-	defer a.mu.Unlock()
 	c, err := a.resume(ctx, tx, false)
 	if err != nil {
-		return err
+		a.chain = nil
+		a.mu.Unlock()
+		return nil, err
 	}
 	rec, err := c.Append(ctx, func(rec auditchain.Record, anchor auditchain.Anchor) error {
 		if _, err := tx.ExecContext(ctx, a.store.rebind(`
@@ -243,10 +245,16 @@ VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
 	}, fieldsOf(r)...)
 	if err != nil {
 		a.chain = nil
-		return err
+		a.mu.Unlock()
+		return nil, err
 	}
 	r.Seq, r.Hash = rec.Seq, rec.Hash
-	return nil
+	return func(committed bool) {
+		if !committed {
+			a.chain = nil
+		}
+		a.mu.Unlock()
+	}, nil
 }
 
 func (a *auditStore) LogAudit(ctx context.Context, r *AuditRecord) error {
@@ -256,21 +264,21 @@ func (a *auditStore) LogAudit(ctx context.Context, r *AuditRecord) error {
 	if err != nil {
 		return err
 	}
-	if err := a.append(ctx, tx, r); err != nil {
+	finish, err := a.append(ctx, tx, r)
+	if err != nil {
 		_ = tx.Rollback()
 		return err
 	}
-	if err := tx.Commit(); err != nil {
-		a.forget()
-		return err
-	}
-	return nil
+	err = tx.Commit()
+	finish(err == nil)
+	return err
 }
 
+// Ready reports whether the next append can place a chain. It takes no lock: append takes
+// the connection (the caller's tx) before mu, so Ready taking mu before waiting on the
+// connection would deadlock against a concurrent append on SQLite's single connection.
 func (a *auditStore) Ready(ctx context.Context) error {
-	a.mu.Lock()
-	defer a.mu.Unlock()
-	_, err := a.resume(ctx, a.store.db, true)
+	_, err := a.place(ctx, a.store.db, false)
 	return err
 }
 
@@ -282,8 +290,18 @@ func (a *auditStore) VerifyChain(ctx context.Context) (ChainStatus, error) {
 	if !ok {
 		anchor = auditchain.Anchor{Count: 0, Hash: genesisHash}
 	}
-	rows, err := a.store.db.QueryContext(ctx, `SELECT seq, prev_hash, hash, user_id, action, resource, details, ip_address, created_at
-FROM audit_records ORDER BY seq`)
+	var unkeyed uint64
+	if err := a.store.db.QueryRowContext(ctx, "SELECT COUNT(1) FROM audit_records WHERE seq IS NULL").Scan(&unkeyed); err != nil {
+		return ChainStatus{}, err
+	}
+	if unkeyed > 0 {
+		return ChainStatus{}, fmt.Errorf("%w: %d audit records carry no digest", ErrAuditUnplaceable, unkeyed)
+	}
+	// Bounding by the anchor's count, read under the same statement as the row scan, keeps a
+	// concurrent append from landing between the anchor read and the row scan and being read
+	// back as a record "past" the anchor that was current when this call started.
+	rows, err := a.store.db.QueryContext(ctx, a.store.rebind(`SELECT seq, prev_hash, hash, user_id, action, resource, details, ip_address, created_at
+FROM audit_records WHERE seq <= ? ORDER BY seq`), anchor.Count)
 	if err != nil {
 		return ChainStatus{}, err
 	}
