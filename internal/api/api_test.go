@@ -31,11 +31,32 @@ import (
 	"github.com/Busnes-app/kypulse-server/internal/backup"
 	"github.com/Busnes-app/kypulse-server/internal/config"
 	"github.com/Busnes-app/kypulse-server/internal/crypto"
+	"github.com/Busnes-app/kypulse-server/internal/egress"
+	"github.com/Busnes-app/kypulse-server/internal/monitor"
+	"github.com/Busnes-app/kypulse-server/internal/notify"
 	"github.com/Busnes-app/kypulse-server/internal/store"
 	"github.com/Busnes-app/kypulse-server/internal/testdb"
 )
 
+// newTestMonitor builds a real monitor.Service over st: no fakes, since the API handlers call
+// into Webhooks and Silence directly.
+func newTestMonitor(t *testing.T, cfg *config.Config, st store.Store, lg *logging.Logger) *monitor.Service {
+	t.Helper()
+	webhooks, err := monitor.NewWebhooks(cfg, st.Settings())
+	if err != nil {
+		t.Fatalf("webhooks: %v", err)
+	}
+	return &monitor.Service{Store: st, Webhooks: webhooks, Logger: lg, AppURL: cfg.Server.AppURL,
+		Notifier: &notify.Notifier{Post: egress.New(egress.Options{AllowHTTP: cfg.Alerts.AllowHTTP}), Backoff: nil}}
+}
+
 func setupTestServer(t *testing.T) (*api.Server, store.Store, *config.Config) {
+	t.Helper()
+	return setupTestServerWith(t, nil)
+}
+
+// setupTestServerWith swaps the webhook poster when poster is non-nil.
+func setupTestServerWith(t *testing.T, poster notify.Poster) (*api.Server, store.Store, *config.Config) {
 	t.Helper()
 	t.Setenv("KYPULSE_DATA_DIR", t.TempDir())
 	cfg, _ := config.LoadFromEnv()
@@ -54,7 +75,11 @@ func setupTestServer(t *testing.T) (*api.Server, store.Store, *config.Config) {
 	if err != nil {
 		t.Fatalf("logger: %v", err)
 	}
-	srv := api.NewServer(cfg, st, lg)
+	mon := newTestMonitor(t, cfg, st, lg)
+	if poster != nil {
+		mon.Notifier.Post = poster
+	}
+	srv := api.NewServer(cfg, st, lg, mon)
 	return srv, st, cfg
 }
 

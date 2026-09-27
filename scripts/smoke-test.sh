@@ -154,6 +154,15 @@ contains "admin settings include db_driver" "$(curl -s -b "$WORK/cookies" "$BASE
 check "deposit CLI refuses without a key" \
   "$(KYPULSE_DATA_DIR="$WORK/cli" KYPULSE_DB_DRIVER=sqlite "$BIN" deposit >/dev/null 2>&1 && echo 0 || echo 1)" "1"
 CSRF="$(awk '$6 == "ky_csrf" { print $7 }' "$WORK/cookies")"
+
+echo "==> monitoring"
+check "viewer-tier status needs a session" "$(status "$BASE/api/status")" "401"
+check "admin creates a target" "$(status -X POST -H 'Content-Type: application/json' -b "$WORK/cookies" -H "X-CSRF-Token: $CSRF" -d '{"name":"self","url":"'"http://localhost:$PORT/healthz"'","interval_sec":10}' "$BASE/api/targets")" "201"
+contains "targets list shows it" "$(curl -s -b "$WORK/cookies" "$BASE/api/targets")" '"name":"self"'
+check "webhook must be https without the opt-in" "$(status -X PUT -H 'Content-Type: application/json' -b "$WORK/cookies" -H "X-CSRF-Token: $CSRF" -d '{"preset":"ntfy","url":"http://ntfy.lan/t"}' "$BASE/api/alerts/webhook")" "400"
+sleep 16
+contains "self target was polled and refused" "$(curl -s -b "$WORK/cookies" "$BASE/api/targets")" '\"cause\":\"address_refused\"'
+
 # No key pinned, so the honest assertion is the documented refusal. 412 cannot come from the
 # SPA fallback, which answers 200 for anything it does not recognise.
 check "export-capsule is a POST behind CSRF" "$(status -b "$WORK/cookies" -X POST "$BASE/api/backup/export-capsule")" "403"

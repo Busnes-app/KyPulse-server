@@ -14,6 +14,8 @@ Design authority: `docs/superpowers/specs/2026-09-26-kypulse-design.md`. Plans l
 - `cmd/server/`: process entry, CLI subcommands (`init-admin`, `backup-drill`,
   `export-capsule`, `deposit`, `restore`, `version`), the log bridge, the backup scheduler.
 - `internal/`: one package per concern; each has its own AGENTS.md.
+- `internal/egress`, `internal/poller`, `internal/alerts`, `internal/notify`, `internal/monitor`:
+  the monitoring backend; each has its own AGENTS.md.
 - `web/`: the React PWA, embedded into the binary from `web/dist`.
 - `scripts/`: smoke test.
 - `docs/RESTORE.md`: restore runbook.
@@ -41,8 +43,8 @@ Design authority: `docs/superpowers/specs/2026-09-26-kypulse-design.md`. Plans l
 - Follow the suite root's engineering principles and the KyRecovery integration contract.
 - Business rules (health normalisation, alert transitions, retention) are pure functions the
   handlers and scheduler call.
-- Outbound HTTP goes through `internal/egress` (planned in step 2b): private and LAN targets
-  allowed, loopback and link-local refused, no redirects.
+- Outbound HTTP goes through `internal/egress`: private and LAN targets allowed, loopback and
+  link-local refused, no redirects.
 
 ## Verification
 
@@ -60,4 +62,9 @@ Design authority: `docs/superpowers/specs/2026-09-26-kypulse-design.md`. Plans l
 - `internal/sso/AGENTS.md`: KySignOn, OIDC, SAML SP, `RoleFor`.
 - `internal/store/AGENTS.md`: SQLite/Postgres DAL, migrations, roles.
 - `internal/testdb/AGENTS.md`: isolated test databases.
+- `internal/egress/AGENTS.md`: the one outbound HTTP client.
+- `internal/poller/AGENTS.md`: health polling and response normalisation.
+- `internal/alerts/AGENTS.md`: alert thresholds, transitions, reminders, silences.
+- `internal/notify/AGENTS.md`: webhook presets and delivery retries.
+- `internal/monitor/AGENTS.md`: glues polling, alerts and delivery to the store.
 - `web/AGENTS.md`: PWA, themes, ky-ui vendoring, browser regressions.

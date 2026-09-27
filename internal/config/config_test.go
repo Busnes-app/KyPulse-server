@@ -133,3 +133,24 @@ func TestBackupKeepBelowOneIsRefused(t *testing.T) {
 		t.Fatalf("want KYPULSE_BACKUP_KEEP error, got %v", err)
 	}
 }
+
+func TestAlertAndPollConfig(t *testing.T) {
+	t.Setenv("KYPULSE_DATA_DIR", t.TempDir())
+	cfg, err := config.LoadFromEnv()
+	if err != nil {
+		t.Fatal(err)
+	}
+	if cfg.Alerts.AllowHTTP || cfg.Poll.Workers != 4 {
+		t.Fatalf("defaults: %+v %+v", cfg.Alerts, cfg.Poll)
+	}
+	t.Setenv("KYPULSE_ALERT_ALLOW_HTTP", "true")
+	t.Setenv("KYPULSE_POLL_WORKERS", "8")
+	cfg, _ = config.LoadFromEnv()
+	if !cfg.Alerts.AllowHTTP || cfg.Poll.Workers != 8 {
+		t.Fatalf("set: %+v %+v", cfg.Alerts, cfg.Poll)
+	}
+	t.Setenv("KYPULSE_POLL_WORKERS", "0")
+	if _, err := config.LoadFromEnv(); err == nil || !strings.Contains(err.Error(), "KYPULSE_POLL_WORKERS") {
+		t.Fatalf("workers=0 must fail startup: %v", err)
+	}
+}

@@ -3,6 +3,7 @@ package store
 import (
 	"context"
 	"errors"
+	"time"
 )
 
 var (
@@ -28,6 +29,7 @@ type Store interface {
 	Sessions() SessionStore
 	Audit() AuditStore
 	Settings() SettingsStore
+	Targets() TargetStore
 
 	Driver() string
 	Ping(ctx context.Context) error
@@ -76,4 +78,18 @@ type SettingsStore interface {
 	SetSetting(ctx context.Context, key, val string) error
 	DeleteSetting(ctx context.Context, key string) error
 	GetAllSettings(ctx context.Context) (map[string]string, error)
+}
+
+// TargetStore handles watched apps and their state transition events.
+type TargetStore interface {
+	CreateTarget(ctx context.Context, t *Target) error // ErrAlreadyExists on a duplicate name
+	GetTarget(ctx context.Context, id string) (*Target, error)
+	ListTargets(ctx context.Context) ([]*Target, error) // ordered by name
+	UpdateTarget(ctx context.Context, t *Target) error  // name, url, interval, enabled, container only
+	DeleteTarget(ctx context.Context, id string) error  // cascades events
+	RecordPoll(ctx context.Context, id string, u PollUpdate) error
+	SetSilence(ctx context.Context, id string, until *time.Time, untilFixed bool) error // nil until and false clear it
+	RecordEvent(ctx context.Context, e *TargetEvent) error                              // sets e.ID
+	SetEventNotified(ctx context.Context, id int64, notified bool, notifyError string) error
+	ListEvents(ctx context.Context, targetID string, offset, limit int) ([]*TargetEvent, int, error) // targetID "" = all; newest first
 }
