@@ -35,6 +35,7 @@ type Store interface {
 	Settings() SettingsStore
 	Targets() TargetStore
 	Logs() LogStore
+	Sources() SourceStore
 
 	Driver() string
 	Ping(ctx context.Context) error

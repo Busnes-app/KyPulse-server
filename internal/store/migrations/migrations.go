@@ -297,6 +297,32 @@ CREATE TABLE log_usage (id INTEGER PRIMARY KEY CHECK(id=1), bytes BIGINT NOT NUL
 INSERT INTO log_usage(id, bytes) VALUES (1, 0);
 `,
 	},
+	{
+		Version: 8,
+		Name:    "log_sources",
+		SQLite: `
+CREATE TABLE log_sources (
+ id TEXT PRIMARY KEY, name TEXT NOT NULL, target_id TEXT REFERENCES targets(id) ON DELETE SET NULL,
+ token_hash TEXT NOT NULL UNIQUE, created_at DATETIME NOT NULL, revoked_at DATETIME
+);
+CREATE TABLE log_pairing_codes (
+ code_hash TEXT PRIMARY KEY, target_id TEXT REFERENCES targets(id) ON DELETE CASCADE,
+ expires_at DATETIME NOT NULL
+);
+CREATE INDEX idx_log_pairing_codes_expires ON log_pairing_codes(expires_at);
+`,
+		Postgres: `
+CREATE TABLE log_sources (
+ id VARCHAR(64) PRIMARY KEY, name VARCHAR(64) NOT NULL, target_id VARCHAR(64) REFERENCES targets(id) ON DELETE SET NULL,
+ token_hash VARCHAR(64) NOT NULL UNIQUE, created_at TIMESTAMPTZ NOT NULL, revoked_at TIMESTAMPTZ
+);
+CREATE TABLE log_pairing_codes (
+ code_hash VARCHAR(64) PRIMARY KEY, target_id VARCHAR(64) REFERENCES targets(id) ON DELETE CASCADE,
+ expires_at TIMESTAMPTZ NOT NULL
+);
+CREATE INDEX idx_log_pairing_codes_expires ON log_pairing_codes(expires_at);
+`,
+	},
 }
 
 // Run executes all pending migrations for the specified database driver and returns the

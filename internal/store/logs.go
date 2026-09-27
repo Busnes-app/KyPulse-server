@@ -98,9 +98,24 @@ func (l *logStore) Append(ctx context.Context, sourceID string, batch LogBatch, 
 	if err != nil {
 		return err
 	}
-	// Task 2 introduces the source table and active-source check in this transaction.
 	if sourceID != "" {
-		return ErrNotFound
+		var source LogSource
+		var target sql.NullString
+		err = tx.QueryRowContext(ctx, l.store.rebind("SELECT name,target_id FROM log_sources WHERE id=? AND revoked_at IS NULL"), sourceID).Scan(&source.Name, &target)
+		if errors.Is(err, sql.ErrNoRows) {
+			return ErrNotFound
+		}
+		if err != nil {
+			return err
+		}
+		source.TargetID = target.String
+		for i := range batch.Logs {
+			batch.Logs[i].Source = source.Name
+			batch.Logs[i].TargetID = source.TargetID
+		}
+		for i := range batch.Activity {
+			batch.Activity[i].TargetID = source.TargetID
+		}
 	}
 	var added int64
 	for i := range batch.Logs {

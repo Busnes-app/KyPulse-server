@@ -54,19 +54,20 @@ type recoveryClient interface {
 }
 
 type Server struct {
-	config     *config.Config
-	store      store.Store
-	sessions   *auth.SessionManager
-	kysignon   *sso.KySignOnClient
-	oidc       *sso.GenericOIDCClient
-	saml       *sso.SAMLServiceProvider
-	recovery   recoveryClient
-	monitor    *monitor.Service
-	kyyard     *kyyard.Service
-	lg         *logging.Logger
-	mux        *http.ServeMux
-	attemptsMu sync.Mutex
-	attempts   map[string]attemptWindow
+	config      *config.Config
+	store       store.Store
+	sessions    *auth.SessionManager
+	kysignon    *sso.KySignOnClient
+	oidc        *sso.GenericOIDCClient
+	saml        *sso.SAMLServiceProvider
+	recovery    recoveryClient
+	monitor     *monitor.Service
+	kyyard      *kyyard.Service
+	lg          *logging.Logger
+	mux         *http.ServeMux
+	attemptsMu  sync.Mutex
+	attempts    map[string]attemptWindow
+	claimGlobal attemptWindow
 	// detached counts the requests running on a context deliberately separated from their
 	// connection. http.Server.Shutdown does not know about them, so runServer waits on this
 	// before the store closes.
@@ -228,6 +229,23 @@ func (s *Server) requestIP(r *http.Request) string {
 	return auth.ClientIP(r, s.config.Security.TrustedProxies)
 }
 
+func (s *Server) allowClaim(ip string) bool {
+	now := time.Now()
+	s.attemptsMu.Lock()
+	defer s.attemptsMu.Unlock()
+	s.claimGlobal = bumpWindow(s.claimGlobal, now, time.Minute)
+	if s.claimGlobal.count > 30 {
+		return false
+	}
+	key := "log-claim:" + ip
+	if _, known := s.attempts[key]; !known && len(s.attempts) >= attemptsCap {
+		s.makeRoom(now)
+	}
+	entry := bumpWindow(s.attempts[key], now, time.Minute)
+	s.attempts[key] = entry
+	return entry.count <= 5
+}
+
 func (s *Server) routes() {
 	// Liveness for monitors and readiness probes; public and cached by the lib. Two checks:
 	// the database answers (down if not), and the audit chain can take the next record
@@ -294,6 +312,10 @@ func (s *Server) routes() {
 	s.mux.HandleFunc("POST /api/kyyard/pair", s.tracked(s.requireAdmin(s.handleKyYardPair)))
 	s.mux.HandleFunc("DELETE /api/kyyard", s.requireAdmin(s.handleKyYardUnpair))
 	s.mux.HandleFunc("GET /api/kyyard/containers", s.requireAdmin(s.handleKyYardContainers))
+	s.mux.HandleFunc("POST /api/log-sources/pairing", s.requireAdmin(s.handleCreateLogPairing))
+	s.mux.HandleFunc("POST /api/log-sources/claim", s.handleClaimLogSource)
+	s.mux.HandleFunc("GET /api/log-sources", s.requireAdmin(s.handleListLogSources))
+	s.mux.HandleFunc("DELETE /api/log-sources/{id}", s.requireAdmin(s.handleRevokeLogSource))
 
 	// Embedded React PWA Frontend
 	s.mux.Handle("/", web.Handler())
@@ -335,6 +357,9 @@ func (s *Server) requireSession(h http.HandlerFunc) http.HandlerFunc {
 }
 
 func (s *Server) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+	if strings.HasPrefix(r.URL.Path, "/api/log-sources") {
+		w.Header().Set("Cache-Control", "no-store")
+	}
 	w.Header().Set("X-Content-Type-Options", "nosniff")
 	w.Header().Set("X-Frame-Options", "DENY")
 	w.Header().Set("Referrer-Policy", "strict-origin-when-cross-origin")

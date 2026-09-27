@@ -22,6 +22,7 @@ type SQLStore struct {
 	settings *settingsStore
 	targets  *targetStore
 	logs     *logStore
+	sources  *sourceStore
 }
 
 // newSQLStore creates and initializes a SQLStore, running migrations automatically.
@@ -47,6 +48,7 @@ func newSQLStore(ctx context.Context, db *sql.DB, driver string, auditKey []byte
 	s.settings = &settingsStore{store: s}
 	s.targets = &targetStore{store: s}
 	s.logs = &logStore{store: s}
+	s.sources = &sourceStore{store: s}
 
 	// A log with no digests is keyed only when migration 6 has just added the columns; any
 	// later start that finds one means the chain was stripped.
@@ -64,6 +66,7 @@ func (s *SQLStore) Audit() AuditStore       { return s.audit }
 func (s *SQLStore) Settings() SettingsStore { return s.settings }
 func (s *SQLStore) Targets() TargetStore    { return s.targets }
 func (s *SQLStore) Logs() LogStore          { return s.logs }
+func (s *SQLStore) Sources() SourceStore    { return s.sources }
 
 func (s *SQLStore) Driver() string                 { return s.driver }
 func (s *SQLStore) Ping(ctx context.Context) error { return s.db.PingContext(ctx) }
