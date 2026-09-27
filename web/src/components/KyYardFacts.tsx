@@ -4,12 +4,15 @@ import { sinceLabel, timeLabel } from '../monitor';
 
 const mib = (n: number) => `${Math.round(n / 1048576)} MiB`;
 
-export const KyYardFacts: React.FC<{ facts: ContainerFacts | null; link?: string; paired: boolean; isAdmin: boolean }> = ({ facts, link, paired, isAdmin }) => {
+export const KyYardFacts: React.FC<{ facts: ContainerFacts | null; link?: string; paired: boolean; pending?: boolean; isAdmin: boolean }> = ({ facts, link, paired, pending, isAdmin }) => {
   if (!link) {
     return <p className="dr-hint">Not linked to a KyYard container.{isAdmin ? ' Edit the app and pick one under Container.' : ''}</p>;
   }
   if (!paired) return <p className="dr-hint">KyYard is not paired.</p>;
-  if (!facts) return <p className="dr-hint">Not seen in KyYard: <span className="dr-mono">{link}</span> is not in the latest inventory.</p>;
+  if (!facts) {
+    if (pending) return <p className="dr-hint">KyYard: first pull pending.</p>;
+    return <p className="dr-hint">Not seen in KyYard: <span className="dr-mono">{link}</span> is not in the latest inventory.</p>;
+  }
   return (
     <div className="dr-facts" aria-label="KyYard container">
       <div className="dr-fact"><span className="dr-fact-label">Container</span><span className="dr-fact-value dr-mono">{facts.name} on {facts.endpoint_name}</span></div>

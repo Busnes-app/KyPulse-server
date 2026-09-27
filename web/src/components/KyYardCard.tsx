@@ -1,6 +1,9 @@
 import React, { useEffect, useState } from 'react';
 import { Database, Link2, Unlink } from 'lucide-react';
-import { ApiError, getKyYard, pairKyYard, sinceLabel, timeLabel, unpairKyYard, type KyYardStatus } from '../monitor';
+import { ApiError, getKyYard, kyYardPending, pairKyYard, sinceLabel, timeLabel, unpairKyYard, type KyYardStatus } from '../monitor';
+
+const POLL_MS = 2_000;
+const POLL_BUDGET_MS = 30_000;
 
 // KyYardCard pairs this kyPulse to one KyYard organization with a code a KyYard
 // administrator generated (Members → Service tokens → Pair kyPulse). Unpairing here deletes
@@ -14,6 +17,19 @@ export const KyYardCard: React.FC<{ onChanged: () => void }> = ({ onChanged }) =
 
   const load = () => getKyYard().then(setStatus).catch(() => setStatus(null));
   useEffect(() => { void load(); }, []);
+
+  // While "first pull pending" (paired, no fetched_at, no error), re-read every 2s for up to
+  // 30s so the card flips to fresh/stale as soon as the background loop's first pull lands.
+  useEffect(() => {
+    if (!status || !kyYardPending(status)) return;
+    let elapsed = 0;
+    const id = window.setInterval(() => {
+      elapsed += POLL_MS;
+      getKyYard().then(setStatus).catch(() => {});
+      if (elapsed >= POLL_BUDGET_MS) window.clearInterval(id);
+    }, POLL_MS);
+    return () => window.clearInterval(id);
+  }, [status?.paired, status?.fetched_at, status?.error]);
 
   const pair = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -58,7 +74,7 @@ export const KyYardCard: React.FC<{ onChanged: () => void }> = ({ onChanged }) =
             <div className="dr-fact"><span className="dr-fact-label">Organization</span><span className="dr-fact-value">{status.organization}</span></div>
             <div className="dr-fact"><span className="dr-fact-label">URL</span><span className="dr-fact-value dr-mono">{status.url}</span></div>
             <div className="dr-fact"><span className="dr-fact-label">Last pull</span><span className="dr-fact-value">{status.fetched_at ? `${timeLabel(status.fetched_at)} (${sinceLabel(status.fetched_at)} ago)` : 'never'}</span></div>
-            <div className="dr-fact"><span className="dr-fact-label">State</span><span className={status.stale ? 'dr-fact-value dr-danger' : 'dr-fact-value dr-ok'}>{status.stale ? `stale${status.error ? ` (${status.error})` : ''}` : 'fresh'}</span></div>
+            <div className="dr-fact"><span className="dr-fact-label">State</span><span className={kyYardPending(status) ? 'dr-fact-value' : status.stale ? 'dr-fact-value dr-danger' : 'dr-fact-value dr-ok'}>{kyYardPending(status) ? 'first pull pending' : status.stale ? `stale${status.error ? ` (${status.error})` : ''}` : 'fresh'}</span></div>
           </div>
           {status.error === 'unauthorized' && <p className="form-error">KyYard refused the token: it was revoked. Unpair and pair again with a new code.</p>}
           <p className="dr-hint">Revoking the token happens in KyYard (Members → Service tokens); unpairing here only forgets it.</p>

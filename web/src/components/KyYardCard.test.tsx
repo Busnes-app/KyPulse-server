@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import { cleanup, fireEvent, render, screen, waitFor } from '@testing-library/react';
+import { act, cleanup, fireEvent, render, screen, waitFor } from '@testing-library/react';
 import { KyYardCard } from './KyYardCard';
 
 const unpaired = { paired: false, stale: false };
@@ -42,5 +42,56 @@ describe('KyYardCard', () => {
     expect(await screen.findByText(/KyYard refused the token: it was revoked/)).toBeTruthy();
     fireEvent.click(screen.getByRole('button', { name: /Unpair/ }));
     expect(await screen.findByText(/Unpaired/)).toBeTruthy();
+  });
+
+  it('flips from "first pull pending" to "fresh" once the first pull lands, polling every 2s', async () => {
+    vi.useFakeTimers();
+    let calls = 0;
+    const fn = vi.fn(async (input: RequestInfo | URL, init?: RequestInit) => {
+      const key = `${init?.method ?? 'GET'} ${String(input)}`;
+      if (key === 'GET /api/kyyard') {
+        calls++;
+        if (calls === 1) return new Response(JSON.stringify(unpaired));
+        return new Response(JSON.stringify({ paired: true, stale: false, organization: 'Acme', url: 'https://kyyard.lan', fetched_at: '2026-09-27T10:00:02Z' }));
+      }
+      if (key === 'POST /api/kyyard/pair') return new Response(JSON.stringify({ paired: true, stale: true, organization: 'Acme' }));
+      throw new Error(key);
+    });
+    vi.stubGlobal('fetch', fn);
+    try {
+      render(<KyYardCard onChanged={() => {}} />);
+      await act(async () => { await vi.advanceTimersByTimeAsync(0); });
+      fireEvent.change(screen.getByLabelText('KyYard URL'), { target: { value: 'https://kyyard.lan' } });
+      fireEvent.change(screen.getByLabelText('Pairing code'), { target: { value: '123456' } });
+      await act(async () => {
+        fireEvent.click(screen.getByRole('button', { name: /Pair/ }));
+        await vi.advanceTimersByTimeAsync(0);
+      });
+      expect(screen.getByText('first pull pending')).toBeTruthy();
+      await act(async () => { await vi.advanceTimersByTimeAsync(2000); });
+      expect(screen.getByText('fresh')).toBeTruthy();
+    } finally {
+      vi.useRealTimers();
+    }
+  });
+
+  it('stops polling once unmounted', async () => {
+    vi.useFakeTimers();
+    const fn = vi.fn(async (input: RequestInfo | URL, init?: RequestInit) => {
+      const key = `${init?.method ?? 'GET'} ${String(input)}`;
+      if (key === 'GET /api/kyyard') return new Response(JSON.stringify({ paired: true, stale: true, fetched_at: null }));
+      throw new Error(key);
+    });
+    vi.stubGlobal('fetch', fn);
+    try {
+      const { unmount } = render(<KyYardCard onChanged={() => {}} />);
+      await act(async () => { await vi.advanceTimersByTimeAsync(0); });
+      const before = fn.mock.calls.length;
+      unmount();
+      await vi.advanceTimersByTimeAsync(10_000);
+      expect(fn.mock.calls.length).toBe(before);
+    } finally {
+      vi.useRealTimers();
+    }
   });
 });

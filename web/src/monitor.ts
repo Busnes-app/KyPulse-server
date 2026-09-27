@@ -228,6 +228,12 @@ export function webhookFailing(s: StatusSummary): boolean {
   return s.webhook.configured && !!s.webhook.last && !s.webhook.last.ok;
 }
 
+// kyYardPending is true right after pairing, before the background loop's first pull has
+// landed (or failed): paired, no fetched_at yet, and no error reported.
+export function kyYardPending(s: Pick<KyYardStatus, 'paired' | 'fetched_at' | 'error'>): boolean {
+  return s.paired && !s.fetched_at && !s.error;
+}
+
 export function isSilenced(t: Target, now: Date = new Date()): boolean {
   if (t.until_fixed) return true;
   return !!t.silenced_until && new Date(t.silenced_until).getTime() > now.getTime();

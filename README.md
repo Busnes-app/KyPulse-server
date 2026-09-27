@@ -31,7 +31,8 @@ detail page then shows KyYard's facts for that container: state, Docker health, 
 memory, restarts and when it was last observed. A pairing answers `stale:true` with no
 `fetched_at` right after pairing ("first pull pending"); the alert bar and Settings both
 treat that as pending, not a failure, and show data as stale once a pull has run but failed
-or is late.
+or is late. The Settings card re-reads pairing status every 2s for up to 30s while pending,
+so it flips to fresh or stale on its own once the first pull lands.
 
 Unpairing is two steps, one on each side: the Settings card's Unpair button deletes the URL
 and token here only; a KyYard administrator must separately revoke the token on KyYard's

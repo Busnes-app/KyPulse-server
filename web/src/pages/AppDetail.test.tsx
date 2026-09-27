@@ -114,6 +114,19 @@ describe('AppDetail', () => {
     expect(await screen.findByText(/Not seen in KyYard/)).toBeTruthy();
   });
 
+  it('says first pull pending, not "not seen", right after pairing', async () => {
+    const fn = vi.fn(async (input: RequestInfo | URL) => {
+      const key = String(input);
+      if (/^\/api\/kyyard$/.test(key)) return new Response(JSON.stringify({ paired: true, stale: true, fetched_at: null }));
+      if (/tgt_a$/.test(key)) return new Response(JSON.stringify({ ...detail, kyyard: null }));
+      throw new Error(key);
+    });
+    vi.stubGlobal('fetch', fn);
+    render(<AppDetail id="tgt_a" user={{ role: 'viewer' }} onChanged={() => {}} />);
+    expect(await screen.findByText(/first pull pending/)).toBeTruthy();
+    expect(screen.queryByText(/Not seen in KyYard/)).toBeNull();
+  });
+
   it('shows a hint for an unlinked target', async () => {
     const unlinked = { ...target, container: undefined };
     const fn = vi.fn(async (input: RequestInfo | URL) => {

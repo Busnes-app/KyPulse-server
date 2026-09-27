@@ -4,8 +4,8 @@ import { TargetForm } from '../components/TargetForm';
 import { KyYardFacts } from '../components/KyYardFacts';
 import { hrefFor, navigate } from '../router';
 import {
-  ApiError, deleteTarget, getKyYard, getTarget, isSilenced, kyYardContainers, silenceTarget, sinceLabel, stateClass, stateLabel, timeLabel, updateTarget,
-  type ContainerFacts, type LastResult, type SilenceFor, type Suggestion, type Target, type TargetEvent, type TargetInput,
+  ApiError, deleteTarget, getKyYard, getTarget, isSilenced, kyYardContainers, kyYardPending, silenceTarget, sinceLabel, stateClass, stateLabel, timeLabel, updateTarget,
+  type ContainerFacts, type KyYardStatus, type LastResult, type SilenceFor, type Suggestion, type Target, type TargetEvent, type TargetInput,
 } from '../monitor';
 import type { PageUser } from './Status';
 
@@ -22,7 +22,7 @@ export const AppDetail: React.FC<AppDetailProps> = ({ id, user, onChanged }) => 
   const [last, setLast] = useState<LastResult | null>(null);
   const [events, setEvents] = useState<TargetEvent[]>([]);
   const [facts, setFacts] = useState<ContainerFacts | null>(null);
-  const [yardPaired, setYardPaired] = useState(false);
+  const [yard, setYard] = useState<KyYardStatus | null>(null);
   const [suggestions, setSuggestions] = useState<Suggestion[]>([]);
   const [missing, setMissing] = useState(false);
   const [error, setError] = useState('');
@@ -51,7 +51,7 @@ export const AppDetail: React.FC<AppDetailProps> = ({ id, user, onChanged }) => 
   }, [load]);
 
   useEffect(() => {
-    getKyYard().then((s) => setYardPaired(s.paired)).catch(() => setYardPaired(false));
+    getKyYard().then(setYard).catch(() => setYard(null));
   }, []);
 
   useEffect(() => {
@@ -184,7 +184,7 @@ export const AppDetail: React.FC<AppDetailProps> = ({ id, user, onChanged }) => 
 
       <div className="dr-section">
         <h3>KyYard</h3>
-        <KyYardFacts facts={facts} link={target.container} paired={yardPaired} isAdmin={isAdmin} />
+        <KyYardFacts facts={facts} link={target.container} paired={!!yard?.paired} pending={!!yard && kyYardPending(yard)} isAdmin={isAdmin} />
       </div>
 
       <div className="dr-section">

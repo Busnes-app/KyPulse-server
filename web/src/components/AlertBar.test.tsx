@@ -80,4 +80,10 @@ describe('AlertBar', () => {
     render(<AlertBar status={{ ...healthy, kyyard: { paired: false, stale: false } }} loading={false} isAdmin={false} />);
     expect(screen.queryByText(/KyYard/)).toBeNull();
   });
+
+  it('says first pull pending, not stale, right after pairing', () => {
+    render(<AlertBar status={{ ...healthy, kyyard: { paired: true, stale: true, fetched_at: null } }} loading={false} isAdmin={false} />);
+    expect(screen.getByText('KyYard: first pull pending')).toBeTruthy();
+    expect(screen.queryByText(/KyYard data stale/)).toBeNull();
+  });
 });
