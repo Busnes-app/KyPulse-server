@@ -22,8 +22,9 @@ live in `recoveryclient` and in the settings rows it reads and writes through th
   WAL mode, so a plain file read misses uncheckpointed commits) and returns
   `ErrNoDatabaseSnapshot` for any other driver, so a capsule without a consistent database is
   never sealed. It also carries the encryption key (`data/encryption.key`, required — restores
-  a database whose MFA secrets are gone otherwise) and the pinned recovery public key
-  (`data/recovery.pub`, only when paired).
+  a database whose MFA secrets are gone otherwise), the audit chain key (`data/audit.key`,
+  required — without it the restored audit log cannot be verified), and the pinned recovery
+  public key (`data/recovery.pub`, only when paired).
 - `Checks(dir, opened)` reads the opened capsule's manifest, normalizes JSON lists and
   fails malformed or incomplete recipes. Required files include all capsule members and
   the database, settings and encryption key; SQLite integrity and required environment

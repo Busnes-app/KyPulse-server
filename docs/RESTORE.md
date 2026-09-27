@@ -32,6 +32,7 @@ Everything a fresh server needs to be the old one:
 |---|---|
 | `data/kypulse.db` | The whole database: users, sessions, MFA state, audit log, settings, the sealed KyRecovery token |
 | `data/encryption.key` | 32 bytes. Every TOTP secret and the KyRecovery pairing token are encrypted under it |
+| `data/audit.key` | 32 bytes. Keys the audit hash chain; without it the restored log cannot be verified |
 | `data/recovery.pub` | The suite recovery public key, so the restored server comes back pinned (present when the backup had a key) |
 | `config/settings.json` | App name, URL, port, database driver. For your reference when re-deploying; nothing reads it |
 
@@ -168,7 +169,7 @@ Failures you may see, and what they mean:
 find restored -type f -printf '%m %p\n'
 ```
 
-Expect three or four files, all mode `600`, under `restored/data` and `restored/config`.
+Expect four or five files, all mode `600`, under `restored/data` and `restored/config`.
 `cat restored/config/settings.json` shows the app URL and port the old server ran with.
 
 ## Step 3: put it in service
@@ -239,6 +240,8 @@ as before, and start.
    back the same key.
 3. Check the audit log: the last events before the restore are there, followed by your
    sign-in.
+4. Run `kypulse audit-verify` against the restored data directory; it walks every audit
+   record against the anchor and exits 1 if the log was altered or shortened.
 
 ## Step 5: decide what to trust
 

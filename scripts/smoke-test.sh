@@ -80,6 +80,7 @@ start_server pow
 check "GET / serves the PWA" "$(status "$BASE/")" "200"
 check "healthz is 200 when the database is up" "$(status "$BASE/healthz")" "200"
 contains "healthz serves ky.health/1" "$(curl -s "$BASE/healthz")" '"schema":"ky.health/1"'
+contains "healthz reports the audit check" "$(curl -s "$BASE/healthz")" '"name":"audit"'
 contains "index.html has react root" "$(curl -s "$BASE/")" 'id="root"'
 check "SPA fallback for unknown route" "$(status "$BASE/settings/deep/link")" "200"
 check "login blocked without captcha token" \
@@ -185,8 +186,13 @@ contains "status reads the schedule back" "$(curl -s -b "$WORK/cookies" "$BASE/a
 check "run refuses without a key" "$(status -b "$WORK/cookies" -H "X-CSRF-Token: $CSRF" -X POST "$BASE/api/backup/deposit")" "412"
 check "unpair refuses while unpaired" "$(status -b "$WORK/cookies" -H "X-CSRF-Token: $CSRF" -X DELETE "$BASE/api/backup/pairing")" "412"
 check "logout succeeds" "$(status -b "$WORK/cookies" -c "$WORK/cookies" -H "X-CSRF-Token: $CSRF" -X POST "$BASE/api/auth/logout")" "200"
-contains "session dead after logout" "$(curl -s -b "$WORK/cookies" "$BASE/api/auth/me")" '"authenticated":false' 
+contains "session dead after logout" "$(curl -s -b "$WORK/cookies" "$BASE/api/auth/me")" '"authenticated":false'
 stop_server
+
+echo "==> Audit chain"
+VERIFY_OUT="$(KYPULSE_DATA_DIR="$WORK/data" KYPULSE_PORT="$PORT" KYPULSE_DB_DRIVER=sqlite "$BIN" audit-verify)"
+contains "audit-verify walks the chain the server wrote" "$VERIFY_OUT" "audit chain verified"
+check "audit-verify exits 0 on an intact chain" "$(KYPULSE_DATA_DIR="$WORK/data" KYPULSE_PORT="$PORT" KYPULSE_DB_DRIVER=sqlite "$BIN" audit-verify >/dev/null 2>&1 && echo 0 || echo 1)" "0"
 
 echo
 if [ "$FAILURES" -eq 0 ]; then

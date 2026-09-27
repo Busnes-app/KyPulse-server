@@ -12,7 +12,8 @@ Design authority: `docs/superpowers/specs/2026-09-26-kypulse-design.md`. Plans l
 ## Ownership
 
 - `cmd/server/`: process entry, CLI subcommands (`init-admin`, `backup-drill`,
-  `export-capsule`, `deposit`, `restore`, `version`), the log bridge, the backup scheduler.
+  `export-capsule`, `deposit`, `restore`, `audit-verify`, `version`), the log bridge, the
+  backup scheduler.
 - `internal/`: one package per concern; each has its own AGENTS.md.
 - `internal/egress`, `internal/poller`, `internal/alerts`, `internal/notify`, `internal/monitor`:
   the monitoring backend; each has its own AGENTS.md.
@@ -33,6 +34,8 @@ Design authority: `docs/superpowers/specs/2026-09-26-kypulse-design.md`. Plans l
   log file and no log socket.
 - `GET /healthz` is public and is what an external monitor watches; kyPulse does not monitor
   itself.
+- The audit trail is a keyed hash chain (`internal/store/audit.go`); a log the store cannot
+  place refuses to start.
 - `web/dist` is committed after every frontend change; CI diffs it. `web/src/ky-ui/` is
   vendored and hash-pinned; never hand-edit it.
 - No device pairing, no SCIM. Local login with MFA, SSO (KySignOn, OIDC, SAML metadata) and

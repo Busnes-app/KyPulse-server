@@ -193,7 +193,11 @@ func TestHealthzIsPublicAndReportsTheDatabase(t *testing.T) {
 	if resp.Schema != "ky.health/1" || resp.Service != "kypulse" || resp.Status != "ok" {
 		t.Errorf("unexpected body: %s", w.Body.String())
 	}
-	if len(resp.Checks) != 1 || resp.Checks[0].Name != "database" || resp.Checks[0].Status != "ok" {
+	names := map[string]string{}
+	for _, c := range resp.Checks {
+		names[c.Name] = c.Status
+	}
+	if names["database"] != "ok" || names["audit"] != "ok" {
 		t.Errorf("checks = %+v", resp.Checks)
 	}
 }
