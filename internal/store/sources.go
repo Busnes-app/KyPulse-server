@@ -28,9 +28,25 @@ type SourceStore interface {
 	Authenticate(context.Context, string) (LogSource, error)
 	List(context.Context) ([]LogSource, error)
 	Revoke(context.Context, string, time.Time) error
+	ExpireCodes(context.Context, time.Time) error
 }
 
 type sourceStore struct{ store *SQLStore }
+
+func (s *sourceStore) ExpireCodes(ctx context.Context, now time.Time) error {
+	tx, err := s.store.db.BeginTx(ctx, nil)
+	if err != nil {
+		return err
+	}
+	defer tx.Rollback()
+	if _, err := s.store.logs.lock(ctx, tx); err != nil {
+		return err
+	}
+	if _, err := tx.ExecContext(ctx, s.store.rebind("DELETE FROM log_pairing_codes WHERE expires_at <= ?"), now); err != nil {
+		return err
+	}
+	return tx.Commit()
+}
 
 func isUniqueViolation(err error) bool {
 	msg := err.Error()

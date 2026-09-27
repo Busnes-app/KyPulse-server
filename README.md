@@ -149,6 +149,7 @@ there is no log file.
 | `KYPULSE_POLL_WORKERS` | `4` | concurrent health polls, 1 to 32 |
 | `KYPULSE_ALERT_ALLOW_HTTP` | `false` | admit a plain-http webhook URL |
 | `KYPULSE_KYYARD_ALLOW_HTTP` | `false` | admit a plain-http KyYard URL |
+| `KYPULSE_LOG_MAX_BYTES` | `1073741824` (1 GiB) | maximum retained log and activity payload bytes; minimum 131072 |
 | `KYPULSE_BACKUP_DIR` | empty (`/app/backups` in Compose) | sealed local backup copies; empty keeps none |
 | `KYPULSE_BACKUP_KEEP` | `7` | local copies kept |
 | `KYPULSE_BACKUP_DEPOSIT_INTERVAL` | `24h` | default backup schedule; `0` off, at least `15m` |
@@ -156,6 +157,11 @@ there is no log file.
 
 Keep `encryption.key` and `audit.key` with the database: without them the sealed settings
 cannot be opened and the audit trail cannot be verified. Backups carry both.
+
+Logs and activity share a seven-day retention period and the byte limit above. The limit is
+enforced during each append and checked again at startup and hourly. It measures logical
+stored payload bytes, including row overhead, rather than the database file size. SQLite may
+reuse freed pages after deletion without immediately shrinking its file.
 
 ## Compose overlays
 

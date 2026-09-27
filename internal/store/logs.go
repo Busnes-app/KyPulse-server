@@ -4,6 +4,7 @@ import (
 	"context"
 	"database/sql"
 	"errors"
+	"sort"
 	"strings"
 	"time"
 )
@@ -56,6 +57,51 @@ type LogBatch struct {
 	Logs     []LogLine
 	Activity []Activity
 }
+
+type RetainedRow struct {
+	Kind       string
+	ID         int64
+	ReceivedAt time.Time
+	Bytes      int64
+}
+
+// Evict chooses expired rows first, then the oldest rows needed to fit the budget.
+func Evict(rows []RetainedRow, now time.Time, maxBytes int64) []RetainedRow {
+	ordered := append([]RetainedRow(nil), rows...)
+	sort.Slice(ordered, func(i, j int) bool {
+		a, b := ordered[i], ordered[j]
+		if !a.ReceivedAt.Equal(b.ReceivedAt) {
+			return a.ReceivedAt.Before(b.ReceivedAt)
+		}
+		if a.Kind != b.Kind {
+			return a.Kind < b.Kind
+		}
+		return a.ID < b.ID
+	})
+	var total int64
+	for _, r := range ordered {
+		total += r.Bytes
+	}
+	var out []RetainedRow
+	for _, r := range ordered {
+		if !now.IsZero() && r.ReceivedAt.Before(now.Add(-7*24*time.Hour)) {
+			out = append(out, r)
+			total -= r.Bytes
+		}
+	}
+	for _, r := range ordered {
+		if total <= maxBytes {
+			break
+		}
+		if !now.IsZero() && r.ReceivedAt.Before(now.Add(-7*24*time.Hour)) {
+			continue
+		}
+		out = append(out, r)
+		total -= r.Bytes
+	}
+	return out
+}
+
 type LogStore interface {
 	Append(ctx context.Context, sourceID string, batch LogBatch, maxBytes int64) error
 	List(ctx context.Context, f LogFilter) ([]LogLine, error)
@@ -208,23 +254,20 @@ func (l *logStore) pruneTx(ctx context.Context, tx *sql.Tx, now time.Time, maxBy
 			total -= expired
 		}
 	}
-	if maxBytes >= 0 && total > maxBytes {
-		rows, err := tx.QueryContext(ctx, `SELECT kind,id,bytes FROM (SELECT 0 AS kind,id,received_at,bytes FROM log_lines UNION ALL SELECT 1 AS kind,id,received_at,bytes FROM activity) AS all_rows ORDER BY received_at,id,kind`)
+	for maxBytes >= 0 && total > maxBytes {
+		rows, err := tx.QueryContext(ctx, `SELECT kind,id,received_at,bytes FROM (SELECT 'log' AS kind,id,received_at,bytes FROM log_lines UNION ALL SELECT 'activity' AS kind,id,received_at,bytes FROM activity) AS all_rows ORDER BY received_at,kind,id LIMIT 256`)
 		if err != nil {
 			return err
 		}
-		type victim struct {
-			kind      int
-			id, bytes int64
-		}
-		var victims []victim
-		for rows.Next() && total > maxBytes {
-			var v victim
-			if err = rows.Scan(&v.kind, &v.id, &v.bytes); err != nil {
+		var page []RetainedRow
+		var pageBytes int64
+		for rows.Next() {
+			var v RetainedRow
+			if err = rows.Scan(&v.Kind, &v.ID, &v.ReceivedAt, &v.Bytes); err != nil {
 				break
 			}
-			victims = append(victims, v)
-			total -= v.bytes
+			page = append(page, v)
+			pageBytes += v.Bytes
 		}
 		if err == nil {
 			err = rows.Err()
@@ -233,14 +276,18 @@ func (l *logStore) pruneTx(ctx context.Context, tx *sql.Tx, now time.Time, maxBy
 		if err != nil {
 			return err
 		}
-		for _, v := range victims {
+		if len(page) == 0 {
+			return errors.New("log usage exceeds retained rows")
+		}
+		for _, v := range Evict(page, time.Time{}, maxBytes-(total-pageBytes)) {
 			table := "log_lines"
-			if v.kind == 1 {
+			if v.Kind == "activity" {
 				table = "activity"
 			}
-			if _, err = tx.ExecContext(ctx, l.store.rebind("DELETE FROM "+table+" WHERE id=?"), v.id); err != nil {
+			if _, err = tx.ExecContext(ctx, l.store.rebind("DELETE FROM "+table+" WHERE id=?"), v.ID); err != nil {
 				return err
 			}
+			total -= v.Bytes
 		}
 	}
 	_, err := tx.ExecContext(ctx, l.store.rebind("UPDATE log_usage SET bytes=? WHERE id=1"), total)

@@ -143,6 +143,8 @@ func runServer(lg *logging.Logger) {
 	go monitorLoop(ctx, mon, pl, monitorDone)
 	kyyardDone := make(chan struct{})
 	go kyyardLoop(ctx, yard, kyyardDone)
+	retentionDone := make(chan struct{})
+	go logRetentionLoop(ctx, st, cfg.Logs.MaxBytes, lg, retentionDone)
 
 	addr := fmt.Sprintf("%s:%d", cfg.Server.Host, cfg.Server.Port)
 	httpServer := &http.Server{
@@ -176,6 +178,11 @@ func runServer(lg *logging.Logger) {
 	waitCtx, waitCancel := context.WithTimeout(context.Background(), backupWaitTimeout)
 	defer waitCancel()
 	waitForBackupWork(waitCtx, backupDone, monitorDone, kyyardDone, srv.WaitDetached)
+	select {
+	case <-retentionDone:
+	case <-waitCtx.Done():
+		log.Printf("[KYPULSE] abandoning log retention still running after %s", backupWaitTimeout)
+	}
 	log.Println("[KYPULSE] Server stopped")
 }
 

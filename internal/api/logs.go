@@ -16,8 +16,6 @@ import (
 	"github.com/Busnes-app/kypulse-server/internal/store"
 )
 
-const defaultLogMaxBytes int64 = 1 << 30
-
 func adminLogAuditAction(r *http.Request) string {
 	if action := sourceAuditAction(r); action != "" {
 		return action
@@ -110,7 +108,7 @@ func (s *Server) handleIngestLogs(w http.ResponseWriter, r *http.Request) {
 			batch.Activity = append(batch.Activity, *activity)
 		}
 	}
-	if err := s.store.Logs().Append(r.Context(), source.ID, batch, defaultLogMaxBytes); err != nil {
+	if err := s.store.Logs().Append(r.Context(), source.ID, batch, s.config.Logs.MaxBytes); err != nil {
 		if errors.Is(err, store.ErrNotFound) {
 			fail(http.StatusUnauthorized, "revoked", "Invalid source token")
 		} else {

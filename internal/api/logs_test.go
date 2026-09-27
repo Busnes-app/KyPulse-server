@@ -93,6 +93,22 @@ func TestIngestBatchAndLimits(t *testing.T) {
 	}
 }
 
+func TestIngestUsesConfiguredByteCap(t *testing.T) {
+	srv, st, cfg := setupTestServer(t)
+	cfg.Logs.MaxBytes = 1000
+	token, _ := pairedLogSource(t, st)
+	for i := 0; i < 2; i++ {
+		body := []byte(`{"line":"` + strings.Repeat(string(rune('a'+i)), 300) + `"}` + "\n")
+		if w := ingestRequest(srv, token, body, false); w.Code != 204 {
+			t.Fatalf("ingest %d: %d %s", i, w.Code, w.Body.String())
+		}
+	}
+	rows, err := st.Logs().List(context.Background(), store.LogFilter{})
+	if err != nil || len(rows) != 1 || rows[0].Raw != strings.Repeat("b", 300) {
+		t.Fatalf("retained rows=%+v err=%v", rows, err)
+	}
+}
+
 func TestIngestRateLimitAndRevocation(t *testing.T) {
 	srv, st, _ := setupTestServer(t)
 	token, source := pairedLogSource(t, st)

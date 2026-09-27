@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"strings"
+	"sync"
 	"testing"
 	"time"
 
@@ -18,6 +19,116 @@ func newLogTestStore(t *testing.T) *SQLStore {
 	}
 	t.Cleanup(func() { v.Close() })
 	return v.(*SQLStore)
+}
+
+func TestEvictAgeBoundaryAndSharedBudget(t *testing.T) {
+	now := time.Date(2026, 9, 27, 12, 0, 0, 0, time.UTC)
+	rows := []RetainedRow{
+		{"log", 3, now, 50},
+		{"activity", 2, now.Add(-time.Hour), 50},
+		{"log", 1, now.Add(-8 * 24 * time.Hour), 50},
+	}
+	got := Evict(rows, now, 50)
+	if len(got) != 2 || got[0].ID != 1 || got[1].ID != 2 {
+		t.Fatalf("evictions: %+v", got)
+	}
+	boundary := now.Add(-7 * 24 * time.Hour)
+	if got := Evict([]RetainedRow{{"log", 1, boundary, 4}}, now, 4); len(got) != 0 {
+		t.Fatalf("boundary evicted: %+v", got)
+	}
+	if got := Evict([]RetainedRow{{"log", 1, boundary.Add(-time.Nanosecond), 4}}, now, 4); len(got) != 1 {
+		t.Fatalf("expired retained: %+v", got)
+	}
+}
+
+func TestConcurrentLogUsageAndPrune(t *testing.T) {
+	s := newLogTestStore(t)
+	ctx := context.Background()
+	now := time.Now().UTC()
+	const capBytes int64 = 4096
+	var wg sync.WaitGroup
+	errs := make(chan error, 3)
+	for writer := 0; writer < 2; writer++ {
+		wg.Add(1)
+		go func(writer int) {
+			defer wg.Done()
+			for i := 0; i < 20; i++ {
+				stamp := now.Add(time.Duration(writer*20+i) * time.Microsecond)
+				err := s.Logs().Append(ctx, "", LogBatch{
+					Logs:     []LogLine{testLine(stamp, "多字节")},
+					Activity: []Activity{{Time: stamp, ReceivedAt: stamp, Action: "event"}},
+				}, capBytes)
+				if err != nil {
+					errs <- err
+					return
+				}
+			}
+		}(writer)
+	}
+	wg.Add(1)
+	go func() {
+		defer wg.Done()
+		for i := 0; i < 20; i++ {
+			if err := s.Logs().Prune(ctx, now, capBytes); err != nil {
+				errs <- err
+				return
+			}
+		}
+	}()
+	wg.Wait()
+	close(errs)
+	for err := range errs {
+		t.Fatal(err)
+	}
+	var sum int64
+	if err := s.db.QueryRow("SELECT (SELECT COALESCE(SUM(bytes),0) FROM log_lines)+(SELECT COALESCE(SUM(bytes),0) FROM activity)").Scan(&sum); err != nil {
+		t.Fatal(err)
+	}
+	if got := usage(t, s); got != sum || got < 0 || got > capBytes {
+		t.Fatalf("usage=%d sum=%d cap=%d", got, sum, capBytes)
+	}
+}
+
+func TestExpireSourceCodes(t *testing.T) {
+	s := newLogTestStore(t)
+	now := time.Now().UTC()
+	for _, code := range []struct {
+		hash    string
+		expires time.Time
+	}{{"expired", now}, {"live", now.Add(time.Minute)}} {
+		if err := s.Sources().CreateCode(context.Background(), code.hash, "", code.expires); err != nil {
+			t.Fatal(err)
+		}
+	}
+	if err := s.Sources().ExpireCodes(context.Background(), now); err != nil {
+		t.Fatal(err)
+	}
+	var count int
+	if err := s.db.QueryRow("SELECT COUNT(*) FROM log_pairing_codes").Scan(&count); err != nil {
+		t.Fatal(err)
+	}
+	if count != 1 {
+		t.Fatalf("remaining pairing codes = %d", count)
+	}
+}
+
+func TestSizePruneAcrossPages(t *testing.T) {
+	s := newLogTestStore(t)
+	now := time.Now().UTC()
+	batch := LogBatch{Logs: make([]LogLine, 300)}
+	for i := range batch.Logs {
+		batch.Logs[i] = testLine(now.Add(time.Duration(i)*time.Microsecond), "line")
+	}
+	if err := s.Logs().Append(context.Background(), "", batch, logBytes(batch.Logs[0])); err != nil {
+		t.Fatal(err)
+	}
+	rows, err := s.Logs().List(context.Background(), LogFilter{})
+	if err != nil || len(rows) != 1 || rows[0].ID != 300 {
+		t.Fatalf("remaining=%+v err=%v", rows, err)
+	}
+	if got := usage(t, s); got != rows[0].Bytes {
+		t.Fatalf("usage=%d row=%d", got, rows[0].Bytes)
+	}
 }
 func testLine(now time.Time, msg string) LogLine {
 	return LogLine{Time: now, ReceivedAt: now, Source: "host", App: "app", Message: msg, Raw: msg}

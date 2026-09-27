@@ -31,6 +31,31 @@ func TestConfigLoadDefaults(t *testing.T) {
 	if cfg.Backup.Dir != "" {
 		t.Errorf("expected empty default backup dir (sealed local copies off), got %q", cfg.Backup.Dir)
 	}
+	if cfg.Logs.MaxBytes != 1<<30 {
+		t.Fatalf("log cap = %d", cfg.Logs.MaxBytes)
+	}
+}
+
+func TestLogMaxBytesValidation(t *testing.T) {
+	t.Setenv("KYPULSE_DATA_DIR", t.TempDir())
+	for _, tc := range []struct {
+		raw   string
+		want  int64
+		valid bool
+	}{
+		{"131072", 131072, true}, {"131071", 0, false}, {"0", 0, false},
+		{"-1", 0, false}, {"9223372036854775808", 0, false}, {"oops", 0, false}, {"", 0, false},
+	} {
+		t.Setenv("KYPULSE_LOG_MAX_BYTES", tc.raw)
+		cfg, err := config.LoadFromEnv()
+		if tc.valid {
+			if err != nil || cfg.Logs.MaxBytes != tc.want {
+				t.Fatalf("%q: cfg=%+v err=%v", tc.raw, cfg, err)
+			}
+		} else if err == nil || !strings.Contains(err.Error(), "KYPULSE_LOG_MAX_BYTES") {
+			t.Fatalf("%q: expected log cap error, got %v", tc.raw, err)
+		}
+	}
 }
 
 func TestConfigLoadFromEnvOverrides(t *testing.T) {
