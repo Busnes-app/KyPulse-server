@@ -104,7 +104,8 @@ func (s *Service) Run(ctx context.Context, every time.Duration, done chan<- stru
 }
 
 // PullNow reads the pairing, then endpoints, inventory and samples. A failure keeps the last
-// snapshot and records its reason. Unpaired is a no-op that clears nothing (Clear does).
+// snapshot and records its reason. Unpaired clears the snapshot too, but only if nothing has
+// adopted a pairing since this call started (clearIfCurrent).
 //
 // pullMu single-flights the whole call: the handler's first pull right after a successful
 // pairing and the loop's next tick must not run concurrently, or one's commit could clobber
@@ -112,7 +113,10 @@ func (s *Service) Run(ctx context.Context, every time.Duration, done chan<- stru
 // racing an in-flight pull must not have its clear overwritten by that pull's stale commit.
 // gen is captured under s.mu before the pairing is even loaded -- not after the load succeeds
 // -- so an unpair landing between the load and the read is caught too, and re-checked before
-// every locked write; a mismatch discards the commit silently.
+// every locked write; a mismatch discards the commit silently. The same check guards the
+// unpaired branch below: Load finding nothing is stale information the instant a concurrent
+// Clear+Adopt (a re-pair) has landed a newer generation, and clearing unconditionally there
+// would un-adopt a pairing that arrived after this Load ran.
 func (s *Service) PullNow(ctx context.Context) error {
 	s.pullMu.Lock()
 	defer s.pullMu.Unlock()
@@ -124,7 +128,7 @@ func (s *Service) PullNow(ctx context.Context) error {
 		return err
 	}
 	if !ok {
-		s.Clear()
+		s.clearIfCurrent(gen)
 		return nil
 	}
 	c := &Client{HTTP: s.HTTP, Config: cfg}
@@ -229,15 +233,37 @@ func (s *Service) mergeHistory(facts map[string]ContainerFacts, points map[strin
 func (s *Service) Clear() {
 	s.mu.Lock()
 	s.gen++
-	s.paired, s.cfg, s.facts, s.history, s.fetchedAt, s.lastErr = false, Config{}, nil, nil, nil, ""
+	s.resetLocked()
 	s.mu.Unlock()
+}
+
+// clearIfCurrent is Clear, but only when gen still matches the current generation. PullNow's
+// unpaired branch uses it: Load reporting no pairing is stale the instant a concurrent
+// Clear+Adopt (a re-pair) has already landed a newer generation, and clearing unconditionally
+// there would un-adopt a pairing that arrived after that Load ran.
+func (s *Service) clearIfCurrent(gen uint64) {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.gen != gen {
+		return
+	}
+	s.gen++
+	s.resetLocked()
+}
+
+// resetLocked zeroes the snapshot and pairing fields; gen is the caller's responsibility.
+// Caller holds s.mu.
+func (s *Service) resetLocked() {
+	s.paired, s.cfg, s.facts, s.history, s.fetchedAt, s.lastErr = false, Config{}, nil, nil, nil, ""
 }
 
 // Adopt marks cfg paired in memory with no snapshot yet: Status reports paired:true,
 // stale:true and no fetched_at until the first pull -- normally kicked right after -- lands.
-// It does not touch gen, so it must run after Clear (which already invalidated any pull still
-// in flight under the previous pairing) and after Save committed cfg to disk, or a concurrent
-// pull under the old pairing could commit over it.
+// It does not touch gen, so callers must run it last, in this order: Save cfg to disk, then
+// Clear (invalidates any pull still in flight under the previous pairing), then Adopt. Save
+// first so a failed save leaves the previous pairing's in-memory state untouched rather than
+// reporting unpaired with a perfectly good pairing still on disk; Clear before Adopt so a
+// concurrent pull under the old pairing cannot commit over what Adopt is about to set.
 func (s *Service) Adopt(cfg Config) {
 	s.mu.Lock()
 	s.paired, s.cfg, s.facts, s.fetchedAt, s.lastErr = true, cfg, nil, nil, ""

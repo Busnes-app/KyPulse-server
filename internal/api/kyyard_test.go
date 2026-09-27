@@ -383,17 +383,24 @@ func TestKyYardPairRefusesADialTimeAddress(t *testing.T) {
 	}
 }
 
-// failingSettings makes every write fail, to test a pairing whose claim succeeds but whose
-// sealed row cannot be saved.
-type failingSettings struct{ store.SettingsStore }
-
-func (failingSettings) SetSetting(context.Context, string, string) error {
-	return errors.New("disk full")
+// toggleFailSettings lets a test pair successfully once, then flip fail on so every later
+// write errors -- a re-pair's Save failing with a good pairing already on disk, not a claim
+// that never had anywhere to land.
+type toggleFailSettings struct {
+	store.SettingsStore
+	fail atomic.Bool
 }
 
-// serverWithFailingKyYardSave is setupTestServerWith, except the KyYard pairing's settings
-// store refuses every write: the claim can still succeed, only Save cannot.
-func serverWithFailingKyYardSave(t *testing.T, yardHTTP kyyard.HTTP) (*api.Server, store.Store) {
+func (s *toggleFailSettings) SetSetting(ctx context.Context, key, val string) error {
+	if s.fail.Load() {
+		return errors.New("disk full")
+	}
+	return s.SettingsStore.SetSetting(ctx, key, val)
+}
+
+// serverWithToggleableKyYardSave is setupTestServerWith, except the KyYard pairing's settings
+// store is a toggleFailSettings: writes succeed until the test flips fail on.
+func serverWithToggleableKyYardSave(t *testing.T, yardHTTP kyyard.HTTP) (*api.Server, store.Store, *toggleFailSettings) {
 	t.Helper()
 	t.Setenv("KYPULSE_DATA_DIR", t.TempDir())
 	cfg, _ := config.LoadFromEnv()
@@ -413,18 +420,32 @@ func serverWithFailingKyYardSave(t *testing.T, yardHTTP kyyard.HTTP) (*api.Serve
 		t.Fatalf("logger: %v", err)
 	}
 	mon := newTestMonitor(t, cfg, st, lg)
-	pairing, err := kyyard.NewPairing(cfg, failingSettings{st.Settings()})
+	settings := &toggleFailSettings{SettingsStore: st.Settings()}
+	pairing, err := kyyard.NewPairing(cfg, settings)
 	if err != nil {
 		t.Fatalf("kyyard pairing: %v", err)
 	}
 	yard := &kyyard.Service{Pairing: pairing, HTTP: yardHTTP, Logger: lg}
-	return api.NewServer(cfg, st, lg, mon, yard), st
+	return api.NewServer(cfg, st, lg, mon, yard), st, settings
 }
 
+// TestKyYardPairSaveFailureIsAuditedAndReported pairs successfully once, so a good pairing is
+// already on disk and adopted in memory, then makes the second pair's Save fail. Round 2 had
+// Clear run before Save, which forgot the still-good old pairing in memory the moment Save
+// started failing -- reporting unpaired for up to a poll interval despite nothing being wrong
+// with the pairing already there. Save must run first; Clear and Adopt only follow a Save
+// that actually succeeded.
 func TestKyYardPairSaveFailureIsAuditedAndReported(t *testing.T) {
 	fake := pairedYard()
-	srv, st := serverWithFailingKyYardSave(t, fake)
+	srv, st, settings := serverWithToggleableKyYardSave(t, fake)
 	admin := loginAs(t, srv, st, "alice", "admin")
+
+	first := doJSON(t, srv, "POST", "/api/kyyard/pair", admin, map[string]any{"url": "https://yard.lan", "pairing_code": "123456"})
+	if first.Code != http.StatusOK {
+		t.Fatalf("first pair: %d %s", first.Code, first.Body)
+	}
+
+	settings.fail.Store(true)
 	w := doJSON(t, srv, "POST", "/api/kyyard/pair", admin, map[string]any{"url": "https://yard.lan", "pairing_code": "123456"})
 	if w.Code != http.StatusInternalServerError {
 		t.Fatalf("status: %d %s", w.Code, w.Body)
@@ -433,15 +454,22 @@ func TestKyYardPairSaveFailureIsAuditedAndReported(t *testing.T) {
 	if !strings.Contains(body, "kyyard") || !strings.Contains(body, "revoke") {
 		t.Fatalf("500 must say the token must be revoked in KyYard: %s", w.Body)
 	}
+
+	// The pairing that was already on disk (and adopted) before the failed re-pair must
+	// still be reported paired, not forgotten because a later Save failed.
+	if s := decodeMap(t, do(t, srv, "GET", "/api/kyyard", admin)); s["paired"] != true || s["organization"] != "A" {
+		t.Fatalf("a failed re-pair must not un-adopt the existing pairing: %v", s)
+	}
+
 	rows, _, _ := st.Audit().ListAuditRecords(context.Background(), 0, 20)
 	var found bool
 	for _, r := range rows {
-		if r.Action != "admin.kyyard_pair" {
+		if r.Action != "admin.kyyard_pair" || !strings.Contains(r.Details, "reason=save") {
 			continue
 		}
 		found = true
 		if !strings.Contains(r.Details, "outcome=failure") || !strings.Contains(r.Details, `host="yard.lan"`) ||
-			!strings.Contains(r.Details, `org="org_a"`) || !strings.Contains(r.Details, "reason=save") {
+			!strings.Contains(r.Details, `org="org_a"`) {
 			t.Fatalf("details: %q", r.Details)
 		}
 		if strings.Contains(r.Details, fake.token) || strings.Contains(r.Details, "123456") {
