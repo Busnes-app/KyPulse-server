@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"errors"
+	"sync"
 	"testing"
 
 	"github.com/Busnes-app/kypulse-server/internal/egress"
@@ -17,6 +18,7 @@ type fakeHTTP struct {
 		body any
 	}
 	err   error
+	mu    sync.Mutex
 	posts []struct {
 		url     string
 		body    []byte
@@ -29,18 +31,29 @@ type fakeHTTP struct {
 }
 
 func (f *fakeHTTP) GetWith(_ context.Context, rawURL string, headers map[string]string) (*egress.Response, error) {
+	f.mu.Lock()
 	f.gets = append(f.gets, struct {
 		url     string
 		headers map[string]string
 	}{rawURL, headers})
+	f.mu.Unlock()
 	return f.answer(rawURL)
 }
+
+// getCount answers how many GETs have landed so far; safe for concurrent use.
+func (f *fakeHTTP) getCount() int {
+	f.mu.Lock()
+	defer f.mu.Unlock()
+	return len(f.gets)
+}
 func (f *fakeHTTP) Post(_ context.Context, rawURL, _ string, body []byte, headers map[string]string) (*egress.Response, error) {
+	f.mu.Lock()
 	f.posts = append(f.posts, struct {
 		url     string
 		body    []byte
 		headers map[string]string
 	}{rawURL, body, headers})
+	f.mu.Unlock()
 	return f.answer(rawURL)
 }
 func (f *fakeHTTP) answer(rawURL string) (*egress.Response, error) {

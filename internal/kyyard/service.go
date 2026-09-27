@@ -1,0 +1,220 @@
+package kyyard
+
+import (
+	"context"
+	"log/slog"
+	"sort"
+	"sync"
+	"time"
+
+	"github.com/Busnes-app/ky-primitives/logging"
+)
+
+const (
+	PullEvery  = 60 * time.Second
+	StaleAfter = 3 * time.Minute
+	// historyWindow is how far back restart counts are kept, for "restarts in the last hour".
+	historyWindow = time.Hour
+)
+
+var (
+	evPullFailed = logging.DeclareEvent("kyyard_pull_failed", "KyYard could not be read", slog.LevelWarn)
+	evPulled     = logging.DeclareEvent("kyyard_pulled", "KyYard inventory refreshed", slog.LevelDebug)
+	fEndpoints   = logging.DeclareInt("endpoints")
+	fContainers  = logging.DeclareInt("containers")
+)
+
+type restartPoint struct {
+	at    time.Time
+	count int64
+}
+
+// Service keeps the latest KyYard snapshot in memory and refreshes it on a schedule.
+type Service struct {
+	Pairing *Pairing
+	HTTP    HTTP
+	Logger  *logging.Logger
+	Now     func() time.Time
+
+	mu        sync.Mutex
+	paired    bool
+	cfg       Config
+	fetchedAt *time.Time // last successful pull
+	lastErr   string     // reason of the last failed pull, "" after a success
+	facts     map[string]ContainerFacts
+	history   map[string][]restartPoint
+}
+
+func (s *Service) now() time.Time {
+	if s.Now != nil {
+		return s.Now()
+	}
+	return time.Now()
+}
+
+// Run pulls every `every` until ctx ends, then closes done. The first pull is immediate.
+func (s *Service) Run(ctx context.Context, every time.Duration, done chan<- struct{}) {
+	defer close(done)
+	_ = s.PullNow(ctx)
+	t := time.NewTicker(every)
+	defer t.Stop()
+	for {
+		select {
+		case <-ctx.Done():
+			return
+		case <-t.C:
+			_ = s.PullNow(ctx)
+		}
+	}
+}
+
+// PullNow reads the pairing, then endpoints, inventory and samples. A failure keeps the last
+// snapshot and records its reason. Unpaired is a no-op that clears nothing (Clear does).
+func (s *Service) PullNow(ctx context.Context) error {
+	cfg, ok, err := s.Pairing.Load(ctx)
+	if err != nil {
+		s.fail("unreadable")
+		return err
+	}
+	if !ok {
+		s.Clear()
+		return nil
+	}
+	c := &Client{HTTP: s.HTTP, Config: cfg}
+	eps, err := c.Endpoints(ctx)
+	if err != nil {
+		s.fail(Reason(err))
+		s.Logger.Log(ctx, evPullFailed, logging.ReasonCode(Reason(err)))
+		return err
+	}
+	now := s.now()
+	facts := map[string]ContainerFacts{}
+	for _, ep := range eps {
+		if ep.Runtime != "docker" {
+			continue
+		}
+		inv, err := c.Inventory(ctx, ep.ID)
+		if err != nil {
+			s.fail(Reason(err))
+			s.Logger.Log(ctx, evPullFailed, logging.ReasonCode(Reason(err)))
+			return err
+		}
+		samples, err := c.Samples(ctx, ep.ID)
+		if err != nil {
+			s.fail(Reason(err))
+			s.Logger.Log(ctx, evPullFailed, logging.ReasonCode(Reason(err)))
+			return err
+		}
+		byContainer := map[string]Sample{}
+		for _, smp := range samples {
+			if prev, ok := byContainer[smp.ContainerID]; !ok || smp.ObservedAt.After(prev.ObservedAt) {
+				byContainer[smp.ContainerID] = smp
+			}
+		}
+		for _, ct := range inv.Containers {
+			health, exit := ParseStatus(ct.Status)
+			f := ContainerFacts{Link: LinkFor(ep.ID, ct.Name), EndpointID: ep.ID, EndpointName: ep.Name, ContainerID: ct.ID, Name: ct.Name, Image: ct.Image, State: ct.State, Status: ct.Status, Health: health, ExitCode: exit, ObservedAt: inv.ObservedAt}
+			if smp, ok := byContainer[ct.ID]; ok {
+				f.MemoryBytes, f.MemoryLimit, f.RestartCount = smp.MemoryBytes, smp.MemoryLimit, smp.RestartCount
+				f.RestartsLastHour = s.recordRestarts(f.Link, now, smp.RestartCount)
+			}
+			facts[f.Link] = f
+		}
+	}
+	s.mu.Lock()
+	s.paired, s.cfg, s.facts, s.fetchedAt, s.lastErr = true, cfg, facts, &now, ""
+	s.trimHistory(now)
+	s.mu.Unlock()
+	s.Logger.Log(ctx, evPulled, fEndpoints(int64(len(eps))), fContainers(int64(len(facts))))
+	return nil
+}
+
+func (s *Service) fail(reason string) {
+	s.mu.Lock()
+	s.paired, s.lastErr = true, reason
+	s.mu.Unlock()
+}
+
+// recordRestarts appends the count and answers how many restarts happened in the window.
+// Called without the lock held; takes it itself.
+func (s *Service) recordRestarts(link string, now time.Time, count int64) int64 {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.history == nil {
+		s.history = map[string][]restartPoint{}
+	}
+	pts := append(s.history[link], restartPoint{at: now, count: count})
+	cut := 0
+	for cut < len(pts) && now.Sub(pts[cut].at) > historyWindow {
+		cut++
+	}
+	pts = pts[cut:]
+	s.history[link] = pts
+	if len(pts) == 0 {
+		return 0
+	}
+	if d := count - pts[0].count; d > 0 {
+		return d
+	}
+	return 0
+}
+
+// trimHistory drops containers no longer in the snapshot and points older than the window.
+// Caller holds the lock.
+func (s *Service) trimHistory(now time.Time) {
+	for link, pts := range s.history {
+		if _, ok := s.facts[link]; !ok {
+			delete(s.history, link)
+			continue
+		}
+		cut := 0
+		for cut < len(pts) && now.Sub(pts[cut].at) > historyWindow {
+			cut++
+		}
+		s.history[link] = pts[cut:]
+	}
+}
+
+// Clear forgets the snapshot and the pairing; called after an unpair.
+func (s *Service) Clear() {
+	s.mu.Lock()
+	s.paired, s.cfg, s.facts, s.history, s.fetchedAt, s.lastErr = false, Config{}, nil, nil, nil, ""
+	s.mu.Unlock()
+}
+
+func (s *Service) stale(now time.Time) bool {
+	return s.paired && (s.fetchedAt == nil || now.Sub(*s.fetchedAt) > StaleAfter)
+}
+
+func (s *Service) Status(now time.Time) StatusView {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if !s.paired {
+		return StatusView{}
+	}
+	return StatusView{Paired: true, URL: s.cfg.URL, Organization: s.cfg.OrganizationName, FetchedAt: s.fetchedAt, Stale: s.stale(now), Error: s.lastErr}
+}
+
+// Facts answers for a target's container link; false when the latest snapshot has no such
+// container (removed, renamed, or never seen).
+func (s *Service) Facts(link string, now time.Time) (ContainerFacts, bool) {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	f, ok := s.facts[link]
+	if !ok {
+		return ContainerFacts{}, false
+	}
+	f.Stale = s.stale(now)
+	return f, true
+}
+
+func (s *Service) Suggestions() []Suggestion {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	out := make([]Suggestion, 0, len(s.facts))
+	for _, f := range s.facts {
+		out = append(out, Suggestion{Link: f.Link, EndpointName: f.EndpointName, Name: f.Name, Image: f.Image, State: f.State})
+	}
+	sort.Slice(out, func(i, j int) bool { return out[i].Link < out[j].Link })
+	return out
+}
