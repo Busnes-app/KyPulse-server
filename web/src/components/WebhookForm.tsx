@@ -27,6 +27,9 @@ export const WebhookForm: React.FC<WebhookFormProps> = ({ onChanged }) => {
     if (w.configured) {
       setPreset(w.preset ?? 'ntfy');
       setUrl(w.url ?? '');
+    } else {
+      setPreset('ntfy');
+      setUrl('');
     }
     setToken('');
     setClearToken(false);

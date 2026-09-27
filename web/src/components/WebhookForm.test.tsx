@@ -7,7 +7,7 @@ const saved = { configured: true, preset: 'ntfy', url: 'https://ntfy.sh/kypulse'
 function stub(extra: Array<[RegExp, unknown, number?]> = [], info: unknown = saved) {
   const fn = vi.fn(async (input: RequestInfo | URL, init?: RequestInit) => {
     const key = `${init?.method ?? 'GET'} ${String(input)}`;
-    for (const [re, body, status] of extra) if (re.test(key)) return new Response(JSON.stringify(body), { status: status ?? 200 });
+    for (const [re, body, status] of extra) if (re.test(key)) return new Response(status === 204 ? null : JSON.stringify(body), { status: status ?? 200 });
     if (key === 'GET /api/alerts/webhook') return new Response(JSON.stringify(info));
     throw new Error(key);
   });
@@ -63,6 +63,17 @@ describe('WebhookForm', () => {
     stub([], { configured: false });
     render(<WebhookForm onChanged={() => {}} />);
     expect(await screen.findByText(/No webhook configured/)).toBeTruthy();
+    expect(screen.queryByRole('button', { name: 'Remove webhook' })).toBeNull();
+  });
+
+  it('clears the form after the webhook is removed', async () => {
+    stub([[/^DELETE \/api\/alerts\/webhook$/, null, 204]]);
+    vi.stubGlobal('confirm', vi.fn(() => true));
+    render(<WebhookForm onChanged={() => {}} />);
+    await screen.findByDisplayValue('https://ntfy.sh/kypulse');
+    fireEvent.click(screen.getByRole('button', { name: 'Remove webhook' }));
+    expect(await screen.findByText(/No webhook configured/)).toBeTruthy();
+    expect((screen.getByLabelText('URL') as HTMLInputElement).value).toBe('');
     expect(screen.queryByRole('button', { name: 'Remove webhook' })).toBeNull();
   });
 });
