@@ -40,6 +40,9 @@ type Service struct {
 	// loop's own tick must not run concurrently and race each other's commit.
 	pullMu sync.Mutex
 
+	wakeOnce sync.Once
+	wake     chan struct{} // buffered 1; Kick nudges Run to pull now instead of on its ticker
+
 	mu        sync.Mutex
 	gen       uint64 // bumped by Clear; a commit from a pull started before the bump is discarded
 	paired    bool
@@ -64,7 +67,25 @@ func (s *Service) now() time.Time {
 	return time.Now()
 }
 
+// wakeCh lazily builds the wake channel, so the zero value of Service works.
+func (s *Service) wakeCh() chan struct{} {
+	s.wakeOnce.Do(func() { s.wake = make(chan struct{}, 1) })
+	return s.wake
+}
+
+// Kick nudges Run to pull now instead of waiting for its ticker. Non-blocking: a wake already
+// pending (Run hasn't gotten to it yet) makes this a no-op, since one extra pull covers both.
+func (s *Service) Kick() {
+	select {
+	case s.wakeCh() <- struct{}{}:
+	default:
+	}
+}
+
 // Run pulls every `every` until ctx ends, then closes done. The first pull is immediate.
+// Kick wakes it early, for a pairing that wants its first real pull without blocking the
+// request that just landed it: PullNow single-flights on pullMu, so a slow loop pull already
+// running is not interrupted, only followed by the kicked one.
 func (s *Service) Run(ctx context.Context, every time.Duration, done chan<- struct{}) {
 	defer close(done)
 	_ = s.PullNow(ctx)
@@ -75,6 +96,8 @@ func (s *Service) Run(ctx context.Context, every time.Duration, done chan<- stru
 		case <-ctx.Done():
 			return
 		case <-t.C:
+			_ = s.PullNow(ctx)
+		case <-s.wakeCh():
 			_ = s.PullNow(ctx)
 		}
 	}
@@ -207,6 +230,17 @@ func (s *Service) Clear() {
 	s.mu.Lock()
 	s.gen++
 	s.paired, s.cfg, s.facts, s.history, s.fetchedAt, s.lastErr = false, Config{}, nil, nil, nil, ""
+	s.mu.Unlock()
+}
+
+// Adopt marks cfg paired in memory with no snapshot yet: Status reports paired:true,
+// stale:true and no fetched_at until the first pull -- normally kicked right after -- lands.
+// It does not touch gen, so it must run after Clear (which already invalidated any pull still
+// in flight under the previous pairing) and after Save committed cfg to disk, or a concurrent
+// pull under the old pairing could commit over it.
+func (s *Service) Adopt(cfg Config) {
+	s.mu.Lock()
+	s.paired, s.cfg, s.facts, s.fetchedAt, s.lastErr = true, cfg, nil, nil, ""
 	s.mu.Unlock()
 }
 

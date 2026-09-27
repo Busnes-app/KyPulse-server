@@ -6,10 +6,13 @@ import (
 	"errors"
 	"io"
 	"net/http"
+	"net/http/httptest"
 	"net/url"
 	"strings"
 	"sync"
+	"sync/atomic"
 	"testing"
+	"time"
 
 	"github.com/Busnes-app/ky-primitives/logging"
 	"github.com/Busnes-app/kypulse-server/internal/api"
@@ -23,15 +26,23 @@ import (
 // fakeYard answers by URL suffix; copied from internal/kyyard's own test fixture. token is
 // exposed so a test can assert an audit row or a response never carries it. err, when set,
 // is returned from every call instead of an answer -- a transport failure, standing in for
-// what the real egress.Client would hand back from a dial or a read.
+// what the real egress.Client would hand back from a dial or a read. blockFirst and release,
+// when both set, make the very first call block: it closes blockFirst to report it has
+// started, then waits on release -- standing in for a slow network round trip so a test can
+// hold pullMu (via PullNow) while something else runs concurrently. blocked guards that this
+// fires once via CompareAndSwap, not sync.Once, so a second, unrelated concurrent caller (the
+// handler's own claim, on the same fake) is never made to wait for the first caller's release.
 type fakeYard struct {
 	answers map[string]struct {
 		code int
 		body any
 	}
-	err   error
-	token string
-	mu    sync.Mutex
+	err        error
+	token      string
+	blockFirst chan struct{}
+	release    chan struct{}
+	blocked    atomic.Bool
+	mu         sync.Mutex
 }
 
 func (f *fakeYard) GetWith(_ context.Context, rawURL string, _ map[string]string) (*egress.Response, error) {
@@ -43,6 +54,10 @@ func (f *fakeYard) Post(_ context.Context, rawURL, _ string, _ []byte, _ map[str
 }
 
 func (f *fakeYard) answer(rawURL string) (*egress.Response, error) {
+	if f.blockFirst != nil && f.blocked.CompareAndSwap(false, true) {
+		close(f.blockFirst)
+		<-f.release
+	}
 	f.mu.Lock()
 	defer f.mu.Unlock()
 	if f.err != nil {
@@ -85,15 +100,43 @@ func monitorFixture(t *testing.T) (*api.Server, store.Store, *http.Cookie, *http
 	return srv, st, admin, viewer
 }
 
+// serverWithYard is setupTestServerWith, except it also returns the *kyyard.Service: the
+// server's own field is unexported, and some tests need to call PullNow directly (the
+// background loop Kick would otherwise wake is never started in this harness) or seed an
+// existing pairing ahead of an HTTP call.
+func serverWithYard(t *testing.T, yardHTTP kyyard.HTTP) (*api.Server, store.Store, *kyyard.Service) {
+	t.Helper()
+	t.Setenv("KYPULSE_DATA_DIR", t.TempDir())
+	cfg, _ := config.LoadFromEnv()
+	db := testdb.Config(t)
+	db.DataDir = cfg.Database.DataDir
+	cfg.Database = db
+	cfg.Captcha.Provider = "none"
+
+	st, err := store.Open(context.Background(), cfg.Database)
+	if err != nil {
+		t.Fatalf("failed to open store: %v", err)
+	}
+	t.Cleanup(func() { _ = st.Close() })
+
+	lg, err := logging.New(logging.Config{App: "kypulse", Out: io.Discard})
+	if err != nil {
+		t.Fatalf("logger: %v", err)
+	}
+	mon := newTestMonitor(t, cfg, st, lg)
+	yard := newTestKyYard(t, cfg, st, lg, yardHTTP)
+	return api.NewServer(cfg, st, lg, mon, yard), st, yard
+}
+
 // monitorFixtureWithYard builds the server with a fake KyYard that answers a claim and the
 // usual endpoint/inventory/samples fixture.
-func monitorFixtureWithYard(t *testing.T) (*api.Server, store.Store, *http.Cookie, *http.Cookie, *fakeYard) {
+func monitorFixtureWithYard(t *testing.T) (*api.Server, store.Store, *http.Cookie, *http.Cookie, *fakeYard, *kyyard.Service) {
 	t.Helper()
 	fake := pairedYard()
-	srv, st, _ := setupTestServerWith(t, nil, fake)
+	srv, st, yard := serverWithYard(t, fake)
 	admin := loginAs(t, srv, st, "alice", "admin")
 	viewer := loginAs(t, srv, st, "bob", "viewer")
-	return srv, st, admin, viewer, fake
+	return srv, st, admin, viewer, fake, yard
 }
 
 func TestKyYardStatusUnpairedAndPairRefusals(t *testing.T) {
@@ -122,14 +165,18 @@ func TestKyYardStatusUnpairedAndPairRefusals(t *testing.T) {
 }
 
 func TestKyYardPairUnpairAndFacts(t *testing.T) {
-	srv, st, admin, viewer, fake := monitorFixtureWithYard(t)
+	srv, st, admin, viewer, fake, yard := monitorFixtureWithYard(t)
 	w := doJSON(t, srv, "POST", "/api/kyyard/pair", admin, map[string]any{"url": "https://yard.lan", "pairing_code": "123456"})
 	if w.Code != http.StatusOK {
 		t.Fatalf("pair: %d %s", w.Code, w.Body)
 	}
+	// The response does not wait for a pull: paired and stale immediately, no fetched_at yet.
 	s := decodeMap(t, w)
-	if s["paired"] != true || s["organization"] != "A" || s["stale"] != false {
+	if s["paired"] != true || s["organization"] != "A" || s["stale"] != true {
 		t.Fatalf("paired status: %v", s)
+	}
+	if _, has := s["fetched_at"]; has {
+		t.Fatal("fetched_at present before the first pull")
 	}
 	if _, has := s["token"]; has {
 		t.Fatal("token in response")
@@ -155,7 +202,14 @@ func TestKyYardPairUnpairAndFacts(t *testing.T) {
 	if body := do(t, srv, "GET", "/api/settings", admin).Body.String(); strings.Contains(body, "kyyard_enc") || strings.Contains(body, fake.token) {
 		t.Fatal("settings leak the pairing")
 	}
-	// Suggestions and status for the bar.
+
+	// This harness never starts the background loop Kick wakes, so the first pull is run
+	// directly here in place of it.
+	if err := yard.PullNow(context.Background()); err != nil {
+		t.Fatalf("pull: %v", err)
+	}
+
+	// Suggestions and status for the bar, now that a snapshot exists.
 	sug := do(t, srv, "GET", "/api/kyyard/containers", admin)
 	if sug.Code != http.StatusOK || !strings.Contains(sug.Body.String(), `"link":"ep_1/kyvault"`) {
 		t.Fatalf("suggestions: %d %s", sug.Code, sug.Body)
@@ -185,7 +239,7 @@ func TestKyYardPairUnpairAndFacts(t *testing.T) {
 }
 
 func TestKyYardPairReplacesAnExistingPairing(t *testing.T) {
-	srv, st, admin, _, _ := monitorFixtureWithYard(t)
+	srv, st, admin, _, _, _ := monitorFixtureWithYard(t)
 	first := doJSON(t, srv, "POST", "/api/kyyard/pair", admin, map[string]any{"url": "https://yard.lan", "pairing_code": "123456"})
 	if first.Code != http.StatusOK {
 		t.Fatalf("first pair: %d %s", first.Code, first.Body)
@@ -396,5 +450,58 @@ func TestKyYardPairSaveFailureIsAuditedAndReported(t *testing.T) {
 	}
 	if !found {
 		t.Fatal("no failure audit row")
+	}
+}
+
+// TestKyYardPairDoesNotBlockOnALoopPull is the regression this round fixes: handleKyYardPair
+// used to call PullNow inline, which single-flights on the service's own mutex, so a pair
+// landing while the background loop was mid-pull (one HTTP round trip per endpoint) would
+// queue behind it and could stall past the listener's write timeout. It no longer calls
+// PullNow at all -- Clear, Save, Adopt and a non-blocking Kick -- so the request must return
+// promptly even while a pull is genuinely in flight and holding pullMu.
+func TestKyYardPairDoesNotBlockOnALoopPull(t *testing.T) {
+	fake := pairedYard()
+	started := make(chan struct{})
+	release := make(chan struct{})
+	fake.blockFirst = started
+	fake.release = release
+
+	srv, st, yard := serverWithYard(t, fake)
+	admin := loginAs(t, srv, st, "alice", "admin")
+
+	// Seed an existing pairing and simulate the loop's own pull already in flight, blocked on
+	// the network and holding pullMu.
+	if err := yard.Pairing.Save(context.Background(), kyyard.Config{URL: "https://yard.lan", Token: "old-token", OrganizationID: "org_a", OrganizationName: "A"}); err != nil {
+		t.Fatalf("seed pairing: %v", err)
+	}
+	pullDone := make(chan struct{})
+	go func() {
+		defer close(pullDone)
+		_ = yard.PullNow(context.Background())
+	}()
+	select {
+	case <-started:
+	case <-time.After(2 * time.Second):
+		t.Fatal("the simulated loop pull never started")
+	}
+
+	result := make(chan *httptest.ResponseRecorder, 1)
+	go func() {
+		result <- doJSON(t, srv, "POST", "/api/kyyard/pair", admin, map[string]any{"url": "https://yard.lan", "pairing_code": "123456"})
+	}()
+	select {
+	case w := <-result:
+		if w.Code != http.StatusOK {
+			t.Fatalf("pair: %d %s", w.Code, w.Body)
+		}
+	case <-time.After(2 * time.Second):
+		t.Fatal("pair request blocked behind the loop's in-flight pull")
+	}
+
+	close(release)
+	select {
+	case <-pullDone:
+	case <-time.After(2 * time.Second):
+		t.Fatal("the simulated loop pull never finished after release")
 	}
 }

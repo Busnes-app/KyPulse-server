@@ -231,3 +231,42 @@ func TestRunPullsOnScheduleAndStops(t *testing.T) {
 		t.Fatal("Run did not stop")
 	}
 }
+
+// TestKickWakesTheLoop proves Kick nudges Run to pull immediately instead of waiting for its
+// ticker: the ticker here is an hour, so any pull after the first must have come from Kick.
+func TestKickWakesTheLoop(t *testing.T) {
+	h := yard()
+	svc, _ := pairedService(t, h)
+	ctx, cancel := context.WithCancel(context.Background())
+	done := make(chan struct{})
+	go svc.Run(ctx, time.Hour, done)
+
+	deadline := time.After(2 * time.Second)
+	for h.getCount() < 5 { // Run's own immediate first pull
+		select {
+		case <-deadline:
+			t.Fatalf("first pull did not happen: %d requests", h.getCount())
+		default:
+			time.Sleep(5 * time.Millisecond)
+		}
+	}
+	before := h.getCount()
+
+	svc.Kick()
+	deadline = time.After(time.Second)
+	for h.getCount() <= before {
+		select {
+		case <-deadline:
+			t.Fatalf("Kick did not wake a pull within a second: got %d requests, want more than %d", h.getCount(), before)
+		default:
+			time.Sleep(5 * time.Millisecond)
+		}
+	}
+
+	cancel()
+	select {
+	case <-done:
+	case <-time.After(2 * time.Second):
+		t.Fatal("Run did not stop")
+	}
+}

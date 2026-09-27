@@ -14,7 +14,8 @@ import (
 	"github.com/Busnes-app/kypulse-server/internal/kyyard"
 )
 
-// pairBudget bounds a claim: the egress client's own 5 s plus sealing and the first pull.
+// pairBudget bounds a claim and its sealing; the first pull is kicked off the loop, not run
+// inline, so it does not need to fit in this budget.
 const pairBudget = 20 * time.Second
 
 func (s *Server) handleKyYardStatus(w http.ResponseWriter, r *http.Request) {
@@ -37,6 +38,14 @@ type pairRequest struct {
 // the token. Pairing while already paired replaces the sealed row here (audited
 // `replaced=true`); the previous token stays valid in KyYard until an operator revokes it
 // there.
+//
+// The response does not wait for a pull: PullNow single-flights on the service's own mutex,
+// so calling it inline here could queue behind a slow loop pull (one HTTP round trip per
+// endpoint) and stall past the listener's write timeout. Instead Clear invalidates any pull
+// already in flight under the old pairing, Save commits the new one to disk, Adopt marks it
+// paired in memory with no snapshot yet, and Kick wakes the loop to pull it without the
+// request waiting. The 200 body therefore reads paired:true, stale:true, no fetched_at --
+// "first pull pending" -- until that pull lands.
 func (s *Server) handleKyYardPair(w http.ResponseWriter, r *http.Request) {
 	var req pairRequest
 	if err := json.NewDecoder(http.MaxBytesReader(w, r.Body, 4<<10)).Decode(&req); err != nil {
@@ -82,13 +91,15 @@ func (s *Server) handleKyYardPair(w http.ResponseWriter, r *http.Request) {
 	// here -- that happens in KyYard -- so it is audited, not silently dropped.
 	_, existed, loadErr := s.kyyard.Pairing.Load(ctx)
 	replaced := existed || loadErr != nil
+	s.kyyard.Clear() // invalidate any pull still in flight under the old pairing first
 	if err := s.kyyard.Pairing.Save(ctx, cfg); err != nil {
 		s.audit(ctx, actor, r, "admin.kyyard_pair", "", fmt.Sprintf("outcome=failure host=%s org=%s reason=save", auditValue(u.Host), auditValue(cfg.OrganizationID)))
 		s.writeError(w, http.StatusInternalServerError, "KyYard already issued a token for this pairing; it could not be saved here. Revoke it in KyYard (Members -> Service tokens) before retrying")
 		return
 	}
+	s.kyyard.Adopt(cfg)
+	s.kyyard.Kick()
 	s.audit(ctx, actor, r, "admin.kyyard_pair", "", fmt.Sprintf("outcome=success host=%s org=%s allow_http=%v replaced=%v", auditValue(u.Host), auditValue(cfg.OrganizationID), s.config.KyYard.AllowHTTP, replaced))
-	_ = s.kyyard.PullNow(ctx) // the first snapshot; a failure shows as stale with its reason
 	s.writeJSON(w, http.StatusOK, s.kyyard.Status(time.Now()))
 }
 
