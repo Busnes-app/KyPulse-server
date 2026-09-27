@@ -117,31 +117,6 @@ func ResolveDocker(ctx context.Context, socket, name string) (string, error) {
 // Docker's `since` is second-granular. Equal-time lines replay because Docker
 // cannot prove that earlier lines at that timestamp still exist after rotation.
 func ReadDocker(ctx context.Context, socket, container string, start map[string]Position, out chan<- Item) error {
-	return readDocker(ctx, socket, container, start, nil, out)
-}
-
-// FollowDocker reconnects a completed follow response, retaining emitted positions in
-// memory. The delivery worker persists them only after acknowledgement.
-func FollowDocker(ctx context.Context, socket, container string, start map[string]Position, out chan<- Item) error {
-	local := make(map[string]Position, len(start))
-	for key, p := range start {
-		local[key] = p
-	}
-	for {
-		if err := readDocker(ctx, socket, container, local, local, out); err != nil {
-			return err
-		}
-		timer := time.NewTimer(time.Second)
-		select {
-		case <-ctx.Done():
-			timer.Stop()
-			return ctx.Err()
-		case <-timer.C:
-		}
-	}
-}
-
-func readDocker(ctx context.Context, socket, container string, start, latest map[string]Position, out chan<- Item) error {
 	if container == "" {
 		return errors.New("sender: empty Docker container")
 	}
@@ -190,9 +165,6 @@ func readDocker(ctx context.Context, socket, container string, start, latest map
 		p := Position{Kind: "docker", Input: id, Stream: stream, Timestamp: ts, Ordinal: ordinal}
 		select {
 		case out <- Item{Record: row, Position: p}:
-			if latest != nil && ts != "" {
-				latest[PositionKey(p)] = p
-			}
 			return nil
 		case <-ctx.Done():
 			return ctx.Err()

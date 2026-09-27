@@ -118,10 +118,12 @@ duplicates. Docker resolves names to immutable IDs and follows stdout and stderr
 up to 32 distinct containers. It requests history inclusively from the earliest saved
 Unix-second timestamp. It replays every line at the checkpoint timestamp, including
 acknowledged lines, because rotation can remove an earlier line and renumber equal-time
-occurrences. This can produce duplicates after restart or reconnect. If newer lines arrive
+occurrences. This can produce duplicates after sender restart. If newer lines arrive
 without the saved timestamp, the sender emits a gap marker. Docker cannot prove every
 history loss; malformed or oversized frames produce errors or gap markers. A TTY container
-has one merged raw stdout stream.
+has one merged raw stdout stream. A completed Docker follow response ends that reader;
+restart the sender to watch a later restart of that container. Other configured readers
+continue until their own streams complete.
 
 Docker socket access is root-equivalent. Prefer a read-only socket proxy exposing only
 `/version`, versioned container inspect and logs routes. Mounting a Docker socket with `:ro`

@@ -216,60 +216,17 @@ func TestDockerRefusalAndCancellation(t *testing.T) {
 	}
 }
 
-func TestDockerReconnectUsesEmittedPosition(t *testing.T) {
-	var mu sync.Mutex
+func TestDockerCleanEOFReturnsFiniteRows(t *testing.T) {
 	var calls int
-	var queries []string
 	socket := fakeDocker(t, func(w http.ResponseWriter, r *http.Request) {
-		mu.Lock()
 		calls++
-		queries = append(queries, r.URL.RawQuery)
-		mu.Unlock()
-		_, _ = w.Write(frame(1, dockerTime+" same\n"+dockerTime+" same\n"))
-		_, _ = w.Write(frame(2, dockerTime+" error\n"))
+		_, _ = w.Write(frame(1, dockerTime+" first\n"+dockerTime+" second\n"))
 	})
-	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
-	defer cancel()
-	out := make(chan Item, 8)
-	done := make(chan error, 1)
-	go func() { done <- FollowDocker(ctx, socket, "a", nil, out) }()
-	for i := 0; i < 3; i++ {
-		select {
-		case <-out:
-		case <-ctx.Done():
-			t.Fatal("initial lines missing")
-		}
-	}
-	for i := 0; i < 3; i++ {
-		select {
-		case row := <-out:
-			if row.Record.Line != "same" && row.Record.Line != "error" {
-				t.Fatalf("unexpected replay row: %+v", row)
-			}
-		case <-ctx.Done():
-			t.Fatal("reconnect omitted boundary replay")
-		}
-	}
-	mu.Lock()
-	seen := calls
-	seenQueries := append([]string(nil), queries...)
-	mu.Unlock()
-	if seen < 2 || !strings.Contains(seenQueries[1], fmt.Sprintf("since=%d", mustDockerTime(t).Unix())) {
-		t.Fatalf("reconnect cursor: calls=%d queries=%v", seen, seenQueries)
-	}
-	cancel()
-	select {
-	case <-done:
-	case <-time.After(time.Second):
-		t.Fatal("reconnect reader ignored cancellation")
-	}
-}
-
-func mustDockerTime(t *testing.T) time.Time {
-	t.Helper()
-	parsed, err := time.Parse(time.RFC3339Nano, dockerTime)
-	if err != nil {
+	out := make(chan Item, 3)
+	if err := ReadDocker(context.Background(), socket, "a", nil, out); err != nil {
 		t.Fatal(err)
 	}
-	return parsed
+	if calls != 1 || len(out) != 2 || (<-out).Record.Line != "first" || (<-out).Record.Line != "second" {
+		t.Fatalf("clean EOF: calls=%d remaining=%d", calls, len(out))
+	}
 }

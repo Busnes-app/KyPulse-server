@@ -23,7 +23,8 @@ Pairs a source and delivers bounded NDJSON batches with acknowledged input posit
   ID and stdout/stderr stream, with an inclusive timestamp and recorded equal-time ordinal
   for each stream. Boundary lines replay even when acknowledged, because Docker cannot
   verify the historical prefix after rotation. A missing checkpoint timestamp emits a
-  gap marker once a newer line appears. TTY logs are a single raw stdout stream.
+  gap marker once a newer line appears. TTY logs are a single raw stdout stream. A clean
+  follow EOF completes that reader; the sender exits after all configured readers finish.
 - Stdin and the outage queue live in memory and cannot survive a crash. File and Docker
   checkpoints replay only while upstream history exists. Overflow deliberately drops
   records and emits a marker, so delivery has no unconditional no-loss guarantee.

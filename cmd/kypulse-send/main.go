@@ -177,7 +177,7 @@ func runInput(kind, path, containers, socket, dir string, stdin io.ReadCloser, h
 		case "docker":
 			results := make(chan error, len(ids))
 			for _, id := range ids {
-				go func() { results <- sender.FollowDocker(readerCtx, socket, id, state.Positions, items) }()
+				go func() { results <- sender.ReadDocker(readerCtx, socket, id, state.Positions, items) }()
 			}
 			var first error
 			for range ids {
