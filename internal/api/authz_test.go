@@ -103,7 +103,7 @@ func TestSettingsExposureByRole(t *testing.T) {
 		t.Error("anonymous settings leaked a stored secret")
 	}
 
-	member := decode(do(t, srv, "GET", "/api/settings", loginAs(t, srv, st, "bob", "user")))
+	member := decode(do(t, srv, "GET", "/api/settings", loginAs(t, srv, st, "bob", "viewer")))
 	if member["db_driver"] == nil {
 		t.Errorf("authenticated settings should include db_driver, got %v", member)
 	}
@@ -148,7 +148,7 @@ func TestPrivilegedEndpointsRequireAdmin(t *testing.T) {
 				t.Errorf("anonymous: got %d, want 401", got)
 			}
 
-			member := loginAs(t, srv, st, "bob", "user")
+			member := loginAs(t, srv, st, "bob", "viewer")
 			if got := do(t, srv, tc.method, tc.path, member).Code; got != http.StatusForbidden {
 				t.Errorf("non-admin: got %d, want 403", got)
 			}

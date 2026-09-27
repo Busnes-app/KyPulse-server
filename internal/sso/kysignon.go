@@ -79,10 +79,7 @@ func (k *KySignOnClient) HandleSyncWebhook(ctx context.Context, body []byte, sig
 			return err
 		}
 
-		role := payload.Role
-		if role == "" {
-			role = "user"
-		}
+		role := RoleFor(payload.Role)
 		status := payload.Status
 		if status == "" {
 			status = "active"

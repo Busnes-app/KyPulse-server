@@ -103,7 +103,7 @@ export const App: React.FC = () => {
 
       <main className="app-main">
         {activeTab === 'dashboard' && <Dashboard settings={settings} user={user} onNavigate={(tab) => setActiveTab(tab)} />}
-        {activeTab === 'backup' && <Backup />}
+        {activeTab === 'backup' && user.role === 'admin' && <Backup />}
         {activeTab === 'settings' && <Settings settings={settings} />}
       </main>
     </div>

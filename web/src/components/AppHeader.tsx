@@ -12,10 +12,10 @@ interface AppHeaderProps {
 
 export const AppHeader: React.FC<AppHeaderProps> = ({ appName, activeTab, onTabChange, user, onLogout }) => {
   const navItems = [
-    { id: 'dashboard', label: 'Overview', icon: LayoutDashboard },
-    { id: 'backup', label: 'Backup', icon: Archive },
-    { id: 'settings', label: 'Settings & DB', icon: SettingsIcon },
-  ];
+    { id: 'dashboard', label: 'Overview', icon: LayoutDashboard, admin: false },
+    { id: 'backup', label: 'Backup', icon: Archive, admin: true },
+    { id: 'settings', label: 'Settings & DB', icon: SettingsIcon, admin: false },
+  ].filter((item) => !item.admin || user?.role === 'admin');
 
   return (
     <header className="app-header">

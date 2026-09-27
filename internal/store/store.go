@@ -11,6 +11,17 @@ var (
 	ErrSessionExpired = errors.New("session expired")
 )
 
+// Roles. A viewer sees status and alerts; an admin sees everything and changes settings.
+const (
+	RoleAdmin  = "admin"
+	RoleViewer = "viewer"
+)
+
+// ErrInvalidRole is returned for any role other than RoleAdmin or RoleViewer.
+var ErrInvalidRole = errors.New("role must be admin or viewer")
+
+func validRole(role string) bool { return role == RoleAdmin || role == RoleViewer }
+
 // Store defines the unified storage contract implemented across SQLite, PostgreSQL, and MySQL.
 type Store interface {
 	Users() UserStore

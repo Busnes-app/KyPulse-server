@@ -6,6 +6,7 @@ import (
 	"net/http"
 
 	"github.com/Busnes-app/kypulse-server/internal/crypto"
+	"github.com/Busnes-app/kypulse-server/internal/sso"
 	"github.com/Busnes-app/kypulse-server/internal/store"
 	"golang.org/x/oauth2"
 )
@@ -77,7 +78,7 @@ func (s *Server) handleKySignOnCallback(w http.ResponseWriter, r *http.Request) 
 				Username:    claims.PreferredUsername,
 				Email:       claims.Email,
 				DisplayName: claims.Name,
-				Role:        "user",
+				Role:        sso.RoleFor(claims.Role),
 				Status:      "active",
 				SSOProvider: "kysignon",
 				SSOSubject:  claims.Subject,

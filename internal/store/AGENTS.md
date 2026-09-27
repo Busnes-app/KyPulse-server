@@ -14,6 +14,7 @@ Owns data models, store interfaces (`UserStore`, `SessionStore`, `AuditStore`, `
 - PostgreSQL queries are rebound dynamically from standard positional parameters.
 - MFA challenges are consumed with database state transitions that permit exactly one successful use.
 - Recovery-code hash updates use optimistic concurrency so simultaneous redemption cannot reuse a code.
+- Users carry `RoleAdmin` or `RoleViewer`; `CreateUser` and `UpdateUser` return `ErrInvalidRole` for anything else. New users default to viewer.
 
 ## Verification
 - `go test -v ./internal/store/...`

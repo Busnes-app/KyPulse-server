@@ -11,7 +11,7 @@ type User struct {
 	Email              string     `json:"email"`
 	DisplayName        string     `json:"display_name"`
 	PasswordHash       string     `json:"-"`            // Never serialized to JSON
-	Role               string     `json:"role"`         // "admin", "user", "manager"
+	Role               string     `json:"role"`         // RoleAdmin or RoleViewer
 	Status             string     `json:"status"`       // "active", "suspended", "inactive"
 	SSOProvider        string     `json:"sso_provider"` // "local", "kysignon", "oidc", "saml"
 	SSOSubject         string     `json:"sso_subject,omitempty"`

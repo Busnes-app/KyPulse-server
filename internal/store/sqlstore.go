@@ -85,6 +85,9 @@ type userStore struct {
 }
 
 func (u *userStore) CreateUser(ctx context.Context, user *User) error {
+	if !validRole(user.Role) {
+		return ErrInvalidRole
+	}
 	now := time.Now().UTC()
 	if user.CreatedAt.IsZero() {
 		user.CreatedAt = now
@@ -194,6 +197,9 @@ FROM users WHERE sso_provider = ? AND sso_subject = ?
 }
 
 func (u *userStore) UpdateUser(ctx context.Context, user *User) error {
+	if !validRole(user.Role) {
+		return ErrInvalidRole
+	}
 	user.UpdatedAt = time.Now().UTC()
 	var lastLogin sql.NullTime
 	if user.LastLoginAt != nil {

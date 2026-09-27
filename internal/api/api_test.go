@@ -141,7 +141,7 @@ func TestLoginRejectsUnparseableStoredHash(t *testing.T) {
 	srv, st, _ := setupTestServer(t)
 	_ = st.Users().CreateUser(context.Background(), &store.User{
 		ID: "usr_bad", Username: "bad", PasswordHash: "not-a-phc-string",
-		Role: "user", Status: "active", SSOProvider: "local",
+		Role: store.RoleViewer, Status: "active", SSOProvider: "local",
 	})
 	body, _ := json.Marshal(map[string]string{"username": "bad", "password": "whatever-long-enough"})
 	req := httptest.NewRequest("POST", "/api/auth/login", bytes.NewReader(body))
@@ -200,7 +200,7 @@ func TestMFATOTPRefusesReplay(t *testing.T) {
 	secret, _ := totp.GenerateSecret()
 	enc, _ := crypto.EncryptAESGCM([]byte(secret), cfg.Security.EncryptionKey)
 	_ = st.Users().CreateUser(ctx, &store.User{
-		ID: "usr_mfa", Username: "mfa", Role: "user", Status: "active", SSOProvider: "local",
+		ID: "usr_mfa", Username: "mfa", Role: store.RoleViewer, Status: "active", SSOProvider: "local",
 		TOTPEnabled: true, TOTPSecretEnc: enc,
 	})
 	code, _ := totp.Code(secret, time.Now())
@@ -519,7 +519,7 @@ func TestMFAPerAccountWindow(t *testing.T) {
 	passHash, _ := password.Hash("SuperSecretPass123!")
 	if err := st.Users().CreateUser(ctx, &store.User{
 		ID: "usr_carol", Username: "carol", Email: "carol@busnes.app",
-		PasswordHash: passHash, Role: "user", Status: "active", SSOProvider: "local",
+		PasswordHash: passHash, Role: store.RoleViewer, Status: "active", SSOProvider: "local",
 	}); err != nil {
 		t.Fatal(err)
 	}
@@ -641,7 +641,7 @@ func TestSessionIPIgnoresForgedForwardedFor(t *testing.T) {
 	hash, _ := password.Hash("SuperSecretPass123!")
 	if err := st.Users().CreateUser(context.Background(), &store.User{
 		ID: "usr_dave", Username: "dave", PasswordHash: hash,
-		Role: "user", Status: "active", SSOProvider: "local",
+		Role: store.RoleViewer, Status: "active", SSOProvider: "local",
 	}); err != nil {
 		t.Fatal(err)
 	}
@@ -918,7 +918,7 @@ func TestMFAChallengeRejectedAfterPasswordRotation(t *testing.T) {
 	secret, _ := totp.GenerateSecret()
 	enc, _ := crypto.EncryptAESGCM([]byte(secret), cfg.Security.EncryptionKey)
 	if err := st.Users().CreateUser(ctx, &store.User{
-		ID: "usr_mfa", Username: "mfa", Role: "user", Status: "active", SSOProvider: "local",
+		ID: "usr_mfa", Username: "mfa", Role: store.RoleViewer, Status: "active", SSOProvider: "local",
 		PasswordHash: "old", TOTPEnabled: true, TOTPSecretEnc: enc,
 	}); err != nil {
 		t.Fatal(err)

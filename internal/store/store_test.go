@@ -80,12 +80,12 @@ func TestUserStoreLifecycle(t *testing.T) {
 
 	// 5. Update
 	user.DisplayName = "Alice Operations"
-	user.Role = "manager"
+	user.Role = store.RoleViewer
 	if err := st.Users().UpdateUser(ctx, user); err != nil {
 		t.Fatalf("UpdateUser error: %v", err)
 	}
 	gotUpdated, _ := st.Users().GetUserByID(ctx, userID)
-	if gotUpdated.DisplayName != "Alice Operations" || gotUpdated.Role != "manager" {
+	if gotUpdated.DisplayName != "Alice Operations" || gotUpdated.Role != store.RoleViewer {
 		t.Errorf("update not reflected: %+v", gotUpdated)
 	}
 
@@ -115,7 +115,7 @@ func TestSessionStoreLifecycle(t *testing.T) {
 	user := &store.User{
 		ID:       userID,
 		Username: "bob",
-		Role:     "user",
+		Role:     store.RoleViewer,
 		Status:   "active",
 	}
 	_ = st.Users().CreateUser(ctx, user)
@@ -184,7 +184,7 @@ func TestAuditAndSettings(t *testing.T) {
 func TestSpendTOTPCounterRefusesReplay(t *testing.T) {
 	st := newTestStore(t)
 	ctx := context.Background()
-	u := &store.User{ID: "usr_t", Username: "t", Role: "user", Status: "active", SSOProvider: "local"}
+	u := &store.User{ID: "usr_t", Username: "t", Role: store.RoleViewer, Status: "active", SSOProvider: "local"}
 	if err := st.Users().CreateUser(ctx, u); err != nil {
 		t.Fatal(err)
 	}
@@ -217,5 +217,30 @@ func TestDeleteSettingIsIdempotent(t *testing.T) {
 	_ = st.Settings().DeleteSetting(ctx, "k")
 	if _, err := st.Settings().GetSetting(ctx, "k"); !errors.Is(err, store.ErrNotFound) {
 		t.Fatalf("want ErrNotFound, got %v", err)
+	}
+}
+
+func TestUserRoleIsAdminOrViewer(t *testing.T) {
+	ctx := context.Background()
+	st := newTestStore(t)
+
+	for _, role := range []string{"user", "manager", "", "Admin"} {
+		err := st.Users().CreateUser(ctx, &store.User{ID: "usr_" + role, Username: "u" + role, Role: role, Status: "active"})
+		if !errors.Is(err, store.ErrInvalidRole) {
+			t.Errorf("CreateUser with role %q: got %v, want ErrInvalidRole", role, err)
+		}
+	}
+
+	viewer := &store.User{ID: "usr_v", Username: "v", Role: store.RoleViewer, Status: "active"}
+	if err := st.Users().CreateUser(ctx, viewer); err != nil {
+		t.Fatalf("CreateUser viewer: %v", err)
+	}
+	viewer.Role = "manager"
+	if err := st.Users().UpdateUser(ctx, viewer); !errors.Is(err, store.ErrInvalidRole) {
+		t.Errorf("UpdateUser to manager: got %v, want ErrInvalidRole", err)
+	}
+	viewer.Role = store.RoleAdmin
+	if err := st.Users().UpdateUser(ctx, viewer); err != nil {
+		t.Errorf("UpdateUser to admin: %v", err)
 	}
 }
