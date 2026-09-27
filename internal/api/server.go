@@ -15,6 +15,7 @@ import (
 	"github.com/Busnes-app/ky-primitives/recoveryclient"
 	"github.com/Busnes-app/kypulse-server/internal/auth"
 	"github.com/Busnes-app/kypulse-server/internal/config"
+	"github.com/Busnes-app/kypulse-server/internal/monitor"
 	"github.com/Busnes-app/kypulse-server/internal/sso"
 	"github.com/Busnes-app/kypulse-server/internal/store"
 	"github.com/Busnes-app/kypulse-server/web"
@@ -35,6 +36,7 @@ type Server struct {
 	oidc       *sso.GenericOIDCClient
 	saml       *sso.SAMLServiceProvider
 	recovery   recoveryClient
+	monitor    *monitor.Service
 	lg         *logging.Logger
 	mux        *http.ServeMux
 	attemptsMu sync.Mutex
@@ -128,7 +130,7 @@ type attemptWindow struct {
 // bytes, so filling the map costs an attacker one slot per IP.
 const attemptsCap = 10000
 
-func NewServer(cfg *config.Config, st store.Store, lg *logging.Logger) *Server {
+func NewServer(cfg *config.Config, st store.Store, lg *logging.Logger, mon *monitor.Service) *Server {
 	sessions := auth.NewSessionManager(st, cfg.Security)
 	kysignon := sso.NewKySignOnClient(cfg.SSO, st)
 	oidc := sso.NewGenericOIDCClient(cfg.SSO, st)
@@ -143,6 +145,7 @@ func NewServer(cfg *config.Config, st store.Store, lg *logging.Logger) *Server {
 		oidc:     oidc,
 		saml:     saml,
 		recovery: recovery,
+		monitor:  mon,
 		lg:       lg,
 		mux:      http.NewServeMux(),
 		attempts: make(map[string]attemptWindow),
@@ -236,6 +239,21 @@ func (s *Server) routes() {
 	s.mux.HandleFunc("/api/settings", s.handleGetSettings)
 	s.mux.HandleFunc("/api/settings/theme", s.requireAdmin(s.handleSetTheme))
 
+	// Monitoring. Reads are for any session (viewers see status and alerts); writes and the
+	// webhook are admin-only. The webhook token is write-only end to end.
+	s.mux.HandleFunc("GET /api/status", s.requireSession(s.handleStatus))
+	s.mux.HandleFunc("GET /api/targets", s.requireSession(s.handleListTargets))
+	s.mux.HandleFunc("GET /api/targets/{id}", s.requireSession(s.handleGetTarget))
+	s.mux.HandleFunc("POST /api/targets", s.requireAdmin(s.handleCreateTarget))
+	s.mux.HandleFunc("PUT /api/targets/{id}", s.requireAdmin(s.handleUpdateTarget))
+	s.mux.HandleFunc("DELETE /api/targets/{id}", s.requireAdmin(s.handleDeleteTarget))
+	s.mux.HandleFunc("POST /api/targets/{id}/silence", s.requireAdmin(s.handleSilence))
+	s.mux.HandleFunc("GET /api/alerts", s.requireSession(s.handleListAlerts))
+	s.mux.HandleFunc("GET /api/alerts/webhook", s.requireAdmin(s.handleGetWebhook))
+	s.mux.HandleFunc("PUT /api/alerts/webhook", s.requireAdmin(s.handleSetWebhook))
+	s.mux.HandleFunc("DELETE /api/alerts/webhook", s.requireAdmin(s.handleDeleteWebhook))
+	s.mux.HandleFunc("POST /api/alerts/webhook/test", s.tracked(s.requireAdmin(s.handleTestWebhook)))
+
 	// Embedded React PWA Frontend
 	s.mux.Handle("/", web.Handler())
 }
@@ -254,6 +272,21 @@ func (s *Server) requireAdmin(h http.HandlerFunc) http.HandlerFunc {
 		}
 		if user.Role != "admin" {
 			s.writeError(w, http.StatusForbidden, "Administrator role required")
+			return
+		}
+		h(w, r)
+	}
+}
+
+// requireSession admits any signed-in user: viewers read status, targets and alerts.
+func (s *Server) requireSession(h http.HandlerFunc) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		if _, _, err := s.sessions.AuthenticateRequest(r); err != nil {
+			if errors.Is(err, auth.ErrPasswordChangeRequired) {
+				s.writeJSON(w, http.StatusForbidden, map[string]string{"error": "Change your password before continuing", "code": "password_change_required"})
+			} else {
+				s.writeError(w, http.StatusUnauthorized, "Authentication required")
+			}
 			return
 		}
 		h(w, r)

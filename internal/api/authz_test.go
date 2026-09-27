@@ -144,6 +144,10 @@ func TestPrivilegedEndpointsRequireAdmin(t *testing.T) {
 		{"PUT", "/api/backup/schedule"},
 		{"GET", "/api/backup/status"},
 		{"POST", "/api/settings/theme"},
+		{"POST", "/api/targets"},
+		{"GET", "/api/alerts/webhook"},
+		{"PUT", "/api/alerts/webhook"},
+		{"POST", "/api/alerts/webhook/test"},
 	}
 
 	for _, tc := range cases {
