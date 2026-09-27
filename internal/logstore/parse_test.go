@@ -18,7 +18,7 @@ func TestPlainAndControlText(t *testing.T) {
 	if activity != nil || line.Source != "host" || line.TargetID != "t" {
 		t.Fatalf("wrong attribution: %+v %+v", line, activity)
 	}
-	if got := Display(line.Message); got != "<img onerror=x>" {
+	if got := Display(line.Message); got != "<img onerror=x>�" {
 		t.Fatalf("display = %q", got)
 	}
 	for _, v := range []string{"a\x1b]0;title\aZ", "a\x1b]0;title\x1b\\Z", "a\x1b[31", "a\u009b31mZ", "a\x1b]unfinished"} {

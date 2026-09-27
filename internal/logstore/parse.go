@@ -13,6 +13,9 @@ import (
 const MaxLineBytes = 16 << 10
 
 func bounded(s string) (string, bool) {
+	// PostgreSQL text rejects NUL. Normalize before the byte cap so both backends
+	// store the same UTF-8 content even when replacement expands the string.
+	s = strings.ReplaceAll(s, "\x00", "\ufffd")
 	if len(s) <= MaxLineBytes {
 		return s, false
 	}

@@ -54,20 +54,23 @@ type recoveryClient interface {
 }
 
 type Server struct {
-	config      *config.Config
-	store       store.Store
-	sessions    *auth.SessionManager
-	kysignon    *sso.KySignOnClient
-	oidc        *sso.GenericOIDCClient
-	saml        *sso.SAMLServiceProvider
-	recovery    recoveryClient
-	monitor     *monitor.Service
-	kyyard      *kyyard.Service
-	lg          *logging.Logger
-	mux         *http.ServeMux
-	attemptsMu  sync.Mutex
-	attempts    map[string]attemptWindow
-	claimGlobal attemptWindow
+	config        *config.Config
+	store         store.Store
+	sessions      *auth.SessionManager
+	kysignon      *sso.KySignOnClient
+	oidc          *sso.GenericOIDCClient
+	saml          *sso.SAMLServiceProvider
+	recovery      recoveryClient
+	monitor       *monitor.Service
+	kyyard        *kyyard.Service
+	lg            *logging.Logger
+	mux           *http.ServeMux
+	attemptsMu    sync.Mutex
+	attempts      map[string]attemptWindow
+	claimGlobal   attemptWindow
+	ingestMu      sync.Mutex
+	ingestWindows map[string]attemptWindow
+	ingestNow     func() time.Time
 	// detached counts the requests running on a context deliberately separated from their
 	// connection. http.Server.Shutdown does not know about them, so runServer waits on this
 	// before the store closes.
@@ -165,18 +168,20 @@ func NewServer(cfg *config.Config, st store.Store, lg *logging.Logger, mon *moni
 	recovery := recoveryclient.NewClient(recoveryclient.Options{AllowPrivate: cfg.Backup.AllowPrivateRecovery})
 
 	s := &Server{
-		config:   cfg,
-		store:    st,
-		sessions: sessions,
-		kysignon: kysignon,
-		oidc:     oidc,
-		saml:     saml,
-		recovery: recovery,
-		monitor:  mon,
-		kyyard:   yard,
-		lg:       lg,
-		mux:      http.NewServeMux(),
-		attempts: make(map[string]attemptWindow),
+		config:        cfg,
+		store:         st,
+		sessions:      sessions,
+		kysignon:      kysignon,
+		oidc:          oidc,
+		saml:          saml,
+		recovery:      recovery,
+		monitor:       mon,
+		kyyard:        yard,
+		lg:            lg,
+		mux:           http.NewServeMux(),
+		attempts:      make(map[string]attemptWindow),
+		ingestWindows: make(map[string]attemptWindow),
+		ingestNow:     time.Now,
 	}
 
 	s.routes()
@@ -316,6 +321,9 @@ func (s *Server) routes() {
 	s.mux.HandleFunc("POST /api/log-sources/claim", s.handleClaimLogSource)
 	s.mux.HandleFunc("GET /api/log-sources", s.requireAdmin(s.handleListLogSources))
 	s.mux.HandleFunc("DELETE /api/log-sources/{id}", s.requireAdmin(s.handleRevokeLogSource))
+	s.mux.HandleFunc("POST /api/ingest/logs", s.handleIngestLogs)
+	s.mux.HandleFunc("GET /api/logs", s.requireAdmin(s.handleListLogs))
+	s.mux.HandleFunc("GET /api/activity", s.requireAdmin(s.handleListActivity))
 
 	// Embedded React PWA Frontend
 	s.mux.Handle("/", web.Handler())
@@ -326,7 +334,7 @@ func (s *Server) requireAdmin(h http.HandlerFunc) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		user, _, err := s.sessions.AuthenticateRequest(r)
 		if err != nil {
-			if action := sourceAuditAction(r); action != "" {
+			if action := adminLogAuditAction(r); action != "" {
 				s.audit(r.Context(), "", r, action, "", "outcome=refused reason=authentication")
 			}
 			if errors.Is(err, auth.ErrPasswordChangeRequired) {
@@ -337,7 +345,7 @@ func (s *Server) requireAdmin(h http.HandlerFunc) http.HandlerFunc {
 			return
 		}
 		if user.Role != "admin" {
-			if action := sourceAuditAction(r); action != "" {
+			if action := adminLogAuditAction(r); action != "" {
 				s.audit(r.Context(), user.ID, r, action, "", "outcome=refused reason=role")
 			}
 			s.writeError(w, http.StatusForbidden, "Administrator role required")
@@ -363,7 +371,7 @@ func (s *Server) requireSession(h http.HandlerFunc) http.HandlerFunc {
 }
 
 func (s *Server) ServeHTTP(w http.ResponseWriter, r *http.Request) {
-	if strings.HasPrefix(r.URL.Path, "/api/log-sources") {
+	if strings.HasPrefix(r.URL.Path, "/api/log-sources") || r.URL.Path == "/api/ingest/logs" || r.URL.Path == "/api/logs" || r.URL.Path == "/api/activity" {
 		w.Header().Set("Cache-Control", "no-store")
 	}
 	w.Header().Set("X-Content-Type-Options", "nosniff")
@@ -393,7 +401,7 @@ func (s *Server) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if isUnsafeMethod(r.Method) && hasSessionCookie(r) && !csrfExempt(r.URL.Path) && !auth.ValidateCSRF(r) {
-		if action := sourceAuditAction(r); action != "" {
+		if action := adminLogAuditAction(r); action != "" {
 			s.audit(r.Context(), s.actorID(r), r, action, "", "outcome=refused reason=csrf")
 		}
 		s.writeError(w, http.StatusForbidden, "Invalid CSRF token")
@@ -416,7 +424,7 @@ func hasSessionCookie(r *http.Request) bool {
 }
 
 func csrfExempt(path string) bool {
-	return path == "/api/auth/login" || strings.HasPrefix(path, "/api/auth/mfa/") || path == "/api/sso/kysignon/sync"
+	return path == "/api/auth/login" || strings.HasPrefix(path, "/api/auth/mfa/") || path == "/api/sso/kysignon/sync" || path == "/api/ingest/logs"
 }
 
 func sameOrigin(origin, appURL string) bool {
