@@ -4,6 +4,7 @@ import (
 	"context"
 	"database/sql"
 	"fmt"
+	"slices"
 	"strconv"
 	"strings"
 	"time"
@@ -29,7 +30,8 @@ func newSQLStore(ctx context.Context, db *sql.DB, driver string, auditKey []byte
 		driver = "postgres"
 	}
 
-	if err := migrations.Run(ctx, db, driver); err != nil {
+	applied, err := migrations.Run(ctx, db, driver)
+	if err != nil {
 		return nil, fmt.Errorf("migration failure on driver %s: %w", driver, err)
 	}
 
@@ -44,7 +46,9 @@ func newSQLStore(ctx context.Context, db *sql.DB, driver string, auditKey []byte
 	s.settings = &settingsStore{store: s}
 	s.targets = &targetStore{store: s}
 
-	if err := s.audit.open(ctx); err != nil {
+	// A log with no digests is keyed only when migration 6 has just added the columns; any
+	// later start that finds one means the chain was stripped.
+	if err := s.audit.open(ctx, slices.Contains(applied, 6)); err != nil {
 		_ = db.Close()
 		return nil, err
 	}

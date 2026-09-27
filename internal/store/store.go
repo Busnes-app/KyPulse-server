@@ -78,6 +78,8 @@ type AuditStore interface {
 	VerifyChain(ctx context.Context) (ChainStatus, error)
 	// Ready reports whether the next append can chain onto the stored tail.
 	Ready(ctx context.Context) error
+	// Placement is how the chain was found at open.
+	Placement() ChainPlacement
 }
 
 // SettingsStore handles persistent key-value configuration.

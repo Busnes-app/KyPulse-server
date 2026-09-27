@@ -183,6 +183,12 @@ func TestAuditKeyFromEnvOrFile(t *testing.T) {
 		t.Fatalf("env key not used: %v", err)
 	}
 
+	t.Setenv("KYPULSE_ENCRYPTION_KEY", strings.Repeat("ab", 32))
+	if _, err := config.LoadFromEnv(); err == nil || !strings.Contains(err.Error(), "must not equal") {
+		t.Fatalf("an audit key equal to the encryption key must refuse to start: %v", err)
+	}
+	t.Setenv("KYPULSE_ENCRYPTION_KEY", "")
+
 	t.Setenv("KYPULSE_AUDIT_KEY", "short")
 	if _, err := config.LoadFromEnv(); err == nil {
 		t.Fatal("a malformed KYPULSE_AUDIT_KEY must refuse to start")

@@ -90,6 +90,8 @@ func runServer(lg *logging.Logger) {
 		fatal("Failed to initialize database (%s): %v", cfg.Database.Driver, err)
 	}
 	defer st.Close()
+	placed := st.Audit().Placement()
+	lg.Log(ctx, auditChainPlaced, fChainMode(placed.Mode), logging.Count(int64(placed.Count)), fChainHead(placed.Head))
 
 	// Ensure default admin user exists if database is empty
 	count, _ := st.Users().CountUsers(ctx)
@@ -297,7 +299,9 @@ func runDeposit() {
 
 // runAuditVerify walks the whole audit chain against its anchor and exits non-zero when any
 // record was altered, reordered or removed. Run it after a restore and whenever the log is
-// in doubt; the server only places the tail at start.
+// in doubt; the server only places the tail at start. Opening the store runs pending
+// migrations and, right after migration 6, keys a pre-chain log; the verification itself
+// writes nothing.
 func runAuditVerify() {
 	cfg, err := config.LoadFromEnv()
 	if err != nil {

@@ -14,6 +14,10 @@ import (
 
 // anchorKey is the server_settings row holding the chain's count and head. It lives outside
 // the log because hashes inside a table can never show that rows were deleted from its end.
+// It is in the same database as the log, so it catches a DELETE that leaves server_settings
+// alone and a crash mid-write; it does not catch someone who can write both tables. The
+// audit_chain_placed log line at every start and the audit-verify output carry count and
+// head, which is the operator's copy outside the database.
 const anchorKey = "audit_anchor"
 
 // genesisHash is the predecessor of the first record, the anchor of an empty log.
@@ -36,6 +40,8 @@ type auditStore struct {
 	store *SQLStore
 	key   []byte
 
+	placement ChainPlacement // set once by open, read-only after
+
 	mu    sync.Mutex        // serialises appends and guards chain
 	chain *auditchain.Chain // nil until resumed, and again after a write the store could not confirm
 }
@@ -55,11 +61,28 @@ func stamp(r *AuditRecord) {
 }
 
 // open places the chain at start: a new log, a legacy log keyed once, or the stored tail.
-func (a *auditStore) open(ctx context.Context) error {
+// allowLegacy is true only when migration 6 was applied by this open.
+func (a *auditStore) open(ctx context.Context, allowLegacy bool) error {
 	a.mu.Lock()
 	defer a.mu.Unlock()
-	_, err := a.resume(ctx, a.store.db, true)
-	return err
+	c, mode, err := a.place(ctx, a.store.db, allowLegacy)
+	if err != nil {
+		return err
+	}
+	a.chain = c
+	anchor := c.Anchor()
+	a.placement = ChainPlacement{Mode: mode, Count: anchor.Count, Head: anchor.Hash}
+	return nil
+}
+
+func (a *auditStore) Placement() ChainPlacement { return a.placement }
+
+func decodeAnchor(raw string) (auditchain.Anchor, error) {
+	var anchor auditchain.Anchor
+	if err := json.Unmarshal([]byte(raw), &anchor); err != nil {
+		return auditchain.Anchor{}, fmt.Errorf("%w: anchor row does not decode", ErrAuditUnplaceable)
+	}
+	return anchor, nil
 }
 
 func (a *auditStore) loadAnchor(ctx context.Context, q dbtx) (auditchain.Anchor, bool, error) {
@@ -71,11 +94,8 @@ func (a *auditStore) loadAnchor(ctx context.Context, q dbtx) (auditchain.Anchor,
 	if err != nil {
 		return auditchain.Anchor{}, false, err
 	}
-	var anchor auditchain.Anchor
-	if err := json.Unmarshal([]byte(raw), &anchor); err != nil {
-		return auditchain.Anchor{}, false, fmt.Errorf("%w: anchor row does not decode", ErrAuditUnplaceable)
-	}
-	return anchor, true, nil
+	anchor, err := decodeAnchor(raw)
+	return anchor, err == nil, err
 }
 
 func (a *auditStore) writeAnchor(ctx context.Context, q dbtx, anchor auditchain.Anchor) error {
@@ -88,69 +108,81 @@ ON CONFLICT(key) DO UPDATE SET value = excluded.value, updated_at = excluded.upd
 	return err
 }
 
-// tail reads the highest-sequence record as a chain record.
-func (a *auditStore) tail(ctx context.Context, q dbtx) (auditchain.Record, error) {
+// tail reads the record at seq as a chain record.
+func (a *auditStore) tail(ctx context.Context, q dbtx, seq uint64) (auditchain.Record, error) {
 	var r AuditRecord
 	var prev string
-	err := q.QueryRowContext(ctx, `SELECT seq, prev_hash, hash, user_id, action, resource, details, ip_address, created_at
-FROM audit_records WHERE seq IS NOT NULL ORDER BY seq DESC LIMIT 1`).Scan(&r.Seq, &prev, &r.Hash, &r.UserID, &r.Action, &r.Resource, &r.Details, &r.IPAddress, &r.CreatedAt)
+	err := q.QueryRowContext(ctx, a.store.rebind(`SELECT seq, prev_hash, hash, user_id, action, resource, details, ip_address, created_at
+FROM audit_records WHERE seq = ?`), seq).Scan(&r.Seq, &prev, &r.Hash, &r.UserID, &r.Action, &r.Resource, &r.Details, &r.IPAddress, &r.CreatedAt)
+	if errorsIs(err, sql.ErrNoRows) {
+		return auditchain.Record{}, fmt.Errorf("%w: the anchor names record %d, which is not in the log", ErrAuditUnplaceable, seq)
+	}
 	if err != nil {
 		return auditchain.Record{}, err
 	}
 	return auditchain.Record{Seq: r.Seq, Prev: prev, Hash: r.Hash, Fields: fieldsOf(&r)}, nil
 }
 
-// place determines the chain from the store's current state: a new log, a legacy log keyed
-// once, or the stored tail. It is a pure read except when pool and the log is all-legacy, in
+// place determines the chain from the store's current state and names how it found it
+// ("new", "legacy_keyed", "resumed"). Anchor and counts come from one statement, so they are
+// one snapshot; the tail is then read by the anchor's sequence, which rows appended since
+// cannot change. It is a pure read except when allowLegacy and the log is all-legacy, in
 // which case keying it is the one write place performs. Unlike resume, place never reads or
 // writes a.chain, which is what lets Ready call it without mu.
 //
-// pool says q is the connection pool, which keying a legacy log needs (it opens its own
-// transaction); from inside a caller's transaction that would deadlock on SQLite.
-func (a *auditStore) place(ctx context.Context, q dbtx, pool bool) (*auditchain.Chain, error) {
-	anchor, hasAnchor, err := a.loadAnchor(ctx, q)
-	if err != nil {
-		return nil, err
-	}
+// allowLegacy is only ever true from open, where q is the pool: keying opens its own
+// transaction, which from inside a caller's transaction would deadlock on SQLite.
+func (a *auditStore) place(ctx context.Context, q dbtx, allowLegacy bool) (*auditchain.Chain, string, error) {
+	var raw sql.NullString
 	var total, unkeyed uint64
-	if err := q.QueryRowContext(ctx, "SELECT COUNT(1), COUNT(1) - COUNT(seq) FROM audit_records").Scan(&total, &unkeyed); err != nil {
-		return nil, err
+	if err := q.QueryRowContext(ctx, a.store.rebind("SELECT (SELECT value FROM server_settings WHERE key = ?), COUNT(1), COUNT(1) - COUNT(seq) FROM audit_records"), anchorKey).Scan(&raw, &total, &unkeyed); err != nil {
+		return nil, "", err
+	}
+	var anchor auditchain.Anchor
+	hasAnchor := raw.Valid
+	if hasAnchor {
+		var err error
+		if anchor, err = decodeAnchor(raw.String); err != nil {
+			return nil, "", err
+		}
 	}
 	switch {
 	case total == 0 && (!hasAnchor || anchor.Count == 0):
-		return auditchain.New(a.key)
+		c, err := auditchain.New(a.key)
+		return c, "new", err
 	case total == 0:
-		return nil, fmt.Errorf("%w: no audit records, but the anchor counts %d; the log was emptied", ErrAuditUnplaceable, anchor.Count)
+		return nil, "", fmt.Errorf("%w: no audit records, but the anchor counts %d; the log was emptied", ErrAuditUnplaceable, anchor.Count)
 	case !hasAnchor && unkeyed == total:
-		if !pool {
-			return nil, fmt.Errorf("%w: %d unkeyed records and no anchor appeared while running", ErrAuditUnplaceable, total)
+		if !allowLegacy {
+			return nil, "", fmt.Errorf("%w: %d audit records carry no digest and there is no anchor, but the chain was keyed before: the chain columns and the anchor were cleared. This server will not start. Restore the database from backup, or move the records aside to begin a new chain and keep the old ones for the auditor", ErrAuditUnplaceable, total)
 		}
-		return a.keyLegacy(ctx, q)
+		c, err := a.keyLegacy(ctx, q)
+		return c, "legacy_keyed", err
 	case !hasAnchor:
-		return nil, fmt.Errorf("%w: %d keyed audit records but no anchor row (%s); a truncated log cannot be told from an intact one, so this server will not start. Restore the row from backup, or move the records aside to begin a new chain and keep the old ones for the auditor", ErrAuditUnplaceable, total, anchorKey)
+		return nil, "", fmt.Errorf("%w: %d keyed audit records but no anchor row (%s); a truncated log cannot be told from an intact one, so this server will not start. Restore the row from backup, or move the records aside to begin a new chain and keep the old ones for the auditor", ErrAuditUnplaceable, total, anchorKey)
 	case unkeyed > 0:
-		return nil, fmt.Errorf("%w: %d audit records carry no digest although the chain is anchored", ErrAuditUnplaceable, unkeyed)
+		return nil, "", fmt.Errorf("%w: %d audit records carry no digest although the chain is anchored", ErrAuditUnplaceable, unkeyed)
 	case total != anchor.Count:
-		return nil, fmt.Errorf("%w: %d audit records but the anchor counts %d", ErrAuditUnplaceable, total, anchor.Count)
+		return nil, "", fmt.Errorf("%w: %d audit records but the anchor counts %d", ErrAuditUnplaceable, total, anchor.Count)
 	}
-	last, err := a.tail(ctx, q)
+	last, err := a.tail(ctx, q, anchor.Count)
 	if err != nil {
-		return nil, err
+		return nil, "", err
 	}
 	c, err := auditchain.Resume(a.key, last, anchor)
 	if err != nil {
-		return nil, fmt.Errorf("%w: %v", ErrAuditUnplaceable, err)
+		return nil, "", fmt.Errorf("%w: the audit key (KYPULSE_AUDIT_KEY or <DataDir>/audit.key) is not the one that wrote this log, or the tail record was altered: %v. With the right key the server starts; without it, move the records and the anchor aside to begin a new chain and keep the old ones for the auditor", ErrAuditUnplaceable, err)
 	}
-	return c, nil
+	return c, "resumed", nil
 }
 
-// resume returns the chain, memoising it in a.chain once placed. Callers other than Ready
-// must hold mu: it reads and writes a.chain, which a concurrent append also touches.
-func (a *auditStore) resume(ctx context.Context, q dbtx, pool bool) (*auditchain.Chain, error) {
+// resume returns the chain, memoising it in a.chain once placed. The caller must hold mu:
+// it reads and writes a.chain, which a concurrent append also touches.
+func (a *auditStore) resume(ctx context.Context, q dbtx) (*auditchain.Chain, error) {
 	if a.chain != nil {
 		return a.chain, nil
 	}
-	c, err := a.place(ctx, q, pool)
+	c, _, err := a.place(ctx, q, false)
 	if err != nil {
 		return nil, err
 	}
@@ -159,7 +191,7 @@ func (a *auditStore) resume(ctx context.Context, q dbtx, pool bool) (*auditchain
 }
 
 // keyLegacy digests a log written before the chain, in id order, and anchors it. It runs
-// once, on the first start after the migration; every later row is chained at write time.
+// once, in the open that applied migration 6; every later row is chained at write time.
 // q must be the pool: the rows are read to completion before the write transaction begins,
 // which is what SQLite's single connection requires.
 func (a *auditStore) keyLegacy(ctx context.Context, q dbtx) (*auditchain.Chain, error) {
@@ -224,11 +256,12 @@ func mustTime(s string) time.Time {
 // that may not exist. Holding mu until finish — rather than releasing it here — is what stops
 // a second append from chaining onto this one before it is durable: on Postgres, unlike
 // SQLite, a second connection could otherwise start its own append while this transaction is
-// still open.
+// still open. Another process on the same database may have appended since this one last
+// did, so the stored anchor is compared with the chain's and the tail re-read on a mismatch.
 func (a *auditStore) append(ctx context.Context, tx *sql.Tx, r *AuditRecord) (finish func(committed bool), err error) {
 	stamp(r)
 	a.mu.Lock()
-	c, err := a.resume(ctx, tx, false)
+	c, err := a.follow(ctx, tx)
 	if err != nil {
 		a.chain = nil
 		a.mu.Unlock()
@@ -257,6 +290,23 @@ VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
 	}, nil
 }
 
+// follow resumes the chain and re-places it on tx when the stored anchor has moved on.
+func (a *auditStore) follow(ctx context.Context, tx *sql.Tx) (*auditchain.Chain, error) {
+	c, err := a.resume(ctx, tx)
+	if err != nil {
+		return nil, err
+	}
+	stored, ok, err := a.loadAnchor(ctx, tx)
+	if err != nil {
+		return nil, err
+	}
+	if ok && stored != c.Anchor() {
+		a.chain = nil
+		return a.resume(ctx, tx)
+	}
+	return c, nil
+}
+
 func (a *auditStore) LogAudit(ctx context.Context, r *AuditRecord) error {
 	ctx, cancel := context.WithTimeout(context.WithoutCancel(ctx), auditWriteBudget)
 	defer cancel()
@@ -276,26 +326,10 @@ func (a *auditStore) LogAudit(ctx context.Context, r *AuditRecord) error {
 
 // Ready reports whether the next append can place a chain. It takes no lock: append takes
 // the connection (the caller's tx) before mu, so Ready taking mu before waiting on the
-// connection would deadlock against a concurrent append on SQLite's single connection. It
-// holds a connection instead, in a read-only transaction, so place's three statements see one
-// snapshot and a commit landing between them cannot make an intact log look unplaceable.
+// connection would deadlock against a concurrent append on SQLite's single connection.
+// place's snapshot is one statement, so Ready needs no transaction of its own.
 func (a *auditStore) Ready(ctx context.Context) error {
-	opts := &sql.TxOptions{ReadOnly: true}
-	if a.store.driver == "postgres" {
-		opts.Isolation = sql.LevelRepeatableRead
-	}
-	tx, err := a.store.db.BeginTx(ctx, opts)
-	if err != nil && a.store.driver != "postgres" {
-		// modernc's SQLite driver has not been observed to reject ReadOnly, but a plain
-		// transaction is an equivalent snapshot under WAL, so fall back rather than fail
-		// Ready over a TxOptions field this driver may not honour.
-		tx, err = a.store.db.BeginTx(ctx, nil)
-	}
-	if err != nil {
-		return err
-	}
-	defer tx.Rollback()
-	_, err = a.place(ctx, tx, false)
+	_, _, err := a.place(ctx, a.store.db, false)
 	return err
 }
 

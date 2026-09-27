@@ -202,6 +202,25 @@ func TestHealthzIsPublicAndReportsTheDatabase(t *testing.T) {
 	}
 }
 
+func TestHealthzDegradesOnABrokenChain(t *testing.T) {
+	srv, st, _ := setupTestServer(t)
+	ctx := context.Background()
+	if err := st.Audit().LogAudit(ctx, &store.AuditRecord{UserID: "u1", Action: "test.event"}); err != nil {
+		t.Fatal(err)
+	}
+	if err := st.Settings().DeleteSetting(ctx, "audit_anchor"); err != nil {
+		t.Fatal(err)
+	}
+	w := do(t, srv, "GET", "/healthz", nil)
+	if w.Code != http.StatusOK {
+		t.Fatalf("got %d: %s", w.Code, w.Body.String())
+	}
+	body := w.Body.String()
+	if !bytes.Contains([]byte(body), []byte(`"status":"degraded"`)) || !bytes.Contains([]byte(body), []byte("chain_broken")) {
+		t.Errorf("broken chain not reported degraded: %s", body)
+	}
+}
+
 func TestHealthzReportsDatabaseDown(t *testing.T) {
 	srv, st, cfg := setupTestServer(t)
 	if err := st.Close(); err != nil {

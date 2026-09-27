@@ -37,7 +37,7 @@ func Checks(dir string, opened capsule.Manifest) []recoveryclient.Check {
 	if enabled, ok := recipe["check_sqlite_integrity"].(bool); !ok || !enabled {
 		return recipeFailure("check_sqlite_integrity must be true")
 	}
-	for _, name := range []string{"data/kypulse.db", "config/settings.json", encryptionKeyPath} {
+	for _, name := range []string{"data/kypulse.db", "config/settings.json", encryptionKeyPath, auditKeyPath} {
 		if !slices.Contains(required, name) {
 			return recipeFailure("required_files omits " + name)
 		}

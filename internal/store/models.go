@@ -61,6 +61,14 @@ type ChainStatus struct {
 	Head  string `json:"head"`
 }
 
+// ChainPlacement is how the store found the audit chain at open. Mode is "new" (empty log),
+// "legacy_keyed" (a pre-chain log keyed after migration 6) or "resumed" (the stored tail).
+type ChainPlacement struct {
+	Mode  string
+	Count uint64
+	Head  string
+}
+
 // Setting represents a durable server-wide key-value configuration entry.
 type Setting struct {
 	Key       string    `json:"key"`

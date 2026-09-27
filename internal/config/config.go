@@ -1,8 +1,10 @@
 package config
 
 import (
+	"bytes"
 	"crypto/rand"
 	"encoding/hex"
+	"errors"
 	"fmt"
 	"net/netip"
 	"os"
@@ -165,6 +167,9 @@ func LoadFromEnv() (*Config, error) {
 		if err != nil {
 			return nil, fmt.Errorf("audit key: %w", err)
 		}
+	}
+	if bytes.Equal(auditKey, encryptionKey) {
+		return nil, errors.New("KYPULSE_AUDIT_KEY must not equal KYPULSE_ENCRYPTION_KEY")
 	}
 
 	depositInterval, err := getEnvDuration("KYPULSE_BACKUP_DEPOSIT_INTERVAL", 24*time.Hour)

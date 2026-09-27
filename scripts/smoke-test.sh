@@ -190,6 +190,7 @@ contains "session dead after logout" "$(curl -s -b "$WORK/cookies" "$BASE/api/au
 stop_server
 
 echo "==> Audit chain"
+contains "server logs the chain placement at start" "$(cat "$WORK/server.log")" '"event":"audit_chain_placed"'
 VERIFY_OUT="$(KYPULSE_DATA_DIR="$WORK/data" KYPULSE_PORT="$PORT" KYPULSE_DB_DRIVER=sqlite "$BIN" audit-verify)"
 contains "audit-verify walks the chain the server wrote" "$VERIFY_OUT" "audit chain verified"
 check "audit-verify exits 0 on an intact chain" "$(KYPULSE_DATA_DIR="$WORK/data" KYPULSE_PORT="$PORT" KYPULSE_DB_DRIVER=sqlite "$BIN" audit-verify >/dev/null 2>&1 && echo 0 || echo 1)" "0"

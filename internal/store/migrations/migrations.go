@@ -251,8 +251,9 @@ CREATE UNIQUE INDEX IF NOT EXISTS idx_audit_seq ON audit_records(seq);
 	},
 }
 
-// Run executes all pending migrations for the specified database driver.
-func Run(ctx context.Context, db *sql.DB, driver string) error {
+// Run executes all pending migrations for the specified database driver and returns the
+// versions it applied in this call, empty when the schema was already current.
+func Run(ctx context.Context, db *sql.DB, driver string) (applied []int, err error) {
 	driver = strings.ToLower(driver)
 	if driver == "postgresql" {
 		driver = "postgres"
@@ -275,7 +276,7 @@ CREATE TABLE IF NOT EXISTS schema_migrations (
 	}
 
 	if _, err := db.ExecContext(ctx, initTableQuery); err != nil {
-		return fmt.Errorf("failed to init schema_migrations: %w", err)
+		return nil, fmt.Errorf("failed to init schema_migrations: %w", err)
 	}
 
 	for _, m := range registry {
@@ -285,7 +286,7 @@ CREATE TABLE IF NOT EXISTS schema_migrations (
 			// Try SQLite positional ? parameter if $1 failed
 			err = db.QueryRowContext(ctx, "SELECT COUNT(1) FROM schema_migrations WHERE version = ?", m.Version).Scan(&exists)
 			if err != nil {
-				return fmt.Errorf("failed to check migration version %d: %w", m.Version, err)
+				return nil, fmt.Errorf("failed to check migration version %d: %w", m.Version, err)
 			}
 		}
 
@@ -300,12 +301,12 @@ CREATE TABLE IF NOT EXISTS schema_migrations (
 
 		tx, err := db.BeginTx(ctx, nil)
 		if err != nil {
-			return fmt.Errorf("failed to begin migration tx for v%d: %w", m.Version, err)
+			return nil, fmt.Errorf("failed to begin migration tx for v%d: %w", m.Version, err)
 		}
 
 		if _, err := tx.ExecContext(ctx, ddl); err != nil {
 			_ = tx.Rollback()
-			return fmt.Errorf("failed executing migration v%d (%s): %w", m.Version, m.Name, err)
+			return nil, fmt.Errorf("failed executing migration v%d (%s): %w", m.Version, m.Name, err)
 		}
 
 		recordQuery := "INSERT INTO schema_migrations (version, name, applied_at) VALUES (?, ?, ?)"
@@ -315,13 +316,14 @@ CREATE TABLE IF NOT EXISTS schema_migrations (
 
 		if _, err := tx.ExecContext(ctx, recordQuery, m.Version, m.Name, time.Now().UTC()); err != nil {
 			_ = tx.Rollback()
-			return fmt.Errorf("failed to record migration v%d: %w", m.Version, err)
+			return nil, fmt.Errorf("failed to record migration v%d: %w", m.Version, err)
 		}
 
 		if err := tx.Commit(); err != nil {
-			return fmt.Errorf("failed to commit migration v%d: %w", m.Version, err)
+			return nil, fmt.Errorf("failed to commit migration v%d: %w", m.Version, err)
 		}
+		applied = append(applied, m.Version)
 	}
 
-	return nil
+	return applied, nil
 }
