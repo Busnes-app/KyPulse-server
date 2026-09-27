@@ -24,7 +24,9 @@ Design authority: `docs/superpowers/specs/2026-09-26-kypulse-design.md`. Plans l
   `ghcr.io/busnes-app/kypulse-server`; every setting is `KYPULSE_*` except the suite-wide
   `KY_LOG_LEVEL`.
 - Two roles, `admin` and `viewer`; the store refuses anything else and identity providers map
-  through `sso.RoleFor`. Viewers see Status and Alerts; admins see everything.
+  through `sso.RoleFor`. Every admin-only route answers 403 to a viewer. Today a viewer sees
+  Overview and Settings & DB (read-only) and no Backup tab; from step 2c viewers also get
+  Status and Alerts, and everything else stays admin-only.
 - Every process line is a JSON record on stderr through `ky-primitives/logging`; there is no
   log file and no log socket.
 - `GET /healthz` is public and is what an external monitor watches; kyPulse does not monitor

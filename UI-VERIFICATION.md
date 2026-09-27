@@ -1,5 +1,8 @@
 # Shared UI verification
 
+> Scaffold evidence from ky_server_base (ky-ui 0.2.0 vendor sync); kyPulse's own screens
+> replace this in step 2c.
+
 ## Change
 
 Include the base as a required consumer so future products inherit verified shared assets. Shared assets are pinned to ky-ui 0.2.0 with content hashes. Product layouts, saved theme keys and named presets remain local.
@@ -33,9 +36,9 @@ The assertions cover worker activation and stale-shell refresh, invalid-login er
 
 Representative captures from the automated run (2026-09-25; scratch pairing codes expire and the server is deleted afterward):
 
-| Mobile Settings — light | Mobile pairing — dark |
-| --- | --- |
-| ![Settings fits mobile](docs/browser-settings-light-mobile.png) | ![Native pairing dialog](docs/browser-pairing-dark-mobile.png) |
+| Mobile Settings — light |
+| --- |
+| ![Settings fits mobile](docs/browser-settings-light-mobile.png) |
 
 Build the frontend, then run `go build -o .browser/server ./cmd/server` from the repo root and `cd web && npx playwright install chromium && npm run test:browser`.
 

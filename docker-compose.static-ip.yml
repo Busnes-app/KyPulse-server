@@ -1,4 +1,4 @@
-# Append this file to COMPOSE_FILE in .env; see README.md for setup.
+# Append this file to COMPOSE_FILE in .env; see README.md, Compose overlays, for setup.
 services:
   app:
     networks:

@@ -21,6 +21,25 @@ suite. The first start creates an `admin` user and prints its password to stderr
 
 Watch kyPulse's own `GET /healthz` from outside; kyPulse does not monitor itself.
 
+## Compose overlays
+
+Append an overlay's filename to `COMPOSE_FILE` in `.env` (never `-f`, which replaces the list
+outright); each file's header comment has a copy-pasteable one-liner that does this for you.
+
+**Source build** (`docker-compose.build.yml`). Builds and runs the local image (`kypulse:local`)
+instead of the published one, for every command including restore. Revert by removing it from
+`COMPOSE_FILE`.
+
+**LAN DNS and private KyRecovery** (`docker-compose.lan-dns.yml`). Points the container's DNS
+at `KYPULSE_DNS`, a LAN resolver, so a KyRecovery reachable only there resolves; it also sets
+`KYPULSE_BACKUP_ALLOW_PRIVATE_RECOVERY=true`, admitting RFC1918/CGNAT KyRecovery destinations
+(loopback and other reserved ranges stay refused; HTTPS is still required). Revert by removing
+the overlay from `COMPOSE_FILE` and unsetting `KYPULSE_DNS` and
+`KYPULSE_BACKUP_ALLOW_PRIVATE_RECOVERY` in `.env`.
+
+**Static IP** (`docker-compose.static-ip.yml`). Pins the container to `KYPULSE_CONTAINER_IP` on
+a network with subnet `KYPULSE_NETWORK_SUBNET`, both required once the overlay is in the chain.
+
 ## Backup and restore
 
 kyPulse backs up to KyRecovery like every suite product. `docs/RESTORE.md` is the restore

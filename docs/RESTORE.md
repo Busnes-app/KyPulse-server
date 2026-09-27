@@ -17,7 +17,8 @@ procedure once as a drill before you ever need it.
 The `docker compose` commands below use the base file alone, which runs the published
 image. Source install: confirm the `COMPOSE_FILE` line in `.env` contains `docker-compose.build.yml`
 before the first command; extra overlays beside it, such as `docker-compose.lan-dns.yml`, are
-fine (the quickstart in `README.md` adds it). Check: `grep '^COMPOSE_FILE=' .env | grep -q
+fine (see README's "Run" section for the base command and "Compose overlays" for adding one).
+Check: `grep '^COMPOSE_FILE=' .env | grep -q
 docker-compose.build.yml && echo ok`. Otherwise a restore silently pulls a different binary than
 the one you built and are running.
 Published install: never restore onto a floating `:latest`; the step before the restore
@@ -78,7 +79,8 @@ Tags are movable, `:<commit sha>` included, so the chain also checks that the at
 your commit as its source: the guarantee is the commit you named, not whatever the tag points at. The
 chain stops at the first failure and renames a same-directory staging file over `.env` only
 if the filtered copy was written in full, so your secrets are never truncated. The pin persists
-in `.env` after the drill: see the README's upgrade note for moving off it. Images built before 2026-09-16 can no longer be verified by name: the owner they were attested under is not held by this project, so do not point `--repo` or `--cert-identity` at it. Pin a commit built after that date, or build that commit from source with `docker-compose.build.yml`.
+in `.env` after the drill; a source install runs `docker-compose.build.yml` instead regardless
+of the pin.
 
 ```bash
 sha=<full commit sha you intend to run, e.g. $(git rev-parse origin/master)>
@@ -113,7 +115,7 @@ keeps the real server down:
 ```bash
 mkdir -m 700 restored
 docker compose run --rm --no-deps --user "$(id -u):$(id -g)" \
-  -v "$PWD/Busnes_2eapp.cap-XXXXXXXX.kycap:/in.kycap:ro" \
+  -v "$PWD/kyPulse.cap-XXXXXXXX.kycap:/in.kycap:ro" \
   -v "$PWD/restored:/restored" \
   app restore -capsule /in.kycap -to /restored
 ```
@@ -137,7 +139,7 @@ On success it prints the authenticated manifest:
 
 ```
 Restored 4 files from capsule cap-kyPulse-1788605720094118543
-  service:      kyPulse (v1.0.0)
+  service:      kyPulse (v0.1.0)
   created:      2026-09-05T12:15:20Z
   recovery key: 886ff52c...
   payload hash: 8a053985...
