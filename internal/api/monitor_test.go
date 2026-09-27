@@ -133,6 +133,29 @@ func TestStatusSummary(t *testing.T) {
 	}
 }
 
+// A webhook row that exists but cannot be opened (rotated deployment key, corrupt store row)
+// must still report configured:true: delivery is broken, not absent.
+func TestStatusUnreadableWebhookIsConfigured(t *testing.T) {
+	srv, st, _ := setupTestServer(t)
+	admin := loginAs(t, srv, st, "alice", "admin")
+	viewer := loginAs(t, srv, st, "bob", "viewer")
+	ctx := context.Background()
+
+	if w := doJSON(t, srv, "PUT", "/api/alerts/webhook", admin, map[string]string{"preset": "ntfy", "url": "https://ntfy.sh/kypulse"}); w.Code != http.StatusOK {
+		t.Fatalf("save webhook: %d %s", w.Code, w.Body.String())
+	}
+	// Corrupt the sealed row directly so Webhooks.Load fails (mirrors
+	// TestObserveRecordsAnUnreadableWebhook in internal/monitor).
+	if err := st.Settings().SetSetting(ctx, "alert_webhook_enc", "not a sealed value"); err != nil {
+		t.Fatalf("corrupt webhook row: %v", err)
+	}
+
+	s := decodeMap(t, do(t, srv, "GET", "/api/status", viewer))
+	if s["webhook"].(map[string]any)["configured"] != true {
+		t.Fatalf("webhook: %v", s["webhook"])
+	}
+}
+
 func TestWebhookTokenIsWriteOnly(t *testing.T) {
 	srv, st, _ := setupTestServer(t)
 	admin := loginAs(t, srv, st, "alice", "admin")

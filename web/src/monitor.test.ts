@@ -53,6 +53,11 @@ describe('monitor client', () => {
     await expect(getStatus()).rejects.toBeInstanceOf(ApiError);
   });
 
+  it('treats a malformed 2xx body as an error, not an empty object', async () => {
+    vi.stubGlobal('fetch', vi.fn(async () => new Response('<html>', { status: 200 })));
+    await expect(getStatus()).rejects.toMatchObject({ status: 200, message: 'Unexpected response (not JSON)' });
+  });
+
   it('posts a silence with the CSRF header', async () => {
     document.cookie = 'ky_csrf=abc';
     const fetchMock = vi.fn(async () => new Response(JSON.stringify({ silenced_until: null, until_fixed: true }), { status: 200 }));

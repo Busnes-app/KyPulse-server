@@ -30,7 +30,7 @@ Owns HTTP routing, request parsing, session cookie validation, CORS headers, and
 
 | Method | Path | Auth | Response |
 |---|---|---|---|
-| GET | `/api/status` | session | `{checked_at, total, ok, degraded, down, pending, paused, problems:[{id,name,state,since,cause}], webhook:{configured, last}}`; disabled targets count only as `paused`, never as a state or a problem |
+| GET | `/api/status` | session | `{checked_at, total, ok, degraded, down, pending, paused, problems:[{id,name,state,since,cause}], webhook:{configured, last}}`; disabled targets count only as `paused`, never as a state or a problem; `configured` is true whenever a webhook row exists, including one that cannot be opened (`Webhooks.Load` error) — delivery is broken, not absent |
 | GET | `/api/targets` | session | `{targets:[target + silenced_until, until_fixed, basic]}` |
 | GET | `/api/targets/{id}` | session | `{target, last_result, events:[last 20]}` |
 | POST | `/api/targets` | admin | 201 `{target}`; 400 validation; 409 duplicate name |

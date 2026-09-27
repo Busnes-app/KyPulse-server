@@ -91,7 +91,7 @@ export const AppDetail: React.FC<AppDetailProps> = ({ id, user, onChanged }) => 
   }
 
   const cls = stateClass(target);
-  const failing = target.enabled && target.state !== 'ok' && target.state !== 'pending';
+  const failing = target.enabled && !!target.last_polled_at && target.state !== 'ok';
   return (
     <div className="dr-page">
       <p className="dr-hint"><a href={hrefFor('/status')}><ArrowLeft size={14} style={{ verticalAlign: 'middle' }} /> Status</a></p>
@@ -111,7 +111,11 @@ export const AppDetail: React.FC<AppDetailProps> = ({ id, user, onChanged }) => 
         <span className={`dot dot-${cls}`} aria-hidden="true" />
         <h2 className={`state-${cls}`}>{stateLabel(target)}</h2>
         <span>
-          {target.state === 'pending' ? 'awaiting first check' : `for ${sinceLabel(target.state_since)} (since ${timeLabel(target.state_since)})`}
+          {!target.last_polled_at
+            ? 'awaiting first check'
+            : target.state === 'pending'
+              ? 'not yet classified'
+              : `for ${sinceLabel(target.state_since)} (since ${timeLabel(target.state_since)})`}
         </span>
         {failing && (
           <span className="dr-mono" style={{ flexBasis: '100%', fontSize: 13 }}>

@@ -73,4 +73,18 @@ describe('Status', () => {
     render(<Status user={{ role: 'viewer' }} onChanged={() => {}} />);
     expect(await screen.findByText(/No apps are watched yet/)).toBeTruthy();
   });
+
+  it('distinguishes an unpolled pending target from one already polled', async () => {
+    const list = [
+      target({ name: 'Unpolled', state: 'pending', last_polled_at: null }),
+      target({ name: 'Polled', state: 'pending', last_polled_at: '2026-09-27T10:00:00Z' }),
+    ];
+    stub([[/GET \/api\/targets$/, { targets: list }]]);
+    render(<Status user={{ role: 'viewer' }} onChanged={() => {}} />);
+    const tiles = await screen.findAllByRole('link', { name: /Ky|Unpolled|Polled/ });
+    const unpolled = tiles.find((t) => t.textContent?.includes('Unpolled'))!;
+    const polled = tiles.find((t) => t.textContent?.includes('Polled') && !t.textContent.includes('Unpolled'))!;
+    expect(unpolled.textContent).toContain('awaiting first check');
+    expect(polled.textContent).toContain('not yet classified');
+  });
 });

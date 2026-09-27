@@ -24,7 +24,7 @@ export const TargetForm: React.FC<TargetFormProps> = ({ initial, submitLabel, on
     setBusy(true);
     setError('');
     try {
-      await onSubmit({ name: name.trim(), url: url.trim(), interval_sec: interval, enabled });
+      await onSubmit({ name: name.trim(), url: url.trim(), interval_sec: interval, enabled, container: initial?.container });
     } catch (err) {
       setError(err instanceof ApiError ? err.message : 'Could not save the app');
     } finally {

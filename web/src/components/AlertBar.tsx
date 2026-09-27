@@ -52,13 +52,20 @@ export const AlertBar: React.FC<AlertBarProps> = ({ status, loading, isAdmin }) 
       </div>
     );
   }
-  const active = status.total - status.paused;
-  const pendingNote = status.pending > 0 ? `, ${status.pending} awaiting first check` : '';
+  if (status.ok === 0) {
+    return (
+      <div role="status" className="alert-bar alert-bar-neutral">
+        <CircleDashed size={16} />
+        <span>{status.pending > 0 ? 'No app has been classified yet' : 'All apps paused'}</span>
+      </div>
+    );
+  }
+  const pendingNote = status.pending > 0 ? `, ${status.pending} not yet classified` : '';
   return (
     <div role="status" className="alert-bar alert-bar-ok">
       <div className="alert-bar-line">
         <CheckCircle2 size={16} />
-        <span>All {active} apps healthy{pendingNote} · last check {timeLabel(status.checked_at)}</span>
+        <span>All {status.ok} app{status.ok === 1 ? '' : 's'} healthy{pendingNote} · last check {timeLabel(status.checked_at)}</span>
       </div>
       {delivery}
     </div>

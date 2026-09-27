@@ -136,7 +136,7 @@ export const App: React.FC = () => {
         <AlertBar status={status} loading={statusLoading} isAdmin={isAdmin} />
         {head === 'status' && <Status user={user} onChanged={refreshStatus} />}
         {head === 'alerts' && <Alerts user={user} />}
-        {head === 'apps' && route.parts[1] && <AppDetail id={route.parts[1]} user={user} onChanged={refreshStatus} />}
+        {head === 'apps' && route.parts[1] && <AppDetail key={route.parts[1]} id={route.parts[1]} user={user} onChanged={refreshStatus} />}
         {head === 'backup' && isAdmin && <Backup />}
         {head === 'settings' && <Settings settings={settings} user={user} onChanged={refreshStatus} />}
       </main>

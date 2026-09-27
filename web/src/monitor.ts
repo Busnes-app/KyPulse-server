@@ -89,6 +89,7 @@ export interface TargetInput {
   url: string;
   interval_sec: number;
   enabled: boolean;
+  container?: string;
 }
 
 export type SilenceFor = '1h' | '8h' | 'until_fixed' | 'off';
@@ -103,9 +104,15 @@ export class ApiError extends Error {
 
 async function readJSON<T>(resp: Response): Promise<T> {
   if (resp.status === 204) return undefined as T;
+  if (resp.ok) {
+    try {
+      return (await resp.json()) as T;
+    } catch {
+      throw new ApiError(resp.status, 'Unexpected response (not JSON)');
+    }
+  }
   const body = await resp.json().catch(() => ({}));
-  if (!resp.ok) throw new ApiError(resp.status, (body as { error?: string }).error || `Request failed (${resp.status})`);
-  return body as T;
+  throw new ApiError(resp.status, (body as { error?: string }).error || `Request failed (${resp.status})`);
 }
 
 const json = (body: unknown): RequestInit => ({

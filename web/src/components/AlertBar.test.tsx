@@ -45,4 +45,24 @@ describe('AlertBar', () => {
     render(<AlertBar status={null} loading={true} isAdmin={false} />);
     expect(screen.getByRole('status').textContent).toMatch(/Checking/);
   });
+
+  it('is neutral "All apps paused" when nothing is enabled', () => {
+    render(<AlertBar status={{ ...healthy, ok: 0, total: 2, paused: 2, problems: [] }} loading={false} isAdmin={false} />);
+    expect(screen.getByRole('status').textContent).toMatch(/All apps paused/);
+  });
+
+  it('uses singular "app" for exactly one healthy app', () => {
+    render(<AlertBar status={{ ...healthy, ok: 1, total: 1, problems: [] }} loading={false} isAdmin={false} />);
+    expect(screen.getByRole('status').textContent).toContain('All 1 app healthy');
+  });
+
+  it('is neutral "No app has been classified yet" when everything is pending', () => {
+    render(<AlertBar status={{ ...healthy, ok: 0, total: 2, pending: 2, problems: [] }} loading={false} isAdmin={false} />);
+    expect(screen.getByRole('status').textContent).toMatch(/No app has been classified yet/);
+  });
+
+  it('appends a not-yet-classified count when some apps are still pending', () => {
+    render(<AlertBar status={{ ...healthy, ok: 2, total: 3, pending: 1, problems: [] }} loading={false} isAdmin={false} />);
+    expect(screen.getByRole('status').textContent).toContain('2 apps healthy, 1 not yet classified');
+  });
 });

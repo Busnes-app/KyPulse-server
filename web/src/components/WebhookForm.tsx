@@ -39,7 +39,7 @@ export const WebhookForm: React.FC<WebhookFormProps> = ({ onChanged }) => {
     getWebhook().then(apply).catch((err) => setMessage({ kind: 'error', text: err instanceof ApiError ? err.message : 'Could not load the webhook' }));
   }, []);
 
-  const run = async (fn: () => Promise<WebhookInfo | void>, ok: string) => {
+  const run = async (fn: () => Promise<WebhookInfo | void>, ok: string, refreshOnError = false) => {
     setBusy(true);
     setMessage(null);
     try {
@@ -49,6 +49,11 @@ export const WebhookForm: React.FC<WebhookFormProps> = ({ onChanged }) => {
       onChanged();
     } catch (err) {
       setMessage({ kind: 'error', text: err instanceof ApiError ? err.message : 'Request failed' });
+      if (refreshOnError) {
+        onChanged();
+        // Re-read so "Last delivery" reflects the send that just failed.
+        getWebhook().then(apply).catch(() => {});
+      }
     } finally {
       setBusy(false);
     }
@@ -65,13 +70,15 @@ export const WebhookForm: React.FC<WebhookFormProps> = ({ onChanged }) => {
       throw new ApiError(err instanceof ApiError ? err.status : 0, `Test failed: ${err instanceof ApiError ? err.message : 'network'}`);
     }
     return getWebhook();
-  }, 'Test message delivered');
+  }, 'Test message delivered', true);
   const remove = () => {
     if (!window.confirm('Remove the webhook? Alerts stop being delivered.')) return;
     void run(async () => { await deleteWebhook(); return { configured: false }; }, 'Webhook removed');
   };
 
   const hint = presets.find((p) => p.id === preset)?.hint;
+  // Send test must exercise the saved config, not an unsaved edit.
+  const dirty = preset !== info?.preset || url.trim() !== (info?.url ?? '') || token !== '' || clearToken;
   return (
     <form className="panel" onSubmit={save} aria-label="Alert webhook">
       <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 12 }}>
@@ -105,7 +112,11 @@ export const WebhookForm: React.FC<WebhookFormProps> = ({ onChanged }) => {
       {message && <p className={message.kind === 'ok' ? 'form-ok' : 'form-error'} role={message.kind === 'ok' ? 'status' : 'alert'}>{message.text}</p>}
       <div className="dr-actions">
         <button type="submit" disabled={busy}>Save webhook</button>
-        {info?.configured && <button type="button" className="btn-secondary" disabled={busy} onClick={() => void test()}><Send size={14} />Send test</button>}
+        {info?.configured && (
+          <button type="button" className="btn-secondary" disabled={busy || dirty} title={dirty ? 'Save first' : undefined} onClick={() => void test()}>
+            <Send size={14} />Send test
+          </button>
+        )}
         {info?.configured && <button type="button" className="btn-danger" disabled={busy} onClick={remove}><Trash2 size={14} />Remove webhook</button>}
       </div>
     </form>

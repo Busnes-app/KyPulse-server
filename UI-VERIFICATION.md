@@ -16,8 +16,9 @@ WebhookForm, Backup, ChangePassword) and `npm run test:browser` (shell spec plus
 spec: empty install, add app, down after three polls, red bar linking to the detail page,
 checks, silence until fixed, Alerts table and silences, webhook saved, test send failing,
 "Alerts not being delivered", recovery to green with the silence cleared, delete back to
-Status, no horizontal overflow). Viewer-role rendering is covered by the component tests;
-there is no route that creates a viewer account for the browser suite.
+Status, no horizontal overflow). Viewer-role rendering of Status, Alerts and the detail page
+is covered by component tests; the `#/backup` redirect and the Settings webhook gate rely on
+the server's 403s (`internal/api` authorisation tests).
 
 ## Screenshots
 

@@ -6,7 +6,7 @@ import type { Target } from '../monitor';
 const target: Target = {
   id: 'tgt_a', name: 'KyVault', url: 'https://vault.lan/healthz', interval_sec: 30, enabled: true, state: 'down',
   state_since: '2026-09-27T09:30:00Z', cause: 'refused', until_fixed: false, last_result: '', last_polled_at: '2026-09-27T10:00:00Z',
-  last_latency_ms: 40, created_at: 'x', updated_at: 'x', basic: false,
+  last_latency_ms: 40, created_at: 'x', updated_at: 'x', basic: false, container: 'kyvault',
 };
 const detail = {
   target,
@@ -67,5 +67,28 @@ describe('AppDetail', () => {
     render(<AppDetail id="tgt_gone" user={{ role: 'admin' }} onChanged={() => {}} />);
     expect(await screen.findByText(/App not found/)).toBeTruthy();
     expect(screen.getByRole('link', { name: /Status/ }).getAttribute('href')).toBe('#/status');
+  });
+
+  it('shows the failing request for a pending target once it has been polled', async () => {
+    const pendingDetail = { ...detail, target: { ...target, state: 'pending', cause: undefined } };
+    const fn = vi.fn(async (input: RequestInfo | URL) => {
+      if (/tgt_a$/.test(String(input))) return new Response(JSON.stringify(pendingDetail));
+      throw new Error(String(input));
+    });
+    vi.stubGlobal('fetch', fn);
+    render(<AppDetail id="tgt_a" user={{ role: 'viewer' }} onChanged={() => {}} />);
+    const banner = await screen.findByRole('region', { name: 'Current state' });
+    expect(banner.textContent).toContain('not yet classified');
+    expect(banner.textContent).toContain('GET https://vault.lan/healthz');
+  });
+
+  it('keeps the container when editing and saving', async () => {
+    const fetchMock = stub([[/^PUT \/api\/targets\/tgt_a$/, { target }]]);
+    render(<AppDetail id="tgt_a" user={{ role: 'admin' }} onChanged={() => {}} />);
+    fireEvent.click(await screen.findByRole('button', { name: 'Edit' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Save changes' }));
+    await waitFor(() => expect(fetchMock.mock.calls.some(([, init]) => (init as RequestInit)?.method === 'PUT')).toBe(true));
+    const put = fetchMock.mock.calls.find(([, init]) => (init as RequestInit)?.method === 'PUT')!;
+    expect(JSON.parse((put[1] as RequestInit).body as string).container).toBe('kyvault');
   });
 });

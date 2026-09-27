@@ -300,7 +300,9 @@ func (s *Server) handleStatus(w http.ResponseWriter, r *http.Request) {
 
 	_, configured, err := s.monitor.Webhooks.Load(r.Context())
 	if err != nil {
-		configured = false
+		// A webhook row exists but cannot be opened (e.g. rotated key): still "configured",
+		// since delivery is broken, not absent.
+		configured = true
 	}
 	webhook := map[string]any{"configured": configured, "last": nil}
 	if last, ok, err := s.monitor.Webhooks.Status(r.Context()); err == nil && ok {

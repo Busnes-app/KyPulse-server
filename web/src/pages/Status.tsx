@@ -63,7 +63,7 @@ export const Status: React.FC<StatusProps> = ({ user, onChanged }) => {
               <span className="status-tile-name"><span className={`dot dot-${stateClass(t)}`} aria-hidden="true" />{t.name}</span>
               <span className={`state-${stateClass(t)}`}>{stateLabel(t)}{t.cause && t.enabled && t.state !== 'ok' ? ` · ${t.cause}` : ''}</span>
               <span className="status-tile-meta">
-                {t.state === 'pending' ? 'awaiting first check' : `for ${sinceLabel(t.state_since)}`}
+                {!t.last_polled_at ? 'awaiting first check' : t.state === 'pending' ? 'not yet classified' : `for ${sinceLabel(t.state_since)}`}
                 {t.last_polled_at ? ` · checked ${timeLabel(t.last_polled_at)}` : ''}
                 {t.last_polled_at ? ` · ${t.last_latency_ms} ms` : ''}
                 {isSilenced(t) ? <> · <BellOff size={12} style={{ verticalAlign: 'middle' }} /> silenced</> : null}
