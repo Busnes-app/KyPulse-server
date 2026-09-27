@@ -64,15 +64,14 @@ type LogStore interface {
 }
 type logStore struct{ store *SQLStore }
 
-// Includes fixed space for IDs, timestamps, flags, and target identity whether
-// or not the target still exists. Its deletion therefore never changes usage.
+// Fixed space for row IDs, timestamps, and flags.
 const rowAllowance int64 = 64
 
 func logBytes(l LogLine) int64 {
-	return rowAllowance + int64(len(l.SourceID)+len(l.Source)+len(l.App)+len(l.Level)+len(l.Event)+len(l.Message)+len(l.Raw))
+	return rowAllowance + int64(len(l.SourceID)+len(l.Source)+len(l.TargetID)+len(l.App)+len(l.Level)+len(l.Event)+len(l.Message)+len(l.Raw))
 }
 func activityBytes(a Activity) int64 {
-	return rowAllowance + int64(len(a.SourceID)+len(a.App)+len(a.Actor)+len(a.Action)+len(a.Target)+len(a.Outcome)+len(a.IP)+len(a.ExternalKey))
+	return rowAllowance + int64(len(a.SourceID)+len(a.TargetID)+len(a.App)+len(a.Actor)+len(a.Action)+len(a.Target)+len(a.Outcome)+len(a.IP)+len(a.ExternalKey))
 }
 func nullableID(s string) any {
 	if s == "" {

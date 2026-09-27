@@ -140,7 +140,7 @@ func TestLogsSurviveTargetDeletionAndAgePrune(t *testing.T) {
 	ctx := context.Background()
 	s := newLogTestStore(t)
 	now := time.Now().UTC()
-	target := &Target{ID: "target-log-test", Name: "target-log-test", URL: "https://example.com"}
+	target := &Target{ID: strings.Repeat("x", 64), Name: "target-log-test", URL: "https://example.com"}
 	if err := s.Targets().CreateTarget(ctx, target); err != nil {
 		t.Fatal(err)
 	}
@@ -153,8 +153,8 @@ func TestLogsSurviveTargetDeletionAndAgePrune(t *testing.T) {
 	if err := s.Targets().DeleteTarget(ctx, target.ID); err != nil {
 		t.Fatal(err)
 	}
-	if got := usage(t, s); got != beforeDelete {
-		t.Fatalf("target deletion changed fixed identity allowance: %d, want %d", got, beforeDelete)
+	if got, want := usage(t, s), beforeDelete-2*int64(len(target.ID)); got != want {
+		t.Fatalf("target deletion usage=%d, want %d", got, want)
 	}
 	activities, err := s.Logs().ListActivity(ctx, ActivityFilter{})
 	if err != nil || len(activities) != 1 || activities[0].TargetID != "" {
@@ -163,12 +163,26 @@ func TestLogsSurviveTargetDeletionAndAgePrune(t *testing.T) {
 	if activities[0].Bytes != activityBytes(activities[0]) {
 		t.Fatalf("activity size changed after target deletion: %+v", activities[0])
 	}
+	logs, err := s.Logs().List(ctx, LogFilter{})
+	if err != nil || len(logs) != 2 || logs[1].TargetID != "" || logs[1].Bytes != logBytes(logs[1]) {
+		t.Fatalf("deleted target log: %+v %v", logs, err)
+	}
+	newLine := testLine(now.Add(time.Minute), "after delete")
+	if err := s.Logs().Append(ctx, "", LogBatch{Logs: []LogLine{newLine}}, 100000); err != nil {
+		t.Fatal(err)
+	}
+	if got, want := usage(t, s), beforeDelete-2*int64(len(target.ID))+logBytes(newLine); got != want {
+		t.Fatalf("usage after append=%d, want %d", got, want)
+	}
 	if err := s.Logs().Prune(ctx, now, 100000); err != nil {
 		t.Fatal(err)
 	}
-	logs, err := s.Logs().List(ctx, LogFilter{})
-	if err != nil || len(logs) != 1 || logs[0].Message != "recent" {
+	logs, err = s.Logs().List(ctx, LogFilter{})
+	if err != nil || len(logs) != 2 || logs[0].Message != "after delete" || logs[1].Message != "recent" {
 		t.Fatalf("age prune: %+v %v", logs, err)
+	}
+	if got, want := usage(t, s), logs[0].Bytes+logs[1].Bytes+activities[0].Bytes; got != want {
+		t.Fatalf("usage after prune=%d, want %d", got, want)
 	}
 }
 

@@ -122,8 +122,32 @@ func (t *targetStore) UpdateTarget(ctx context.Context, tg *Target) error {
 }
 
 func (t *targetStore) DeleteTarget(ctx context.Context, id string) error {
+	tx, err := t.store.db.BeginTx(ctx, nil)
+	if err != nil {
+		return err
+	}
+	defer tx.Rollback()
+	if _, err := t.store.logs.lock(ctx, tx); err != nil {
+		return err
+	}
+	// All log writes lock usage first. Count the indexed target rows before the
+	// foreign key clears their target IDs, then remove those bytes from each row.
+	var removed int64
+	for _, table := range []string{"log_lines", "activity"} {
+		var count int64
+		if err := tx.QueryRowContext(ctx, t.store.rebind("SELECT COUNT(*) FROM "+table+" WHERE target_id=?"), id).Scan(&count); err != nil {
+			return err
+		}
+		if _, err := tx.ExecContext(ctx, t.store.rebind("UPDATE "+table+" SET bytes=bytes-? WHERE target_id=?"), len(id), id); err != nil {
+			return err
+		}
+		removed += count * int64(len(id))
+	}
+	if _, err := tx.ExecContext(ctx, t.store.rebind("UPDATE log_usage SET bytes=bytes-? WHERE id=1"), removed); err != nil {
+		return err
+	}
 	q := t.store.rebind("DELETE FROM targets WHERE id = ?")
-	res, err := t.store.db.ExecContext(ctx, q, id)
+	res, err := tx.ExecContext(ctx, q, id)
 	if err != nil {
 		return err
 	}
@@ -131,7 +155,7 @@ func (t *targetStore) DeleteTarget(ctx context.Context, id string) error {
 	if rows == 0 {
 		return ErrNotFound
 	}
-	return nil
+	return tx.Commit()
 }
 
 func (t *targetStore) RecordPoll(ctx context.Context, id string, u PollUpdate) error {
