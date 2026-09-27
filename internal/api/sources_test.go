@@ -39,12 +39,15 @@ func TestLogSourceBoundaryRefusalsAudited(t *testing.T) {
 		{"POST", "/api/log-sources/pairing", "admin.log_pairing", "authentication", nil, "", marker, false, 401},
 		{"GET", "/api/log-sources", "admin.log_source_list", "authentication", nil, marker, "", false, 401},
 		{"DELETE", "/api/log-sources/unknown", "admin.log_source_revoke", "authentication", nil, "", marker, false, 401},
+		{"DELETE", "/api/log-sources/a%2Fb", "admin.log_source_revoke", "authentication", nil, "", marker, false, 401},
 		{"POST", "/api/log-sources/pairing", "admin.log_pairing", "role", viewer, "", marker, true, 403},
 		{"GET", "/api/log-sources", "admin.log_source_list", "role", viewer, "", "", true, 403},
 		{"DELETE", "/api/log-sources/unknown", "admin.log_source_revoke", "role", viewer, "", marker, true, 403},
+		{"DELETE", "/api/log-sources/a%2Fb", "admin.log_source_revoke", "role", viewer, "", marker, true, 403},
 		{"POST", "/api/log-sources/pairing", "admin.log_pairing", "authentication", nil, marker, marker, false, 401},
 		{"GET", "/api/log-sources", "admin.log_source_list", "authentication", nil, sourceToken, "", false, 401},
 		{"DELETE", "/api/log-sources/unknown", "admin.log_source_revoke", "csrf", admin, "", marker, false, 403},
+		{"DELETE", "/api/log-sources/a%2Fb", "admin.log_source_revoke", "csrf", admin, "", marker, false, 403},
 		{"POST", "/api/log-sources/pairing", "admin.log_pairing", "csrf", admin, "", marker, false, 403},
 		{"POST", "/api/log-sources/claim", "log_source.claim", "csrf", viewer, "", marker, false, 403},
 	}
@@ -81,7 +84,7 @@ func TestLogSourceBoundaryRefusalsAudited(t *testing.T) {
 			if row.Action != tc.action || row.Details != "outcome=refused reason="+tc.reason {
 				t.Fatalf("audit action=%q details=%q", row.Action, row.Details)
 			}
-			if strings.Contains(row.Resource+row.Details, marker) {
+			if row.Resource != "" || strings.Contains(row.Details, marker) {
 				t.Fatalf("credential/body leaked in audit")
 			}
 		})

@@ -31,7 +31,7 @@ func sourceAuditAction(r *http.Request) string {
 		return "log_source.claim"
 	case r.Method == http.MethodGet && r.URL.Path == "/api/log-sources":
 		return "admin.log_source_list"
-	case r.Method == http.MethodDelete && strings.HasPrefix(r.URL.Path, "/api/log-sources/") && strings.TrimPrefix(r.URL.Path, "/api/log-sources/") != "" && !strings.Contains(strings.TrimPrefix(r.URL.Path, "/api/log-sources/"), "/"):
+	case r.Method == http.MethodDelete && strings.HasPrefix(r.URL.Path, "/api/log-sources/"):
 		return "admin.log_source_revoke"
 	default:
 		return ""
