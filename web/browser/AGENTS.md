@@ -19,6 +19,15 @@ This directory owns test setup, disposable server launch and UI assertions. The 
   host's private IPv4, because the egress guard refuses loopback; it skips when no such
   interface exists.
 
+
+- `server.mjs` initializes disposable admin/viewer accounts before starting HTTP. The
+  viewer starts from the existing CLI password-hash path, then native `node:sqlite` lowers
+  its role and clears its initial-password flag in this owned test database only.
+- `logs.spec.mjs` pairs a bound source, ingests sample log/audit lines through real routes,
+  exercises filters/pagination, offline retry, safe text, bursts, recent app lines and
+  revocation, then signs in as the real viewer to assert deep-link/API/detail denial.
+  It deletes its watched target on exit and preserves the webhook form's exact URL selector.
+
 ## Work Guidance
 
 Prefer browser-native behavior and assertions over screenshot-only checks. A passing suite covers these workflows, not every page or a complete accessibility audit.

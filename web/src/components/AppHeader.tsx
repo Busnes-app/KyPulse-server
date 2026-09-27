@@ -13,6 +13,8 @@ interface AppHeaderProps {
 export const navItems = [
   { path: '/status', label: 'Status', icon: Activity, admin: false },
   { path: '/alerts', label: 'Alerts', icon: Bell, admin: false },
+  { path: '/activity', label: 'Activity', icon: Activity, admin: true },
+  { path: '/logs', label: 'Logs', icon: Archive, admin: true },
   { path: '/backup', label: 'Backup', icon: Archive, admin: true },
   { path: '/settings', label: 'Settings & DB', icon: SettingsIcon, admin: false },
 ];

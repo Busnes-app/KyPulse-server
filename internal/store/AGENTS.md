@@ -20,6 +20,15 @@ Owns data models, store interfaces (`UserStore`, `SessionStore`, `AuditStore`, `
 - Recovery-code hash updates use optimistic concurrency so simultaneous redemption cannot reuse a code.
 - Users carry `RoleAdmin` or `RoleViewer`; `CreateUser` and `UpdateUser` return `ErrInvalidRole` for anything else. New users default to viewer.
 
+
+- `Logs().ActivityBursts` computes rolling event-time windows in SQL for separate
+  `(app,actor)` and `(app,IP)` groups, excluding empty identities. It uses the supplied pure
+  policy and the timeline's target/app/actor/outcome/time filters, ignores pagination,
+  and returns the newest qualifying window per group, newest first, at most 100 groups.
+  SQLite converts seconds and fractional seconds separately to integral microseconds to
+  avoid Julian-day floating-point errors at the inclusive boundary; PostgreSQL uses epoch
+  microseconds. No retained-row collection is materialized in Go.
+
 ## Verification
 - `go test -v ./internal/store/...`
 

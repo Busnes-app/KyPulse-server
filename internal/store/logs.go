@@ -106,6 +106,7 @@ type LogStore interface {
 	Append(ctx context.Context, sourceID string, batch LogBatch, maxBytes int64) error
 	List(ctx context.Context, f LogFilter) ([]LogLine, error)
 	ListActivity(ctx context.Context, f ActivityFilter) ([]Activity, error)
+	ActivityBursts(ctx context.Context, f ActivityFilter, rule ActivityBurstRule) ([]ActivityBurst, error)
 	Prune(ctx context.Context, now time.Time, maxBytes int64) error
 }
 type logStore struct{ store *SQLStore }
@@ -353,21 +354,7 @@ func (l *logStore) List(ctx context.Context, f LogFilter) ([]LogLine, error) {
 	return out, rows.Err()
 }
 func (l *logStore) ListActivity(ctx context.Context, f ActivityFilter) ([]Activity, error) {
-	var where []string
-	var args []any
-	if f.TargetID != "" {
-		addFilter(&where, &args, "target_id", f.TargetID)
-	}
-	if f.App != "" {
-		addFilter(&where, &args, "app", f.App)
-	}
-	if f.Actor != "" {
-		addFilter(&where, &args, "actor", f.Actor)
-	}
-	if f.Outcome != "" {
-		addFilter(&where, &args, "outcome", f.Outcome)
-	}
-	addRange(&where, &args, f.From, f.To, f.BeforeID)
+	where, args := activityFilters(f, true)
 	q := `SELECT id,time,received_at,source_id,target_id,app,actor,action,target,outcome,ip,external_key,bytes FROM activity` + whereSQL(where) + ` ORDER BY id DESC LIMIT ?`
 	args = append(args, pageLimit(f.Limit))
 	rows, err := l.store.db.QueryContext(ctx, l.store.rebind(q), args...)

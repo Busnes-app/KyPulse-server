@@ -64,6 +64,14 @@ Owns HTTP routing, request parsing, session cookie validation, CORS headers, and
 - API request bodies are capped at 1 MiB and all responses receive baseline CSP, anti-framing, MIME-sniffing, and referrer-policy headers.
 - `GET /api/settings` tiers its payload: public fields for the login screen, `db_driver` for any session, and `extra_settings` for admins only; KyRecovery tokens are omitted in both sealed and legacy plaintext forms, dropped by the `kyrecovery_token` key prefix rather than by literal key name.
 
+
+- `GET /api/activity` additionally returns `bursts:[{app,actor,ip,count,from,to}]`, computed
+  across retained matching events independently of `limit`/`before_id`, bounded to 100
+  newest groups. Only the grouping dimension's actor or IP is populated. Burst strings
+  use the same display sanitization as timeline fields. `has_app_events` checks retained
+  app/target coverage independently of actor/outcome/time/page filters; it prevents the
+  UI from mislabeling a filtered-empty page as an app with no retained audit events.
+
 ## Verification
 - `go test -v ./internal/api/...` (`authz_test.go` pins the per-role exposure of every privileged route; `backup_test.go` the backup routes, on SQLite only because a run snapshots the database)
 - `scripts/smoke-test.sh` asserts the same boundaries against a running binary

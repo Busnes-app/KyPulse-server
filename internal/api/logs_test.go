@@ -307,3 +307,38 @@ func TestIngestNULNormalizesForBothBackends(t *testing.T) {
 		}
 	}
 }
+
+func TestActivitySummaryIgnoresPaginationAndDistinguishesFilteredEmpty(t *testing.T) {
+	srv, st, _ := setupTestServer(t)
+	admin := loginAs(t, srv, st, "summaryadmin", "admin")
+	now := time.Now().UTC().Truncate(time.Second)
+	var events []store.Activity
+	for i := 0; i < 5; i++ {
+		events = append(events, store.Activity{Time: now.Add(time.Duration(i) * time.Minute), ReceivedAt: now, App: "vault", Actor: "alice\x1b[31m", Action: "auth.login", Outcome: "failure"})
+	}
+	if err := st.Logs().Append(context.Background(), "", store.LogBatch{Activity: events}, 1<<20); err != nil {
+		t.Fatal(err)
+	}
+	for _, path := range []string{"/api/activity?app=vault&limit=1", "/api/activity?app=vault&limit=1&before_id=1"} {
+		w := do(t, srv, "GET", path, admin)
+		var body struct {
+			Bursts       []store.ActivityBurst `json:"bursts"`
+			HasAppEvents bool                  `json:"has_app_events"`
+		}
+		if err := json.Unmarshal(w.Body.Bytes(), &body); err != nil || w.Code != 200 || len(body.Bursts) != 1 || body.Bursts[0].Count != 5 || body.Bursts[0].Actor != "alice" || !body.HasAppEvents {
+			t.Fatalf("%s: %d %s %v", path, w.Code, w.Body.String(), err)
+		}
+	}
+	for _, tc := range []struct {
+		path string
+		want bool
+	}{{"/api/activity?app=vault&actor=nobody", true}, {"/api/activity?app=unlogged", false}} {
+		w := do(t, srv, "GET", tc.path, admin)
+		var body struct {
+			HasAppEvents bool `json:"has_app_events"`
+		}
+		if err := json.Unmarshal(w.Body.Bytes(), &body); err != nil || w.Code != 200 || body.HasAppEvents != tc.want {
+			t.Fatalf("%s: %d %s %v", tc.path, w.Code, w.Body.String(), err)
+		}
+	}
+}

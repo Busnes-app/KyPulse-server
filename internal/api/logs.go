@@ -241,6 +241,26 @@ func (s *Server) handleListActivity(w http.ResponseWriter, r *http.Request) {
 		s.writeError(w, 500, "Failed to list activity")
 		return
 	}
+	appEvents, err := s.store.Logs().ListActivity(r.Context(), store.ActivityFilter{App: q.app, TargetID: q.targetID, Limit: 1})
+	if err != nil {
+		s.writeError(w, 500, "Failed to inspect retained activity")
+		return
+	}
+
+	bursts, err := s.store.Logs().ActivityBursts(r.Context(), f, logstore.SignInBurstRule())
+	if err != nil {
+		s.writeError(w, 500, "Failed to summarize activity")
+		return
+	}
+	for i := range bursts {
+		b := &bursts[i]
+		b.App = logstore.Display(b.App)
+		b.Actor = logstore.Display(b.Actor)
+		b.IP = logstore.Display(b.IP)
+		b.From = b.From.UTC()
+		b.To = b.To.UTC()
+	}
+
 	var next int64
 	if len(items) == q.limit {
 		f.BeforeID = items[len(items)-1].ID
@@ -267,5 +287,5 @@ func (s *Server) handleListActivity(w http.ResponseWriter, r *http.Request) {
 		x.Time = x.Time.UTC()
 		x.ReceivedAt = x.ReceivedAt.UTC()
 	}
-	s.writeJSON(w, 200, map[string]any{"items": items, "next_before_id": next})
+	s.writeJSON(w, 200, map[string]any{"items": items, "next_before_id": next, "bursts": bursts, "has_app_events": len(appEvents) > 0})
 }

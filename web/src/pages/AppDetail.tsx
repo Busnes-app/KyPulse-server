@@ -1,3 +1,4 @@
+import { RecentLogs } from '../components/LogTimeline';
 import React, { useCallback, useEffect, useState } from 'react';
 import { ArrowLeft, BellOff, Pencil, Trash2 } from 'lucide-react';
 import { TargetForm } from '../components/TargetForm';
@@ -186,6 +187,8 @@ export const AppDetail: React.FC<AppDetailProps> = ({ id, user, onChanged }) => 
         <h3>KyYard</h3>
         <KyYardFacts facts={facts} link={target.container} paired={!!yard?.paired} pending={!!yard && kyYardPending(yard)} isAdmin={isAdmin} />
       </div>
+
+      {isAdmin && <RecentLogs key={id} id={id} />}
 
       <div className="dr-section">
         <h3>Alert history</h3>

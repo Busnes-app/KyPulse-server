@@ -72,7 +72,7 @@ Design authority: `docs/superpowers/specs/2026-09-26-kypulse-design.md`. Plans l
 - `internal/sso/AGENTS.md`: KySignOn, OIDC, SAML SP, `RoleFor`.
 - `internal/store/AGENTS.md`: SQLite/Postgres DAL, migrations, roles.
 - `internal/testdb/AGENTS.md`: isolated test databases.
-- `internal/logstore/AGENTS.md`: bounded log parsing and display sanitization.
+- `internal/logstore/AGENTS.md`: bounded log parsing, display sanitization and activity burst rules.
 - `internal/ingest/AGENTS.md`: bounded NDJSON batch validation.
 - `internal/sender/AGENTS.md`: sender pairing, owned state, bounded delivery and checkpoints.
 - `internal/egress/AGENTS.md`: the one outbound HTTP client.

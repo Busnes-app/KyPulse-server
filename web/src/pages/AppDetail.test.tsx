@@ -30,7 +30,7 @@ afterEach(() => { cleanup(); vi.unstubAllGlobals(); window.location.hash = ''; }
 
 describe('AppDetail', () => {
   it('shows the banner, the failing request, checks and history; a viewer gets no controls', async () => {
-    stub();
+    const fetchMock = stub();
     render(<AppDetail id="tgt_a" user={{ role: 'viewer' }} onChanged={() => {}} />);
     expect(await screen.findByRole('heading', { name: 'KyVault' })).toBeTruthy();
     const banner = screen.getByRole('region', { name: 'Current state' });
@@ -39,6 +39,7 @@ describe('AppDetail', () => {
     expect(banner.textContent).toContain('GET https://vault.lan/healthz');
     expect(screen.getByText('kyyard').parentElement?.textContent).toContain('down');
     expect(screen.getAllByRole('row')).toHaveLength(2);
+    expect(fetchMock.mock.calls.some(([url]) => String(url).startsWith('/api/logs'))).toBe(false);
     expect(screen.queryByRole('button', { name: /Silence/ })).toBeNull();
     expect(screen.queryByRole('button', { name: 'Edit' })).toBeNull();
     expect(screen.queryByRole('button', { name: 'Delete' })).toBeNull();
