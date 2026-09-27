@@ -38,6 +38,9 @@ Everything a fresh server needs to be the old one:
 The restored directory is the live directory in the clear. Treat it like the running server's
 `data/`.
 
+Watched apps, their alert history and the sealed webhook are in the database and restore with
+it; the webhook opens only under the same encryption key.
+
 **This procedure is for SQLite deployments.** A capsule carries `data/kypulse.db` because the
 collector snapshots SQLite with `VACUUM INTO`; on `KYPULSE_DB_DRIVER=postgres` no snapshot is
 possible, so no capsule is made at all and there is nothing here to restore from. Back a

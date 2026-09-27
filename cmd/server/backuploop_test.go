@@ -78,10 +78,12 @@ func TestComposeGracePeriodCoversTheShutdownBudget(t *testing.T) {
 func TestWaitForBackupWorkIsBoundedInBothPhases(t *testing.T) {
 	ctx, cancel := context.WithTimeout(context.Background(), 50*time.Millisecond)
 	defer cancel()
+	monitorDone := make(chan struct{})
+	close(monitorDone)
 	returned := make(chan struct{})
 	go func() {
 		defer close(returned)
-		waitForBackupWork(ctx, make(chan struct{}), func() { select {} })
+		waitForBackupWork(ctx, make(chan struct{}), monitorDone, func() { select {} })
 	}()
 	select {
 	case <-returned:
@@ -98,13 +100,34 @@ func TestWaitForBackupWorkIsBoundedInBothPhases(t *testing.T) {
 func TestWaitForBackupWorkWaitsBothAtOnce(t *testing.T) {
 	ctx, cancel := context.WithTimeout(context.Background(), 50*time.Millisecond)
 	defer cancel()
+	monitorDone := make(chan struct{})
+	close(monitorDone)
 	var finished atomic.Bool
 	// backupDone never closes: the scheduled run is the one that hangs.
-	waitForBackupWork(ctx, make(chan struct{}), func() {
+	waitForBackupWork(ctx, make(chan struct{}), monitorDone, func() {
 		time.Sleep(10 * time.Millisecond)
 		finished.Store(true)
 	})
 	if !finished.Load() {
 		t.Fatal("the detached-handler wait had not run when waitForBackupWork returned; a hung scheduled deposit consumed its whole budget")
+	}
+}
+
+// The poller wait is bounded by the same shared deadline as the other two, not left open:
+// a monitorDone that never closes must still let waitForBackupWork return at the deadline.
+func TestWaitForBackupWorkAlsoWaitsForTheMonitor(t *testing.T) {
+	ctx, cancel := context.WithTimeout(context.Background(), 50*time.Millisecond)
+	defer cancel()
+	backupDone := make(chan struct{})
+	close(backupDone)
+	returned := make(chan struct{})
+	go func() {
+		defer close(returned)
+		waitForBackupWork(ctx, backupDone, make(chan struct{}), func() {})
+	}()
+	select {
+	case <-returned:
+	case <-time.After(5 * time.Second):
+		t.Fatal("waitForBackupWork did not return; an open monitorDone outlived the shared deadline")
 	}
 }
