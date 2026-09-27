@@ -393,10 +393,10 @@ func (s *Server) handleDeleteWebhook(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusNoContent)
 }
 
-// testSendBudget bounds a manual test send: the notifier's own backoff runs up to ~20s, and
-// this outlives it on a context detached from the request so a slow receiver never races the
-// listener's 15s WriteTimeout into reporting the wrong thing.
-const testSendBudget = 25 * time.Second
+// testSendBudget bounds a manual test send: one attempt through the egress client's own 5 s
+// timeout, on a context detached from the request so a slow receiver still gets a recorded,
+// reported outcome inside the listener's 15 s WriteTimeout.
+const testSendBudget = 10 * time.Second
 
 func (s *Server) handleTestWebhook(w http.ResponseWriter, r *http.Request) {
 	ctx, cancel := context.WithTimeout(context.WithoutCancel(r.Context()), testSendBudget)
