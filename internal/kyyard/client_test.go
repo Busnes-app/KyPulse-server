@@ -28,6 +28,11 @@ type fakeHTTP struct {
 		url     string
 		headers map[string]string
 	}
+
+	// beforeAnswer, if set, runs once on the first GetWith, before that call's answer
+	// (including f.err) is decided — lets a test race a mutation against an in-flight pull.
+	beforeAnswer func()
+	hookOnce     sync.Once
 }
 
 func (f *fakeHTTP) GetWith(_ context.Context, rawURL string, headers map[string]string) (*egress.Response, error) {
@@ -37,6 +42,9 @@ func (f *fakeHTTP) GetWith(_ context.Context, rawURL string, headers map[string]
 		headers map[string]string
 	}{rawURL, headers})
 	f.mu.Unlock()
+	if f.beforeAnswer != nil {
+		f.hookOnce.Do(f.beforeAnswer)
+	}
 	return f.answer(rawURL)
 }
 

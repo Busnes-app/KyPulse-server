@@ -37,12 +37,20 @@ type Service struct {
 	Now     func() time.Time
 
 	mu        sync.Mutex
+	gen       uint64 // bumped by Clear; a commit from a pull started before the bump is discarded
 	paired    bool
 	cfg       Config
 	fetchedAt *time.Time // last successful pull
 	lastErr   string     // reason of the last failed pull, "" after a success
 	facts     map[string]ContainerFacts
 	history   map[string][]restartPoint
+}
+
+// currentGen reads the generation under the lock.
+func (s *Service) currentGen() uint64 {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	return s.gen
 }
 
 func (s *Service) now() time.Time {
@@ -70,38 +78,44 @@ func (s *Service) Run(ctx context.Context, every time.Duration, done chan<- stru
 
 // PullNow reads the pairing, then endpoints, inventory and samples. A failure keeps the last
 // snapshot and records its reason. Unpaired is a no-op that clears nothing (Clear does).
+//
+// The network calls run unlocked; an unpair (Clear) racing an in-flight pull must not have
+// its clear overwritten by that pull's stale commit. gen is captured right after the load
+// succeeds and re-checked before every locked write; a mismatch discards the commit silently.
 func (s *Service) PullNow(ctx context.Context) error {
 	cfg, ok, err := s.Pairing.Load(ctx)
 	if err != nil {
-		s.fail("unreadable")
+		s.fail(s.currentGen(), "unreadable")
 		return err
 	}
 	if !ok {
 		s.Clear()
 		return nil
 	}
+	gen := s.currentGen()
 	c := &Client{HTTP: s.HTTP, Config: cfg}
 	eps, err := c.Endpoints(ctx)
 	if err != nil {
-		s.fail(Reason(err))
+		s.fail(gen, Reason(err))
 		s.Logger.Log(ctx, evPullFailed, logging.ReasonCode(Reason(err)))
 		return err
 	}
 	now := s.now()
 	facts := map[string]ContainerFacts{}
+	points := map[string]restartPoint{}
 	for _, ep := range eps {
 		if ep.Runtime != "docker" {
 			continue
 		}
 		inv, err := c.Inventory(ctx, ep.ID)
 		if err != nil {
-			s.fail(Reason(err))
+			s.fail(gen, Reason(err))
 			s.Logger.Log(ctx, evPullFailed, logging.ReasonCode(Reason(err)))
 			return err
 		}
 		samples, err := c.Samples(ctx, ep.ID)
 		if err != nil {
-			s.fail(Reason(err))
+			s.fail(gen, Reason(err))
 			s.Logger.Log(ctx, evPullFailed, logging.ReasonCode(Reason(err)))
 			return err
 		}
@@ -116,54 +130,45 @@ func (s *Service) PullNow(ctx context.Context) error {
 			f := ContainerFacts{Link: LinkFor(ep.ID, ct.Name), EndpointID: ep.ID, EndpointName: ep.Name, ContainerID: ct.ID, Name: ct.Name, Image: ct.Image, State: ct.State, Status: ct.Status, Health: health, ExitCode: exit, ObservedAt: inv.ObservedAt}
 			if smp, ok := byContainer[ct.ID]; ok {
 				f.MemoryBytes, f.MemoryLimit, f.RestartCount = smp.MemoryBytes, smp.MemoryLimit, smp.RestartCount
-				f.RestartsLastHour = s.recordRestarts(f.Link, now, smp.RestartCount)
+				points[f.Link] = restartPoint{at: now, count: smp.RestartCount}
 			}
 			facts[f.Link] = f
 		}
 	}
 	s.mu.Lock()
+	if s.gen != gen {
+		s.mu.Unlock()
+		return nil
+	}
+	s.mergeHistory(facts, points, now)
 	s.paired, s.cfg, s.facts, s.fetchedAt, s.lastErr = true, cfg, facts, &now, ""
-	s.trimHistory(now)
 	s.mu.Unlock()
 	s.Logger.Log(ctx, evPulled, fEndpoints(int64(len(eps))), fContainers(int64(len(facts))))
 	return nil
 }
 
-func (s *Service) fail(reason string) {
-	s.mu.Lock()
-	s.paired, s.lastErr = true, reason
-	s.mu.Unlock()
-}
-
-// recordRestarts appends the count and answers how many restarts happened in the window.
-// Called without the lock held; takes it itself.
-func (s *Service) recordRestarts(link string, now time.Time, count int64) int64 {
+// fail records a pull failure, unless gen shows an unpair landed since the pull started.
+func (s *Service) fail(gen uint64, reason string) {
 	s.mu.Lock()
 	defer s.mu.Unlock()
+	if s.gen != gen {
+		return
+	}
+	s.paired, s.lastErr = true, reason
+}
+
+// mergeHistory appends this pull's restart points, trims to historyWindow, drops links no
+// longer in facts, and fills each fact's RestartsLastHour from the trimmed history. Caller
+// holds the lock.
+func (s *Service) mergeHistory(facts map[string]ContainerFacts, points map[string]restartPoint, now time.Time) {
 	if s.history == nil {
 		s.history = map[string][]restartPoint{}
 	}
-	pts := append(s.history[link], restartPoint{at: now, count: count})
-	cut := 0
-	for cut < len(pts) && now.Sub(pts[cut].at) > historyWindow {
-		cut++
+	for link, pt := range points {
+		s.history[link] = append(s.history[link], pt)
 	}
-	pts = pts[cut:]
-	s.history[link] = pts
-	if len(pts) == 0 {
-		return 0
-	}
-	if d := count - pts[0].count; d > 0 {
-		return d
-	}
-	return 0
-}
-
-// trimHistory drops containers no longer in the snapshot and points older than the window.
-// Caller holds the lock.
-func (s *Service) trimHistory(now time.Time) {
 	for link, pts := range s.history {
-		if _, ok := s.facts[link]; !ok {
+		if _, ok := facts[link]; !ok {
 			delete(s.history, link)
 			continue
 		}
@@ -173,11 +178,23 @@ func (s *Service) trimHistory(now time.Time) {
 		}
 		s.history[link] = pts[cut:]
 	}
+	for link, f := range facts {
+		pts := s.history[link]
+		if len(pts) == 0 {
+			continue
+		}
+		if d := pts[len(pts)-1].count - pts[0].count; d > 0 {
+			f.RestartsLastHour = d
+			facts[link] = f
+		}
+	}
 }
 
-// Clear forgets the snapshot and the pairing; called after an unpair.
+// Clear forgets the snapshot and the pairing; called after an unpair. Bumps gen so a pull
+// already in flight cannot resurrect what it committed after this.
 func (s *Service) Clear() {
 	s.mu.Lock()
+	s.gen++
 	s.paired, s.cfg, s.facts, s.history, s.fetchedAt, s.lastErr = false, Config{}, nil, nil, nil, ""
 	s.mu.Unlock()
 }

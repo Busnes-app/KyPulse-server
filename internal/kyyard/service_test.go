@@ -171,6 +171,44 @@ func TestUnpairClearsAndDisappearedContainerIsGone(t *testing.T) {
 	}
 }
 
+func TestClearDuringPullDoesNotResurrect(t *testing.T) {
+	h := yard()
+	svc, now := pairedService(t, h)
+	h.beforeAnswer = func() {
+		if err := svc.Pairing.Delete(context.Background()); err != nil {
+			t.Fatal(err)
+		}
+		svc.Clear()
+	}
+	if err := svc.PullNow(context.Background()); err != nil {
+		t.Fatalf("a pull racing an unpair is not itself an error: %v", err)
+	}
+	if st := svc.Status(*now); st.Paired {
+		t.Fatalf("unpair mid-pull must not be resurrected: %+v", st)
+	}
+	if _, ok := svc.Facts("ep_1/kyvault", *now); ok {
+		t.Fatal("facts must stay empty after an unpair mid-pull")
+	}
+	if len(svc.Suggestions()) != 0 {
+		t.Fatal("suggestions must stay empty after an unpair mid-pull")
+	}
+
+	// The failure path: the same race, but every request after the hook also fails.
+	h2 := yard()
+	svc2, now2 := pairedService(t, h2)
+	h2.beforeAnswer = func() {
+		if err := svc2.Pairing.Delete(context.Background()); err != nil {
+			t.Fatal(err)
+		}
+		svc2.Clear()
+		h2.err = context.DeadlineExceeded
+	}
+	_ = svc2.PullNow(context.Background())
+	if st := svc2.Status(*now2); st.Paired || st.Error != "" {
+		t.Fatalf("unpair mid-pull-that-then-fails must stay unpaired with no error: %+v", st)
+	}
+}
+
 func TestRunPullsOnScheduleAndStops(t *testing.T) {
 	h := yard()
 	svc, _ := pairedService(t, h)
