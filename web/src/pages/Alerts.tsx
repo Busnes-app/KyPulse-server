@@ -46,7 +46,7 @@ export const Alerts: React.FC<AlertsProps> = () => {
       {silenced.length > 0 && (
         <p className="dr-hint"><BellOff size={14} /><strong>Silenced:</strong>{' '}
           {silenced.map((t) => (
-            <span key={t.id}><strong>{t.name}</strong>{t.until_fixed ? ' until fixed' : ` until ${timeLabel(t.silenced_until)}`} </span>
+            <span key={t.id}><a href={hrefFor(`/apps/${t.id}`)}>{t.name}</a>{t.until_fixed ? ' until fixed' : ` until ${timeLabel(t.silenced_until)}`} </span>
           ))}
         </p>
       )}
@@ -56,14 +56,12 @@ export const Alerts: React.FC<AlertsProps> = () => {
           <table className="events">
             <thead><tr><th>Time</th><th>App</th><th>Change</th><th>Reason</th><th>Delivery</th></tr></thead>
             <tbody>
-              {events.map((e, i) => {
+              {events.map((e) => {
                 const t = targets[e.target_id];
-                const prevTargetId = i > 0 ? events[i - 1].target_id : null;
-                const showApp = e.target_id !== prevTargetId;
                 return (
                   <tr key={e.id}>
                     <td>{timeLabel(e.at)}</td>
-                    <td>{showApp ? (t ? <a href={hrefFor(`/apps/${t.id}`)}>{t.name}</a> : <span className="dr-mono">{e.target_id}</span>) : ''}</td>
+                    <td>{t ? <a href={hrefFor(`/apps/${t.id}`)}>{t.name}</a> : <span className="dr-mono">{e.target_id}</span>}</td>
                     <td className={`state-${e.to}`}>{e.reminder ? `still ${e.to} (reminder)` : `${e.from} → ${e.to}`}</td>
                     <td className="dr-mono">{e.cause || ''}</td>
                     <td>{delivery(e)}</td>

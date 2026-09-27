@@ -34,7 +34,9 @@ describe('Alerts', () => {
     expect(rows[2].textContent).toContain('sent');
     expect(rows[3].textContent).toContain('tgt_gone'); // deleted target: id shown, nothing crashes
     expect(rows[3].textContent).toContain('not sent');
-    expect(screen.getByRole('link', { name: 'KyVault' }).getAttribute('href')).toBe('#/apps/tgt_a');
+    const links = screen.getAllByRole('link', { name: 'KyVault' });
+    expect(links.length).toBe(3); // silenced line + two rows
+    for (const l of links) expect(l.getAttribute('href')).toBe('#/apps/tgt_a');
     expect(screen.getByText(/Silenced/).parentElement?.textContent).toContain('KyVault');
   });
 
