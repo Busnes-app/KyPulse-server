@@ -11,7 +11,7 @@ import (
 // the IP bound into a session. Both must agree, or a caller could be throttled as one client
 // and recorded as another.
 //
-// trusted is the parsed KY_TRUSTED_PROXIES allowlist. It is empty by default, and then the
+// trusted is the parsed KYPULSE_TRUSTED_PROXIES allowlist. It is empty by default, and then the
 // peer address is the answer and every header is ignored: X-Forwarded-For is caller-supplied,
 // so honouring it unconditionally lets anyone mint a fresh limiter bucket per request.
 //

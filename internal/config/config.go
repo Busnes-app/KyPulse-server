@@ -14,7 +14,7 @@ import (
 	"github.com/Busnes-app/ky-primitives/keyfile"
 )
 
-// Config encapsulates all runtime configuration for ky_server_base.
+// Config encapsulates all runtime configuration for kyPulse.
 type Config struct {
 	Server   ServerConfig   `json:"server"`
 	Database DatabaseConfig `json:"database"`
@@ -53,7 +53,7 @@ type SecurityConfig struct {
 	CookieSecure  bool   `json:"cookie_secure"`
 	CookieDomain  string `json:"cookie_domain"`
 	SessionTTL    time.Duration
-	// TrustedProxies is the parsed KY_TRUSTED_PROXIES allowlist. Only a request whose peer
+	// TrustedProxies is the parsed KYPULSE_TRUSTED_PROXIES allowlist. Only a request whose peer
 	// address falls inside it may speak for a client other than itself.
 	TrustedProxies []netip.Prefix `json:"-"`
 }
@@ -106,36 +106,36 @@ const MinDepositInterval = 15 * time.Minute
 
 // DefaultAppName is the service name an unconfigured instance runs under. Capsules are sealed
 // under it, so the restore CLI has to agree with it without loading a whole Config.
-const DefaultAppName = "Busnes.app"
+const DefaultAppName = "kyPulse"
 
 // LoadFromEnv initializes a Config struct populated from environment variables with sensible defaults.
 func LoadFromEnv() (*Config, error) {
-	port := getEnvInt("KY_PORT", getEnvInt("PORT", 8080))
-	host := getEnv("KY_HOST", "0.0.0.0")
-	appURL := getEnv("KY_APP_URL", fmt.Sprintf("http://localhost:%d", port))
-	appName := getEnv("KY_APP_NAME", DefaultAppName)
-	env := getEnv("KY_ENV", "development")
+	port := getEnvInt("KYPULSE_PORT", getEnvInt("PORT", 8080))
+	host := getEnv("KYPULSE_HOST", "0.0.0.0")
+	appURL := getEnv("KYPULSE_APP_URL", fmt.Sprintf("http://localhost:%d", port))
+	appName := getEnv("KYPULSE_APP_NAME", DefaultAppName)
+	env := getEnv("KYPULSE_ENV", "development")
 
-	driver := strings.ToLower(getEnv("KY_DB_DRIVER", "sqlite"))
-	dataDir := getEnv("KY_DATA_DIR", "./data")
-	defaultDSN := fmt.Sprintf("%s/ky_server.db?_pragma=busy_timeout(5000)&_pragma=journal_mode(WAL)&_pragma=foreign_keys(ON)", dataDir)
+	driver := strings.ToLower(getEnv("KYPULSE_DB_DRIVER", "sqlite"))
+	dataDir := getEnv("KYPULSE_DATA_DIR", "./data")
+	defaultDSN := fmt.Sprintf("%s/kypulse.db?_pragma=busy_timeout(5000)&_pragma=journal_mode(WAL)&_pragma=foreign_keys(ON)", dataDir)
 	if driver == "postgres" || driver == "postgresql" {
 		driver = "postgres"
-		defaultDSN = "postgres://postgres:postgres@localhost:5432/ky_server?sslmode=disable"
+		defaultDSN = "postgres://postgres:postgres@localhost:5432/kypulse?sslmode=disable"
 	}
-	dsn := getEnv("KY_DB_DSN", defaultDSN)
+	dsn := getEnv("KYPULSE_DB_DSN", defaultDSN)
 
-	sessionSecret := getEnv("KY_SESSION_SECRET", "")
+	sessionSecret := getEnv("KYPULSE_SESSION_SECRET", "")
 	if env == "production" && sessionSecret == "" {
-		return nil, fmt.Errorf("KY_SESSION_SECRET is required in production")
+		return nil, fmt.Errorf("KYPULSE_SESSION_SECRET is required in production")
 	}
 	if sessionSecret == "" {
 		sessionSecret = generateRandomHex(32)
 	}
 
-	encryptionKey, ok, err := keyfile.FromEnv("KY_ENCRYPTION_KEY", 32)
+	encryptionKey, ok, err := keyfile.FromEnv("KYPULSE_ENCRYPTION_KEY", 32)
 	if err != nil {
-		return nil, fmt.Errorf("KY_ENCRYPTION_KEY: %w", err)
+		return nil, fmt.Errorf("KYPULSE_ENCRYPTION_KEY: %w", err)
 	}
 	if !ok {
 		encryptionKey, err = keyfile.LoadOrCreate(filepath.Join(dataDir, "encryption.key"), 32)
@@ -144,22 +144,22 @@ func LoadFromEnv() (*Config, error) {
 		}
 	}
 
-	depositInterval, err := getEnvDuration("KY_BACKUP_DEPOSIT_INTERVAL", 24*time.Hour)
+	depositInterval, err := getEnvDuration("KYPULSE_BACKUP_DEPOSIT_INTERVAL", 24*time.Hour)
 	if err != nil {
-		return nil, fmt.Errorf("KY_BACKUP_DEPOSIT_INTERVAL: %w", err)
+		return nil, fmt.Errorf("KYPULSE_BACKUP_DEPOSIT_INTERVAL: %w", err)
 	}
 	if depositInterval != 0 && depositInterval < MinDepositInterval {
-		return nil, fmt.Errorf("KY_BACKUP_DEPOSIT_INTERVAL: %s is below the %s minimum (0 disables)", depositInterval, MinDepositInterval)
+		return nil, fmt.Errorf("KYPULSE_BACKUP_DEPOSIT_INTERVAL: %s is below the %s minimum (0 disables)", depositInterval, MinDepositInterval)
 	}
 
-	backupKeep := getEnvInt("KY_BACKUP_KEEP", 7)
+	backupKeep := getEnvInt("KYPULSE_BACKUP_KEEP", 7)
 	if backupKeep < 1 {
-		return nil, fmt.Errorf("KY_BACKUP_KEEP: must be at least 1, got %d", backupKeep)
+		return nil, fmt.Errorf("KYPULSE_BACKUP_KEEP: must be at least 1, got %d", backupKeep)
 	}
 
-	trustedProxies, err := ParseTrustedProxies(getEnv("KY_TRUSTED_PROXIES", ""))
+	trustedProxies, err := ParseTrustedProxies(getEnv("KYPULSE_TRUSTED_PROXIES", ""))
 	if err != nil {
-		return nil, fmt.Errorf("KY_TRUSTED_PROXIES: %w", err)
+		return nil, fmt.Errorf("KYPULSE_TRUSTED_PROXIES: %w", err)
 	}
 
 	cfg := &Config{
@@ -176,46 +176,46 @@ func LoadFromEnv() (*Config, error) {
 			Driver:          driver,
 			DSN:             dsn,
 			DataDir:         dataDir,
-			MaxOpenConns:    getEnvInt("KY_DB_MAX_OPEN_CONNS", 25),
-			MaxIdleConns:    getEnvInt("KY_DB_MAX_IDLE_CONNS", 5),
+			MaxOpenConns:    getEnvInt("KYPULSE_DB_MAX_OPEN_CONNS", 25),
+			MaxIdleConns:    getEnvInt("KYPULSE_DB_MAX_IDLE_CONNS", 5),
 			ConnMaxLifetime: 15 * time.Minute,
 		},
 		Security: SecurityConfig{
 			SessionSecret:  sessionSecret,
 			EncryptionKey:  encryptionKey,
-			CookieSecure:   getEnvBool("KY_COOKIE_SECURE", env == "production"),
-			CookieDomain:   getEnv("KY_COOKIE_DOMAIN", ""),
+			CookieSecure:   getEnvBool("KYPULSE_COOKIE_SECURE", env == "production"),
+			CookieDomain:   getEnv("KYPULSE_COOKIE_DOMAIN", ""),
 			SessionTTL:     7 * 24 * time.Hour,
 			TrustedProxies: trustedProxies,
 		},
 		SSO: SSOConfig{
-			Enabled:             getEnvBool("KY_SSO_ENABLED", true),
-			KySignOnIssuer:      getEnv("KY_KYSIGNON_ISSUER", ""),
-			KySignOnClientID:    getEnv("KY_KYSIGNON_CLIENT_ID", ""),
-			KySignOnSecret:      getEnv("KY_KYSIGNON_SECRET", ""),
-			KySignOnHMACSecret:  getEnv("KY_KYSIGNON_HMAC_SECRET", ""),
-			GenericOIDCIssuer:   getEnv("KY_OIDC_ISSUER", ""),
-			GenericOIDCClientID: getEnv("KY_OIDC_CLIENT_ID", ""),
-			GenericOIDCSecret:   getEnv("KY_OIDC_SECRET", ""),
-			SAMLEntityID:        getEnv("KY_SAML_ENTITY_ID", ""),
-			SAMLMetadataURL:     getEnv("KY_SAML_METADATA_URL", ""),
-			AutoProvision:       getEnvBool("KY_SSO_AUTO_PROVISION", true),
+			Enabled:             getEnvBool("KYPULSE_SSO_ENABLED", true),
+			KySignOnIssuer:      getEnv("KYPULSE_KYSIGNON_ISSUER", ""),
+			KySignOnClientID:    getEnv("KYPULSE_KYSIGNON_CLIENT_ID", ""),
+			KySignOnSecret:      getEnv("KYPULSE_KYSIGNON_SECRET", ""),
+			KySignOnHMACSecret:  getEnv("KYPULSE_KYSIGNON_HMAC_SECRET", ""),
+			GenericOIDCIssuer:   getEnv("KYPULSE_OIDC_ISSUER", ""),
+			GenericOIDCClientID: getEnv("KYPULSE_OIDC_CLIENT_ID", ""),
+			GenericOIDCSecret:   getEnv("KYPULSE_OIDC_SECRET", ""),
+			SAMLEntityID:        getEnv("KYPULSE_SAML_ENTITY_ID", ""),
+			SAMLMetadataURL:     getEnv("KYPULSE_SAML_METADATA_URL", ""),
+			AutoProvision:       getEnvBool("KYPULSE_SSO_AUTO_PROVISION", true),
 		},
 		SCIM: SCIMConfig{
-			Enabled:     getEnvBool("KY_SCIM_ENABLED", true),
-			BearerToken: getEnv("KY_SCIM_TOKEN", generateRandomHex(24)),
+			Enabled:     getEnvBool("KYPULSE_SCIM_ENABLED", true),
+			BearerToken: getEnv("KYPULSE_SCIM_TOKEN", generateRandomHex(24)),
 		},
 		Backup: BackupConfig{
-			Dir:                  getEnv("KY_BACKUP_DIR", ""),
+			Dir:                  getEnv("KYPULSE_BACKUP_DIR", ""),
 			Keep:                 backupKeep,
 			DepositInterval:      depositInterval,
-			AllowPrivateRecovery: getEnvBool("KY_BACKUP_ALLOW_PRIVATE_RECOVERY", false),
+			AllowPrivateRecovery: getEnvBool("KYPULSE_BACKUP_ALLOW_PRIVATE_RECOVERY", false),
 		},
 		Captcha: CaptchaConfig{
-			Provider:      getEnv("KY_CAPTCHA_PROVIDER", "pow"),
-			SiteKey:       getEnv("KY_CAPTCHA_SITE_KEY", ""),
-			SecretKey:     getEnv("KY_CAPTCHA_SECRET_KEY", ""),
-			DifficultyPoW: getEnvInt("KY_CAPTCHA_POW_DIFFICULTY", 4),
+			Provider:      getEnv("KYPULSE_CAPTCHA_PROVIDER", "pow"),
+			SiteKey:       getEnv("KYPULSE_CAPTCHA_SITE_KEY", ""),
+			SecretKey:     getEnv("KYPULSE_CAPTCHA_SECRET_KEY", ""),
+			DifficultyPoW: getEnvInt("KYPULSE_CAPTCHA_POW_DIFFICULTY", 4),
 		},
 	}
 

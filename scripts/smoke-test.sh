@@ -3,11 +3,11 @@
 # and the CLI subcommands. Usage: scripts/smoke-test.sh [path-to-binary]
 set -euo pipefail
 
-BIN="$(cd "$(dirname "$0")/.." && pwd)/${1:-ky_server_base}"
+BIN="$(cd "$(dirname "$0")/.." && pwd)/${1:-kypulse}"
 [ -x "$BIN" ] || BIN="${1:?binary not found; build with 'make build'}"
 
 WORK="$(mktemp -d)"
-PORT="${KY_SMOKE_PORT:-18080}"
+PORT="${KYPULSE_SMOKE_PORT:-18080}"
 BASE="http://127.0.0.1:${PORT}"
 ADMIN_PASS="SmokeTestAdminPass123!"
 SERVER_PID=""
@@ -39,14 +39,14 @@ contains() { # contains <description> <haystack> <needle>
 status() { curl -s -o /dev/null -w '%{http_code}' "$@"; }
 
 start_server() { # start_server <captcha-provider>
-  KY_PORT="$PORT" \
-    KY_HOST=127.0.0.1 \
-    KY_DATA_DIR="$WORK/data" \
-    KY_BACKUP_DIR="$WORK/backups" \
-    KY_DB_DRIVER=sqlite \
-    KY_ADMIN_PASSWORD="$ADMIN_PASS" \
-    KY_CAPTCHA_PROVIDER="$1" \
-    KY_SCIM_ENABLED=true \
+  KYPULSE_PORT="$PORT" \
+    KYPULSE_HOST=127.0.0.1 \
+    KYPULSE_DATA_DIR="$WORK/data" \
+    KYPULSE_BACKUP_DIR="$WORK/backups" \
+    KYPULSE_DB_DRIVER=sqlite \
+    KYPULSE_ADMIN_PASSWORD="$ADMIN_PASS" \
+    KYPULSE_CAPTCHA_PROVIDER="$1" \
+    KYPULSE_SCIM_ENABLED=true \
     "$BIN" >"$WORK/server.log" 2>&1 &
   SERVER_PID=$!
   curl -s -o /dev/null --retry 30 --retry-delay 1 --retry-all-errors "$BASE/" ||
@@ -61,20 +61,20 @@ stop_server() {
 
 echo "==> CLI subcommands"
 check "version exits 0" "$("$BIN" version >/dev/null 2>&1 && echo 0 || echo 1)" "0"
-contains "version prints name" "$("$BIN" version)" "ky_server_base"
+contains "version prints name" "$("$BIN" version)" "kypulse"
 
 # The drill seals to a throwaway key and reopens it, so the pipeline runs even unpaired.
 # Whether the suite key is pinned is the status route's report, not the drill's.
-DRILL_OUT="$(KY_DATA_DIR="$WORK/data" KY_PORT="$PORT" KY_DB_DRIVER=sqlite "$BIN" backup-drill)"
+DRILL_OUT="$(KYPULSE_DATA_DIR="$WORK/data" KYPULSE_PORT="$PORT" KYPULSE_DB_DRIVER=sqlite "$BIN" backup-drill)"
 contains "backup-drill seals and reopens the payload" "$DRILL_OUT" "extracted into a 0700 sandbox"
 contains "backup-drill verifies the required files" "$DRILL_OUT" "required files verified"
 contains "backup-drill checks database integrity" "$DRILL_OUT" "integrity_check passed"
 contains "backup-drill passes on a complete payload" "$DRILL_OUT" "Status:   PASSED"
 
 check "init-admin rejects short password" \
-  "$(KY_DATA_DIR="$WORK/cli" KY_DB_DRIVER=sqlite "$BIN" init-admin -password short >/dev/null 2>&1 && echo 0 || echo 1)" "1"
+  "$(KYPULSE_DATA_DIR="$WORK/cli" KYPULSE_DB_DRIVER=sqlite "$BIN" init-admin -password short >/dev/null 2>&1 && echo 0 || echo 1)" "1"
 check "init-admin creates admin" \
-  "$(KY_DATA_DIR="$WORK/cli" KY_DB_DRIVER=sqlite "$BIN" init-admin -password "$ADMIN_PASS" >/dev/null 2>&1 && echo 0 || echo 1)" "0"
+  "$(KYPULSE_DATA_DIR="$WORK/cli" KYPULSE_DB_DRIVER=sqlite "$BIN" init-admin -password "$ADMIN_PASS" >/dev/null 2>&1 && echo 0 || echo 1)" "0"
 
 echo "==> HTTP with default PoW captcha"
 start_server pow
@@ -138,7 +138,7 @@ LOGIN_BODY="$(curl -s -c "$WORK/cookies" -H 'Content-Type: application/json' \
 contains "replacement password signs in" "$LOGIN_BODY" '"authenticated":true'
 contains "replacement clears the restriction" "$LOGIN_BODY" '"must_change_password":false'
 check "init-admin resets the existing admin" \
-  "$(KY_DATA_DIR="$WORK/data" KY_DB_DRIVER=sqlite "$BIN" init-admin -password 'OperatorResetPass789!' >/dev/null 2>&1 && echo 0 || echo 1)" "0"
+  "$(KYPULSE_DATA_DIR="$WORK/data" KYPULSE_DB_DRIVER=sqlite "$BIN" init-admin -password 'OperatorResetPass789!' >/dev/null 2>&1 && echo 0 || echo 1)" "0"
 check "operator reset revokes the previous session" "$(status -b "$WORK/cookies" "$BASE/api/backup/status")" "401"
 LOGIN_BODY="$(curl -s -c "$WORK/cookies" -H 'Content-Type: application/json' \
   -d '{"username":"admin","password":"OperatorResetPass789!"}' "$BASE/api/auth/login")"
@@ -153,7 +153,7 @@ LOGIN_BODY="$(curl -s -c "$WORK/cookies" -H 'Content-Type: application/json' \
 contains "reset replacement signs in" "$LOGIN_BODY" '"authenticated":true'
 contains "admin settings include db_driver" "$(curl -s -b "$WORK/cookies" "$BASE/api/settings")" '"db_driver"'
 check "deposit CLI refuses without a key" \
-  "$(KY_DATA_DIR="$WORK/cli" KY_DB_DRIVER=sqlite "$BIN" deposit >/dev/null 2>&1 && echo 0 || echo 1)" "1"
+  "$(KYPULSE_DATA_DIR="$WORK/cli" KYPULSE_DB_DRIVER=sqlite "$BIN" deposit >/dev/null 2>&1 && echo 0 || echo 1)" "1"
 CSRF="$(awk '$6 == "ky_csrf" { print $7 }' "$WORK/cookies")"
 # No key pinned, so the honest assertion is the documented refusal. 412 cannot come from the
 # SPA fallback, which answers 200 for anything it does not recognise.

@@ -3,8 +3,8 @@ package sso
 import (
 	"context"
 
-	"github.com/Busnes-app/ky_server_base/internal/config"
-	"github.com/Busnes-app/ky_server_base/internal/store"
+	"github.com/Busnes-app/kypulse-server/internal/config"
+	"github.com/Busnes-app/kypulse-server/internal/store"
 )
 
 type GenericOIDCClient struct {

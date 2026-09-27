@@ -10,10 +10,10 @@ const server = spawn(fileURLToPath(new URL('../../.browser/server', import.meta.
   cwd: dir,
   env: {
     PATH: process.env.PATH,
-    KY_APP_URL: 'http://127.0.0.1:5391',
-    KY_HOST: '127.0.0.1', KY_PORT: '5391', KY_DB_DRIVER: 'sqlite',
-    KY_DATA_DIR: join(dir, 'data'), KY_BACKUP_DIR: join(dir, 'backups'),
-    KY_ADMIN_PASSWORD: 'BrowserInitial123!', KY_CAPTCHA_PROVIDER: 'none',
+    KYPULSE_APP_URL: 'http://127.0.0.1:5391',
+    KYPULSE_HOST: '127.0.0.1', KYPULSE_PORT: '5391', KYPULSE_DB_DRIVER: 'sqlite',
+    KYPULSE_DATA_DIR: join(dir, 'data'), KYPULSE_BACKUP_DIR: join(dir, 'backups'),
+    KYPULSE_ADMIN_PASSWORD: 'BrowserInitial123!', KYPULSE_CAPTCHA_PROVIDER: 'none',
   },
   stdio: 'inherit',
 });

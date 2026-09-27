@@ -15,15 +15,15 @@ import (
 
 	"github.com/Busnes-app/ky-primitives/password"
 	"github.com/Busnes-app/ky-primitives/recoveryclient"
-	"github.com/Busnes-app/ky_server_base/internal/api"
-	"github.com/Busnes-app/ky_server_base/internal/backup"
-	"github.com/Busnes-app/ky_server_base/internal/config"
-	"github.com/Busnes-app/ky_server_base/internal/crypto"
-	"github.com/Busnes-app/ky_server_base/internal/store"
+	"github.com/Busnes-app/kypulse-server/internal/api"
+	"github.com/Busnes-app/kypulse-server/internal/backup"
+	"github.com/Busnes-app/kypulse-server/internal/config"
+	"github.com/Busnes-app/kypulse-server/internal/crypto"
+	"github.com/Busnes-app/kypulse-server/internal/store"
 )
 
 // appVersion is what the capsule manifest records for this build.
-const appVersion = "1.0.0"
+const appVersion = "0.1.0"
 
 func main() {
 	if len(os.Args) > 1 {
@@ -44,7 +44,7 @@ func main() {
 			runRestore(os.Args[2:])
 			return
 		case "version":
-			fmt.Println("ky_server_base v1.0.0 (Busnes.app base platform)")
+			fmt.Println("kypulse v0.1.0 (Busnes.app kyPulse)")
 			return
 		}
 	}
@@ -69,7 +69,7 @@ func runServer() {
 		log.Fatalf("Failed to load configuration: %v", err)
 	}
 	if cfg.Backup.AllowPrivateRecovery {
-		log.Printf("[BACKUP] KY_BACKUP_ALLOW_PRIVATE_RECOVERY is on: RFC1918 and CGNAT destinations admitted; loopback, link-local and other reserved addresses remain refused (HTTPS still required)")
+		log.Printf("[BACKUP] KYPULSE_BACKUP_ALLOW_PRIVATE_RECOVERY is on: RFC1918 and CGNAT destinations admitted; loopback, link-local and other reserved addresses remain refused (HTTPS still required)")
 	}
 
 	ctx, cancel := context.WithCancel(context.Background())
@@ -84,7 +84,7 @@ func runServer() {
 	// Ensure default admin user exists if database is empty
 	count, _ := st.Users().CountUsers(ctx)
 	if count == 0 {
-		adminPass := os.Getenv("KY_ADMIN_PASSWORD")
+		adminPass := os.Getenv("KYPULSE_ADMIN_PASSWORD")
 		if adminPass == "" {
 			adminPass = crypto.RandomHex(12)
 			log.Printf("[SECURITY] Initial bootstrap: Created admin account. Username: admin | Password: %s", adminPass)
@@ -124,14 +124,14 @@ func runServer() {
 	signal.Notify(stop, os.Interrupt, syscall.SIGTERM)
 
 	go func() {
-		log.Printf("[KY-BASE] %s listening on http://%s (DB: %s)", cfg.Server.AppName, addr, cfg.Database.Driver)
+		log.Printf("[KYPULSE] %s listening on http://%s (DB: %s)", cfg.Server.AppName, addr, cfg.Database.Driver)
 		if err := httpServer.ListenAndServe(); err != nil && err != http.ErrServerClosed {
 			log.Fatalf("HTTP server error: %v", err)
 		}
 	}()
 
 	<-stop
-	log.Println("[KY-BASE] Shutting down gracefully...")
+	log.Println("[KYPULSE] Shutting down gracefully...")
 
 	shutdownCtx, shutdownCancel := context.WithTimeout(context.Background(), shutdownTimeout)
 	defer shutdownCancel()
@@ -143,7 +143,7 @@ func runServer() {
 	waitCtx, waitCancel := context.WithTimeout(context.Background(), backupWaitTimeout)
 	defer waitCancel()
 	waitForBackupWork(waitCtx, backupDone, srv.WaitDetached)
-	log.Println("[KY-BASE] Server stopped")
+	log.Println("[KYPULSE] Server stopped")
 }
 
 // waitForBackupWork blocks until the scheduler loop and every detached handler have finished,
@@ -166,17 +166,17 @@ func waitForBackupWork(ctx context.Context, backupDone <-chan struct{}, waitDeta
 	select {
 	case <-backupDone:
 	default:
-		log.Println("[KY-BASE] waiting for the scheduled backup in flight...")
+		log.Println("[KYPULSE] waiting for the scheduled backup in flight...")
 		select {
 		case <-backupDone:
 		case <-ctx.Done():
-			log.Printf("[KY-BASE] abandoning a scheduled deposit still running after %s; its receipt may be unrecorded", backupWaitTimeout)
+			log.Printf("[KYPULSE] abandoning a scheduled deposit still running after %s; its receipt may be unrecorded", backupWaitTimeout)
 		}
 	}
 	select {
 	case <-handlersDone:
 	case <-ctx.Done():
-		log.Printf("[KY-BASE] abandoning a detached backup handler still running after %s; its writes may be unrecorded", backupWaitTimeout)
+		log.Printf("[KYPULSE] abandoning a detached backup handler still running after %s; its writes may be unrecorded", backupWaitTimeout)
 	}
 }
 
@@ -412,9 +412,9 @@ func runRestore(args []string) {
 	fs := flag.NewFlagSet("restore", flag.ExitOnError)
 	capsulePath := fs.String("capsule", "", "path to the .kycap file")
 	target := fs.String("to", "", "empty directory to restore into")
-	service := fs.String("service", "", "expected service name (default: $KY_APP_NAME)")
+	service := fs.String("service", "", "expected service name (default: $KYPULSE_APP_NAME)")
 	fs.Usage = func() {
-		fmt.Fprint(os.Stderr, "Usage: ky_server_base restore -capsule <file.kycap> -to <dir> [-service <name>]\n\n"+
+		fmt.Fprint(os.Stderr, "Usage: kypulse restore -capsule <file.kycap> -to <dir> [-service <name>]\n\n"+
 			"Custodian shares are read from stdin, one ky2-... share per line, and never from\n"+
 			"the command line: argv is world-readable and lands in shell history.\n\n")
 		fs.PrintDefaults()
@@ -427,13 +427,13 @@ func runRestore(args []string) {
 	if *service == "" {
 		// Not config.LoadFromEnv: it mints <DataDir>/encryption.key as a side effect, and a
 		// recovery host has no business growing a key of its own mid-ceremony.
-		*service = os.Getenv("KY_APP_NAME")
+		*service = os.Getenv("KYPULSE_APP_NAME")
 	}
 	if *service == "" {
 		*service = config.DefaultAppName
 	}
 	if *service == "" {
-		log.Fatal("Error: -service is required when KY_APP_NAME is not set")
+		log.Fatal("Error: -service is required when KYPULSE_APP_NAME is not set")
 	}
 
 	if stdinIsTerminal() {

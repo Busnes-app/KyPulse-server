@@ -7,7 +7,7 @@ import (
 	"path/filepath"
 
 	"github.com/Busnes-app/ky-primitives/recoveryclient"
-	"github.com/Busnes-app/ky_server_base/internal/config"
+	"github.com/Busnes-app/kypulse-server/internal/config"
 	"golang.org/x/sys/unix"
 )
 

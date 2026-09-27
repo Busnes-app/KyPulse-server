@@ -29,7 +29,7 @@ Everything a fresh server needs to be the old one:
 
 | Path in the capsule | What it is |
 |---|---|
-| `data/ky_server.db` | The whole database: users, sessions, MFA state, devices, SCIM groups, audit log, settings, the sealed KyRecovery token |
+| `data/kypulse.db` | The whole database: users, sessions, MFA state, devices, SCIM groups, audit log, settings, the sealed KyRecovery token |
 | `data/encryption.key` | 32 bytes. Every TOTP secret and the KyRecovery pairing token are encrypted under it |
 | `data/recovery.pub` | The suite recovery public key, so the restored server comes back pinned (present when the backup had a key) |
 | `config/settings.json` | App name, URL, port, database driver. For your reference when re-deploying; nothing reads it |
@@ -37,8 +37,8 @@ Everything a fresh server needs to be the old one:
 The restored directory is the live directory in the clear. Treat it like the running server's
 `data/`.
 
-**This procedure is for SQLite deployments.** A capsule carries `data/ky_server.db` because the
-collector snapshots SQLite with `VACUUM INTO`; on `KY_DB_DRIVER=postgres` no snapshot is
+**This procedure is for SQLite deployments.** A capsule carries `data/kypulse.db` because the
+collector snapshots SQLite with `VACUUM INTO`; on `KYPULSE_DB_DRIVER=postgres` no snapshot is
 possible, so no capsule is made at all and there is nothing here to restore from. Back a
 Postgres deployment up with `pg_dump` on its own schedule, guard that dump as the plaintext of
 everything above, and copy `data/encryption.key` and `data/recovery.pub` separately — the
@@ -48,7 +48,7 @@ dump, but nothing in it can be decrypted without `encryption.key`.
 ## Before you start
 
 - **Pick the capsule.** In the KyRecovery dashboard, open Capsules, find the newest one for
-  this service (the app name, `Busnes.app` unless `KY_APP_NAME` was set) that is not flagged
+  this service (the app name, `kyPulse` unless `KYPULSE_APP_NAME` was set) that is not flagged
   corrupt, and note its `capsule_id`, `created_at` and `digest`. You will compare these after
   the restore. From a local backup directory the file is `<escaped app name>.<capsule-id>.kycap`
   (`Busnes_2eapp.cap-Busnes.app-<n>.kycap` by default); the newest is the one to use unless
@@ -64,10 +64,10 @@ dump, but nothing in it can be decrypted without `encryption.key`.
 With the binary (from a release, or `go build ./cmd/server`):
 
 ```bash
-ky_server_base restore -capsule Busnes_2eapp.cap-XXXXXXXX.kycap -to ./restored
+kypulse restore -capsule kyPulse.cap-XXXXXXXX.kycap -to ./restored
 ```
 
-`-service` defaults to `KY_APP_NAME`, then `Busnes.app`. Pass it only when the backup was made
+`-service` defaults to `KYPULSE_APP_NAME`, then `kyPulse`. Pass it only when the backup was made
 under a different app name; the capsule's service name must match or the restore stops before
 reading a share.
 
@@ -82,25 +82,25 @@ in `.env` after the drill: see the README's upgrade note for moving off it. Imag
 
 ```bash
 sha=<full commit sha you intend to run, e.g. $(git rev-parse origin/master)>
-d=$(docker buildx imagetools inspect ghcr.io/busnes-app/ky-server-base:$sha --format '{{.Manifest.Digest}}') \
-  && gh attestation verify "oci://ghcr.io/busnes-app/ky-server-base@$d" --repo Busnes-app/ky-server-base \
-       --cert-identity https://github.com/Busnes-app/ky-server-base/.github/workflows/ci.yml@refs/heads/master \
-  && [ "$(gh attestation verify "oci://ghcr.io/busnes-app/ky-server-base@$d" --repo Busnes-app/ky-server-base \
-       --cert-identity https://github.com/Busnes-app/ky-server-base/.github/workflows/ci.yml@refs/heads/master \
+d=$(docker buildx imagetools inspect ghcr.io/busnes-app/kypulse-server:$sha --format '{{.Manifest.Digest}}') \
+  && gh attestation verify "oci://ghcr.io/busnes-app/kypulse-server@$d" --repo Busnes-app/KyPulse-server \
+       --cert-identity https://github.com/Busnes-app/KyPulse-server/.github/workflows/ci.yml@refs/heads/master \
+  && [ "$(gh attestation verify "oci://ghcr.io/busnes-app/kypulse-server@$d" --repo Busnes-app/KyPulse-server \
+       --cert-identity https://github.com/Busnes-app/KyPulse-server/.github/workflows/ci.yml@refs/heads/master \
        --format json --jq '.[0].verificationResult.statement.predicate.buildDefinition.resolvedDependencies[0].digest.gitCommit')" = "$sha" ] \
-  && (umask 077; t=$(mktemp ./.env.XXXXXX) && touch .env && { grep -v '^KY_IMAGE=' .env || [ $? -eq 1 ]; } > "$t" \
-      && echo "KY_IMAGE=ghcr.io/busnes-app/ky-server-base@$d" >> "$t" && mv "$t" .env) \
-  && grep -qxF "KY_IMAGE=ghcr.io/busnes-app/ky-server-base@$d" .env
+  && (umask 077; t=$(mktemp ./.env.XXXXXX) && touch .env && { grep -v '^KYPULSE_IMAGE=' .env || [ $? -eq 1 ]; } > "$t" \
+      && echo "KYPULSE_IMAGE=ghcr.io/busnes-app/kypulse-server@$d" >> "$t" && mv "$t" .env) \
+  && grep -qxF "KYPULSE_IMAGE=ghcr.io/busnes-app/kypulse-server@$d" .env
 ```
 
 Then, in the same shell (the check compares against `$d`), refuse to go on unless the image in
-effect is exactly that digest. A source install passes on its `ky_server_base:local` build instead,
+effect is exactly that digest. A source install passes on its `kypulse:local` build instead,
 since `docker-compose.build.yml` wins over the pin, which is what a source install wants. The
 two refusal messages are distinct on purpose: a broken invocation is not an unpinned image.
 
 ```bash
 imgs=$(docker compose config --images) || { echo 'refusing: compose could not resolve the image'; false; }
-printf '%s\n' "$imgs" | grep -qxF "ghcr.io/busnes-app/ky-server-base@$d" || printf '%s\n' "$imgs" | grep -qxF 'ky_server_base:local' \
+printf '%s\n' "$imgs" | grep -qxF "ghcr.io/busnes-app/kypulse-server@$d" || printf '%s\n' "$imgs" | grep -qxF 'kypulse:local' \
   || { echo "refusing: image in effect is '$imgs', not the digest verified above"; false; }
 ```
 
@@ -152,7 +152,7 @@ Failures you may see, and what they mean:
 
 | Message | Meaning |
 |---|---|
-| `capsule is for service "Busnes.app", this instance is "X"` | `-service` or `KY_APP_NAME` names something else. Override `-service` only if the backup was made under a different app name |
+| `capsule is for service "kyPulse", this instance is "X"` | `-service` or `KYPULSE_APP_NAME` names something else. Override `-service` only if the backup was made under a different app name |
 | `shamir: fewer shares than the threshold requires` | Fewer than k valid lines were read. Check for a missed line or a truncated paste |
 | `restore target directory is not empty` | Use an empty directory. The restore never overwrites |
 | a decrypt or integrity error | Wrong shares (from a different ceremony), a share mistyped, or a damaged file. Re-download and retry with the custodians |
@@ -170,7 +170,7 @@ Expect three or four files, all mode `600`, under `restored/data` and `restored/
 
 **Docker Compose (the normal deployment).** The data directory is the bind mount `./data`
 in the compose project. It must be empty before the copy, for the same reason Step 1 demands
-an empty directory: a capsule carries `ky_server.db` but never its `-wal` and `-shm`
+an empty directory: a capsule carries `kypulse.db` but never its `-wal` and `-shm`
 sidecars, and a write-ahead log left over from the old database would be replayed into the
 restored one at first open, mixing two databases.
 
@@ -207,19 +207,19 @@ sudo cp -a restored/data/. data/ && sudo chmod 600 data/*
 docker compose up -d
 ```
 
-Keep `KY_APP_URL` and `KY_APP_NAME` identical to the old deployment, from
+Keep `KYPULSE_APP_URL` and `KYPULSE_APP_NAME` identical to the old deployment, from
 `config/settings.json`: the app name is what every capsule is sealed under and what
 KyRecovery pinned for the pairing token.
 
 The restored `encryption.key` is the key; the file form is the one to use. If the old
-deployment supplied `KY_ENCRYPTION_KEY` by environment instead, the environment wins when
+deployment supplied `KYPULSE_ENCRYPTION_KEY` by environment instead, the environment wins when
 both are present, so either remove that variable so the file is read, or keep supplying the
 same value from wherever the old deployment kept it. Never print a key to a terminal or type
 one on a command line: it lands in scrollback, session recordings and shell history. If you
 must produce the hex form, write it straight into the compose project's `.env` with
 `umask 077` and nothing else on stdout.
 
-**Bare binary.** Point `KY_DATA_DIR` at `restored/data`, set `KY_APP_URL` and `KY_APP_NAME`
+**Bare binary.** Point `KYPULSE_DATA_DIR` at `restored/data`, set `KYPULSE_APP_URL` and `KYPULSE_APP_NAME`
 as before, and start.
 
 ## Step 4: prove it
@@ -248,12 +248,12 @@ server, because sessions are database rows and the capsule brought them back.
 
    ```bash
    docker compose down
-   sudo sqlite3 data/ky_server.db 'DELETE FROM sessions;'
+   sudo sqlite3 data/kypulse.db 'DELETE FROM sessions;'
    docker compose up -d
    ```
 
    Everyone signs in again. After hardware loss that is enough.
-2. Walk the old audit log in `old-data/ky_server.db` from `created_at` to the moment the old
+2. Walk the old audit log in `old-data/kypulse.db` from `created_at` to the moment the old
    server was lost (the restored server's log stops at `created_at`), and re-apply what
    happened after the capsule: disabled accounts, rotated passwords, removed devices, reset
    MFA, SCIM changes.
@@ -267,11 +267,9 @@ server, because sessions are database rows and the capsule brought them back.
 
    What can be rotated, and how:
 
-   - `KY_SESSION_SECRET` signs the proof-of-work login challenge, nothing durable. Replace it
+   - `KYPULSE_SESSION_SECRET` signs the proof-of-work login challenge, nothing durable. Replace it
      with `openssl rand -hex 32` written straight into `.env`, not echoed, then
      `docker compose up -d`.
-   - `KY_SCIM_TOKEN` is the SCIM bearer. Replace it the same way and give the new value to the
-     identity provider. If it was never set, the server mints a fresh one at every start.
    - The KyRecovery pairing token: ask the KyRecovery admin to revoke this service and pair
      again from the screen; the same key comes back, so the pairing is accepted.
 

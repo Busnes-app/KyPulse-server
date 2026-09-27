@@ -8,10 +8,10 @@ import (
 	"net/http/httptest"
 	"testing"
 
-	"github.com/Busnes-app/ky_server_base/internal/config"
-	"github.com/Busnes-app/ky_server_base/internal/scim"
-	"github.com/Busnes-app/ky_server_base/internal/store"
-	"github.com/Busnes-app/ky_server_base/internal/testdb"
+	"github.com/Busnes-app/kypulse-server/internal/config"
+	"github.com/Busnes-app/kypulse-server/internal/scim"
+	"github.com/Busnes-app/kypulse-server/internal/store"
+	"github.com/Busnes-app/kypulse-server/internal/testdb"
 )
 
 func setupSCIMServer(t *testing.T) (*scim.Server, *http.ServeMux, string) {

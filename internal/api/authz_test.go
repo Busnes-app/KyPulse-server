@@ -9,9 +9,9 @@ import (
 	"testing"
 
 	"github.com/Busnes-app/ky-primitives/password"
-	"github.com/Busnes-app/ky_server_base/internal/api"
-	"github.com/Busnes-app/ky_server_base/internal/auth"
-	"github.com/Busnes-app/ky_server_base/internal/store"
+	"github.com/Busnes-app/kypulse-server/internal/api"
+	"github.com/Busnes-app/kypulse-server/internal/auth"
+	"github.com/Busnes-app/kypulse-server/internal/store"
 )
 
 // loginAs creates a user with the given role and returns its session cookie.

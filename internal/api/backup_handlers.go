@@ -14,8 +14,8 @@ import (
 
 	"github.com/Busnes-app/ky-primitives/capsule"
 	"github.com/Busnes-app/ky-primitives/recoveryclient"
-	"github.com/Busnes-app/ky_server_base/internal/backup"
-	"github.com/Busnes-app/ky_server_base/internal/store"
+	"github.com/Busnes-app/kypulse-server/internal/backup"
+	"github.com/Busnes-app/kypulse-server/internal/store"
 )
 
 // appVersion is what the capsule manifest records for this build.
@@ -27,7 +27,7 @@ const errRecoveryKeyMismatch = "Recovery key file does not match the pinned key 
 
 // privateRecoveryHint names the opt-in, so a refused LAN destination is not a dead end. Both
 // the pairing and the run refusals end with it.
-const privateRecoveryHint = " (set KY_BACKUP_ALLOW_PRIVATE_RECOVERY=true for a KyRecovery on your own network)"
+const privateRecoveryHint = " (set KYPULSE_BACKUP_ALLOW_PRIVATE_RECOVERY=true for a KyRecovery on your own network)"
 
 // depositWriteBudget is how long the admin's connection may stay open for the receipt: the
 // upload budget plus room for sealing. The listener's WriteTimeout is sized for JSON replies.
@@ -318,7 +318,7 @@ func (s *Server) handleRunBackup(w http.ResponseWriter, r *http.Request) {
 			// all. A configuration fact the operator must read, not a server fault.
 			s.writeError(w, http.StatusPreconditionFailed, err.Error())
 		case errors.Is(err, recoveryclient.ErrNoDestination):
-			s.writeError(w, http.StatusPreconditionFailed, "Nowhere to put a capsule: pair with KyRecovery or set KY_BACKUP_DIR")
+			s.writeError(w, http.StatusPreconditionFailed, "Nowhere to put a capsule: pair with KyRecovery or set KYPULSE_BACKUP_DIR")
 		case errors.Is(err, recoveryclient.ErrInProgress):
 			s.writeError(w, http.StatusConflict, "A backup is already in progress")
 		case errors.Is(err, recoveryclient.ErrKeyMismatch):

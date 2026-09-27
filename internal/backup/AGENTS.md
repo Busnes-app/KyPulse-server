@@ -16,7 +16,7 @@ live in `recoveryclient` and in the settings rows it reads and writes through th
 - `Settings` maps `store.ErrNotFound` to `recoveryclient.ErrNotFound`; every other error passes
   through unchanged.
 - `NewSealer` seals the KyRecovery token under the deployment key with label
-  `ky_server_base:setting:kyrecovery_token`, domain-separated so a row copied from another
+  `kypulse:setting:kyrecovery_token`, domain-separated so a row copied from another
   setting will not open.
 - `Collect` snapshots SQLite with the lib's `SQLiteSnapshot` (`VACUUM INTO`; the store runs in
   WAL mode, so a plain file read misses uncheckpointed commits) and returns
@@ -44,7 +44,7 @@ live in `recoveryclient` and in the settings rows it reads and writes through th
 - Pairing, the write-once key pin, `Run` (one seal, every destination), the schedule, local
   copies and their pruning, drill mechanics, restore and the decrypt guard are the lib's;
   their contracts are in the `recoveryclient` README. `client_test.go` pins only what this
-  package's wiring buys: `KY_BACKUP_ALLOW_PRIVATE_RECOVERY` admits RFC1918 and CGNAT and
+  package's wiring buys: `KYPULSE_BACKUP_ALLOW_PRIVATE_RECOVERY` admits RFC1918 and CGNAT and
   nothing else.
 
 ## Verification

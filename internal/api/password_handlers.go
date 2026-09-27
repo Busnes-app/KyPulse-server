@@ -7,8 +7,8 @@ import (
 	"time"
 
 	"github.com/Busnes-app/ky-primitives/password"
-	"github.com/Busnes-app/ky_server_base/internal/auth"
-	"github.com/Busnes-app/ky_server_base/internal/store"
+	"github.com/Busnes-app/kypulse-server/internal/auth"
+	"github.com/Busnes-app/kypulse-server/internal/store"
 )
 
 // handleChangePassword completes a mandatory local-password replacement. All sessions

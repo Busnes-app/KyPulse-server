@@ -24,18 +24,18 @@ import (
 	"github.com/Busnes-app/ky-primitives/recoveryclient"
 	"github.com/Busnes-app/ky-primitives/recoverykey"
 	"github.com/Busnes-app/ky-primitives/totp"
-	"github.com/Busnes-app/ky_server_base/internal/api"
-	"github.com/Busnes-app/ky_server_base/internal/auth"
-	"github.com/Busnes-app/ky_server_base/internal/backup"
-	"github.com/Busnes-app/ky_server_base/internal/config"
-	"github.com/Busnes-app/ky_server_base/internal/crypto"
-	"github.com/Busnes-app/ky_server_base/internal/store"
-	"github.com/Busnes-app/ky_server_base/internal/testdb"
+	"github.com/Busnes-app/kypulse-server/internal/api"
+	"github.com/Busnes-app/kypulse-server/internal/auth"
+	"github.com/Busnes-app/kypulse-server/internal/backup"
+	"github.com/Busnes-app/kypulse-server/internal/config"
+	"github.com/Busnes-app/kypulse-server/internal/crypto"
+	"github.com/Busnes-app/kypulse-server/internal/store"
+	"github.com/Busnes-app/kypulse-server/internal/testdb"
 )
 
 func setupTestServer(t *testing.T) (*api.Server, store.Store, *config.Config) {
 	t.Helper()
-	t.Setenv("KY_DATA_DIR", t.TempDir())
+	t.Setenv("KYPULSE_DATA_DIR", t.TempDir())
 	cfg, _ := config.LoadFromEnv()
 	db := testdb.Config(t)
 	db.DataDir = cfg.Database.DataDir // testdb only picks the backend; keep the temp data dir
@@ -651,7 +651,7 @@ func TestLimiterIgnoresForgedForwardedFor(t *testing.T) {
 // Behind a configured trusted proxy the peer is the proxy for every request. Without the
 // forwarded client in the key, one bucket would cover the whole instance.
 func TestLimiterSplitsPerForwardedClientBehindTrustedProxy(t *testing.T) {
-	t.Setenv("KY_TRUSTED_PROXIES", "192.0.2.0/24")
+	t.Setenv("KYPULSE_TRUSTED_PROXIES", "192.0.2.0/24")
 	srv, _, _ := setupTestServer(t)
 
 	for i := 1; i <= 20; i++ {
@@ -669,7 +669,7 @@ func TestLimiterSplitsPerForwardedClientBehindTrustedProxy(t *testing.T) {
 // A chain that ends in another trusted proxy names no client we can attribute to, so the
 // requests fall back to the peer and share the proxy's own window.
 func TestLimiterFallsBackWhenTheChainIsAllTrusted(t *testing.T) {
-	t.Setenv("KY_TRUSTED_PROXIES", "192.0.2.0/24")
+	t.Setenv("KYPULSE_TRUSTED_PROXIES", "192.0.2.0/24")
 	srv, _, _ := setupTestServer(t)
 
 	for i := 1; i <= 20; i++ {
@@ -782,7 +782,7 @@ func storePairing(t *testing.T, cfg *config.Config, st store.Store, url, token s
 // only the SQLite path can. The Postgres CI job would otherwise (correctly) refuse them.
 func setupSQLiteServer(t *testing.T) (*api.Server, store.Store, *config.Config) {
 	t.Helper()
-	t.Setenv("KY_TEST_POSTGRES_DSN", "")
+	t.Setenv("KYPULSE_TEST_POSTGRES_DSN", "")
 	return setupTestServer(t)
 }
 

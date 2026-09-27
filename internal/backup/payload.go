@@ -12,7 +12,7 @@ import (
 	"strings"
 
 	"github.com/Busnes-app/ky-primitives/recoveryclient"
-	"github.com/Busnes-app/ky_server_base/internal/config"
+	"github.com/Busnes-app/kypulse-server/internal/config"
 	_ "modernc.org/sqlite"
 )
 
@@ -40,7 +40,7 @@ func Collect(ctx context.Context, cfg *config.Config, appVersion string) (recove
 	if err != nil {
 		return recoveryclient.Payload{}, err
 	}
-	const dbPath = "data/ky_server.db"
+	const dbPath = "data/kypulse.db"
 	files := []recoveryclient.File{{Path: dbPath, Data: dbBytes, Mode: 0600}}
 	sqlitePaths := []string{dbPath}
 
@@ -69,13 +69,13 @@ func Collect(ctx context.Context, cfg *config.Config, appVersion string) (recove
 		Files:       files,
 		Dependencies: map[string]any{
 			"ports": []int{cfg.Server.Port},
-			"env":   []string{"KY_PORT", "KY_DB_DRIVER"},
+			"env":   []string{"KYPULSE_PORT", "KYPULSE_DB_DRIVER"},
 		},
 		VerificationRecipe: map[string]any{
 			"check_sqlite_integrity": true,
 			"sqlite_paths":           sqlitePaths,
 			"required_files":         requiredFiles(files),
-			"expected_env":           []string{"KY_PORT", "KY_DB_DRIVER"},
+			"expected_env":           []string{"KYPULSE_PORT", "KYPULSE_DB_DRIVER"},
 			"expected_ports":         []int{cfg.Server.Port},
 		},
 	}
@@ -98,7 +98,7 @@ func snapshotSQLite(ctx context.Context, dsn, dataDir string) ([]byte, error) {
 		return nil, err
 	}
 	defer os.RemoveAll(dir)
-	path := filepath.Join(dir, "ky_server.db")
+	path := filepath.Join(dir, "kypulse.db")
 	if err := recoveryclient.SQLiteSnapshot(ctx, db, path); err != nil {
 		return nil, fmt.Errorf("%w: %v", ErrNoDatabaseSnapshot, err)
 	}
@@ -107,7 +107,7 @@ func snapshotSQLite(ctx context.Context, dsn, dataDir string) ([]byte, error) {
 
 // Members names what a capsule carries, for the screen; it is what Collect would seal now.
 func Members(cfg *config.Config) []string {
-	m := []string{"data/ky_server.db", "config/settings.json", encryptionKeyPath}
+	m := []string{"data/kypulse.db", "config/settings.json", encryptionKeyPath}
 	if _, err := os.Stat(recoveryclient.RecoveryKeyPath(cfg.Database.DataDir)); err == nil {
 		m = append(m, recoveryPubPath)
 	}

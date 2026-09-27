@@ -6,11 +6,11 @@ import (
 	"testing"
 	"time"
 
-	"github.com/Busnes-app/ky_server_base/internal/config"
+	"github.com/Busnes-app/kypulse-server/internal/config"
 )
 
 func TestConfigLoadDefaults(t *testing.T) {
-	t.Setenv("KY_DATA_DIR", t.TempDir())
+	t.Setenv("KYPULSE_DATA_DIR", t.TempDir())
 	cfg, err := config.LoadFromEnv()
 	if err != nil {
 		t.Fatalf("failed to load config: %v", err)
@@ -31,12 +31,12 @@ func TestConfigLoadDefaults(t *testing.T) {
 }
 
 func TestConfigLoadFromEnvOverrides(t *testing.T) {
-	t.Setenv("KY_DATA_DIR", t.TempDir())
-	t.Setenv("KY_PORT", "9090")
-	t.Setenv("KY_DB_DRIVER", "postgres")
-	t.Setenv("KY_DB_DSN", "postgres://user:pass@localhost:5432/testdb")
-	t.Setenv("KY_APP_NAME", "CustomBusnesApp")
-	t.Setenv("KY_CAPTCHA_PROVIDER", "turnstile")
+	t.Setenv("KYPULSE_DATA_DIR", t.TempDir())
+	t.Setenv("KYPULSE_PORT", "9090")
+	t.Setenv("KYPULSE_DB_DRIVER", "postgres")
+	t.Setenv("KYPULSE_DB_DSN", "postgres://user:pass@localhost:5432/testdb")
+	t.Setenv("KYPULSE_APP_NAME", "CustomBusnesApp")
+	t.Setenv("KYPULSE_CAPTCHA_PROVIDER", "turnstile")
 
 	cfg, err := config.LoadFromEnv()
 	if err != nil {
@@ -61,8 +61,8 @@ func TestConfigLoadFromEnvOverrides(t *testing.T) {
 }
 
 func TestEncryptionKeyPersistsAcrossLoads(t *testing.T) {
-	t.Setenv("KY_DATA_DIR", t.TempDir())
-	t.Setenv("KY_ENCRYPTION_KEY", "")
+	t.Setenv("KYPULSE_DATA_DIR", t.TempDir())
+	t.Setenv("KYPULSE_ENCRYPTION_KEY", "")
 	a, err := config.LoadFromEnv()
 	if err != nil {
 		t.Fatal(err)
@@ -77,15 +77,15 @@ func TestEncryptionKeyPersistsAcrossLoads(t *testing.T) {
 }
 
 func TestEncryptionKeyFromEnvMustBe32Bytes(t *testing.T) {
-	t.Setenv("KY_DATA_DIR", t.TempDir())
-	t.Setenv("KY_ENCRYPTION_KEY", "deadbeef")
+	t.Setenv("KYPULSE_DATA_DIR", t.TempDir())
+	t.Setenv("KYPULSE_ENCRYPTION_KEY", "deadbeef")
 	if _, err := config.LoadFromEnv(); err == nil {
 		t.Fatal("8-byte key accepted")
 	}
 }
 
 func TestDepositIntervalFromEnv(t *testing.T) {
-	t.Setenv("KY_DATA_DIR", t.TempDir())
+	t.Setenv("KYPULSE_DATA_DIR", t.TempDir())
 	for _, tc := range []struct {
 		in   string
 		want time.Duration
@@ -100,7 +100,7 @@ func TestDepositIntervalFromEnv(t *testing.T) {
 		{"-1h", 0, false},
 		{"daily", 0, false},
 	} {
-		t.Setenv("KY_BACKUP_DEPOSIT_INTERVAL", tc.in)
+		t.Setenv("KYPULSE_BACKUP_DEPOSIT_INTERVAL", tc.in)
 		cfg, err := config.LoadFromEnv()
 		if (err == nil) != tc.ok {
 			t.Errorf("%q: err=%v, want ok=%v", tc.in, err, tc.ok)
@@ -113,10 +113,10 @@ func TestDepositIntervalFromEnv(t *testing.T) {
 }
 
 func TestBackupConfigFromEnv(t *testing.T) {
-	t.Setenv("KY_DATA_DIR", t.TempDir())
-	t.Setenv("KY_BACKUP_DIR", "/tmp/x")
-	t.Setenv("KY_BACKUP_KEEP", "3")
-	t.Setenv("KY_BACKUP_ALLOW_PRIVATE_RECOVERY", "true")
+	t.Setenv("KYPULSE_DATA_DIR", t.TempDir())
+	t.Setenv("KYPULSE_BACKUP_DIR", "/tmp/x")
+	t.Setenv("KYPULSE_BACKUP_KEEP", "3")
+	t.Setenv("KYPULSE_BACKUP_ALLOW_PRIVATE_RECOVERY", "true")
 	cfg, err := config.LoadFromEnv()
 	if err != nil {
 		t.Fatal(err)
@@ -127,9 +127,9 @@ func TestBackupConfigFromEnv(t *testing.T) {
 }
 
 func TestBackupKeepBelowOneIsRefused(t *testing.T) {
-	t.Setenv("KY_DATA_DIR", t.TempDir())
-	t.Setenv("KY_BACKUP_KEEP", "0")
-	if _, err := config.LoadFromEnv(); err == nil || !strings.Contains(err.Error(), "KY_BACKUP_KEEP") {
-		t.Fatalf("want KY_BACKUP_KEEP error, got %v", err)
+	t.Setenv("KYPULSE_DATA_DIR", t.TempDir())
+	t.Setenv("KYPULSE_BACKUP_KEEP", "0")
+	if _, err := config.LoadFromEnv(); err == nil || !strings.Contains(err.Error(), "KYPULSE_BACKUP_KEEP") {
+		t.Fatalf("want KYPULSE_BACKUP_KEEP error, got %v", err)
 	}
 }
