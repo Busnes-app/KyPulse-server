@@ -58,6 +58,7 @@ export const App: React.FC = () => {
   const handleLogout = async () => {
     await secureFetch('/api/auth/logout', { method: 'POST' });
     setUser(null);
+    setActiveTab('dashboard');
   };
 
   if (loading) {

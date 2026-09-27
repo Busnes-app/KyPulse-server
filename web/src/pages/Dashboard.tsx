@@ -9,15 +9,19 @@ interface DashboardProps {
 
 export const Dashboard: React.FC<DashboardProps> = ({ settings, user, onNavigate }) => {
   const cards = [
-    {
-      title: 'Feature 0: KyBackup & Recovery',
-      desc: 'Encrypted capsule container generation and automated sandboxed restore drills.',
-      status: 'Verified Ready',
-      statusType: 'success',
-      icon: Archive,
-      action: () => onNavigate('backup'),
-      actionLabel: 'Run Restore Drill',
-    },
+    ...(user?.role === 'admin'
+      ? [
+          {
+            title: 'Feature 0: KyBackup & Recovery',
+            desc: 'Encrypted capsule container generation and automated sandboxed restore drills.',
+            status: 'Verified Ready',
+            statusType: 'success',
+            icon: Archive,
+            action: () => onNavigate('backup'),
+            actionLabel: 'Run Restore Drill',
+          },
+        ]
+      : []),
     {
       title: 'Single Sign-On & Federation',
       desc: 'KySignOn OIDC + Signed Directory Webhooks, Generic OIDC, and SAML 2.0 SP.',

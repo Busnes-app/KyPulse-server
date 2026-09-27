@@ -1,4 +1,4 @@
-const CACHE_NAME = 'ky-base-pwa-busnes-v3';
+const CACHE_NAME = 'kypulse-pwa-v1';
 const ASSETS_TO_CACHE = [
   '/',
   '/index.html',
