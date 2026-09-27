@@ -24,6 +24,10 @@ const encryptionKeyPath = "data/encryption.key"
 // <DataDir>/recovery.pub that recoveryclient.RecoveryKeyPath reads.
 const recoveryPubPath = "data/recovery.pub"
 
+// auditKeyPath is where the restore puts the chain key: the <DataDir>/audit.key
+// config.LoadFromEnv reads. Without it the restored audit log cannot be verified.
+const auditKeyPath = "data/audit.key"
+
 // ErrNoDatabaseSnapshot is returned when the payload cannot carry a consistent copy of the
 // database, so a capsule without one is never sealed as if it were a backup.
 var ErrNoDatabaseSnapshot = errors.New("backup: no consistent database snapshot for this driver")
@@ -56,6 +60,15 @@ func Collect(ctx context.Context, cfg *config.Config, appVersion string) (recove
 	files = append(files, recoveryclient.File{
 		Path: encryptionKeyPath,
 		Data: []byte(hex.EncodeToString(cfg.Security.EncryptionKey) + "\n"),
+		Mode: 0600,
+	})
+
+	if len(cfg.Database.AuditKey) != 32 {
+		return recoveryclient.Payload{}, fmt.Errorf("backup: audit key is %d bytes, want 32; refusing to seal a capsule whose audit log could not be verified after restore", len(cfg.Database.AuditKey))
+	}
+	files = append(files, recoveryclient.File{
+		Path: auditKeyPath,
+		Data: []byte(hex.EncodeToString(cfg.Database.AuditKey) + "\n"),
 		Mode: 0600,
 	})
 
@@ -107,7 +120,7 @@ func snapshotSQLite(ctx context.Context, dsn, dataDir string) ([]byte, error) {
 
 // Members names what a capsule carries, for the screen; it is what Collect would seal now.
 func Members(cfg *config.Config) []string {
-	m := []string{"data/kypulse.db", "config/settings.json", encryptionKeyPath}
+	m := []string{"data/kypulse.db", "config/settings.json", encryptionKeyPath, auditKeyPath}
 	if _, err := os.Stat(recoveryclient.RecoveryKeyPath(cfg.Database.DataDir)); err == nil {
 		m = append(m, recoveryPubPath)
 	}

@@ -21,6 +21,10 @@ const (
 // ErrInvalidRole is returned for any role other than RoleAdmin or RoleViewer.
 var ErrInvalidRole = errors.New("role must be admin or viewer")
 
+// ErrAuditUnplaceable reports an audit log the store cannot place at open: keyed records with
+// no anchor, an anchor counting more records than exist, or a tail that is not the anchor's.
+var ErrAuditUnplaceable = errors.New("audit log cannot be placed against its anchor")
+
 func validRole(role string) bool { return role == RoleAdmin || role == RoleViewer }
 
 // Store defines the unified storage contract implemented across SQLite, PostgreSQL, and MySQL.
@@ -66,10 +70,16 @@ type SessionStore interface {
 	ConsumeMFAChallenge(ctx context.Context, tokenHash string) (userID, passwordHash string, err error)
 }
 
-// AuditStore logs security events.
+// AuditStore logs security events as links of a keyed hash chain.
 type AuditStore interface {
 	LogAudit(ctx context.Context, r *AuditRecord) error
 	ListAuditRecords(ctx context.Context, offset, limit int) ([]*AuditRecord, int, error)
+	// VerifyChain walks every record against the anchor. It never writes.
+	VerifyChain(ctx context.Context) (ChainStatus, error)
+	// Ready reports whether the next append can chain onto the stored tail.
+	Ready(ctx context.Context) error
+	// Placement is how the chain was found at open.
+	Placement() ChainPlacement
 }
 
 // SettingsStore handles persistent key-value configuration.

@@ -265,3 +265,24 @@ func TestWebhookTestFailureNeverEchoesTheURL(t *testing.T) {
 		}
 	}
 }
+
+func TestHealthzReportsTheAuditCheck(t *testing.T) {
+	srv, _, _ := setupTestServer(t)
+	w := do(t, srv, "GET", "/healthz", nil)
+	if w.Code != http.StatusOK {
+		t.Fatalf("healthz = %d", w.Code)
+	}
+	var body struct {
+		Checks []struct{ Name, Status string } `json:"checks"`
+	}
+	if err := json.Unmarshal(w.Body.Bytes(), &body); err != nil {
+		t.Fatal(err)
+	}
+	names := map[string]string{}
+	for _, c := range body.Checks {
+		names[c.Name] = c.Status
+	}
+	if names["database"] != "ok" || names["audit"] != "ok" {
+		t.Fatalf("checks: %+v", body.Checks)
+	}
+}

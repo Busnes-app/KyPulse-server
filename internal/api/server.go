@@ -24,6 +24,11 @@ import (
 
 var evAuditWriteFailed = logging.DeclareEvent("audit_write_failed", "audit row could not be written", slog.LevelError)
 
+// reasonChainBroken is what /healthz says, degraded, when the audit chain cannot be appended
+// to: the stored tail no longer matches its anchor. Monitoring keeps running; every audit
+// write fails until it is repaired.
+var reasonChainBroken = health.DeclareReason("chain_broken")
+
 // audit records an admin or backup action against the acting user. Details never carry a
 // token, a webhook URL or capsule bytes; both text fields are bounded and printable before
 // they are stored, since a resource may be an operator-typed URL and details may quote a
@@ -221,10 +226,17 @@ func (s *Server) requestIP(r *http.Request) string {
 }
 
 func (s *Server) routes() {
-	// Liveness for monitors and readiness probes; public and cached by the lib. The only check
-	// is the database, so the body never says more than "database down".
+	// Liveness for monitors and readiness probes; public and cached by the lib. Two checks:
+	// the database answers (down if not), and the audit chain can take the next record
+	// (degraded if not: the server still serves, but audited actions fail).
 	s.mux.Handle("GET /healthz", health.Handler("kypulse", s.lg,
 		health.Check{Name: "database", Run: s.store.Ping},
+		health.Check{Name: "audit", Run: func(ctx context.Context) error {
+			if err := s.store.Audit().Ready(ctx); err != nil {
+				return health.Degrade(reasonChainBroken)
+			}
+			return nil
+		}},
 	))
 
 	// Auth

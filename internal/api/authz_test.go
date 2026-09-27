@@ -193,8 +193,31 @@ func TestHealthzIsPublicAndReportsTheDatabase(t *testing.T) {
 	if resp.Schema != "ky.health/1" || resp.Service != "kypulse" || resp.Status != "ok" {
 		t.Errorf("unexpected body: %s", w.Body.String())
 	}
-	if len(resp.Checks) != 1 || resp.Checks[0].Name != "database" || resp.Checks[0].Status != "ok" {
+	names := map[string]string{}
+	for _, c := range resp.Checks {
+		names[c.Name] = c.Status
+	}
+	if names["database"] != "ok" || names["audit"] != "ok" {
 		t.Errorf("checks = %+v", resp.Checks)
+	}
+}
+
+func TestHealthzDegradesOnABrokenChain(t *testing.T) {
+	srv, st, _ := setupTestServer(t)
+	ctx := context.Background()
+	if err := st.Audit().LogAudit(ctx, &store.AuditRecord{UserID: "u1", Action: "test.event"}); err != nil {
+		t.Fatal(err)
+	}
+	if err := st.Settings().DeleteSetting(ctx, "audit_anchor"); err != nil {
+		t.Fatal(err)
+	}
+	w := do(t, srv, "GET", "/healthz", nil)
+	if w.Code != http.StatusOK {
+		t.Fatalf("got %d: %s", w.Code, w.Body.String())
+	}
+	body := w.Body.String()
+	if !bytes.Contains([]byte(body), []byte(`"status":"degraded"`)) || !bytes.Contains([]byte(body), []byte("chain_broken")) {
+		t.Errorf("broken chain not reported degraded: %s", body)
 	}
 }
 

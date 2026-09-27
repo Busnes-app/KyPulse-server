@@ -1,8 +1,10 @@
 package config
 
 import (
+	"bytes"
 	"crypto/rand"
 	"encoding/hex"
+	"errors"
 	"fmt"
 	"net/netip"
 	"os"
@@ -45,6 +47,8 @@ type DatabaseConfig struct {
 	MaxOpenConns    int           `json:"max_open_conns"`
 	MaxIdleConns    int           `json:"max_idle_conns"`
 	ConnMaxLifetime time.Duration `json:"conn_max_lifetime"`
+	// AuditKey keys the audit hash chain; 32 bytes, never serialised, never the encryption key.
+	AuditKey []byte `json:"-"`
 }
 
 // SecurityConfig holds encryption keys, cookie secrets, and session settings.
@@ -154,6 +158,20 @@ func LoadFromEnv() (*Config, error) {
 		}
 	}
 
+	auditKey, ok, err := keyfile.FromEnv("KYPULSE_AUDIT_KEY", 32)
+	if err != nil {
+		return nil, fmt.Errorf("KYPULSE_AUDIT_KEY: %w", err)
+	}
+	if !ok {
+		auditKey, err = keyfile.LoadOrCreate(filepath.Join(dataDir, "audit.key"), 32)
+		if err != nil {
+			return nil, fmt.Errorf("audit key: %w", err)
+		}
+	}
+	if bytes.Equal(auditKey, encryptionKey) {
+		return nil, errors.New("KYPULSE_AUDIT_KEY must not equal KYPULSE_ENCRYPTION_KEY")
+	}
+
 	depositInterval, err := getEnvDuration("KYPULSE_BACKUP_DEPOSIT_INTERVAL", 24*time.Hour)
 	if err != nil {
 		return nil, fmt.Errorf("KYPULSE_BACKUP_DEPOSIT_INTERVAL: %w", err)
@@ -194,6 +212,7 @@ func LoadFromEnv() (*Config, error) {
 			MaxOpenConns:    getEnvInt("KYPULSE_DB_MAX_OPEN_CONNS", 25),
 			MaxIdleConns:    getEnvInt("KYPULSE_DB_MAX_IDLE_CONNS", 5),
 			ConnMaxLifetime: 15 * time.Minute,
+			AuditKey:        auditKey,
 		},
 		Security: SecurityConfig{
 			SessionSecret:  sessionSecret,

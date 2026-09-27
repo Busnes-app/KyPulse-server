@@ -4,6 +4,7 @@ import (
 	"context"
 	"database/sql"
 	"fmt"
+	"slices"
 	"strconv"
 	"strings"
 	"time"
@@ -23,13 +24,14 @@ type SQLStore struct {
 }
 
 // newSQLStore creates and initializes a SQLStore, running migrations automatically.
-func newSQLStore(ctx context.Context, db *sql.DB, driver string) (*SQLStore, error) {
+func newSQLStore(ctx context.Context, db *sql.DB, driver string, auditKey []byte) (*SQLStore, error) {
 	driver = strings.ToLower(driver)
 	if driver == "postgresql" {
 		driver = "postgres"
 	}
 
-	if err := migrations.Run(ctx, db, driver); err != nil {
+	applied, err := migrations.Run(ctx, db, driver)
+	if err != nil {
 		return nil, fmt.Errorf("migration failure on driver %s: %w", driver, err)
 	}
 
@@ -40,9 +42,16 @@ func newSQLStore(ctx context.Context, db *sql.DB, driver string) (*SQLStore, err
 
 	s.users = &userStore{store: s}
 	s.sessions = &sessionStore{store: s}
-	s.audit = &auditStore{store: s}
+	s.audit = &auditStore{store: s, key: auditKey}
 	s.settings = &settingsStore{store: s}
 	s.targets = &targetStore{store: s}
+
+	// A log with no digests is keyed only when migration 6 has just added the columns; any
+	// later start that finds one means the chain was stripped.
+	if err := s.audit.open(ctx, slices.Contains(applied, 6)); err != nil {
+		_ = db.Close()
+		return nil, err
+	}
 
 	return s, nil
 }
@@ -358,7 +367,10 @@ type sessionStore struct {
 
 // withPassword serializes credential-derived grants with password replacement.
 // Updating the same user row takes a write lock on both supported databases.
-func (s *SQLStore) withPassword(ctx context.Context, userID, expectedHash string, apply func(*sql.Tx) error) error {
+// apply may return a non-nil finish, which withPassword calls with the commit outcome once
+// the transaction is settled — that is how a caller chaining an audit row keeps the chain's
+// lock held until its own write is durable or rolled back.
+func (s *SQLStore) withPassword(ctx context.Context, userID, expectedHash string, apply func(*sql.Tx) (finish func(bool), err error)) error {
 	tx, err := s.db.BeginTx(ctx, nil)
 	if err != nil {
 		return err
@@ -375,32 +387,37 @@ func (s *SQLStore) withPassword(ctx context.Context, userID, expectedHash string
 	if n != 1 {
 		return ErrNotFound
 	}
-	if err := apply(tx); err != nil {
+	finish, err := apply(tx)
+	if err != nil {
 		return err
 	}
-	return tx.Commit()
+	err = tx.Commit()
+	if finish != nil {
+		finish(err == nil)
+	}
+	return err
 }
 
 func (s *sessionStore) CreateSession(ctx context.Context, sess *Session, expectedPasswordHash string) error {
-	return s.store.withPassword(ctx, sess.UserID, expectedPasswordHash, func(tx *sql.Tx) error {
+	return s.store.withPassword(ctx, sess.UserID, expectedPasswordHash, func(tx *sql.Tx) (func(bool), error) {
 		_, err := tx.ExecContext(ctx, s.store.rebind(`INSERT INTO sessions (token_hash, user_id, user_agent, ip_address, created_at, expires_at) VALUES (?, ?, ?, ?, ?, ?)`), sess.TokenHash, sess.UserID, sess.UserAgent, sess.IPAddress, sess.CreatedAt, sess.ExpiresAt)
-		return err
+		return nil, err
 	})
 }
 
 func (u *userStore) CompletePasswordChange(ctx context.Context, userID, oldHash, newHash, ip string) error {
-	return u.store.withPassword(ctx, userID, oldHash, func(tx *sql.Tx) error {
+	return u.store.withPassword(ctx, userID, oldHash, func(tx *sql.Tx) (func(bool), error) {
 		now := time.Now().UTC()
 		result, err := tx.ExecContext(ctx, u.store.rebind(`UPDATE users SET password_hash = ?, must_change_password = ?, updated_at = ? WHERE id = ? AND must_change_password = ? AND sso_provider = 'local'`), newHash, false, now, userID, true)
 		if err != nil {
-			return err
+			return nil, err
 		}
 		n, err := result.RowsAffected()
 		if err != nil {
-			return err
+			return nil, err
 		}
 		if n != 1 {
-			return ErrNotFound
+			return nil, ErrNotFound
 		}
 		return u.revokePasswordGrants(ctx, tx, userID, "forced replacement; sessions revoked", ip, now)
 	})
@@ -425,20 +442,25 @@ func (u *userStore) ResetAdminPassword(ctx context.Context, userID, newHash stri
 	if n != 1 {
 		return ErrNotFound
 	}
-	if err := u.revokePasswordGrants(ctx, tx, userID, "operator reset; sessions revoked", "", now); err != nil {
+	finish, err := u.revokePasswordGrants(ctx, tx, userID, "operator reset; sessions revoked", "", now)
+	if err != nil {
 		return err
 	}
-	return tx.Commit()
+	err = tx.Commit()
+	finish(err == nil)
+	return err
 }
 
-func (u *userStore) revokePasswordGrants(ctx context.Context, tx *sql.Tx, userID, details, ip string, now time.Time) error {
+// revokePasswordGrants deletes sessions and MFA challenges and chains the audit row on tx.
+// finish must be called by the caller with the transaction's commit outcome once it is
+// settled; it releases the audit chain lock this call took.
+func (u *userStore) revokePasswordGrants(ctx context.Context, tx *sql.Tx, userID, details, ip string, now time.Time) (finish func(bool), err error) {
 	for _, table := range []string{"sessions", "mfa_challenges"} {
 		if _, err := tx.ExecContext(ctx, u.store.rebind("DELETE FROM "+table+" WHERE user_id = ?"), userID); err != nil {
-			return err
+			return nil, err
 		}
 	}
-	_, err := tx.ExecContext(ctx, u.store.rebind(`INSERT INTO audit_records (user_id, action, resource, details, ip_address, created_at) VALUES (?, ?, ?, ?, ?, ?)`), userID, "auth.password_changed", "user", details, ip, now)
-	return err
+	return u.store.audit.append(ctx, tx, &AuditRecord{UserID: userID, Action: "auth.password_changed", Resource: "user", Details: details, IPAddress: ip, CreatedAt: now})
 }
 
 func (s *sessionStore) GetSession(ctx context.Context, tokenHash string) (*Session, error) {
@@ -483,9 +505,9 @@ func (s *sessionStore) CleanExpiredSessions(ctx context.Context) error {
 }
 
 func (s *sessionStore) CreateMFAChallenge(ctx context.Context, challenge *MFAChallenge, expectedPasswordHash string) error {
-	return s.store.withPassword(ctx, challenge.UserID, expectedPasswordHash, func(tx *sql.Tx) error {
+	return s.store.withPassword(ctx, challenge.UserID, expectedPasswordHash, func(tx *sql.Tx) (func(bool), error) {
 		_, err := tx.ExecContext(ctx, s.store.rebind("INSERT INTO mfa_challenges (token_hash, user_id, expires_at, password_hash) VALUES (?, ?, ?, ?)"), challenge.TokenHash, challenge.UserID, challenge.ExpiresAt, expectedPasswordHash)
-		return err
+		return nil, err
 	})
 }
 
@@ -520,62 +542,6 @@ func (s *sessionStore) ConsumeMFAChallenge(ctx context.Context, tokenHash string
 		return "", "", err
 	}
 	return userID, passwordHash, nil
-}
-
-// ---------------------------------------------------------------------
-// Audit Store
-// ---------------------------------------------------------------------
-
-type auditStore struct {
-	store *SQLStore
-}
-
-func (a *auditStore) LogAudit(ctx context.Context, r *AuditRecord) error {
-	if r.CreatedAt.IsZero() {
-		r.CreatedAt = time.Now().UTC()
-	}
-	q := a.store.rebind(`
-INSERT INTO audit_records (user_id, action, resource, details, ip_address, created_at)
-VALUES (?, ?, ?, ?, ?, ?)
-`)
-	_, err := a.store.db.ExecContext(ctx, q, r.UserID, r.Action, r.Resource, r.Details, r.IPAddress, r.CreatedAt)
-	return err
-}
-
-func (a *auditStore) ListAuditRecords(ctx context.Context, offset, limit int) ([]*AuditRecord, int, error) {
-	if limit <= 0 {
-		limit = 50
-	}
-	if offset < 0 {
-		offset = 0
-	}
-
-	var count int
-	err := a.store.db.QueryRowContext(ctx, "SELECT COUNT(1) FROM audit_records").Scan(&count)
-	if err != nil {
-		return nil, 0, err
-	}
-
-	q := a.store.rebind(`
-SELECT id, user_id, action, resource, details, ip_address, created_at
-FROM audit_records
-ORDER BY created_at DESC LIMIT ? OFFSET ?
-`)
-	rows, err := a.store.db.QueryContext(ctx, q, limit, offset)
-	if err != nil {
-		return nil, 0, err
-	}
-	defer rows.Close()
-
-	var records []*AuditRecord
-	for rows.Next() {
-		var r AuditRecord
-		if err := rows.Scan(&r.ID, &r.UserID, &r.Action, &r.Resource, &r.Details, &r.IPAddress, &r.CreatedAt); err != nil {
-			return nil, 0, err
-		}
-		records = append(records, &r)
-	}
-	return records, count, rows.Err()
 }
 
 // ---------------------------------------------------------------------

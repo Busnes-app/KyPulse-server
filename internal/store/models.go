@@ -51,6 +51,22 @@ type AuditRecord struct {
 	Details   string    `json:"details,omitempty"`
 	IPAddress string    `json:"ip_address"`
 	CreatedAt time.Time `json:"created_at"`
+	Seq       uint64    `json:"seq"`  // chain position, 1-based; 0 only on a row written before the chain
+	Hash      string    `json:"hash"` // this record's digest; prev_hash is not exposed
+}
+
+// ChainStatus is what VerifyChain reports about an intact audit chain.
+type ChainStatus struct {
+	Count uint64 `json:"count"`
+	Head  string `json:"head"`
+}
+
+// ChainPlacement is how the store found the audit chain at open. Mode is "new" (empty log),
+// "legacy_keyed" (a pre-chain log keyed after migration 6) or "resumed" (the stored tail).
+type ChainPlacement struct {
+	Mode  string
+	Count uint64
+	Head  string
 }
 
 // Setting represents a durable server-wide key-value configuration entry.

@@ -32,6 +32,7 @@ Everything a fresh server needs to be the old one:
 |---|---|
 | `data/kypulse.db` | The whole database: users, sessions, MFA state, audit log, settings, the sealed KyRecovery token |
 | `data/encryption.key` | 32 bytes. Every TOTP secret and the KyRecovery pairing token are encrypted under it |
+| `data/audit.key` | 32 bytes. Keys the audit hash chain; without it the restored log cannot be verified |
 | `data/recovery.pub` | The suite recovery public key, so the restored server comes back pinned (present when the backup had a key) |
 | `config/settings.json` | App name, URL, port, database driver. For your reference when re-deploying; nothing reads it |
 
@@ -168,7 +169,7 @@ Failures you may see, and what they mean:
 find restored -type f -printf '%m %p\n'
 ```
 
-Expect three or four files, all mode `600`, under `restored/data` and `restored/config`.
+Expect four or five files, all mode `600`, under `restored/data` and `restored/config`.
 `cat restored/config/settings.json` shows the app URL and port the old server ran with.
 
 ## Step 3: put it in service
@@ -216,10 +217,18 @@ Keep `KYPULSE_APP_URL` and `KYPULSE_APP_NAME` identical to the old deployment, f
 `config/settings.json`: the app name is what every capsule is sealed under and what
 KyRecovery pinned for the pairing token.
 
-The restored `encryption.key` is the key; the file form is the one to use. If the old
-deployment supplied `KYPULSE_ENCRYPTION_KEY` by environment instead, the environment wins when
-both are present, so either remove that variable so the file is read, or keep supplying the
-same value from wherever the old deployment kept it. Never print a key to a terminal or type
+The restored `encryption.key` and `audit.key` are the keys; the file form is the one to use.
+If the old deployment supplied `KYPULSE_ENCRYPTION_KEY` or `KYPULSE_AUDIT_KEY` by environment
+instead, the environment wins when both are present, so either remove that variable so the
+file is read, or keep supplying the same value from wherever the old deployment kept it.
+A capsule from before the audit chain has no `data/audit.key`; a new key is minted at first
+start and the restored records are keyed under it. If the server refuses to start because the
+audit key is not the one that wrote the log, supply the right key; without it, move the
+records and the anchor aside to begin a new chain and keep the old ones for the auditor.
+If the server refuses because the records carry no digest and there is no anchor, and this
+follows a crash during the first start after the upgrade, run
+`DELETE FROM schema_migrations WHERE version = 6`, drop the index idx_audit_seq, then the
+columns seq, prev_hash and hash from audit_records, and start again; the keying reruns. Never print a key to a terminal or type
 one on a command line: it lands in scrollback, session recordings and shell history. If you
 must produce the hex form, write it straight into the compose project's `.env` with
 `umask 077` and nothing else on stdout.
@@ -239,6 +248,13 @@ as before, and start.
    back the same key.
 3. Check the audit log: the last events before the restore are there, followed by your
    sign-in.
+4. Run `kypulse audit-verify` against the restored data directory
+   (`docker compose exec app /app/kypulse audit-verify` under Compose). It walks every audit
+   record against the anchor and exits 1 on an altered or reordered record, or a deleted
+   record while the anchor is intact. The anchor sits in the same database, so compare the
+   printed `count` and `head` against the last `audit_chain_placed` line in the old server's
+   process log: the count must not be lower, and at an equal count the head must match. That
+   catches an anchor rewritten together with the log.
 
 ## Step 5: decide what to trust
 

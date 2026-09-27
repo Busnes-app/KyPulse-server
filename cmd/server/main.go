@@ -47,6 +47,9 @@ func main() {
 		case "restore":
 			runRestore(os.Args[2:])
 			return
+		case "audit-verify":
+			runAuditVerify()
+			return
 		case "version":
 			fmt.Println("kypulse v0.1.0 (Busnes.app kyPulse)")
 			return
@@ -87,6 +90,8 @@ func runServer(lg *logging.Logger) {
 		fatal("Failed to initialize database (%s): %v", cfg.Database.Driver, err)
 	}
 	defer st.Close()
+	placed := st.Audit().Placement()
+	lg.Log(ctx, auditChainPlaced, fChainMode(placed.Mode), logging.Count(int64(placed.Count)), fChainHead(placed.Head))
 
 	// Ensure default admin user exists if database is empty
 	count, _ := st.Users().CountUsers(ctx)
@@ -290,6 +295,30 @@ func runDeposit() {
 	if res.Receipt != nil {
 		log.Printf("✓ Capsule %s deposited at %s; digest %s", res.Manifest.CapsuleID, res.Receipt.DepositedAt.Format(time.RFC3339), res.Receipt.Digest)
 	}
+}
+
+// runAuditVerify walks the whole audit chain against its anchor and exits non-zero when any
+// record was altered, reordered or removed. Run it after a restore and whenever the log is
+// in doubt; the server only places the tail at start. Opening the store runs pending
+// migrations and, right after migration 6, keys a pre-chain log; the verification itself
+// writes nothing.
+func runAuditVerify() {
+	cfg, err := config.LoadFromEnv()
+	if err != nil {
+		fatal("Failed to load configuration: %v", err)
+	}
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Minute)
+	defer cancel()
+	st, err := store.Open(ctx, cfg.Database)
+	if err != nil {
+		fatal("Failed to open database (%s): %v", cfg.Database.Driver, err)
+	}
+	defer st.Close()
+	status, err := st.Audit().VerifyChain(ctx)
+	if err != nil {
+		fatal("Audit chain FAILED verification: %v", err)
+	}
+	fmt.Printf("audit chain verified: %d records, head %s\n", status.Count, status.Head)
 }
 
 func runInitAdmin(args []string) {

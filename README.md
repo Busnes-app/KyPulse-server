@@ -58,6 +58,9 @@ a network with subnet `KYPULSE_NETWORK_SUBNET`, both required once the overlay i
 kyPulse backs up to KyRecovery like every suite product. `docs/RESTORE.md` is the restore
 runbook.
 
+kyPulse's own audit trail is a keyed hash chain; `kypulse audit-verify` checks it and
+`/healthz` reports `audit` down when it cannot be appended to.
+
 ## Develop
 
 ```sh

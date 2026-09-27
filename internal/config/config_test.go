@@ -2,6 +2,9 @@ package config_test
 
 import (
 	"bytes"
+	"encoding/hex"
+	"os"
+	"path/filepath"
 	"strings"
 	"testing"
 	"time"
@@ -152,5 +155,42 @@ func TestAlertAndPollConfig(t *testing.T) {
 	t.Setenv("KYPULSE_POLL_WORKERS", "0")
 	if _, err := config.LoadFromEnv(); err == nil || !strings.Contains(err.Error(), "KYPULSE_POLL_WORKERS") {
 		t.Fatalf("workers=0 must fail startup: %v", err)
+	}
+}
+
+func TestAuditKeyFromEnvOrFile(t *testing.T) {
+	dir := t.TempDir()
+	t.Setenv("KYPULSE_DATA_DIR", dir)
+	t.Setenv("KYPULSE_AUDIT_KEY", "")
+	cfg, err := config.LoadFromEnv()
+	if err != nil {
+		t.Fatal(err)
+	}
+	if len(cfg.Database.AuditKey) != 32 {
+		t.Fatalf("minted audit key is %d bytes", len(cfg.Database.AuditKey))
+	}
+	if _, err := os.Stat(filepath.Join(dir, "audit.key")); err != nil {
+		t.Fatalf("audit.key not written: %v", err)
+	}
+	again, err := config.LoadFromEnv()
+	if err != nil || !bytes.Equal(again.Database.AuditKey, cfg.Database.AuditKey) {
+		t.Fatalf("second load did not reuse the file: %v", err)
+	}
+
+	t.Setenv("KYPULSE_AUDIT_KEY", strings.Repeat("ab", 32))
+	cfg, err = config.LoadFromEnv()
+	if err != nil || hex.EncodeToString(cfg.Database.AuditKey) != strings.Repeat("ab", 32) {
+		t.Fatalf("env key not used: %v", err)
+	}
+
+	t.Setenv("KYPULSE_ENCRYPTION_KEY", strings.Repeat("ab", 32))
+	if _, err := config.LoadFromEnv(); err == nil || !strings.Contains(err.Error(), "must not equal") {
+		t.Fatalf("an audit key equal to the encryption key must refuse to start: %v", err)
+	}
+	t.Setenv("KYPULSE_ENCRYPTION_KEY", "")
+
+	t.Setenv("KYPULSE_AUDIT_KEY", "short")
+	if _, err := config.LoadFromEnv(); err == nil {
+		t.Fatal("a malformed KYPULSE_AUDIT_KEY must refuse to start")
 	}
 }

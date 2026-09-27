@@ -114,6 +114,41 @@ func TestCollectRefusesAShortKey(t *testing.T) {
 	}
 }
 
+// The audit chain key must ride in the capsule: without it a restored audit log cannot be
+// verified against its hash chain.
+func TestCollectCarriesTheAuditKey(t *testing.T) {
+	cfg, _ := payloadConfig(t)
+	payload, err := backup.Collect(context.Background(), cfg, "1.0.0")
+	if err != nil {
+		t.Fatal(err)
+	}
+	f := findFile(payload.Files, "data/audit.key")
+	if f == nil {
+		t.Fatal("payload has no data/audit.key")
+	}
+	if want := hex.EncodeToString(cfg.Database.AuditKey) + "\n"; string(f.Data) != want {
+		t.Errorf("content: got %q, want the lowercase hex keyfile reads", f.Data)
+	}
+	if f.Mode != 0600 {
+		t.Errorf("mode: got %o, want 600", f.Mode)
+	}
+	req, _ := payload.VerificationRecipe["required_files"].([]string)
+	if !slices.Contains(req, "data/audit.key") {
+		t.Errorf("required_files: got %v, want data/audit.key among them", req)
+	}
+	if !slices.Contains(backup.Members(cfg), "data/audit.key") {
+		t.Errorf("Members: got %v, want data/audit.key among them", backup.Members(cfg))
+	}
+}
+
+func TestCollectRefusesAShortAuditKey(t *testing.T) {
+	cfg, _ := payloadConfig(t)
+	cfg.Database.AuditKey = cfg.Database.AuditKey[:16]
+	if _, err := backup.Collect(context.Background(), cfg, "1.0.0"); err == nil {
+		t.Fatal("a 16-byte audit key was accepted")
+	}
+}
+
 // The store runs in WAL mode, so a plain read of the main file misses every commit still in
 // the -wal. The snapshot must carry a row committed moments ago and never checkpointed.
 func TestSnapshotSeesUncheckpointedCommit(t *testing.T) {
@@ -134,7 +169,7 @@ func TestSnapshotSeesUncheckpointedCommit(t *testing.T) {
 	if err := os.WriteFile(restored, f.Data, 0600); err != nil {
 		t.Fatal(err)
 	}
-	copyStore, err := store.Open(ctx, config.DatabaseConfig{Driver: "sqlite", DSN: restored})
+	copyStore, err := store.Open(ctx, config.DatabaseConfig{Driver: "sqlite", DSN: restored, AuditKey: cfg.Database.AuditKey})
 	if err != nil {
 		t.Fatalf("snapshot does not open: %v", err)
 	}

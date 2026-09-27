@@ -18,6 +18,11 @@ var processLogger *logging.Logger
 var (
 	fatalEvent = logging.DeclareEvent("fatal", "process exiting on a fatal error", slog.LevelError)
 	fatalText  = logging.DeclareString("detail")
+
+	// auditChainPlaced is the operator's copy of the audit anchor outside the database.
+	auditChainPlaced = logging.DeclareEvent("audit_chain_placed", "audit chain placed at start", slog.LevelInfo)
+	fChainMode       = logging.DeclareString("mode")
+	fChainHead       = logging.DeclareString("head")
 )
 
 // newLogger builds the process logger and routes the stdlib log package and the default slog
