@@ -10,8 +10,9 @@ import (
 )
 
 var (
-	logRetentionFailed = logging.DeclareEvent("log_retention_failed", "log retention cleanup failed", slog.LevelError)
-	logRetentionReason = logging.DeclareString("reason")
+	logRetentionFailed    = logging.DeclareEvent("log_retention_failed", "log retention cleanup failed", slog.LevelError)
+	logRetentionReason    = logging.DeclareString("reason")
+	logRetentionAbandoned = logging.DeclareEvent("log_retention_abandoned", "log retention still running at shutdown deadline", slog.LevelError)
 )
 
 func logRetentionLoop(ctx context.Context, st store.Store, maxBytes int64, lg *logging.Logger, done chan<- struct{}) {

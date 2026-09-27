@@ -181,7 +181,7 @@ func runServer(lg *logging.Logger) {
 	select {
 	case <-retentionDone:
 	case <-waitCtx.Done():
-		log.Printf("[KYPULSE] abandoning log retention still running after %s", backupWaitTimeout)
+		lg.Log(context.Background(), logRetentionAbandoned, logRetentionReason("shutdown_timeout"))
 	}
 	log.Println("[KYPULSE] Server stopped")
 }

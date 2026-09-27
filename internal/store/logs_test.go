@@ -39,6 +39,10 @@ func TestEvictAgeBoundaryAndSharedBudget(t *testing.T) {
 	if got := Evict([]RetainedRow{{"log", 1, boundary.Add(-time.Nanosecond), 4}}, now, 4); len(got) != 1 {
 		t.Fatalf("expired retained: %+v", got)
 	}
+	ties := Evict([]RetainedRow{{"log", 1, now, 1}, {"activity", 2, now, 1}, {"activity", 1, now, 1}}, now, 0)
+	if len(ties) != 3 || ties[0].Kind != "activity" || ties[0].ID != 1 || ties[1].Kind != "activity" || ties[1].ID != 2 || ties[2].Kind != "log" || ties[2].ID != 1 {
+		t.Fatalf("tie order: %+v", ties)
+	}
 }
 
 func TestConcurrentLogUsageAndPrune(t *testing.T) {
@@ -95,15 +99,18 @@ func TestExpireSourceCodes(t *testing.T) {
 	for _, code := range []struct {
 		hash    string
 		expires time.Time
-	}{{"expired", now}, {"live", now.Add(time.Minute)}} {
+	}{{"live", now.Add(time.Minute)}, {"expired", now}} {
 		if err := s.Sources().CreateCode(context.Background(), code.hash, "", code.expires); err != nil {
 			t.Fatal(err)
 		}
 	}
+	var count int
+	if err := s.db.QueryRow("SELECT COUNT(*) FROM log_pairing_codes").Scan(&count); err != nil || count != 2 {
+		t.Fatalf("before expiry codes=%d err=%v", count, err)
+	}
 	if err := s.Sources().ExpireCodes(context.Background(), now); err != nil {
 		t.Fatal(err)
 	}
-	var count int
 	if err := s.db.QueryRow("SELECT COUNT(*) FROM log_pairing_codes").Scan(&count); err != nil {
 		t.Fatal(err)
 	}
