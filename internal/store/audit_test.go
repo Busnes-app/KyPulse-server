@@ -379,3 +379,20 @@ func TestAuditRefusesTheWrongKey(t *testing.T) {
 		t.Fatalf("a foreign key must refuse to open and name the key: %v", err)
 	}
 }
+
+// A running server must not re-create a deleted anchor from memory.
+func TestDeletedAnchorFailsNextAppend(t *testing.T) {
+	st := openAudit(t, testdb.Config(t))
+	logN(t, st, 2)
+	ctx := context.Background()
+	if _, err := st.db.ExecContext(ctx, `DELETE FROM server_settings WHERE key = 'audit_anchor'`); err != nil {
+		t.Fatal(err)
+	}
+	err := st.Audit().LogAudit(ctx, &AuditRecord{UserID: "u1", Action: "test.event"})
+	if !errors.Is(err, ErrAuditUnplaceable) {
+		t.Fatalf("append after anchor deletion: %v", err)
+	}
+	if err := st.Audit().Ready(ctx); err == nil {
+		t.Fatal("Ready must fail without the anchor")
+	}
+}

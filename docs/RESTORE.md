@@ -224,7 +224,11 @@ file is read, or keep supplying the same value from wherever the old deployment 
 A capsule from before the audit chain has no `data/audit.key`; a new key is minted at first
 start and the restored records are keyed under it. If the server refuses to start because the
 audit key is not the one that wrote the log, supply the right key; without it, move the
-records and the anchor aside to begin a new chain and keep the old ones for the auditor. Never print a key to a terminal or type
+records and the anchor aside to begin a new chain and keep the old ones for the auditor.
+If the server refuses because the records carry no digest and there is no anchor, and this
+follows a crash during the first start after the upgrade, run
+`DELETE FROM schema_migrations WHERE version = 6`, drop the columns seq, prev_hash and hash
+and the index idx_audit_seq from audit_records, and start again; the keying reruns. Never print a key to a terminal or type
 one on a command line: it lands in scrollback, session recordings and shell history. If you
 must produce the hex form, write it straight into the compose project's `.env` with
 `umask 077` and nothing else on stdout.

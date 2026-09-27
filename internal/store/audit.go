@@ -154,7 +154,7 @@ func (a *auditStore) place(ctx context.Context, q dbtx, allowLegacy bool) (*audi
 		return nil, "", fmt.Errorf("%w: no audit records, but the anchor counts %d; the log was emptied", ErrAuditUnplaceable, anchor.Count)
 	case !hasAnchor && unkeyed == total:
 		if !allowLegacy {
-			return nil, "", fmt.Errorf("%w: %d audit records carry no digest and there is no anchor, but the chain was keyed before: the chain columns and the anchor were cleared. This server will not start. Restore the database from backup, or move the records aside to begin a new chain and keep the old ones for the auditor", ErrAuditUnplaceable, total)
+			return nil, "", fmt.Errorf("%w: %d audit records carry no digest and there is no anchor, but the chain was keyed before: the chain columns and the anchor were cleared. This server will not start. Restore the database from backup, or move the records aside to begin a new chain and keep the old ones for the auditor. If this follows a crash during the first start after the upgrade, run `DELETE FROM schema_migrations WHERE version = 6`, drop the columns seq, prev_hash and hash and the index idx_audit_seq from audit_records, and start again; the keying reruns", ErrAuditUnplaceable, total)
 		}
 		c, err := a.keyLegacy(ctx, q)
 		return c, "legacy_keyed", err
@@ -257,7 +257,8 @@ func mustTime(s string) time.Time {
 // a second append from chaining onto this one before it is durable: on Postgres, unlike
 // SQLite, a second connection could otherwise start its own append while this transaction is
 // still open. Another process on the same database may have appended since this one last
-// did, so the stored anchor is compared with the chain's and the tail re-read on a mismatch.
+// did, so the stored anchor is compared with the chain's and the tail re-read on a mismatch
+// or a missing anchor.
 func (a *auditStore) append(ctx context.Context, tx *sql.Tx, r *AuditRecord) (finish func(committed bool), err error) {
 	stamp(r)
 	a.mu.Lock()
@@ -290,7 +291,8 @@ VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
 	}, nil
 }
 
-// follow resumes the chain and re-places it on tx when the stored anchor has moved on.
+// follow resumes the chain and re-places it on tx when the stored anchor has moved on or is
+// gone; a missing anchor then refuses, rather than being re-created from memory.
 func (a *auditStore) follow(ctx context.Context, tx *sql.Tx) (*auditchain.Chain, error) {
 	c, err := a.resume(ctx, tx)
 	if err != nil {
@@ -300,7 +302,7 @@ func (a *auditStore) follow(ctx context.Context, tx *sql.Tx) (*auditchain.Chain,
 	if err != nil {
 		return nil, err
 	}
-	if ok && stored != c.Anchor() {
+	if !ok || stored != c.Anchor() {
 		a.chain = nil
 		return a.resume(ctx, tx)
 	}
