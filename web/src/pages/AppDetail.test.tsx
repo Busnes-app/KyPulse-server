@@ -82,6 +82,51 @@ describe('AppDetail', () => {
     expect(banner.textContent).toContain('GET https://vault.lan/healthz');
   });
 
+  it('renders KyYard container facts', async () => {
+    const facts = {
+      link: 'kyvault', endpoint_id: 'ep_1', endpoint_name: 'ep_1', container_id: 'c1', name: 'kyvault', image: 'kyvault:latest',
+      state: 'exited', status: 'Exited (1) 2 minutes ago', health: 'unhealthy', exit_code: 1, observed_at: '2026-09-27T09:59:00Z',
+      memory_bytes: 104857600, memory_limit: 0, restart_count: 5, restarts_last_hour: 2, stale: false,
+    };
+    const fn = vi.fn(async (input: RequestInfo | URL) => {
+      const key = String(input);
+      if (/^\/api\/kyyard$/.test(key)) return new Response(JSON.stringify({ paired: true, stale: false, fetched_at: '2026-09-27T10:00:00Z' }));
+      if (/tgt_a$/.test(key)) return new Response(JSON.stringify({ ...detail, kyyard: facts }));
+      throw new Error(key);
+    });
+    vi.stubGlobal('fetch', fn);
+    render(<AppDetail id="tgt_a" user={{ role: 'viewer' }} onChanged={() => {}} />);
+    expect(await screen.findByText(/kyvault on ep_1/)).toBeTruthy();
+    expect(screen.getByText('unhealthy')).toBeTruthy();
+    expect(screen.getByText(/exit 1/)).toBeTruthy();
+    expect(screen.getByText(/in the last hour/)).toBeTruthy();
+  });
+
+  it('says the linked container was not seen in KyYard when paired but no facts', async () => {
+    const fn = vi.fn(async (input: RequestInfo | URL) => {
+      const key = String(input);
+      if (/^\/api\/kyyard$/.test(key)) return new Response(JSON.stringify({ paired: true, stale: false, fetched_at: '2026-09-27T10:00:00Z' }));
+      if (/tgt_a$/.test(key)) return new Response(JSON.stringify({ ...detail, kyyard: null }));
+      throw new Error(key);
+    });
+    vi.stubGlobal('fetch', fn);
+    render(<AppDetail id="tgt_a" user={{ role: 'viewer' }} onChanged={() => {}} />);
+    expect(await screen.findByText(/Not seen in KyYard/)).toBeTruthy();
+  });
+
+  it('shows a hint for an unlinked target', async () => {
+    const unlinked = { ...target, container: undefined };
+    const fn = vi.fn(async (input: RequestInfo | URL) => {
+      const key = String(input);
+      if (/^\/api\/kyyard$/.test(key)) return new Response(JSON.stringify({ paired: false, stale: false }));
+      if (/tgt_a$/.test(key)) return new Response(JSON.stringify({ ...detail, target: unlinked, kyyard: null }));
+      throw new Error(key);
+    });
+    vi.stubGlobal('fetch', fn);
+    render(<AppDetail id="tgt_a" user={{ role: 'admin' }} onChanged={() => {}} />);
+    expect(await screen.findByText(/Not linked to a KyYard container/)).toBeTruthy();
+  });
+
   it('keeps the container when editing and saving', async () => {
     const fetchMock = stub([[/^PUT \/api\/targets\/tgt_a$/, { target }]]);
     render(<AppDetail id="tgt_a" user={{ role: 'admin' }} onChanged={() => {}} />);

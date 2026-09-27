@@ -2,6 +2,7 @@ import React from 'react';
 import { Settings as SettingsIcon, Database, Palette } from 'lucide-react';
 import { ThemeSwitcher } from '../components/ThemeSwitcher';
 import { WebhookForm } from '../components/WebhookForm';
+import { KyYardCard } from '../components/KyYardCard';
 
 interface SettingsProps {
   settings: any;
@@ -24,6 +25,7 @@ export const Settings: React.FC<SettingsProps> = ({ settings, user, onChanged })
 
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 480px), 1fr))', gap: '20px' }}>
         {user.role === 'admin' && <WebhookForm onChanged={onChanged} />}
+        {user.role === 'admin' && <KyYardCard onChanged={onChanged} />}
         {/* Pluggable Database Card */}
         <div className="panel">
           <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '12px' }}>

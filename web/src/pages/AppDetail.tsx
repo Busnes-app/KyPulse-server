@@ -1,10 +1,11 @@
 import React, { useCallback, useEffect, useState } from 'react';
 import { ArrowLeft, BellOff, Pencil, Trash2 } from 'lucide-react';
 import { TargetForm } from '../components/TargetForm';
+import { KyYardFacts } from '../components/KyYardFacts';
 import { hrefFor, navigate } from '../router';
 import {
-  ApiError, deleteTarget, getTarget, isSilenced, silenceTarget, sinceLabel, stateClass, stateLabel, timeLabel, updateTarget,
-  type LastResult, type SilenceFor, type Target, type TargetEvent, type TargetInput,
+  ApiError, deleteTarget, getKyYard, getTarget, isSilenced, kyYardContainers, silenceTarget, sinceLabel, stateClass, stateLabel, timeLabel, updateTarget,
+  type ContainerFacts, type LastResult, type SilenceFor, type Suggestion, type Target, type TargetEvent, type TargetInput,
 } from '../monitor';
 import type { PageUser } from './Status';
 
@@ -20,6 +21,9 @@ export const AppDetail: React.FC<AppDetailProps> = ({ id, user, onChanged }) => 
   const [target, setTarget] = useState<Target | null>(null);
   const [last, setLast] = useState<LastResult | null>(null);
   const [events, setEvents] = useState<TargetEvent[]>([]);
+  const [facts, setFacts] = useState<ContainerFacts | null>(null);
+  const [yardPaired, setYardPaired] = useState(false);
+  const [suggestions, setSuggestions] = useState<Suggestion[]>([]);
   const [missing, setMissing] = useState(false);
   const [error, setError] = useState('');
   const [editing, setEditing] = useState(false);
@@ -32,6 +36,7 @@ export const AppDetail: React.FC<AppDetailProps> = ({ id, user, onChanged }) => 
       setTarget(d.target);
       setLast(d.last_result);
       setEvents(d.events ?? []);
+      setFacts(d.kyyard ?? null);
       setError('');
     } catch (err) {
       if (err instanceof ApiError && err.status === 404) setMissing(true);
@@ -44,6 +49,15 @@ export const AppDetail: React.FC<AppDetailProps> = ({ id, user, onChanged }) => 
     const timer = window.setInterval(() => void load(), 15_000);
     return () => window.clearInterval(timer);
   }, [load]);
+
+  useEffect(() => {
+    getKyYard().then((s) => setYardPaired(s.paired)).catch(() => setYardPaired(false));
+  }, []);
+
+  useEffect(() => {
+    if (!isAdmin) return;
+    kyYardContainers().then(setSuggestions).catch(() => setSuggestions([]));
+  }, [isAdmin]);
 
   const act = async (fn: () => Promise<unknown>) => {
     setBusy(true);
@@ -105,7 +119,7 @@ export const AppDetail: React.FC<AppDetailProps> = ({ id, user, onChanged }) => 
         )}
       </div>
       {error && <p className="form-error" role="alert">{error}</p>}
-      {editing && <div className="dr-section"><TargetForm initial={target} submitLabel="Save changes" onSubmit={save} onCancel={() => setEditing(false)} /></div>}
+      {editing && <div className="dr-section"><TargetForm initial={target} submitLabel="Save changes" suggestions={suggestions} onSubmit={save} onCancel={() => setEditing(false)} /></div>}
 
       <section className={`banner banner-${cls}`} aria-label="Current state">
         <span className={`dot dot-${cls}`} aria-hidden="true" />
@@ -166,6 +180,11 @@ export const AppDetail: React.FC<AppDetailProps> = ({ id, user, onChanged }) => 
             <div className="dr-fact"><span className="dr-fact-label">Polling</span><span className="dr-fact-value">{target.enabled ? 'enabled' : 'paused'}</span></div>
           </div>
         </div>
+      </div>
+
+      <div className="dr-section">
+        <h3>KyYard</h3>
+        <KyYardFacts facts={facts} link={target.container} paired={yardPaired} isAdmin={isAdmin} />
       </div>
 
       <div className="dr-section">

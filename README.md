@@ -16,6 +16,27 @@ every page. Settings & DB holds the alert webhook form (admin) alongside databas
 Admins get every screen and control; viewers get Status, Alerts, app detail and a read-only
 Settings & DB.
 
+## KyYard
+
+Settings (admin) has a KyYard card: pairing needs a URL and a six-digit code a KyYard
+administrator generates on the organization's Members page (Service tokens → Pair kyPulse),
+valid 15 minutes. Once paired, the card shows organization, URL, last pull and state; a
+revoked token shows a hint to unpair and pair again. `KYPULSE_KYYARD_ALLOW_HTTP` (default
+false) admits a plain-http KyYard URL; loopback and link-local addresses stay refused either
+way.
+
+Every watched app can be linked to a KyYard container (a `endpoint/name` value, with
+suggestions from `GET /api/kyyard/containers` in the add/edit form for admins). The app
+detail page then shows KyYard's facts for that container: state, Docker health, image,
+memory, restarts and when it was last observed. A pairing answers `stale:true` with no
+`fetched_at` right after pairing ("first pull pending"); the alert bar and Settings both
+treat that as pending, not a failure, and show data as stale once a pull has run but failed
+or is late.
+
+Unpairing is two steps, one on each side: the Settings card's Unpair button deletes the URL
+and token here only; a KyYard administrator must separately revoke the token on KyYard's
+Members page.
+
 ## Run
 
 ```sh

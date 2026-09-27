@@ -3,8 +3,8 @@ import { Activity, Plus, BellOff } from 'lucide-react';
 import { TargetForm } from '../components/TargetForm';
 import { hrefFor } from '../router';
 import {
-  ApiError, createTarget, isSilenced, listTargets, sinceLabel, sortTargets, stateClass, stateLabel, timeLabel,
-  type Target, type TargetInput,
+  ApiError, createTarget, isSilenced, kyYardContainers, listTargets, sinceLabel, sortTargets, stateClass, stateLabel, timeLabel,
+  type Suggestion, type Target, type TargetInput,
 } from '../monitor';
 
 export interface PageUser { role: string }
@@ -19,6 +19,7 @@ export const Status: React.FC<StatusProps> = ({ user, onChanged }) => {
   const [targets, setTargets] = useState<Target[] | null>(null);
   const [error, setError] = useState('');
   const [adding, setAdding] = useState(false);
+  const [suggestions, setSuggestions] = useState<Suggestion[]>([]);
   const isAdmin = user.role === 'admin';
 
   const load = useCallback(async () => {
@@ -36,6 +37,11 @@ export const Status: React.FC<StatusProps> = ({ user, onChanged }) => {
     return () => window.clearInterval(timer);
   }, [load]);
 
+  useEffect(() => {
+    if (!isAdmin) return;
+    kyYardContainers().then(setSuggestions).catch(() => setSuggestions([]));
+  }, [isAdmin]);
+
   const add = async (input: TargetInput) => {
     await createTarget(input);
     setAdding(false);
@@ -51,7 +57,7 @@ export const Status: React.FC<StatusProps> = ({ user, onChanged }) => {
           <button type="button" onClick={() => setAdding(true)}><Plus size={14} />Add app</button>
         )}
       </div>
-      {adding && <div className="dr-section"><TargetForm submitLabel="Save" onSubmit={add} onCancel={() => setAdding(false)} /></div>}
+      {adding && <div className="dr-section"><TargetForm submitLabel="Save" suggestions={suggestions} onSubmit={add} onCancel={() => setAdding(false)} /></div>}
       {error && <p className="form-error" role="alert">{error}</p>}
       {targets && targets.length === 0 && !adding && (
         <p className="dr-hint">No apps are watched yet.{isAdmin ? ' Add one to start polling its /healthz.' : ' Ask an admin to add one.'}</p>
