@@ -1,93 +1,248 @@
 # kyPulse
 
 Unified health and logging for the Busnes.app Ky suite. kyPulse polls every Ky app's
-`/healthz`, pulls container state and logs from KyYard, accepts logs from paired senders, and
-sends an outbound webhook when an app goes down or degrades. It is read-only: it watches and
-reports, and never changes the apps it watches.
+`/healthz`, reads container state from KyYard, shows what is broken first, and sends an
+outbound webhook when an app goes down or degrades. It is read-only towards the apps it
+watches: it observes and reports, and never changes them.
 
-Design: `docs/superpowers/specs/2026-09-26-kypulse-design.md`.
+Design: [`docs/superpowers/specs/2026-09-26-kypulse-design.md`](docs/superpowers/specs/2026-09-26-kypulse-design.md).
 
-## Screens
+## What works today
 
-Status shows every watched app as a grid, broken apps first. Alerts lists state transitions,
-deliveries and silences. Each app has a detail page with its current state and history, and
-buttons to silence for 1h, 8h or until fixed. An alert bar surfaces active problems above
-every page. Settings & DB holds the alert webhook form (admin) alongside database info.
-Admins get every screen and control; viewers get Status, Alerts, app detail and a read-only
-Settings & DB.
+| Area | State |
+|---|---|
+| Health polling, alert state machine, webhook alerts | done |
+| Status, Alerts, app detail, alert bar, webhook form | done |
+| KyYard pairing, container facts, stale marking | done |
+| kyPulse's own tamper-evident audit trail | done |
+| Log ingest, `kypulse-send`, Logs and Activity tabs, KyYard log and audit-feed pulls | planned (build step 4) |
 
-## KyYard
-
-Settings (admin) has a KyYard card: pairing needs a URL and a six-digit code a KyYard
-administrator generates on the organization's Members page (Service tokens → Pair kyPulse),
-valid 15 minutes. Once paired, the card shows organization, URL, last pull and state; a
-revoked token shows a hint to unpair and pair again. `KYPULSE_KYYARD_ALLOW_HTTP` (default
-false) admits a plain-http KyYard URL; loopback and link-local addresses stay refused either
-way.
-
-Every watched app can be linked to a KyYard container (a `endpoint/name` value, with
-suggestions from `GET /api/kyyard/containers` in the add/edit form for admins). The app
-detail page then shows KyYard's facts for that container: state, Docker health, image,
-memory, restarts and when it was last observed. Memory and restarts appear only once KyYard
-has a sample (it samples running containers only); a container on an offline endpoint is
-marked so and shown stale. kyPulse reads the first 200 endpoints of the organization, and
-only Docker endpoints that are approved, active or offline. A pairing answers `stale:true`
-with no `fetched_at` right after pairing or a restart ("first pull pending"); the alert bar
-and Settings both treat that as pending, not a failure, and show data as stale once a pull
-has run but failed or is late, or at once when KyYard refuses the token. The Settings card
-re-reads pairing status every 5s while pending.
-
-Unpairing is two steps, one on each side: the Settings card's Unpair button deletes the URL
-and token here only; a KyYard administrator must separately revoke the token on KyYard's
-Members page.
-
-## Run
+## Quick start
 
 ```sh
 docker compose up -d
+docker compose logs app | grep 'Initial bootstrap'   # the generated admin password
 ```
 
-The published image is `ghcr.io/busnes-app/kypulse-server`; `docker-compose.yml` explains how
-to pin a commit by digest and verify its attestation. Every setting is a `KYPULSE_*` variable
-(see `internal/config/AGENTS.md`); `KY_LOG_LEVEL` sets the log level and is shared across the
-suite. The first start creates an `admin` user and prints its password to stderr unless
-`KYPULSE_ADMIN_PASSWORD` is set.
+Open <http://localhost:8080>, sign in as `admin` with that password, and replace it when
+asked. Set `KYPULSE_ADMIN_PASSWORD` before the first start to choose it instead. For anything
+reachable beyond your own machine, set `KYPULSE_ENV=production`, a durable
+`KYPULSE_SESSION_SECRET` and a matching `KYPULSE_APP_URL`, and put kyPulse behind a TLS
+proxy (see `KYPULSE_TRUSTED_PROXIES`).
 
-Watch kyPulse's own `GET /healthz` from outside; kyPulse does not monitor itself.
+Watch kyPulse's own `GET /healthz` from outside. kyPulse does not monitor itself.
 
-Watched apps and the alert webhook are set in the UI (admins) or through `/api/targets` and
-`/api/alerts/webhook`; `KYPULSE_ALERT_ALLOW_HTTP` and `KYPULSE_POLL_WORKERS` are the only
-alerting variables.
+## Screens
+
+- **Alert bar**, on every page. Red with one line per down or degraded app; green with the
+  healthy count and the last check; a separate line when webhook delivery keeps failing or
+  KyYard data is stale.
+- **Status**, the home tab. Every watched app as a tile, broken first. Admins add apps here.
+- **Alerts**. State changes and hourly reminders with their delivery result, and current
+  silences.
+- **App detail** (`#/apps/<id>`, the link webhook messages carry). Current state with the
+  exact failing request, the checks from the last response, alert history, KyYard container
+  facts, and, for admins, silence (1 h, 8 h, until fixed), edit and delete.
+- **Settings & DB**. The alert webhook and KyYard pairing (admins), theme, database driver.
+- **Backup** (admins). KyRecovery pairing, schedule, local copies, restore drill.
+
+Roles are `admin` and `viewer`. A viewer sees Status, Alerts, app detail and a read-only
+Settings & DB; every write and Backup are admin-only, and the server enforces it.
+
+## Watching apps
+
+An admin adds an app with a name, its health URL and an interval (default 30 s, 10 s to 1 h).
+kyPulse reads any health endpoint, in this order:
+
+1. A 2xx with `"schema": "ky.health/1"` is used as-is, checks included
+   ([`ky-primitives/health`](https://github.com/Busnes-app/ky-primitives) serves it).
+2. A 2xx JSON body with `status` of `ok`, `alive`, `ready` or `healthy` is ok; `degraded`
+   is degraded; a boolean `healthy` is ok or degraded.
+3. Any other 2xx is ok, shown as **basic** (no checks).
+4. A non-2xx answer, timeout, TLS or DNS failure, or refused connection is down, with the
+   cause recorded.
+
+A request times out after 5 s, reads at most 64 KiB and never follows redirects. Private and
+LAN addresses are allowed; loopback, link-local and cloud metadata addresses are refused,
+also when a name resolves to one at connect time.
+
+An app turns **down** after 3 down polls in a row, **degraded** after 2, and **ok** after 2.
+Each change sends one webhook message and is recorded under Alerts. While an app stays down
+or degraded, a reminder goes out every hour. Silencing (1 h, 8 h or until fixed) stops
+webhook messages only; the alert bar and Alerts keep showing the problem, and "until fixed"
+ends at the next recovery.
+
+## Alert webhook
+
+Set in Settings & DB by an admin, sealed at rest with the deployment key. Presets:
+
+| Preset | Sends |
+|---|---|
+| ntfy | text body with title and priority headers; optional access token |
+| Gotify | token in `X-Gotify-Key`, never in the URL |
+| Discord | JSON `content` |
+| Generic | `{"app","state","previous","reason","time","url"}`; optional bearer token |
+
+The token is write-only: it is never shown again, and leaving the field empty keeps it.
+**Send test** makes one attempt and shows the answer. Real alerts retry 3 times with backoff;
+continued failure raises "Alerts not being delivered" in the alert bar. Messages carry the
+app name, the transition, a reason code, the time and a link, never log lines, user names or
+IPs. Webhook URLs must be https unless `KYPULSE_ALERT_ALLOW_HTTP=true`.
+
+## KyYard
+
+kyPulse can read one KyYard organization with a read-only service token.
+
+1. A KyYard organization administrator opens **Members → Service tokens → Pair kyPulse** and
+   gets a six-digit code, valid 15 minutes.
+2. A kyPulse admin enters the KyYard URL and that code on the KyYard card in Settings & DB.
+
+The token is sealed at rest, never logged and never shown. kyPulse then pulls every 60 s:
+Docker endpoints that are approved, active or offline (the first 200), their container
+inventory and latest resource samples. Nothing KyYard sends is stored; it lives in memory
+and a restart re-pulls it.
+
+Link a watched app to a container (`endpoint/name`; admins get suggestions in the add and
+edit form) and its detail page shows state and exit code, Docker health, image, memory
+against its limit and restarts with the sample's age, restarts in the last hour, and when it
+was observed. Memory and restarts appear only once KyYard has a sample (it samples running
+containers only); a container on an offline endpoint is marked and shown stale.
+
+Right after pairing or a restart the card and the bar say **first pull pending**. KyYard data
+is shown **stale** when no pull has succeeded for 3 minutes, and at once when KyYard refuses
+the token (it was revoked: unpair and pair again).
+
+Unpairing takes two steps, one on each side: **Unpair** here deletes the URL and token in
+kyPulse only; a KyYard administrator must also revoke the token on the Members page. The
+same applies when you pair again: the previous token stays valid in KyYard until revoked
+there. KyYard URLs must be https unless `KYPULSE_KYYARD_ALLOW_HTTP=true`.
+
+## Configuration
+
+Every setting is an environment variable. `KY_LOG_LEVEL` (`debug`, `info`, `warn`, `error`)
+is the one suite-wide variable; the rest are `KYPULSE_*`. Every log line is JSON on stderr;
+there is no log file.
+
+| Variable | Default | Purpose |
+|---|---|---|
+| `KYPULSE_PORT`, `KYPULSE_HOST` | `8080`, `0.0.0.0` | listen address |
+| `KYPULSE_APP_URL` | `http://localhost:<port>` | public URL; CORS origin and the link in webhook messages |
+| `KYPULSE_APP_NAME` | `kyPulse` | name shown in the UI |
+| `KYPULSE_ENV` | `development` | `production` requires `KYPULSE_SESSION_SECRET` and turns on secure cookies |
+| `KYPULSE_SESSION_SECRET` | random per start | session signing key; set a durable one in production |
+| `KYPULSE_ENCRYPTION_KEY` | `<data dir>/encryption.key` | 32-byte key sealing the webhook, KyYard token, TOTP secrets and KyRecovery token |
+| `KYPULSE_AUDIT_KEY` | `<data dir>/audit.key` | 32-byte key of the audit hash chain; must differ from the encryption key |
+| `KYPULSE_ADMIN_PASSWORD` | generated and printed | first admin's password on an empty database |
+| `KYPULSE_DATA_DIR` | `./data` (`/app/data` in Compose) | database, keyfiles |
+| `KYPULSE_DB_DRIVER` | `sqlite` | `sqlite` or `postgres` |
+| `KYPULSE_DB_DSN` | SQLite file in the data dir | connection string |
+| `KYPULSE_DB_MAX_OPEN_CONNS`, `KYPULSE_DB_MAX_IDLE_CONNS` | `25`, `5` | PostgreSQL pool |
+| `KYPULSE_TRUSTED_PROXIES` | none | proxy IPs or CIDRs allowed to set `X-Forwarded-For`; `0.0.0.0/0` is refused |
+| `KYPULSE_COOKIE_SECURE`, `KYPULSE_COOKIE_DOMAIN` | on in production, empty | session cookie |
+| `KYPULSE_CAPTCHA_PROVIDER` | `pow` | `pow`, `turnstile`, `friendly` or `none` |
+| `KYPULSE_CAPTCHA_SITE_KEY`, `KYPULSE_CAPTCHA_SECRET_KEY` | empty | for turnstile or friendly |
+| `KYPULSE_CAPTCHA_POW_DIFFICULTY` | `4` | proof-of-work difficulty |
+| `KYPULSE_SSO_ENABLED`, `KYPULSE_SSO_AUTO_PROVISION` | `true`, `true` | single sign-on |
+| `KYPULSE_KYSIGNON_ISSUER`, `_CLIENT_ID`, `_SECRET`, `_HMAC_SECRET` | empty | KySignOn |
+| `KYPULSE_OIDC_ISSUER`, `_CLIENT_ID`, `_SECRET` | empty | generic OIDC |
+| `KYPULSE_SAML_ENTITY_ID`, `KYPULSE_SAML_METADATA_URL` | empty | SAML service provider |
+| `KYPULSE_POLL_WORKERS` | `4` | concurrent health polls, 1 to 32 |
+| `KYPULSE_ALERT_ALLOW_HTTP` | `false` | admit a plain-http webhook URL |
+| `KYPULSE_KYYARD_ALLOW_HTTP` | `false` | admit a plain-http KyYard URL |
+| `KYPULSE_BACKUP_DIR` | empty (`/app/backups` in Compose) | sealed local backup copies; empty keeps none |
+| `KYPULSE_BACKUP_KEEP` | `7` | local copies kept |
+| `KYPULSE_BACKUP_DEPOSIT_INTERVAL` | `24h` | default backup schedule; `0` off, at least `15m` |
+| `KYPULSE_BACKUP_ALLOW_PRIVATE_RECOVERY` | `false` | admit a KyRecovery on a private address (HTTPS still required) |
+
+Keep `encryption.key` and `audit.key` with the database: without them the sealed settings
+cannot be opened and the audit trail cannot be verified. Backups carry both.
 
 ## Compose overlays
 
 Append an overlay's filename to `COMPOSE_FILE` in `.env` (never `-f`, which replaces the list
 outright); each file's header comment has a copy-pasteable one-liner that does this for you.
 
-**Source build** (`docker-compose.build.yml`). Builds and runs the local image (`kypulse:local`)
-instead of the published one, for every command including restore. Revert by removing it from
-`COMPOSE_FILE`.
+**Source build** (`docker-compose.build.yml`). Builds and runs the local image
+(`kypulse:local`) instead of the published one, for every command including restore. Revert
+by removing it from `COMPOSE_FILE`.
 
 **LAN DNS and private KyRecovery** (`docker-compose.lan-dns.yml`). Points the container's DNS
 at `KYPULSE_DNS`, a LAN resolver, so a KyRecovery reachable only there resolves; it also sets
 `KYPULSE_BACKUP_ALLOW_PRIVATE_RECOVERY=true`, admitting RFC1918/CGNAT KyRecovery destinations
-(loopback and other reserved ranges stay refused; HTTPS is still required). Revert by removing
-the overlay from `COMPOSE_FILE` and unsetting `KYPULSE_DNS` and
+(loopback and other reserved ranges stay refused; HTTPS is still required). Revert by
+removing the overlay from `COMPOSE_FILE` and unsetting `KYPULSE_DNS` and
 `KYPULSE_BACKUP_ALLOW_PRIVATE_RECOVERY` in `.env`.
 
-**Static IP** (`docker-compose.static-ip.yml`). Pins the container to `KYPULSE_CONTAINER_IP` on
-a network with subnet `KYPULSE_NETWORK_SUBNET`, both required once the overlay is in the chain.
+**Static IP** (`docker-compose.static-ip.yml`). Pins the container to `KYPULSE_CONTAINER_IP`
+on a network with subnet `KYPULSE_NETWORK_SUBNET`, both required once the overlay is in the
+chain.
+
+**PostgreSQL**. `docker compose --profile postgres up -d` starts the bundled database; point
+kyPulse at it with `KYPULSE_DB_DRIVER=postgres` and `KYPULSE_DB_DSN`. Backups snapshot SQLite
+only, so a PostgreSQL deployment backs up its database separately.
+
+The published image is `ghcr.io/busnes-app/kypulse-server`. `docker-compose.yml` explains how
+to pin a commit by digest (`KYPULSE_IMAGE`) and verify its build attestation first.
 
 ## Backup and restore
 
-kyPulse backs up to KyRecovery like every suite product. `docs/RESTORE.md` is the restore
-runbook.
+kyPulse backs up to KyRecovery like every suite product, and to a local directory when
+`KYPULSE_BACKUP_DIR` is set. Backups are sealed capsules that only the suite's recovery
+custodians can open together. [`docs/RESTORE.md`](docs/RESTORE.md) is the restore runbook.
 
-kyPulse's own audit trail is a keyed hash chain; `kypulse audit-verify` checks it and
-`/healthz` reports `audit` down when it cannot be appended to.
+kyPulse's own audit trail (sign-ins, admin changes, alert deliveries, pairings) is a keyed
+hash chain. `kypulse audit-verify` walks it and exits 1 if a record was altered or removed;
+every start logs the chain's count and head (`audit_chain_placed`), which is your copy
+outside the database. `/healthz` reports `audit` degraded when the chain cannot take the
+next record, and a log that cannot be placed refuses to start with the remedy in the error.
+
+## Command line
+
+```sh
+kypulse                                   # run the server
+kypulse init-admin -password <pw> [-username admin]   # create an admin, or reset its password
+kypulse audit-verify                      # verify the audit chain
+kypulse backup-drill                      # seal and reopen a capsule with a throwaway key
+kypulse export-capsule [-out <file>]      # write a sealed capsule to a file
+kypulse deposit                           # run one backup now (for cron)
+kypulse restore -capsule <f> -to <dir>    # restore a capsule; shares are read from stdin
+kypulse version
+```
+
+Under Compose, prefix with `docker compose exec app /app/kypulse`.
+
+## API
+
+Routes answer JSON, errors are `{"error": "..."}`, and state-changing browser requests need
+the `ky_csrf` cookie echoed in `X-CSRF-Token`. [`internal/api/AGENTS.md`](internal/api/AGENTS.md)
+has every request and response shape.
+
+| Route | Who |
+|---|---|
+| `GET /healthz` | public, `ky.health/1` |
+| `GET /api/status`, `/api/targets`, `/api/targets/{id}`, `/api/alerts`, `/api/kyyard` | any signed-in user |
+| `POST/PUT/DELETE /api/targets…`, `POST /api/targets/{id}/silence` | admin |
+| `GET/PUT/DELETE /api/alerts/webhook`, `POST /api/alerts/webhook/test` | admin |
+| `POST /api/kyyard/pair`, `DELETE /api/kyyard`, `GET /api/kyyard/containers` | admin |
+| `/api/backup/…` | admin |
 
 ## Develop
 
+Go 1.26 and Node 22.
+
 ```sh
-make ci      # tidy, gofmt, vet, race tests, frontend tests, smoke test
+make ci             # tidy check, gofmt, vet, race tests, frontend tests, smoke test
+make run            # build and run on :8080 with ./data
+make test-postgres  # the Go suite against KYPULSE_TEST_POSTGRES_DSN
 ```
+
+The frontend lives in `web/` and is embedded from `web/dist`, which is committed; rebuild it
+with `cd web && npm ci && npm run build` after any frontend change, because CI diffs it.
+Browser regressions run with `go build -o .browser/server ./cmd/server`, then
+`cd web && npx playwright install chromium && npm run test:browser`; they need a private IPv4
+interface for the fake watched app. Contributor rules live in [`AGENTS.md`](AGENTS.md) and the
+`AGENTS.md` beside each package.
+
+## License
+
+See [`LICENSE.txt`](LICENSE.txt).
