@@ -52,6 +52,12 @@ func newTestMonitor(t *testing.T, cfg *config.Config, st store.Store, lg *loggin
 
 func setupTestServer(t *testing.T) (*api.Server, store.Store, *config.Config) {
 	t.Helper()
+	return setupTestServerWith(t, nil)
+}
+
+// setupTestServerWith swaps the webhook poster when poster is non-nil.
+func setupTestServerWith(t *testing.T, poster notify.Poster) (*api.Server, store.Store, *config.Config) {
+	t.Helper()
 	t.Setenv("KYPULSE_DATA_DIR", t.TempDir())
 	cfg, _ := config.LoadFromEnv()
 	db := testdb.Config(t)
@@ -70,6 +76,9 @@ func setupTestServer(t *testing.T) (*api.Server, store.Store, *config.Config) {
 		t.Fatalf("logger: %v", err)
 	}
 	mon := newTestMonitor(t, cfg, st, lg)
+	if poster != nil {
+		mon.Notifier.Post = poster
+	}
 	srv := api.NewServer(cfg, st, lg, mon)
 	return srv, st, cfg
 }

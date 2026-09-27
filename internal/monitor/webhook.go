@@ -6,6 +6,7 @@ import (
 	"context"
 	"encoding/json"
 	"errors"
+	"fmt"
 	"time"
 
 	"github.com/Busnes-app/ky-primitives/recoveryclient"
@@ -47,22 +48,23 @@ func (w *Webhooks) Save(ctx context.Context, c notify.Config) error {
 	return w.Settings.SetSetting(ctx, webhookKey, sealed)
 }
 
-// Load returns the webhook and whether one is set.
+// Load returns the webhook and whether one is set. A webhook that is set but cannot be read
+// back (store error, rotated key, bad JSON) is notify.ErrUnreadable.
 func (w *Webhooks) Load(ctx context.Context) (notify.Config, bool, error) {
 	sealed, err := w.Settings.GetSetting(ctx, webhookKey)
 	if errors.Is(err, store.ErrNotFound) {
 		return notify.Config{}, false, nil
 	}
 	if err != nil {
-		return notify.Config{}, false, err
-	}
-	plain, err := w.Sealer.Open(sealed)
-	if err != nil {
-		return notify.Config{}, false, err
+		return notify.Config{}, false, fmt.Errorf("%w: %w", notify.ErrUnreadable, err)
 	}
 	var c notify.Config
-	if err := json.Unmarshal(plain, &c); err != nil {
-		return notify.Config{}, false, err
+	plain, err := w.Sealer.Open(sealed)
+	if err == nil {
+		err = json.Unmarshal(plain, &c)
+	}
+	if err != nil {
+		return notify.Config{}, false, fmt.Errorf("%w: %w", notify.ErrUnreadable, err)
 	}
 	return c, true, nil
 }

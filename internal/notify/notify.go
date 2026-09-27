@@ -137,9 +137,49 @@ type Notifier struct {
 // DefaultBackoff gives four attempts over about twenty seconds.
 var DefaultBackoff = []time.Duration{2 * time.Second, 6 * time.Second, 12 * time.Second}
 
-// ErrRejected is a 4xx other than 429: the receiver understood and refused, so retrying
-// would only repeat the refusal.
+// ErrRejected matches every RejectedError.
 var ErrRejected = errors.New("notify: receiver rejected the message")
+
+// ErrUnreadable marks a stored webhook that could not be read back.
+var ErrUnreadable = errors.New("notify: stored webhook is unreadable")
+
+// RejectedError is a 4xx other than 429: the receiver understood and refused, so retrying
+// would only repeat the refusal.
+type RejectedError struct{ Code int }
+
+func (e RejectedError) Error() string {
+	return fmt.Sprintf("notify: receiver rejected the message: %d", e.Code)
+}
+func (e RejectedError) Is(target error) bool { return target == ErrRejected }
+
+// ReceiverError is a 429 or 5xx that outlasted the retries.
+type ReceiverError struct{ Code int }
+
+func (e ReceiverError) Error() string { return fmt.Sprintf("notify: receiver answered %d", e.Code) }
+
+// Reason maps a send error to a fixed vocabulary. It is what gets stored, audited and shown:
+// err.Error() can carry the webhook URL, which for Discord and ntfy is the credential.
+func Reason(err error) string {
+	var rej RejectedError
+	var rcv ReceiverError
+	switch {
+	case err == nil:
+		return ""
+	case errors.As(err, &rej):
+		return fmt.Sprintf("rejected_%d", rej.Code)
+	case errors.As(err, &rcv):
+		return fmt.Sprintf("receiver_%d", rcv.Code)
+	case errors.Is(err, ErrUnreadable):
+		return "unreadable"
+	}
+	if c := egress.Cause(err); c != "network" {
+		return c
+	}
+	if errors.Is(err, context.Canceled) {
+		return "cancelled"
+	}
+	return "network"
+}
 
 // Send delivers m, retrying transport errors, 429 and 5xx. It returns the last error.
 func (n *Notifier) Send(ctx context.Context, c Config, m Message) error {
@@ -156,9 +196,9 @@ func (n *Notifier) Send(ctx context.Context, c Config, m Message) error {
 		case resp.StatusCode >= 200 && resp.StatusCode < 300:
 			return nil
 		case resp.StatusCode == 429 || resp.StatusCode >= 500:
-			last = fmt.Errorf("notify: receiver answered %d", resp.StatusCode)
+			last = ReceiverError{Code: resp.StatusCode}
 		default:
-			return fmt.Errorf("%w: %d", ErrRejected, resp.StatusCode)
+			return RejectedError{Code: resp.StatusCode}
 		}
 		if attempt >= len(n.Backoff) {
 			return last

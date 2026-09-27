@@ -4,6 +4,8 @@ import (
 	"context"
 	"encoding/json"
 	"errors"
+	"fmt"
+	"net/url"
 	"strings"
 	"testing"
 	"time"
@@ -104,12 +106,12 @@ func TestSendRetriesTransportAnd5xxButNot4xx(t *testing.T) {
 	}
 
 	p = &fakePoster{codes: []int{500, 500, 500, 500}}
-	if err := (&Notifier{Post: p, Backoff: fast}).Send(context.Background(), cfg, msg); err == nil || p.calls != 4 {
+	if err := (&Notifier{Post: p, Backoff: fast}).Send(context.Background(), cfg, msg); Reason(err) != "receiver_500" || p.calls != 4 {
 		t.Fatalf("exhausted: err=%v calls=%d", err, p.calls)
 	}
 
 	p = &fakePoster{codes: []int{403}}
-	if err := (&Notifier{Post: p, Backoff: fast}).Send(context.Background(), cfg, msg); !errors.Is(err, ErrRejected) || p.calls != 1 {
+	if err := (&Notifier{Post: p, Backoff: fast}).Send(context.Background(), cfg, msg); !errors.Is(err, ErrRejected) || Reason(err) != "rejected_403" || p.calls != 1 {
 		t.Fatalf("rejected: err=%v calls=%d", err, p.calls)
 	}
 
@@ -118,5 +120,27 @@ func TestSendRetriesTransportAnd5xxButNot4xx(t *testing.T) {
 	cancel()
 	if err := (&Notifier{Post: p, Backoff: []time.Duration{time.Hour}}).Send(ctx, cfg, msg); !errors.Is(err, context.Canceled) || p.calls != 1 {
 		t.Fatalf("cancelled: err=%v calls=%d", err, p.calls)
+	}
+}
+
+func TestReasonIsAFixedVocabulary(t *testing.T) {
+	leak := &url.Error{Op: "Post", URL: "https://discord.com/api/webhooks/1/SECRET", Err: errors.New("dial tcp: connection refused")}
+	cases := []struct {
+		err  error
+		want string
+	}{
+		{nil, ""},
+		{leak, "refused"},
+		{&url.Error{Op: "Post", URL: "https://x.lan/SECRET", Err: errors.New("EOF")}, "network"},
+		{&url.Error{Op: "Post", URL: "https://x.lan/SECRET", Err: context.Canceled}, "cancelled"},
+		{context.DeadlineExceeded, "timeout"},
+		{RejectedError{Code: 404}, "rejected_404"},
+		{fmt.Errorf("wrapped: %w", ReceiverError{Code: 429}), "receiver_429"},
+		{fmt.Errorf("%w: %w", ErrUnreadable, errors.New("cipher: message authentication failed")), "unreadable"},
+	}
+	for _, tc := range cases {
+		if got := Reason(tc.err); got != tc.want {
+			t.Errorf("Reason(%v) = %q, want %q", tc.err, got, tc.want)
+		}
 	}
 }

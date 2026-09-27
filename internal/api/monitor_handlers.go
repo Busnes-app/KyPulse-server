@@ -11,7 +11,6 @@ import (
 	"strconv"
 	"time"
 
-	"github.com/Busnes-app/ky-primitives/recoveryclient"
 	"github.com/Busnes-app/kypulse-server/internal/crypto"
 	"github.com/Busnes-app/kypulse-server/internal/egress"
 	"github.com/Busnes-app/kypulse-server/internal/monitor"
@@ -383,16 +382,16 @@ func (s *Server) handleTestWebhook(w http.ResponseWriter, r *http.Request) {
 	defer cancel()
 	actor := s.actorID(r)
 	err := s.monitor.SendTest(ctx)
-	outcome := "success"
+	details := "outcome=success"
 	if err != nil {
-		outcome = "failure"
+		details = "outcome=failure reason=" + notify.Reason(err)
 	}
-	s.auditMonitor(ctx, actor, r, "admin.webhook_test", "", "outcome="+outcome)
+	s.auditMonitor(ctx, actor, r, "admin.webhook_test", "", details)
 	switch {
 	case errors.Is(err, monitor.ErrNoWebhook):
 		s.writeError(w, http.StatusPreconditionFailed, "No webhook is configured")
 	case err != nil:
-		s.writeJSON(w, http.StatusBadGateway, map[string]string{"error": recoveryclient.AuditSafe(err.Error())})
+		s.writeJSON(w, http.StatusBadGateway, map[string]string{"error": notify.Reason(err)})
 	default:
 		s.writeJSON(w, http.StatusOK, map[string]bool{"ok": true})
 	}

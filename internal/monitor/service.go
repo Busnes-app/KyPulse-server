@@ -8,7 +8,6 @@ import (
 	"time"
 
 	"github.com/Busnes-app/ky-primitives/logging"
-	"github.com/Busnes-app/ky-primitives/recoveryclient"
 	"github.com/Busnes-app/kypulse-server/internal/alerts"
 	"github.com/Busnes-app/kypulse-server/internal/notify"
 	"github.com/Busnes-app/kypulse-server/internal/poller"
@@ -145,35 +144,26 @@ func (s *Service) deliver(ctx context.Context, targetID string, eventID int64, m
 	sendCtx, cancel := context.WithTimeout(context.WithoutCancel(ctx), sendBudget)
 	defer cancel()
 
-	cfg, ok, err := s.Webhooks.Load(ctx)
-	if err != nil {
-		// The webhook is configured but unreadable (e.g. a rotated deployment key): this is
-		// a delivery failure, not a "nothing to send" no-op, so it is logged and recorded
-		// like any other failed send.
-		s.Logger.Log(ctx, evAlertFailed, logging.TargetID(targetID), logging.Err(err))
-		status := DeliveryStatus{At: s.now(), OK: false, Error: "webhook unreadable"}
-		_ = s.Webhooks.SetStatus(sendCtx, status)
-		if eventID != 0 {
-			_ = s.Store.Targets().SetEventNotified(sendCtx, eventID, false, "webhook unreadable")
-		}
-		return
-	}
-	if !ok {
+	cfg, ok, err := s.Webhooks.Load(sendCtx)
+	if !ok && err == nil {
 		return // no webhook configured: nothing to send, nothing to record
 	}
-	sendErr := s.Notifier.Send(sendCtx, cfg, msg)
-	status := DeliveryStatus{At: s.now(), OK: sendErr == nil}
+	// An unreadable webhook (e.g. a rotated deployment key) is a failed delivery, recorded
+	// like any other. Only notify.Reason is stored: err.Error() can name the webhook URL.
+	if err == nil {
+		err = s.Notifier.Send(sendCtx, cfg, msg)
+	}
+	status := DeliveryStatus{At: s.now(), OK: err == nil, Error: notify.Reason(err)}
 	action, details := "alert.sent", "target="+targetID+" state="+msg.State
-	if sendErr != nil {
-		status.Error = recoveryclient.AuditSafe(sendErr.Error())
-		action, details = "alert.send_failed", details+" error="+status.Error
-		s.Logger.Log(ctx, evAlertFailed, logging.TargetID(targetID), fState(msg.State), logging.Err(sendErr))
+	if err != nil {
+		action, details = "alert.send_failed", details+" reason="+status.Error
+		s.Logger.Log(sendCtx, evAlertFailed, logging.TargetID(targetID), fState(msg.State), logging.Err(err))
 	} else {
-		s.Logger.Log(ctx, evAlertSent, logging.TargetID(targetID), fState(msg.State))
+		s.Logger.Log(sendCtx, evAlertSent, logging.TargetID(targetID), fState(msg.State))
 	}
 	_ = s.Webhooks.SetStatus(sendCtx, status)
 	if eventID != 0 {
-		_ = s.Store.Targets().SetEventNotified(sendCtx, eventID, sendErr == nil, status.Error)
+		_ = s.Store.Targets().SetEventNotified(sendCtx, eventID, err == nil, status.Error)
 	}
 	_ = s.Store.Audit().LogAudit(sendCtx, &store.AuditRecord{UserID: "system", Action: action, Resource: targetID, Details: details})
 }
@@ -201,10 +191,6 @@ func (s *Service) SendTest(ctx context.Context) error {
 	}
 	msg := notify.Message{App: "kyPulse", State: "ok", Previous: "ok", Time: s.now(), URL: s.AppURL, Test: true}
 	sendErr := s.Notifier.Send(ctx, cfg, msg)
-	status := DeliveryStatus{At: s.now(), OK: sendErr == nil}
-	if sendErr != nil {
-		status.Error = recoveryclient.AuditSafe(sendErr.Error())
-	}
-	_ = s.Webhooks.SetStatus(ctx, status)
+	_ = s.Webhooks.SetStatus(ctx, DeliveryStatus{At: s.now(), OK: sendErr == nil, Error: notify.Reason(sendErr)})
 	return sendErr
 }

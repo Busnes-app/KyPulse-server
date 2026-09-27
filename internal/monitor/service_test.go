@@ -5,7 +5,9 @@ import (
 	"encoding/json"
 	"errors"
 	"io"
+	"net/url"
 	"strings"
+	"sync"
 	"testing"
 	"time"
 
@@ -19,13 +21,20 @@ import (
 )
 
 type fakePoster struct {
+	mu    sync.Mutex
 	sent  []notify.Message // decoded from the generic preset body
 	codes []int
+	err   error // returned by every call when set
 	calls int
 }
 
 func (f *fakePoster) Post(_ context.Context, _ string, _ string, body []byte, _ map[string]string) (*egress.Response, error) {
+	f.mu.Lock()
+	defer f.mu.Unlock()
 	f.calls++
+	if f.err != nil {
+		return nil, f.err
+	}
 	var m notify.Message
 	_ = json.Unmarshal(body, &m)
 	f.sent = append(f.sent, m)
@@ -153,15 +162,43 @@ func TestObserveRecordsAnUnreadableWebhook(t *testing.T) {
 		observe(svc, "a", poller.Down, now.Add(time.Duration(i)*30*time.Second))
 	}
 	events, _, _ := st.Targets().ListEvents(ctx, "a", 0, 1)
-	if events[0].Notified || events[0].NotifyError != "webhook unreadable" {
+	if events[0].Notified || events[0].NotifyError != "unreadable" {
 		t.Fatalf("unreadable webhook not recorded: %+v", events[0])
 	}
 	s, ok, _ := svc.Webhooks.Status(ctx)
-	if !ok || s.OK || s.Error != "webhook unreadable" {
+	if !ok || s.OK || s.Error != "unreadable" {
 		t.Fatalf("delivery status: %+v", s)
+	}
+	rows, _, _ := st.Audit().ListAuditRecords(ctx, 0, 1)
+	if len(rows) != 1 || rows[0].Action != "alert.send_failed" || rows[0].UserID != "system" || !strings.Contains(rows[0].Details, "reason=unreadable") {
+		t.Fatalf("audit: %+v", rows)
 	}
 	if poster.calls != 0 {
 		t.Fatal("must not attempt delivery when the webhook cannot be read")
+	}
+}
+
+func TestSendErrorsNeverCarryTheURL(t *testing.T) {
+	svc, st, poster, now := newService(t)
+	ctx := context.Background()
+	poster.err = &url.Error{Op: "Post", URL: "https://discord.com/api/webhooks/1/SECRETTOKEN", Err: errors.New("dial: connection refused")}
+	_ = st.Targets().CreateTarget(ctx, &store.Target{ID: "a", Name: "KyVault", URL: "https://a/", IntervalSec: 30, Enabled: true})
+	for i := 0; i < 3; i++ {
+		observe(svc, "a", poller.Down, now.Add(time.Duration(i)*30*time.Second))
+	}
+	events, _, _ := st.Targets().ListEvents(ctx, "a", 0, 1)
+	if events[0].NotifyError != "refused" {
+		t.Fatalf("notify_error = %q, want refused", events[0].NotifyError)
+	}
+	status, _, _ := svc.Webhooks.Status(ctx)
+	rows, _, _ := st.Audit().ListAuditRecords(ctx, 0, 1)
+	if len(rows) != 1 {
+		t.Fatalf("audit rows: %+v", rows)
+	}
+	for what, v := range map[string]string{"event": events[0].NotifyError, "status": status.Error, "audit": rows[0].Resource + " " + rows[0].Details} {
+		if strings.Contains(v, "SECRETTOKEN") {
+			t.Errorf("%s carries the webhook URL: %q", what, v)
+		}
 	}
 }
 

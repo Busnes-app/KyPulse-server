@@ -4,13 +4,16 @@ import (
 	"bytes"
 	"context"
 	"encoding/json"
+	"errors"
 	"net/http"
 	"net/http/httptest"
+	"net/url"
 	"strings"
 	"testing"
 
 	"github.com/Busnes-app/kypulse-server/internal/api"
 	"github.com/Busnes-app/kypulse-server/internal/auth"
+	"github.com/Busnes-app/kypulse-server/internal/egress"
 	"github.com/Busnes-app/kypulse-server/internal/store"
 )
 
@@ -179,6 +182,29 @@ func TestViewerCannotWriteMonitoring(t *testing.T) {
 	for _, path := range []string{"/api/targets", "/api/alerts", "/api/status"} {
 		if w := do(t, srv, "GET", path, nil); w.Code != http.StatusUnauthorized {
 			t.Errorf("GET %s anonymous: got %d", path, w.Code)
+		}
+	}
+}
+
+type leakyPoster struct{}
+
+func (leakyPoster) Post(context.Context, string, string, []byte, map[string]string) (*egress.Response, error) {
+	return nil, &url.Error{Op: "Post", URL: "https://secret-hook-host.example/t0ken", Err: errors.New("dial tcp: connection refused")}
+}
+
+func TestWebhookTestFailureNeverEchoesTheURL(t *testing.T) {
+	srv, st, _ := setupTestServerWith(t, leakyPoster{})
+	admin := loginAs(t, srv, st, "alice", "admin")
+	if w := doJSON(t, srv, "PUT", "/api/alerts/webhook", admin, map[string]string{"preset": "ntfy", "url": "https://secret-hook-host.example/t0ken"}); w.Code != http.StatusOK {
+		t.Fatalf("set: %d %s", w.Code, w.Body.String())
+	}
+	w := doJSON(t, srv, "POST", "/api/alerts/webhook/test", admin, nil)
+	if w.Code != http.StatusBadGateway || strings.Contains(w.Body.String(), "secret-hook-host") || decodeMap(t, w)["error"] != "refused" {
+		t.Fatalf("test send: %d %s", w.Code, w.Body.String())
+	}
+	for _, path := range []string{"/api/status", "/api/alerts"} {
+		if body := do(t, srv, "GET", path, admin).Body.String(); strings.Contains(body, "t0ken") {
+			t.Errorf("%s carries the webhook URL: %s", path, body)
 		}
 	}
 }
