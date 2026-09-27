@@ -41,6 +41,34 @@ func Parse(raw, sourceID, source, targetID string, transportTime, receivedAt tim
 	if err := json.Unmarshal([]byte(raw), &obj); err != nil || obj == nil {
 		return line, nil
 	}
+	// A malformed known field makes the application JSON unstructured. Timestamp
+	// syntax is the exception: bad application clocks only lose their time hint.
+	for _, key := range []string{"app", "level", "event", "message", "hash", "action", "outcome", "result", "user_id", "resource", "ip_address"} {
+		if value, ok := obj[key]; ok {
+			var s string
+			if json.Unmarshal(value, &s) != nil || string(value) == "null" {
+				return line, nil
+			}
+		}
+	}
+	if value, ok := obj["seq"]; ok {
+		var seq int64
+		if json.Unmarshal(value, &seq) != nil || string(value) == "null" {
+			return line, nil
+		}
+	}
+	if value, ok := obj["fields"]; ok {
+		var fields []json.RawMessage
+		if json.Unmarshal(value, &fields) != nil || string(value) == "null" {
+			return line, nil
+		}
+		for _, field := range fields {
+			var s string
+			if json.Unmarshal(field, &s) != nil || string(field) == "null" {
+				return line, nil
+			}
+		}
+	}
 	get := func(k string) string { var s string; _ = json.Unmarshal(obj[k], &s); s, _ = bounded(s); return s }
 	if ts := get("timestamp"); ts != "" {
 		if t, err := time.Parse(time.RFC3339Nano, ts); err == nil {

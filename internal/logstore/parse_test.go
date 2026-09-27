@@ -45,6 +45,25 @@ func TestBoundsAndFallback(t *testing.T) {
 		t.Fatal("missing action should not be activity")
 	}
 }
+func TestMalformedKnownShapeFallsBackAsWholeLine(t *testing.T) {
+	now := time.Date(2026, 9, 27, 12, 0, 0, 0, time.UTC)
+	for _, raw := range []string{
+		`{"app":4,"message":"ok"}`,
+		`{"app":"good","level":[],"message":"ok"}`,
+		`{"app":"good","message":"ok","seq":"1"}`,
+		`{"app":"good","message":"ok","fields":[null]}`,
+		`{"app":"good","message":"ok","action":false}`,
+	} {
+		line, activity := Parse(raw, "", "host", "", now, now, false)
+		if line.Message != raw || line.App != "" || line.Level != "" || line.Event != "" || activity != nil {
+			t.Fatalf("partial extraction from %s: %+v %+v", raw, line, activity)
+		}
+	}
+	line, activity := Parse(`{"timestamp":"bad","app":"good","message":"ok"}`, "", "host", "", now, now, false)
+	if activity != nil || line.App != "good" || line.Message != "ok" || !line.Time.Equal(now) {
+		t.Fatalf("timestamp fallback: %+v %+v", line, activity)
+	}
+}
 func TestRealLoggerLines(t *testing.T) {
 	var buf bytes.Buffer
 	lg, err := logging.New(logging.Config{App: "kytest", Out: &buf})

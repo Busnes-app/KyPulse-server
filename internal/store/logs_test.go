@@ -149,12 +149,19 @@ func TestLogsSurviveTargetDeletionAndAgePrune(t *testing.T) {
 	if err := s.Logs().Append(ctx, "", batch, 100000); err != nil {
 		t.Fatal(err)
 	}
+	beforeDelete := usage(t, s)
 	if err := s.Targets().DeleteTarget(ctx, target.ID); err != nil {
 		t.Fatal(err)
+	}
+	if got := usage(t, s); got != beforeDelete {
+		t.Fatalf("target deletion changed fixed identity allowance: %d, want %d", got, beforeDelete)
 	}
 	activities, err := s.Logs().ListActivity(ctx, ActivityFilter{})
 	if err != nil || len(activities) != 1 || activities[0].TargetID != "" {
 		t.Fatalf("deleted target activity: %+v %v", activities, err)
+	}
+	if activities[0].Bytes != activityBytes(activities[0]) {
+		t.Fatalf("activity size changed after target deletion: %+v", activities[0])
 	}
 	if err := s.Logs().Prune(ctx, now, 100000); err != nil {
 		t.Fatal(err)
@@ -162,5 +169,43 @@ func TestLogsSurviveTargetDeletionAndAgePrune(t *testing.T) {
 	logs, err := s.Logs().List(ctx, LogFilter{})
 	if err != nil || len(logs) != 1 || logs[0].Message != "recent" {
 		t.Fatalf("age prune: %+v %v", logs, err)
+	}
+}
+
+func TestLogUsageAcrossAgeAndSizePruning(t *testing.T) {
+	ctx := context.Background()
+	s := newLogTestStore(t)
+	now := time.Date(2026, 9, 27, 12, 0, 0, 0, time.UTC)
+	old := now.Add(-8 * 24 * time.Hour)
+	batch := LogBatch{
+		Logs: []LogLine{testLine(old, "expired log"), testLine(now, "recent log")},
+		Activity: []Activity{
+			{Time: old, ReceivedAt: old, Action: "expired activity"},
+			{Time: now, ReceivedAt: now, Action: "recent activity"},
+		},
+	}
+	if err := s.Logs().Append(ctx, "", batch, 100000); err != nil {
+		t.Fatal(err)
+	}
+	if got, want := usage(t, s), logBytes(batch.Logs[0])+logBytes(batch.Logs[1])+activityBytes(batch.Activity[0])+activityBytes(batch.Activity[1]); got != want {
+		t.Fatalf("initial usage=%d want %d", got, want)
+	}
+	if err := s.Logs().Prune(ctx, now, 100000); err != nil {
+		t.Fatal(err)
+	}
+	if got, want := usage(t, s), logBytes(batch.Logs[1])+activityBytes(batch.Activity[1]); got != want {
+		t.Fatalf("usage after age pruning=%d want %d", got, want)
+	}
+	latest := testLine(now.Add(time.Minute), "latest")
+	if err := s.Logs().Append(ctx, "", LogBatch{Logs: []LogLine{latest}}, logBytes(latest)); err != nil {
+		t.Fatal(err)
+	}
+	logs, err := s.Logs().List(ctx, LogFilter{})
+	if err != nil || len(logs) != 1 || logs[0].Message != "latest" {
+		t.Fatalf("size pruning left logs=%+v err=%v", logs, err)
+	}
+	activity, err := s.Logs().ListActivity(ctx, ActivityFilter{})
+	if err != nil || len(activity) != 0 || usage(t, s) != logs[0].Bytes {
+		t.Fatalf("size pruning left activity=%+v usage=%d err=%v", activity, usage(t, s), err)
 	}
 }

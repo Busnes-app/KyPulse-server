@@ -64,13 +64,15 @@ type LogStore interface {
 }
 type logStore struct{ store *SQLStore }
 
+// Includes fixed space for IDs, timestamps, flags, and target identity whether
+// or not the target still exists. Its deletion therefore never changes usage.
 const rowAllowance int64 = 64
 
 func logBytes(l LogLine) int64 {
-	return rowAllowance + int64(len(l.SourceID)+len(l.Source)+len(l.TargetID)+len(l.App)+len(l.Level)+len(l.Event)+len(l.Message)+len(l.Raw))
+	return rowAllowance + int64(len(l.SourceID)+len(l.Source)+len(l.App)+len(l.Level)+len(l.Event)+len(l.Message)+len(l.Raw))
 }
 func activityBytes(a Activity) int64 {
-	return rowAllowance + int64(len(a.SourceID)+len(a.TargetID)+len(a.App)+len(a.Actor)+len(a.Action)+len(a.Target)+len(a.Outcome)+len(a.IP)+len(a.ExternalKey))
+	return rowAllowance + int64(len(a.SourceID)+len(a.App)+len(a.Actor)+len(a.Action)+len(a.Target)+len(a.Outcome)+len(a.IP)+len(a.ExternalKey))
 }
 func nullableID(s string) any {
 	if s == "" {
@@ -78,10 +80,14 @@ func nullableID(s string) any {
 	}
 	return s
 }
-func (l *logStore) lock(ctx context.Context, tx *sql.Tx) error {
+func (l *logStore) lock(ctx context.Context, tx *sql.Tx) (int64, error) {
 	// SQLite acquires its writer lock; PostgreSQL holds this row lock through commit.
-	_, err := tx.ExecContext(ctx, "UPDATE log_usage SET bytes=bytes WHERE id=1")
-	return err
+	if _, err := tx.ExecContext(ctx, "UPDATE log_usage SET bytes=bytes WHERE id=1"); err != nil {
+		return 0, err
+	}
+	var total int64
+	err := tx.QueryRowContext(ctx, "SELECT bytes FROM log_usage WHERE id=1").Scan(&total)
+	return total, err
 }
 func (l *logStore) Append(ctx context.Context, sourceID string, batch LogBatch, maxBytes int64) error {
 	tx, err := l.store.db.BeginTx(ctx, nil)
@@ -89,7 +95,8 @@ func (l *logStore) Append(ctx context.Context, sourceID string, batch LogBatch, 
 		return err
 	}
 	defer tx.Rollback()
-	if err = l.lock(ctx, tx); err != nil {
+	total, err := l.lock(ctx, tx)
+	if err != nil {
 		return err
 	}
 	// Task 2 introduces the source table and active-source check in this transaction.
@@ -141,21 +148,11 @@ func (l *logStore) Append(ctx context.Context, sourceID string, batch LogBatch, 
 		args := []any{r.Time, r.ReceivedAt, r.SourceID, nullableID(r.TargetID), r.App, r.Actor, r.Action, r.Target, r.Outcome, r.IP, r.ExternalKey, r.Bytes}
 		if l.store.driver == "postgres" {
 			err = tx.QueryRowContext(ctx, q+" RETURNING id", args...).Scan(&r.ID)
-			if errors.Is(err, sql.ErrNoRows) {
-				continue
-			}
 		} else {
 			var res sql.Result
 			res, err = tx.ExecContext(ctx, q, args...)
 			if err == nil {
-				var n int64
-				n, err = res.RowsAffected()
-				if err == nil && n == 0 {
-					continue
-				}
-				if err == nil {
-					r.ID, err = res.LastInsertId()
-				}
+				r.ID, err = res.LastInsertId()
 			}
 		}
 		if err != nil {
@@ -163,10 +160,7 @@ func (l *logStore) Append(ctx context.Context, sourceID string, batch LogBatch, 
 		}
 		added += r.Bytes
 	}
-	if _, err = tx.ExecContext(ctx, l.store.rebind("UPDATE log_usage SET bytes=bytes+? WHERE id=1"), added); err != nil {
-		return err
-	}
-	if err = l.pruneTx(ctx, tx, time.Time{}, maxBytes); err != nil {
+	if err = l.pruneTx(ctx, tx, time.Time{}, maxBytes, total+added); err != nil {
 		return err
 	}
 	return tx.Commit()
@@ -177,26 +171,28 @@ func (l *logStore) Prune(ctx context.Context, now time.Time, maxBytes int64) err
 		return err
 	}
 	defer tx.Rollback()
-	if err = l.lock(ctx, tx); err != nil {
+	total, err := l.lock(ctx, tx)
+	if err != nil {
 		return err
 	}
-	if err = l.pruneTx(ctx, tx, now, maxBytes); err != nil {
+	if err = l.pruneTx(ctx, tx, now, maxBytes, total); err != nil {
 		return err
 	}
 	return tx.Commit()
 }
-func (l *logStore) pruneTx(ctx context.Context, tx *sql.Tx, now time.Time, maxBytes int64) error {
+func (l *logStore) pruneTx(ctx context.Context, tx *sql.Tx, now time.Time, maxBytes, total int64) error {
 	if !now.IsZero() {
 		cutoff := now.Add(-7 * 24 * time.Hour)
 		for _, table := range []string{"log_lines", "activity"} {
+			var expired int64
+			if err := tx.QueryRowContext(ctx, l.store.rebind("SELECT COALESCE(SUM(bytes),0) FROM "+table+" WHERE received_at < ?"), cutoff).Scan(&expired); err != nil {
+				return err
+			}
 			if _, err := tx.ExecContext(ctx, l.store.rebind("DELETE FROM "+table+" WHERE received_at < ?"), cutoff); err != nil {
 				return err
 			}
+			total -= expired
 		}
-	}
-	var total int64
-	if err := tx.QueryRowContext(ctx, "SELECT COALESCE((SELECT SUM(bytes) FROM log_lines),0)+COALESCE((SELECT SUM(bytes) FROM activity),0)").Scan(&total); err != nil {
-		return err
 	}
 	if maxBytes >= 0 && total > maxBytes {
 		rows, err := tx.QueryContext(ctx, `SELECT kind,id,bytes FROM (SELECT 0 AS kind,id,received_at,bytes FROM log_lines UNION ALL SELECT 1 AS kind,id,received_at,bytes FROM activity) AS all_rows ORDER BY received_at,id,kind`)
