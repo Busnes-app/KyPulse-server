@@ -13,6 +13,7 @@ import (
 	"syscall"
 	"time"
 
+	"github.com/Busnes-app/ky-primitives/logging"
 	"github.com/Busnes-app/ky-primitives/password"
 	"github.com/Busnes-app/ky-primitives/recoveryclient"
 	"github.com/Busnes-app/kypulse-server/internal/api"
@@ -26,6 +27,12 @@ import (
 const appVersion = "0.1.0"
 
 func main() {
+	lg, err := newLogger(os.Stderr)
+	if err != nil {
+		fmt.Fprintln(os.Stderr, err)
+		os.Exit(1)
+	}
+
 	if len(os.Args) > 1 {
 		switch os.Args[1] {
 		case "init-admin":
@@ -49,7 +56,7 @@ func main() {
 		}
 	}
 
-	runServer()
+	runServer(lg)
 }
 
 // shutdownTimeout drains in-flight HTTP requests. Short on purpose: it is spent before the
@@ -63,7 +70,7 @@ const shutdownTimeout = 5 * time.Second
 // TestComposeGracePeriodCoversTheShutdownBudget holds the two in step.
 const backupWaitTimeout = 17 * time.Minute
 
-func runServer() {
+func runServer(lg *logging.Logger) {
 	cfg, err := config.LoadFromEnv()
 	if err != nil {
 		log.Fatalf("Failed to load configuration: %v", err)
@@ -107,7 +114,7 @@ func runServer() {
 		}
 	}
 
-	srv := api.NewServer(cfg, st)
+	srv := api.NewServer(cfg, st, lg)
 	backupDone := make(chan struct{})
 	go backupLoop(ctx, cfg, st, backupDone)
 

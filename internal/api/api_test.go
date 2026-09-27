@@ -10,6 +10,7 @@ import (
 	"errors"
 	"fmt"
 	"github.com/Busnes-app/ky-primitives/capsule"
+	"io"
 	"net/http"
 	"net/http/httptest"
 	"os"
@@ -20,6 +21,7 @@ import (
 	"time"
 
 	"github.com/Busnes-app/ky-primitives/keyfile"
+	"github.com/Busnes-app/ky-primitives/logging"
 	"github.com/Busnes-app/ky-primitives/password"
 	"github.com/Busnes-app/ky-primitives/recoveryclient"
 	"github.com/Busnes-app/ky-primitives/recoverykey"
@@ -48,7 +50,11 @@ func setupTestServer(t *testing.T) (*api.Server, store.Store, *config.Config) {
 	}
 	t.Cleanup(func() { _ = st.Close() })
 
-	srv := api.NewServer(cfg, st)
+	lg, err := logging.New(logging.Config{App: "kypulse", Out: io.Discard})
+	if err != nil {
+		t.Fatalf("logger: %v", err)
+	}
+	srv := api.NewServer(cfg, st, lg)
 	return srv, st, cfg
 }
 

@@ -19,6 +19,7 @@ import (
 	"time"
 
 	"github.com/Busnes-app/ky-primitives/capsule"
+	"github.com/Busnes-app/ky-primitives/logging"
 	"github.com/Busnes-app/ky-primitives/recoveryclient"
 	"github.com/Busnes-app/ky-primitives/recoverykey"
 	"github.com/Busnes-app/kypulse-server/internal/api"
@@ -686,7 +687,11 @@ func TestDetachedRegistrationCoversTheAuthLookup(t *testing.T) {
 	session := loginAs(t, srv, st, "alice", "admin")
 
 	blocked := &blockingSessions{SessionStore: st.Sessions(), entered: make(chan struct{}), release: make(chan struct{})}
-	stalled := api.NewServer(cfg, &blockingSessionStore{Store: st, sessions: blocked})
+	lg, err := logging.New(logging.Config{App: "kypulse", Out: io.Discard})
+	if err != nil {
+		t.Fatalf("logger: %v", err)
+	}
+	stalled := api.NewServer(cfg, &blockingSessionStore{Store: st, sessions: blocked}, lg)
 
 	go func() {
 		body, _ := json.Marshal(map[string]string{"public_key": "", "threshold": ""})

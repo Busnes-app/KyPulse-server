@@ -10,6 +10,8 @@ import (
 	"sync"
 	"time"
 
+	"github.com/Busnes-app/ky-primitives/health"
+	"github.com/Busnes-app/ky-primitives/logging"
 	"github.com/Busnes-app/ky-primitives/recoveryclient"
 	"github.com/Busnes-app/kypulse-server/internal/auth"
 	"github.com/Busnes-app/kypulse-server/internal/config"
@@ -33,6 +35,7 @@ type Server struct {
 	oidc       *sso.GenericOIDCClient
 	saml       *sso.SAMLServiceProvider
 	recovery   recoveryClient
+	lg         *logging.Logger
 	mux        *http.ServeMux
 	attemptsMu sync.Mutex
 	attempts   map[string]attemptWindow
@@ -125,7 +128,7 @@ type attemptWindow struct {
 // bytes, so filling the map costs an attacker one slot per IP.
 const attemptsCap = 10000
 
-func NewServer(cfg *config.Config, st store.Store) *Server {
+func NewServer(cfg *config.Config, st store.Store, lg *logging.Logger) *Server {
 	sessions := auth.NewSessionManager(st, cfg.Security)
 	kysignon := sso.NewKySignOnClient(cfg.SSO, st)
 	oidc := sso.NewGenericOIDCClient(cfg.SSO, st)
@@ -140,6 +143,7 @@ func NewServer(cfg *config.Config, st store.Store) *Server {
 		oidc:     oidc,
 		saml:     saml,
 		recovery: recovery,
+		lg:       lg,
 		mux:      http.NewServeMux(),
 		attempts: make(map[string]attemptWindow),
 	}
@@ -195,6 +199,12 @@ func (s *Server) requestIP(r *http.Request) string {
 }
 
 func (s *Server) routes() {
+	// Liveness for monitors and readiness probes; public and cached by the lib. The only check
+	// is the database, so the body never says more than "database down".
+	s.mux.Handle("GET /healthz", health.Handler("kypulse", s.lg,
+		health.Check{Name: "database", Run: s.store.Ping},
+	))
+
 	// Auth
 	s.mux.HandleFunc("/api/auth/pow-challenge", s.handlePoWChallenge)
 	s.mux.HandleFunc("/api/auth/login", s.handleLogin)

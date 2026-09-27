@@ -78,6 +78,8 @@ check "init-admin creates admin" \
 echo "==> HTTP with default PoW captcha"
 start_server pow
 check "GET / serves the PWA" "$(status "$BASE/")" "200"
+check "healthz is 200 when the database is up" "$(status "$BASE/healthz")" "200"
+contains "healthz serves ky.health/1" "$(curl -s "$BASE/healthz")" '"schema":"ky.health/1"'
 contains "index.html has react root" "$(curl -s "$BASE/")" 'id="root"'
 check "SPA fallback for unknown route" "$(status "$BASE/settings/deep/link")" "200"
 check "login blocked without captcha token" \

@@ -226,6 +226,7 @@ jobs:
 
           curl -sf -o /dev/null --retry 30 --retry-delay 1 --retry-all-errors http://127.0.0.1:18080/
           curl -sf -o /dev/null http://127.0.0.1:18080/api/settings
+          curl -sf http://127.0.0.1:18080/healthz | grep -q '"status":"ok"'
           curl -sf -X POST -H 'Content-Type: application/json' \
             -d '{"username":"admin","password":"CiSmokeAdminPass123!"}' \
             http://127.0.0.1:18080/api/auth/login | grep -q '"authenticated":true'

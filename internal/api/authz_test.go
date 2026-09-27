@@ -161,3 +161,49 @@ func TestPrivilegedEndpointsRequireAdmin(t *testing.T) {
 		})
 	}
 }
+
+func TestHealthzIsPublicAndReportsTheDatabase(t *testing.T) {
+	srv, _, _ := setupTestServer(t)
+	w := do(t, srv, "GET", "/healthz", nil)
+	if w.Code != http.StatusOK {
+		t.Fatalf("got %d: %s", w.Code, w.Body.String())
+	}
+	var resp struct {
+		Schema  string `json:"schema"`
+		Service string `json:"service"`
+		Status  string `json:"status"`
+		Checks  []struct {
+			Name   string `json:"name"`
+			Status string `json:"status"`
+		} `json:"checks"`
+	}
+	if err := json.Unmarshal(w.Body.Bytes(), &resp); err != nil {
+		t.Fatalf("decode: %v", err)
+	}
+	if resp.Schema != "ky.health/1" || resp.Service != "kypulse" || resp.Status != "ok" {
+		t.Errorf("unexpected body: %s", w.Body.String())
+	}
+	if len(resp.Checks) != 1 || resp.Checks[0].Name != "database" || resp.Checks[0].Status != "ok" {
+		t.Errorf("checks = %+v", resp.Checks)
+	}
+}
+
+func TestHealthzReportsDatabaseDown(t *testing.T) {
+	srv, st, cfg := setupTestServer(t)
+	if err := st.Close(); err != nil {
+		t.Fatal(err)
+	}
+	w := do(t, srv, "GET", "/healthz", nil)
+	if w.Code != http.StatusServiceUnavailable {
+		t.Fatalf("got %d: %s", w.Code, w.Body.String())
+	}
+	body := w.Body.String()
+	if !bytes.Contains([]byte(body), []byte(`"name":"database","status":"down"`)) {
+		t.Errorf("database check not down: %s", body)
+	}
+	for _, leak := range []string{cfg.Database.DSN, "sql: database is closed", cfg.Database.DataDir} {
+		if leak != "" && bytes.Contains([]byte(body), []byte(leak)) {
+			t.Errorf("healthz leaks %q: %s", leak, body)
+		}
+	}
+}
