@@ -86,7 +86,7 @@ test('status, alerts, detail page and the alert bar in every state', async ({ pa
   // Recovery: two ok polls → green bar, silence cleared.
   state.health = 200;
   await page.getByRole('link', { name: 'Status' }).first().click();
-  await expect(page.getByRole('status').filter({ hasText: 'All 1 apps healthy' })).toBeVisible({ timeout: 90_000 });
+  await expect(page.getByRole('status').filter({ hasText: 'All 1 app healthy' })).toBeVisible({ timeout: 90_000 });
   await page.screenshot({ path: testInfo.outputPath('status-ok.png'), fullPage: true });
   await tile.click();
   await expect(banner).toContainText('ok');
