@@ -3,6 +3,7 @@ package store
 import (
 	"context"
 	"errors"
+	"sync"
 	"testing"
 	"time"
 
@@ -219,6 +220,43 @@ func TestAuditChainRefusesMixedRows(t *testing.T) {
 	_ = st.Close()
 	if _, err := Open(ctx, cfg); !errors.Is(err, ErrAuditUnplaceable) {
 		t.Fatalf("a keyed log with an unkeyed row mixed in must refuse to open: %v", err)
+	}
+}
+
+// Ready must not flap under write load: it places the chain from three separate reads
+// (anchor, count, tail), and a LogAudit committing in between them must not make an intact
+// log look unplaceable.
+func TestReadyUnderConcurrentAppends(t *testing.T) {
+	st := openAudit(t, testdb.Config(t))
+	ctx := context.Background()
+
+	var wg sync.WaitGroup
+	var writeErrs, readyErrs [30]error
+
+	wg.Add(2)
+	go func() {
+		defer wg.Done()
+		for i := range writeErrs {
+			writeErrs[i] = st.Audit().LogAudit(ctx, &AuditRecord{UserID: "u1", Action: "test.event", Resource: "r", IPAddress: "10.0.0.1"})
+		}
+	}()
+	go func() {
+		defer wg.Done()
+		for i := range readyErrs {
+			readyErrs[i] = st.Audit().Ready(ctx)
+		}
+	}()
+	wg.Wait()
+
+	for i, err := range writeErrs {
+		if err != nil {
+			t.Fatalf("LogAudit %d: %v", i, err)
+		}
+	}
+	for i, err := range readyErrs {
+		if err != nil {
+			t.Fatalf("Ready %d: %v", i, err)
+		}
 	}
 }
 

@@ -276,9 +276,26 @@ func (a *auditStore) LogAudit(ctx context.Context, r *AuditRecord) error {
 
 // Ready reports whether the next append can place a chain. It takes no lock: append takes
 // the connection (the caller's tx) before mu, so Ready taking mu before waiting on the
-// connection would deadlock against a concurrent append on SQLite's single connection.
+// connection would deadlock against a concurrent append on SQLite's single connection. It
+// holds a connection instead, in a read-only transaction, so place's three statements see one
+// snapshot and a commit landing between them cannot make an intact log look unplaceable.
 func (a *auditStore) Ready(ctx context.Context) error {
-	_, err := a.place(ctx, a.store.db, false)
+	opts := &sql.TxOptions{ReadOnly: true}
+	if a.store.driver == "postgres" {
+		opts.Isolation = sql.LevelRepeatableRead
+	}
+	tx, err := a.store.db.BeginTx(ctx, opts)
+	if err != nil && a.store.driver != "postgres" {
+		// modernc's SQLite driver has not been observed to reject ReadOnly, but a plain
+		// transaction is an equivalent snapshot under WAL, so fall back rather than fail
+		// Ready over a TxOptions field this driver may not honour.
+		tx, err = a.store.db.BeginTx(ctx, nil)
+	}
+	if err != nil {
+		return err
+	}
+	defer tx.Rollback()
+	_, err = a.place(ctx, tx, false)
 	return err
 }
 
@@ -297,9 +314,9 @@ func (a *auditStore) VerifyChain(ctx context.Context) (ChainStatus, error) {
 	if unkeyed > 0 {
 		return ChainStatus{}, fmt.Errorf("%w: %d audit records carry no digest", ErrAuditUnplaceable, unkeyed)
 	}
-	// Bounding by the anchor's count, read under the same statement as the row scan, keeps a
-	// concurrent append from landing between the anchor read and the row scan and being read
-	// back as a record "past" the anchor that was current when this call started.
+	// anchor was read in a separate, earlier statement; bounding this scan by anchor.Count is
+	// what keeps a concurrent append from being read back as a record "past" the anchor that
+	// was current when this call started.
 	rows, err := a.store.db.QueryContext(ctx, a.store.rebind(`SELECT seq, prev_hash, hash, user_id, action, resource, details, ip_address, created_at
 FROM audit_records WHERE seq <= ? ORDER BY seq`), anchor.Count)
 	if err != nil {
