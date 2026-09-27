@@ -6,10 +6,12 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"strings"
 	"sync"
 	"time"
 
 	"github.com/Busnes-app/ky-primitives/auditchain"
+	"github.com/jackc/pgx/v5/pgconn"
 )
 
 // anchorKey is the server_settings row holding the chain's count and head. It lives outside
@@ -22,6 +24,10 @@ const anchorKey = "audit_anchor"
 
 // genesisHash is the predecessor of the first record, the anchor of an empty log.
 const genesisHash = "0000000000000000000000000000000000000000000000000000000000000000"
+
+// auditLockKey is the Postgres transaction-scoped advisory lock every append takes before
+// reading the anchor, so appends from separate processes on one database run one at a time.
+const auditLockKey int64 = 7345101
 
 // auditWriteBudget bounds one append. The audit write is not the caller's to cancel: a
 // dropped connection must not lose the row for the action it already performed.
@@ -297,6 +303,16 @@ VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
 // follow resumes the chain and re-places it on tx when the stored anchor has moved on or is
 // gone; a missing anchor then refuses, rather than being re-created from memory.
 func (a *auditStore) follow(ctx context.Context, tx *sql.Tx) (*auditchain.Chain, error) {
+	// Serialise with other processes before reading the anchor. SQLite has no advisory lock:
+	// a write statement, even one matching no row, takes the database write lock and waits
+	// out busy_timeout, where a deferred transaction that read first fails with BUSY_SNAPSHOT.
+	lock, args := "UPDATE server_settings SET key = key WHERE 0", []any(nil)
+	if a.store.driver == "postgres" {
+		lock, args = "SELECT pg_advisory_xact_lock($1)", []any{auditLockKey}
+	}
+	if _, err := tx.ExecContext(ctx, lock, args...); err != nil {
+		return nil, err
+	}
 	c, err := a.resume(ctx, tx)
 	if err != nil {
 		return nil, err
@@ -312,9 +328,36 @@ func (a *auditStore) follow(ctx context.Context, tx *sql.Tx) (*auditchain.Chain,
 	return c, nil
 }
 
+// isSeqConflict reports an append that lost a race with another process: a duplicate
+// sequence (SQLite, or Postgres 23505 on idx_audit_seq) or SQLite's SQLITE_BUSY when a
+// deferred transaction cannot take the write lock. Retrying from a fresh tail fixes both.
+func isSeqConflict(err error) bool {
+	if err == nil {
+		return false
+	}
+	var pg *pgconn.PgError
+	if errors.As(err, &pg) {
+		return pg.Code == "23505" && pg.ConstraintName == "idx_audit_seq"
+	}
+	var lite interface{ Code() int }
+	if errors.As(err, &lite) && lite.Code()&0xff == 5 { // SQLITE_BUSY and its extended codes
+		return true
+	}
+	return strings.Contains(err.Error(), "UNIQUE constraint failed: audit_records.seq")
+}
+
 func (a *auditStore) LogAudit(ctx context.Context, r *AuditRecord) error {
 	ctx, cancel := context.WithTimeout(context.WithoutCancel(ctx), auditWriteBudget)
 	defer cancel()
+	err := a.logOnce(ctx, r)
+	if isSeqConflict(err) {
+		// The failed append dropped the cached chain, so the retry chains onto the new tail.
+		err = a.logOnce(ctx, r)
+	}
+	return err
+}
+
+func (a *auditStore) logOnce(ctx context.Context, r *AuditRecord) error {
 	tx, err := a.store.db.BeginTx(ctx, nil)
 	if err != nil {
 		return err

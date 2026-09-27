@@ -3,6 +3,7 @@ package store
 import (
 	"context"
 	"errors"
+	"fmt"
 	"strings"
 	"sync"
 	"testing"
@@ -11,6 +12,7 @@ import (
 	"github.com/Busnes-app/ky-primitives/auditchain"
 	"github.com/Busnes-app/kypulse-server/internal/config"
 	"github.com/Busnes-app/kypulse-server/internal/testdb"
+	"github.com/jackc/pgx/v5/pgconn"
 )
 
 func openAudit(t *testing.T, cfg config.DatabaseConfig) *SQLStore {
@@ -417,5 +419,63 @@ func TestAuditChainRefusesFillerRowAboveAnchor(t *testing.T) {
 	_ = st.Close()
 	if _, err := Open(ctx, cfg); !errors.Is(err, ErrAuditUnplaceable) {
 		t.Fatalf("a filler row above the anchor must refuse to open: %v", err)
+	}
+}
+
+// Two processes appending at once must not lose a record to a sequence collision.
+func TestConcurrentAppendsAcrossStores(t *testing.T) {
+	cfg := testdb.Config(t)
+	stores := []*SQLStore{openAudit(t, cfg), openAudit(t, cfg)}
+	ctx := context.Background()
+	var wg sync.WaitGroup
+	errs := make(chan error, 60)
+	for _, st := range stores {
+		for range 2 {
+			wg.Add(1)
+			go func() {
+				defer wg.Done()
+				for range 15 {
+					errs <- st.Audit().LogAudit(ctx, &AuditRecord{UserID: "u1", Action: "test.event", Resource: "r", IPAddress: "10.0.0.1"})
+				}
+			}()
+		}
+	}
+	wg.Wait()
+	close(errs)
+	for err := range errs {
+		if err != nil {
+			t.Fatal(err)
+		}
+	}
+	for _, st := range stores {
+		if status, err := st.Audit().VerifyChain(ctx); err != nil || status.Count != 60 {
+			t.Fatalf("verify: %+v %v", status, err)
+		}
+	}
+}
+
+type busyErr struct{ code int }
+
+func (e busyErr) Error() string { return "database is locked" }
+func (e busyErr) Code() int     { return e.code }
+
+func TestIsSeqConflict(t *testing.T) {
+	st := openAudit(t, testdb.Config(t)) // the driver's real error on the Postgres run too
+	logN(t, st, 1)
+	_, dup := st.db.ExecContext(context.Background(), st.rebind(`INSERT INTO audit_records (action, created_at, seq) VALUES ('x', ?, 1)`), time.Now())
+	for name, c := range map[string]struct {
+		err  error
+		want bool
+	}{
+		"store duplicate seq":    {fmt.Errorf("append: %w", dup), true},
+		"sqlite busy snapshot":   {busyErr{517}, true},
+		"postgres duplicate seq": {&pgconn.PgError{Code: "23505", ConstraintName: "idx_audit_seq"}, true},
+		"postgres other unique":  {&pgconn.PgError{Code: "23505", ConstraintName: "users_username_key"}, false},
+		"other":                  {errors.New("boom"), false},
+		"nil":                    {nil, false},
+	} {
+		if got := isSeqConflict(c.err); got != c.want {
+			t.Errorf("%s: isSeqConflict(%v) = %v", name, c.err, got)
+		}
 	}
 }
