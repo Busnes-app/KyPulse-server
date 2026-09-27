@@ -1,4 +1,4 @@
-# Restoring a Busnes.app server from a capsule
+# Restoring a kyPulse server from a capsule
 
 This is the procedure for bringing a server built on this scaffold back from a `.kycap`
 backup after the original is gone. It needs three things, held by three different parties by
@@ -51,7 +51,7 @@ dump, but nothing in it can be decrypted without `encryption.key`.
   this service (the app name, `kyPulse` unless `KYPULSE_APP_NAME` was set) that is not flagged
   corrupt, and note its `capsule_id`, `created_at` and `digest`. You will compare these after
   the restore. From a local backup directory the file is `<escaped app name>.<capsule-id>.kycap`
-  (`Busnes_2eapp.cap-Busnes.app-<n>.kycap` by default); the newest is the one to use unless
+  (`kyPulse.cap-kyPulse-<n>.kycap` by default); the newest is the one to use unless
   you have a reason.
 - **Gather k custodians.** Each card carries one share, a single line beginning `ky2-`. They
   type or paste it themselves; do not collect the shares in a file, a chat, or an email. Two
@@ -136,8 +136,8 @@ Delete it afterwards; a file holding k shares is the suite key in a file.
 On success it prints the authenticated manifest:
 
 ```
-Restored 4 files from capsule cap-Busnes.app-1788605720094118543
-  service:      Busnes.app (v1.0.0)
+Restored 4 files from capsule cap-kyPulse-1788605720094118543
+  service:      kyPulse (v1.0.0)
   created:      2026-09-05T12:15:20Z
   recovery key: 886ff52c...
   payload hash: 8a053985...
