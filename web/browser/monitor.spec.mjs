@@ -75,7 +75,7 @@ test('status, alerts, detail page and the alert bar in every state', async ({ pa
   // Webhook that fails → "Alerts not being delivered".
   await page.getByRole('link', { name: 'Settings & DB' }).click();
   await page.getByLabel('Preset').selectOption('generic');
-  await page.getByLabel('URL').fill(`${base}/hook`);
+  await page.getByLabel('URL', { exact: true }).fill(`${base}/hook`);
   await page.getByRole('button', { name: 'Save webhook' }).click();
   await expect(page.getByRole('status').filter({ hasText: 'Webhook saved' })).toBeVisible();
   await page.getByRole('button', { name: 'Send test' }).click();
