@@ -74,6 +74,7 @@ export interface StatusSummary {
   paused: number;
   problems: Problem[] | null;
   webhook: { configured: boolean; last: DeliveryStatus | null };
+  kyyard?: KyYardStatus;
 }
 
 export interface WebhookInfo {
@@ -90,6 +91,47 @@ export interface TargetInput {
   interval_sec: number;
   enabled: boolean;
   container?: string;
+}
+
+export interface KyYardStatus {
+  paired: boolean;
+  url?: string;
+  organization?: string;
+  fetched_at?: string | null;
+  stale: boolean;
+  error?: string;
+}
+
+export interface ContainerFacts {
+  link: string;
+  endpoint_id: string;
+  endpoint_name: string;
+  container_id: string;
+  name: string;
+  image: string;
+  state: string;
+  status: string;
+  health: string;
+  exit_code?: number;
+  observed_at: string;
+  endpoint_offline: boolean;
+  // Memory and restarts mean something only when has_sample; KyYard samples running containers only.
+  has_sample: boolean;
+  sample_at?: string;
+  memory_bytes: number;
+  memory_limit: number;
+  restart_count: number;
+  restarts_last_hour: number;
+  history_minutes: number;
+  stale: boolean;
+}
+
+export interface Suggestion {
+  link: string;
+  endpoint_name: string;
+  name: string;
+  image: string;
+  state: string;
 }
 
 export type SilenceFor = '1h' | '8h' | 'until_fixed' | 'off';
@@ -123,7 +165,8 @@ const json = (body: unknown): RequestInit => ({
 export const getStatus = () => fetch('/api/status').then((r) => readJSON<StatusSummary>(r));
 export const listTargets = () => fetch('/api/targets').then((r) => readJSON<{ targets: Target[] }>(r)).then((b) => b.targets ?? []);
 export const getTarget = (id: string) =>
-  fetch(`/api/targets/${encodeURIComponent(id)}`).then((r) => readJSON<{ target: Target; last_result: LastResult | null; events: TargetEvent[] | null }>(r));
+  fetch(`/api/targets/${encodeURIComponent(id)}`).then((r) =>
+    readJSON<{ target: Target; last_result: LastResult | null; events: TargetEvent[] | null; kyyard: ContainerFacts | null }>(r));
 export const listAlerts = (limit = 100) =>
   fetch(`/api/alerts?limit=${limit}`).then((r) => readJSON<{ events: TargetEvent[] | null; total: number }>(r));
 export const createTarget = (input: TargetInput) =>
@@ -140,6 +183,12 @@ export const saveWebhook = (input: { preset: string; url: string; token: string;
   secureFetch('/api/alerts/webhook', { method: 'PUT', ...json(input) }).then((r) => readJSON<WebhookInfo>(r));
 export const deleteWebhook = () => secureFetch('/api/alerts/webhook', { method: 'DELETE' }).then((r) => readJSON<void>(r));
 export const testWebhook = () => secureFetch('/api/alerts/webhook/test', { method: 'POST' }).then((r) => readJSON<{ ok: boolean }>(r));
+
+export const getKyYard = () => fetch('/api/kyyard').then((r) => readJSON<KyYardStatus>(r));
+export const pairKyYard = (input: { url: string; pairing_code: string }) =>
+  secureFetch('/api/kyyard/pair', { method: 'POST', ...json(input) }).then((r) => readJSON<KyYardStatus>(r));
+export const unpairKyYard = () => secureFetch('/api/kyyard', { method: 'DELETE' }).then((r) => readJSON<void>(r));
+export const kyYardContainers = () => fetch('/api/kyyard/containers').then((r) => readJSON<Suggestion[]>(r));
 
 // Display rules.
 
@@ -182,6 +231,12 @@ export function timeLabel(iso: string | null | undefined): string {
 
 export function webhookFailing(s: StatusSummary): boolean {
   return s.webhook.configured && !!s.webhook.last && !s.webhook.last.ok;
+}
+
+// kyYardPending is true right after pairing, before the background loop's first pull has
+// landed (or failed): paired, no fetched_at yet, and no error reported.
+export function kyYardPending(s: Pick<KyYardStatus, 'paired' | 'fetched_at' | 'error'>): boolean {
+  return s.paired && !s.fetched_at && !s.error;
 }
 
 export function isSilenced(t: Target, now: Date = new Date()): boolean {

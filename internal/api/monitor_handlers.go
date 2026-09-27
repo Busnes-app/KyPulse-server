@@ -111,10 +111,17 @@ func (s *Server) handleGetTarget(w http.ResponseWriter, r *http.Request) {
 		s.writeError(w, http.StatusInternalServerError, "Failed to list events")
 		return
 	}
+	var facts any
+	if t.Container != "" {
+		if f, ok := s.kyyard.Facts(t.Container, time.Now()); ok {
+			facts = f
+		}
+	}
 	s.writeJSON(w, http.StatusOK, map[string]any{
 		"target":      targetView(t),
 		"last_result": lastResult,
 		"events":      events,
+		"kyyard":      facts,
 	})
 }
 
@@ -319,6 +326,7 @@ func (s *Server) handleStatus(w http.ResponseWriter, r *http.Request) {
 		"paused":     counts["paused"],
 		"problems":   problems,
 		"webhook":    webhook,
+		"kyyard":     s.kyyard.Status(time.Now()),
 	})
 }
 

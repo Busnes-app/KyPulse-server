@@ -692,7 +692,8 @@ func TestDetachedRegistrationCoversTheAuthLookup(t *testing.T) {
 		t.Fatalf("logger: %v", err)
 	}
 	mon := newTestMonitor(t, cfg, st, lg)
-	stalled := api.NewServer(cfg, &blockingSessionStore{Store: st, sessions: blocked}, lg, mon)
+	yard := newTestKyYard(t, cfg, st, lg, nil)
+	stalled := api.NewServer(cfg, &blockingSessionStore{Store: st, sessions: blocked}, lg, mon, yard)
 
 	go func() {
 		body, _ := json.Marshal(map[string]string{"public_key": "", "threshold": ""})

@@ -12,13 +12,18 @@ same server answering 500.
 ## Checks
 
 `npm test` (vitest: router, monitor helpers and client, AlertBar, Status, Alerts, AppDetail,
-WebhookForm, Backup, ChangePassword) and `npm run test:browser` (shell spec plus the monitor
-spec: empty install, add app, down after three polls, red bar linking to the detail page,
-checks, silence until fixed, Alerts table and silences, webhook saved, test send failing,
-"Alerts not being delivered", recovery to green with the silence cleared, delete back to
-Status, no horizontal overflow). Viewer-role rendering of Status, Alerts and the detail page
+WebhookForm, KyYardCard, Backup, ChangePassword) and `npm run test:browser` (shell spec plus
+the monitor spec: empty install, add app, down after three polls, red bar linking to the
+detail page, checks, silence until fixed, Alerts table and silences, webhook saved, test send
+failing, "Alerts not being delivered", recovery to green with the silence cleared, delete back
+to Status, no horizontal overflow). Viewer-role rendering of Status, Alerts and the detail page
 is covered by component tests; the `#/backup` redirect and the Settings webhook gate rely on
 the server's 403s (`internal/api` authorisation tests).
+
+KyYard (pairing card, stale alert-bar line, container facts, suggestion prefill) is covered by
+component tests only (`KyYardCard.test.tsx`, `AlertBar.test.tsx`, `AppDetail.test.tsx`,
+`Status.test.tsx`); there is no browser run against a real or fake KyYard in CI, so no
+screenshots below include it.
 
 ## Screenshots
 

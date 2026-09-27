@@ -1,7 +1,7 @@
 import React from 'react';
-import { AlertTriangle, CheckCircle2, CircleDashed, Send } from 'lucide-react';
+import { AlertTriangle, CheckCircle2, CircleDashed, Database, Send } from 'lucide-react';
 import { hrefFor } from '../router';
-import { sinceLabel, timeLabel, webhookFailing, type StatusSummary } from '../monitor';
+import { kyYardPending, sinceLabel, timeLabel, webhookFailing, type StatusSummary } from '../monitor';
 
 interface AlertBarProps {
   status: StatusSummary | null;
@@ -26,6 +26,18 @@ export const AlertBar: React.FC<AlertBarProps> = ({ status, loading, isAdmin }) 
       <span>Alerts not being delivered ({status.webhook.last?.error || 'failed'}) · {isAdmin ? <a href={hrefFor('/settings')}>Settings</a> : 'tell an admin'}</span>
     </div>
   ) : null;
+  const yardPending = !!status.kyyard?.paired && kyYardPending(status.kyyard);
+  const yard = status.kyyard?.paired && status.kyyard.stale && !yardPending ? (
+    <div className="alert-bar-line alert-bar-delivery">
+      <Database size={14} />
+      <span>KyYard data stale{status.kyyard.error ? ` (${status.kyyard.error})` : ''}{status.kyyard.fetched_at ? `, last pull ${sinceLabel(status.kyyard.fetched_at)} ago` : ', never pulled'} · {isAdmin ? <a href={hrefFor('/settings')}>Settings</a> : 'tell an admin'}</span>
+    </div>
+  ) : yardPending ? (
+    <div className="alert-bar-line">
+      <Database size={14} />
+      <span>KyYard: first pull pending</span>
+    </div>
+  ) : null;
 
   const problems = status.problems ?? [];
   if (problems.length > 0) {
@@ -41,6 +53,7 @@ export const AlertBar: React.FC<AlertBarProps> = ({ status, loading, isAdmin }) 
         ))}
         <a className="alert-bar-link" href={hrefFor('/alerts')}>Alerts</a>
         {delivery}
+        {yard}
       </div>
     );
   }
@@ -57,6 +70,8 @@ export const AlertBar: React.FC<AlertBarProps> = ({ status, loading, isAdmin }) 
       <div role="status" className="alert-bar alert-bar-neutral">
         <CircleDashed size={16} />
         <span>{status.pending > 0 ? 'No app has been classified yet' : 'All apps paused'}</span>
+        {delivery}
+        {yard}
       </div>
     );
   }
@@ -68,6 +83,7 @@ export const AlertBar: React.FC<AlertBarProps> = ({ status, loading, isAdmin }) 
         <span>All {status.ok} app{status.ok === 1 ? '' : 's'} healthy{pendingNote} · last check {timeLabel(status.checked_at)}</span>
       </div>
       {delivery}
+      {yard}
     </div>
   );
 };

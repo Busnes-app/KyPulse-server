@@ -32,6 +32,7 @@ import (
 	"github.com/Busnes-app/kypulse-server/internal/config"
 	"github.com/Busnes-app/kypulse-server/internal/crypto"
 	"github.com/Busnes-app/kypulse-server/internal/egress"
+	"github.com/Busnes-app/kypulse-server/internal/kyyard"
 	"github.com/Busnes-app/kypulse-server/internal/monitor"
 	"github.com/Busnes-app/kypulse-server/internal/notify"
 	"github.com/Busnes-app/kypulse-server/internal/store"
@@ -52,11 +53,12 @@ func newTestMonitor(t *testing.T, cfg *config.Config, st store.Store, lg *loggin
 
 func setupTestServer(t *testing.T) (*api.Server, store.Store, *config.Config) {
 	t.Helper()
-	return setupTestServerWith(t, nil)
+	return setupTestServerWith(t, nil, nil)
 }
 
-// setupTestServerWith swaps the webhook poster when poster is non-nil.
-func setupTestServerWith(t *testing.T, poster notify.Poster) (*api.Server, store.Store, *config.Config) {
+// setupTestServerWith swaps the webhook poster when poster is non-nil, and the KyYard HTTP
+// when yardHTTP is non-nil (a fake that answers every read 404 otherwise).
+func setupTestServerWith(t *testing.T, poster notify.Poster, yardHTTP kyyard.HTTP) (*api.Server, store.Store, *config.Config) {
 	t.Helper()
 	t.Setenv("KYPULSE_DATA_DIR", t.TempDir())
 	cfg, _ := config.LoadFromEnv()
@@ -79,8 +81,23 @@ func setupTestServerWith(t *testing.T, poster notify.Poster) (*api.Server, store
 	if poster != nil {
 		mon.Notifier.Post = poster
 	}
-	srv := api.NewServer(cfg, st, lg, mon)
+	yard := newTestKyYard(t, cfg, st, lg, yardHTTP)
+	srv := api.NewServer(cfg, st, lg, mon, yard)
 	return srv, st, cfg
+}
+
+// newTestKyYard builds the KyYard service the test server wires in. yardHTTP is a fakeYard
+// answering nothing (every read 404) unless the caller supplies one.
+func newTestKyYard(t *testing.T, cfg *config.Config, st store.Store, lg *logging.Logger, yardHTTP kyyard.HTTP) *kyyard.Service {
+	t.Helper()
+	pairing, err := kyyard.NewPairing(cfg, st.Settings())
+	if err != nil {
+		t.Fatalf("kyyard pairing: %v", err)
+	}
+	if yardHTTP == nil {
+		yardHTTP = &fakeYard{}
+	}
+	return &kyyard.Service{Pairing: pairing, HTTP: yardHTTP, Logger: lg}
 }
 
 func TestAuthAndSessionEndpoints(t *testing.T) {

@@ -1,30 +1,39 @@
 import React, { useState } from 'react';
 import { Loader2 } from 'lucide-react';
-import { ApiError, type Target, type TargetInput } from '../monitor';
+import { ApiError, type Suggestion, type Target, type TargetInput } from '../monitor';
 
 interface TargetFormProps {
   initial?: Target;
   submitLabel: string;
+  suggestions?: Suggestion[];
   onSubmit: (input: TargetInput) => Promise<void>;
   onCancel: () => void;
 }
 
 // TargetForm is the add and edit form for a watched app. Validation lives on the server; the
 // form only keeps the numbers in range and shows the server's message.
-export const TargetForm: React.FC<TargetFormProps> = ({ initial, submitLabel, onSubmit, onCancel }) => {
+export const TargetForm: React.FC<TargetFormProps> = ({ initial, submitLabel, suggestions, onSubmit, onCancel }) => {
   const [name, setName] = useState(initial?.name ?? '');
   const [url, setUrl] = useState(initial?.url ?? '');
   const [interval, setInterval_] = useState(initial?.interval_sec ?? 30);
   const [enabled, setEnabled] = useState(initial?.enabled ?? true);
+  const [container, setContainer] = useState(initial?.container ?? '');
   const [error, setError] = useState('');
   const [busy, setBusy] = useState(false);
+
+  // Picking a datalist entry (an exact link match) prefills an empty name.
+  const pickContainer = (value: string) => {
+    setContainer(value);
+    const s = suggestions?.find((x) => x.link === value);
+    if (s && !name.trim()) setName(s.name);
+  };
 
   const submit = async (e: React.FormEvent) => {
     e.preventDefault();
     setBusy(true);
     setError('');
     try {
-      await onSubmit({ name: name.trim(), url: url.trim(), interval_sec: interval, enabled, container: initial?.container });
+      await onSubmit({ name: name.trim(), url: url.trim(), interval_sec: interval, enabled, container: container.trim() || undefined });
     } catch (err) {
       setError(err instanceof ApiError ? err.message : 'Could not save the app');
     } finally {
@@ -41,6 +50,14 @@ export const TargetForm: React.FC<TargetFormProps> = ({ initial, submitLabel, on
         <label style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
           <input type="checkbox" style={{ width: 'auto' }} checked={enabled} onChange={(e) => setEnabled(e.target.checked)} />Enabled
         </label>
+        <label>KyYard container
+          <input list="kyyard-suggestions" value={container} onChange={(e) => pickContainer(e.target.value)} placeholder="endpoint/name" />
+        </label>
+        {suggestions && suggestions.length > 0 && (
+          <datalist id="kyyard-suggestions">
+            {suggestions.map((s) => <option key={s.link} value={s.link}>{s.endpoint_name}/{s.name} ({s.image})</option>)}
+          </datalist>
+        )}
       </div>
       {error && <p className="form-error" role="alert">{error}</p>}
       <div className="dr-actions">

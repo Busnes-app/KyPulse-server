@@ -161,6 +161,13 @@ check "viewer-tier status needs a session" "$(status "$BASE/api/status")" "401"
 check "admin creates a target" "$(status -X POST -H 'Content-Type: application/json' -b "$WORK/cookies" -H "X-CSRF-Token: $CSRF" -d '{"name":"self","url":"'"http://localhost:$PORT/healthz"'","interval_sec":10}' "$BASE/api/targets")" "201"
 contains "targets list shows it" "$(curl -s -b "$WORK/cookies" "$BASE/api/targets")" '"name":"self"'
 check "webhook must be https without the opt-in" "$(status -X PUT -H 'Content-Type: application/json' -b "$WORK/cookies" -H "X-CSRF-Token: $CSRF" -d '{"preset":"ntfy","url":"http://ntfy.lan/t"}' "$BASE/api/alerts/webhook")" "400"
+
+echo "==> KyYard"
+contains "kyyard status is unpaired" "$(curl -s -b "$WORK/cookies" "$BASE/api/kyyard")" '"paired":false'
+check "kyyard pair refuses loopback" "$(status -X POST -H 'Content-Type: application/json' -b "$WORK/cookies" -H "X-CSRF-Token: $CSRF" -d '{"url":"http://127.0.0.1:1","pairing_code":"123456"}' "$BASE/api/kyyard/pair")" "400"
+check "kyyard pair needs a session" "$(status -X POST -H 'Content-Type: application/json' -d '{"url":"https://yard.lan","pairing_code":"123456"}' "$BASE/api/kyyard/pair")" "401"
+contains "status carries kyyard" "$(curl -s -b "$WORK/cookies" "$BASE/api/status")" '"kyyard":{'
+
 sleep 16
 contains "self target was polled and refused" "$(curl -s -b "$WORK/cookies" "$BASE/api/targets")" '\"cause\":\"address_refused\"'
 

@@ -65,4 +65,25 @@ describe('AlertBar', () => {
     render(<AlertBar status={{ ...healthy, ok: 2, total: 3, pending: 1, problems: [] }} loading={false} isAdmin={false} />);
     expect(screen.getByRole('status').textContent).toContain('2 apps healthy, 1 not yet classified');
   });
+
+  it('reports stale KyYard data when paired and stale', () => {
+    render(<AlertBar status={{ ...healthy, kyyard: { paired: true, stale: true, error: 'unauthorized', fetched_at: null } }} loading={false} isAdmin={false} />);
+    expect(screen.getByText(/KyYard data stale/).textContent).toBe('KyYard data stale (unauthorized), never pulled · tell an admin');
+  });
+
+  it('says nothing about KyYard when fresh', () => {
+    render(<AlertBar status={{ ...healthy, kyyard: { paired: true, stale: false, fetched_at: '2026-09-27T09:59:00Z' } }} loading={false} isAdmin={false} />);
+    expect(screen.queryByText(/KyYard/)).toBeNull();
+  });
+
+  it('says nothing about KyYard when unpaired', () => {
+    render(<AlertBar status={{ ...healthy, kyyard: { paired: false, stale: false } }} loading={false} isAdmin={false} />);
+    expect(screen.queryByText(/KyYard/)).toBeNull();
+  });
+
+  it('says first pull pending, not stale, right after pairing', () => {
+    render(<AlertBar status={{ ...healthy, kyyard: { paired: true, stale: true, fetched_at: null } }} loading={false} isAdmin={false} />);
+    expect(screen.getByText('KyYard: first pull pending')).toBeTruthy();
+    expect(screen.queryByText(/KyYard data stale/)).toBeNull();
+  });
 });

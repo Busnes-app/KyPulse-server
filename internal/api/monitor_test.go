@@ -250,7 +250,7 @@ func (leakyPoster) Post(context.Context, string, string, []byte, map[string]stri
 }
 
 func TestWebhookTestFailureNeverEchoesTheURL(t *testing.T) {
-	srv, st, _ := setupTestServerWith(t, leakyPoster{})
+	srv, st, _ := setupTestServerWith(t, leakyPoster{}, nil)
 	admin := loginAs(t, srv, st, "alice", "admin")
 	if w := doJSON(t, srv, "PUT", "/api/alerts/webhook", admin, map[string]string{"preset": "ntfy", "url": "https://secret-hook-host.example/t0ken"}); w.Code != http.StatusOK {
 		t.Fatalf("set: %d %s", w.Code, w.Body.String())

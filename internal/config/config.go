@@ -26,6 +26,7 @@ type Config struct {
 	Captcha  CaptchaConfig  `json:"captcha"`
 	Alerts   AlertsConfig   `json:"alerts"`
 	Poll     PollConfig     `json:"poll"`
+	KyYard   KyYardConfig   `json:"kyyard"`
 }
 
 // ServerConfig defines HTTP and network settings.
@@ -109,6 +110,13 @@ type AlertsConfig struct {
 // PollConfig sizes the health poller.
 type PollConfig struct {
 	Workers int `json:"workers"` // concurrent polls; one slow app never delays the rest
+}
+
+// KyYardConfig is the KyYard integration's process configuration; the pairing itself is a
+// sealed setting.
+type KyYardConfig struct {
+	// AllowHTTP admits a plain-http KyYard URL. Off by default: the token rides in a header.
+	AllowHTTP bool `json:"allow_http"`
 }
 
 // MinDepositInterval is the shortest schedule accepted: each run snapshots the whole database
@@ -249,6 +257,7 @@ func LoadFromEnv() (*Config, error) {
 		},
 		Alerts: AlertsConfig{AllowHTTP: getEnvBool("KYPULSE_ALERT_ALLOW_HTTP", false)},
 		Poll:   PollConfig{Workers: pollWorkers},
+		KyYard: KyYardConfig{AllowHTTP: getEnvBool("KYPULSE_KYYARD_ALLOW_HTTP", false)},
 	}
 
 	return cfg, nil

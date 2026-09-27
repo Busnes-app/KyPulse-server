@@ -148,6 +148,9 @@ func TestPrivilegedEndpointsRequireAdmin(t *testing.T) {
 		{"GET", "/api/alerts/webhook"},
 		{"PUT", "/api/alerts/webhook"},
 		{"POST", "/api/alerts/webhook/test"},
+		{"POST", "/api/kyyard/pair"},
+		{"DELETE", "/api/kyyard"},
+		{"GET", "/api/kyyard/containers"},
 	}
 
 	for _, tc := range cases {

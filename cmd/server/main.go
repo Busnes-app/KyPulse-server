@@ -81,6 +81,9 @@ func runServer(lg *logging.Logger) {
 	if cfg.Alerts.AllowHTTP {
 		log.Printf("[ALERTS] KYPULSE_ALERT_ALLOW_HTTP is on: a plain-http webhook receiver is admitted (loopback and link-local remain refused)")
 	}
+	if cfg.KyYard.AllowHTTP {
+		log.Printf("[KYYARD] KYPULSE_KYYARD_ALLOW_HTTP is on: a plain-http KyYard URL is admitted (loopback and link-local remain refused)")
+	}
 
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
@@ -126,11 +129,20 @@ func runServer(lg *logging.Logger) {
 	if err != nil {
 		fatal("Failed to build the monitor: %v", err)
 	}
-	srv := api.NewServer(cfg, st, lg, mon)
+	yard, err := newKyYard(cfg, st, lg)
+	if err != nil {
+		fatal("Failed to build the KyYard reader: %v", err)
+	}
+	if err := yard.Open(ctx); err != nil {
+		log.Printf("[KYYARD] the stored pairing cannot be read; pair again in Settings")
+	}
+	srv := api.NewServer(cfg, st, lg, mon, yard)
 	backupDone := make(chan struct{})
 	go backupLoop(ctx, cfg, st, backupDone)
 	monitorDone := make(chan struct{})
 	go monitorLoop(ctx, mon, pl, monitorDone)
+	kyyardDone := make(chan struct{})
+	go kyyardLoop(ctx, yard, kyyardDone)
 
 	addr := fmt.Sprintf("%s:%d", cfg.Server.Host, cfg.Server.Port)
 	httpServer := &http.Server{
@@ -163,26 +175,27 @@ func runServer(lg *logging.Logger) {
 	cancel()
 	waitCtx, waitCancel := context.WithTimeout(context.Background(), backupWaitTimeout)
 	defer waitCancel()
-	waitForBackupWork(waitCtx, backupDone, monitorDone, srv.WaitDetached)
+	waitForBackupWork(waitCtx, backupDone, monitorDone, kyyardDone, srv.WaitDetached)
 	log.Println("[KYPULSE] Server stopped")
 }
 
-// waitForBackupWork blocks until the scheduler loop, every detached handler and the poller
-// have finished, or until ctx expires. Backup work ignores cancellation once bytes are moving:
-// the scheduler's run, and the pair, pin-key and deposit handlers, all detach from their
-// caller. They are waited out before the store closes, or they write into a closed store -- a
-// key pinned on disk with no row recording it, or a capsule at KyRecovery with no receipt this
-// side. The poller is waited out for the same reason: an in-flight poll observed after the
-// store closes cannot record its transition.
+// waitForBackupWork blocks until the scheduler loop, every detached handler, the poller and
+// the KyYard puller have finished, or until ctx expires. Backup work ignores cancellation once
+// bytes are moving: the scheduler's run, and the pair, pin-key and deposit handlers, all detach
+// from their caller. They are waited out before the store closes, or they write into a closed
+// store -- a key pinned on disk with no row recording it, or a capsule at KyRecovery with no
+// receipt this side. The poller and the KyYard puller are waited out for the same reason: an
+// in-flight poll or pull observed after the store closes cannot record its result (KyYard's
+// snapshot is in-memory only, but its own pairing read goes through the store).
 //
-// All three waits start before any blocks, and all are bounded by the one context rather than a
+// All waits start before any blocks, and all are bounded by the one context rather than a
 // timer channel: a timer channel delivers its value once, so whichever wait consumed it would
 // leave the others unbounded -- exactly the stuck-deposit case this is written for. Starting them
 // together matters as much: waited one after the other, a hung scheduled deposit spends the whole
 // budget on its own and a later wait is read only once the deadline has already passed, giving
 // live work no time at all. Past the deadline the work is abandoned and said so; a SIGKILL would
 // have been silent.
-func waitForBackupWork(ctx context.Context, backupDone, monitorDone <-chan struct{}, waitDetached func()) {
+func waitForBackupWork(ctx context.Context, backupDone, monitorDone, kyyardDone <-chan struct{}, waitDetached func()) {
 	handlersDone := make(chan struct{})
 	go func() { defer close(handlersDone); waitDetached() }()
 
@@ -205,6 +218,11 @@ func waitForBackupWork(ctx context.Context, backupDone, monitorDone <-chan struc
 	case <-monitorDone:
 	case <-ctx.Done():
 		log.Printf("[KYPULSE] abandoning polls and queued alerts still running after %s", backupWaitTimeout)
+	}
+	select {
+	case <-kyyardDone:
+	case <-ctx.Done():
+		log.Printf("[KYPULSE] abandoning the KyYard pull still running after %s", backupWaitTimeout)
 	}
 }
 
