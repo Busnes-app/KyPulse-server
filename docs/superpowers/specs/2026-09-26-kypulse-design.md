@@ -84,15 +84,22 @@ Each app serves `GET /healthz` with no auth. It returns 200 when the status is `
 ```
 
 - `status` is the worst check status. A service with no checks is `ok`.
-- A check is a function returning `error`, with a per-check deadline defaulting to 2 s. A
-  timeout counts as `down`.
+- A check is a function returning `error`, with a per-check deadline defaulting to 2 s.
+  - A timeout is `down` with reason `timeout`.
+  - A check still running from a previous poll is not started again; it reports `timeout`.
+  - A panicking check is `down`.
+- One evaluation answers every request for 5 s, and concurrent requests share it. The route
+  is public, so without this each request would run every check against the app's
+  dependencies.
 - The package never copies error text into the response, because error text can hold DSNs,
   paths or hostnames.
   - A failed check is reported as status `down` with no reason.
-  - A check reports `degraded`, or adds a `reason`, only by returning a `health.Reason` value.
-  - A `health.Reason` is a code matching `^[a-z0-9_]{1,64}$`; invalid codes panic at
-    construction.
-  - The full error is written to the app's stderr through ky-primitives `logging`.
+  - A check reports `degraded`, or adds a `reason`, only by returning `health.Degrade(r)` or
+    `health.Fail(r)` with a `health.Reason`.
+  - A `health.Reason` comes from `health.DeclareReason`, called at package level. Its code
+    must match `^[a-z0-9_]{1,64}$`, and an invalid code panics at startup.
+  - Each non-ok check writes a `health_check_failed` line to the app's stderr through
+    ky-primitives `logging`, with the check name, reason and `logging.Err` error kind.
 - No version, build or uptime fields. On a public route those help attackers fingerprint
   releases and reveal restart timing. kyPulse takes the version from the KyYard image tag and
   restarts from KyYard.
