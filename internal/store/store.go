@@ -34,6 +34,7 @@ type Store interface {
 	Audit() AuditStore
 	Settings() SettingsStore
 	Targets() TargetStore
+	Logs() LogStore
 
 	Driver() string
 	Ping(ctx context.Context) error

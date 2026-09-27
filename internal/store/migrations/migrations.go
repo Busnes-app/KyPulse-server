@@ -249,6 +249,54 @@ ALTER TABLE audit_records ADD COLUMN hash VARCHAR(64) NOT NULL DEFAULT '';
 CREATE UNIQUE INDEX IF NOT EXISTS idx_audit_seq ON audit_records(seq);
 `,
 	},
+	{
+		Version: 7,
+		Name:    "collected_logs",
+		SQLite: `
+CREATE TABLE log_lines (
+ id INTEGER PRIMARY KEY AUTOINCREMENT, time DATETIME NOT NULL, received_at DATETIME NOT NULL,
+ source_id TEXT NOT NULL DEFAULT '', source TEXT NOT NULL, target_id TEXT REFERENCES targets(id) ON DELETE SET NULL,
+ app TEXT NOT NULL DEFAULT '', level TEXT NOT NULL DEFAULT '', event TEXT NOT NULL DEFAULT '',
+ message TEXT NOT NULL DEFAULT '', raw TEXT NOT NULL, truncated INTEGER NOT NULL DEFAULT 0, bytes INTEGER NOT NULL
+);
+CREATE INDEX idx_log_lines_target_app_id ON log_lines(target_id, app, id);
+CREATE INDEX idx_log_lines_received_id ON log_lines(received_at, id);
+CREATE TABLE activity (
+ id INTEGER PRIMARY KEY AUTOINCREMENT, time DATETIME NOT NULL, received_at DATETIME NOT NULL,
+ source_id TEXT NOT NULL DEFAULT '', target_id TEXT REFERENCES targets(id) ON DELETE SET NULL,
+ app TEXT NOT NULL DEFAULT '', actor TEXT NOT NULL DEFAULT '', action TEXT NOT NULL,
+ target TEXT NOT NULL DEFAULT '', outcome TEXT NOT NULL DEFAULT '', ip TEXT NOT NULL DEFAULT '',
+ external_key TEXT NOT NULL DEFAULT '', bytes INTEGER NOT NULL
+);
+CREATE INDEX idx_activity_target_app_id ON activity(target_id, app, id);
+CREATE INDEX idx_activity_received_id ON activity(received_at, id);
+CREATE UNIQUE INDEX idx_activity_external_key ON activity(external_key) WHERE external_key <> '';
+CREATE TABLE log_usage (id INTEGER PRIMARY KEY CHECK(id=1), bytes INTEGER NOT NULL DEFAULT 0);
+INSERT INTO log_usage(id, bytes) VALUES (1, 0);
+`,
+		Postgres: `
+CREATE TABLE log_lines (
+ id BIGSERIAL PRIMARY KEY, time TIMESTAMPTZ NOT NULL, received_at TIMESTAMPTZ NOT NULL,
+ source_id TEXT NOT NULL DEFAULT '', source TEXT NOT NULL, target_id VARCHAR(64) REFERENCES targets(id) ON DELETE SET NULL,
+ app TEXT NOT NULL DEFAULT '', level TEXT NOT NULL DEFAULT '', event TEXT NOT NULL DEFAULT '',
+ message TEXT NOT NULL DEFAULT '', raw TEXT NOT NULL, truncated BOOLEAN NOT NULL DEFAULT FALSE, bytes BIGINT NOT NULL
+);
+CREATE INDEX idx_log_lines_target_app_id ON log_lines(target_id, app, id);
+CREATE INDEX idx_log_lines_received_id ON log_lines(received_at, id);
+CREATE TABLE activity (
+ id BIGSERIAL PRIMARY KEY, time TIMESTAMPTZ NOT NULL, received_at TIMESTAMPTZ NOT NULL,
+ source_id TEXT NOT NULL DEFAULT '', target_id VARCHAR(64) REFERENCES targets(id) ON DELETE SET NULL,
+ app TEXT NOT NULL DEFAULT '', actor TEXT NOT NULL DEFAULT '', action TEXT NOT NULL,
+ target TEXT NOT NULL DEFAULT '', outcome TEXT NOT NULL DEFAULT '', ip TEXT NOT NULL DEFAULT '',
+ external_key TEXT NOT NULL DEFAULT '', bytes BIGINT NOT NULL
+);
+CREATE INDEX idx_activity_target_app_id ON activity(target_id, app, id);
+CREATE INDEX idx_activity_received_id ON activity(received_at, id);
+CREATE UNIQUE INDEX idx_activity_external_key ON activity(external_key) WHERE external_key <> '';
+CREATE TABLE log_usage (id INTEGER PRIMARY KEY CHECK(id=1), bytes BIGINT NOT NULL DEFAULT 0);
+INSERT INTO log_usage(id, bytes) VALUES (1, 0);
+`,
+	},
 }
 
 // Run executes all pending migrations for the specified database driver and returns the
