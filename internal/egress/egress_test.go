@@ -152,6 +152,19 @@ func TestPostSendsHeadersAndBody(t *testing.T) {
 	}
 }
 
+func TestGetWithSendsHeaders(t *testing.T) {
+	var got http.Header
+	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) { got = r.Header.Clone() }))
+	defer srv.Close()
+	c := testClient(t, srv, "10.0.0.5", Options{AllowHTTP: true})
+	if _, err := c.GetWith(context.Background(), "http://vault.lan/x", map[string]string{"Authorization": "Bearer abc"}); err != nil {
+		t.Fatal(err)
+	}
+	if got.Get("Authorization") != "Bearer abc" || got.Get("User-Agent") != "kypulse" {
+		t.Fatalf("headers: %v", got)
+	}
+}
+
 func TestCauseVocabulary(t *testing.T) {
 	if got := Cause(&net.DNSError{IsNotFound: true}); got != "dns" {
 		t.Errorf("dns: %q", got)

@@ -117,6 +117,11 @@ func (c *Client) Get(ctx context.Context, rawURL string) (*Response, error) {
 	return c.do(ctx, http.MethodGet, rawURL, "", nil, nil)
 }
 
+// GetWith is Get with extra headers, for a bearer-authenticated read.
+func (c *Client) GetWith(ctx context.Context, rawURL string, headers map[string]string) (*Response, error) {
+	return c.do(ctx, http.MethodGet, rawURL, "", nil, headers)
+}
+
 // Post sends body with the given content type and extra headers.
 func (c *Client) Post(ctx context.Context, rawURL, contentType string, body []byte, headers map[string]string) (*Response, error) {
 	return c.do(ctx, http.MethodPost, rawURL, contentType, body, headers)

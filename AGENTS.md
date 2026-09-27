@@ -70,4 +70,5 @@ Design authority: `docs/superpowers/specs/2026-09-26-kypulse-design.md`. Plans l
 - `internal/alerts/AGENTS.md`: alert thresholds, transitions, reminders, silences.
 - `internal/notify/AGENTS.md`: webhook presets and delivery retries.
 - `internal/monitor/AGENTS.md`: glues polling, alerts and delivery to the store.
+- `internal/kyyard/AGENTS.md`: KyYard pairing, bearer client, endpoint/inventory/sample reads.
 - `web/AGENTS.md`: PWA, themes, ky-ui vendoring, browser regressions.
