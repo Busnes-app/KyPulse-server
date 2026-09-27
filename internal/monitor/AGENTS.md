@@ -4,12 +4,13 @@
 Glues the poller, the alerts state machine and the notifier to the store: what is due, what an observation means, what is recorded, what is sent.
 
 ## Ownership
-Owns `Service` (Due, Observe, Start, Drain, DueFailed, Silence, SendTest), `Webhooks` (sealed webhook config and delivery status), the `alerts.Track`/`poller.Result` JSON stored on target rows, and the monitoring log events (`target_state_changed`, `alert_sent`, `alert_send_failed`, `alert_dropped`, `poll_store_error`, `poll_due_failed`).
+Owns `Service` (Due, Observe, Start, Drain, DueFailed, Silence, SendTest), `Webhooks` (sealed webhook config and delivery status), the `alerts.Track`/`poller.Result` JSON stored on target rows, and the monitoring log events (`target_state_changed`, `alert_sent`, `alert_send_failed`, `alert_dropped`, `alert_cancelled`, `poll_store_error`, `poll_due_failed`).
 
 ## Local Contracts
 - Observe writes the poll result and the transition, then enqueues the webhook; a failed send is recorded on the event and in `alert_webhook_status`, never lost.
 - Delivery runs on one sender goroutine (`Start`) fed by a bounded queue (`QueueSize`, default 64), so a slow receiver never holds a poll worker. On a full queue the newest message is dropped: `alert_dropped` is logged and the event's `notify_error` is `queue_full`. `Drain` closes the queue and waits for the sender; `cmd/server` calls it after the poller stops and before the store closes.
-- Each send runs on a context detached from the loop with a 60 s budget; every send and failure is an audit row (`alert.sent`, `alert.send_failed`, actor `system`).
+- Once the loop's context ends nothing more is sent: an in-flight delivery gets `ShutdownGrace` (default 5 s) then its context is cut, and everything still queued is recorded with `notify_error` `cancelled` (`alert_cancelled` logged, audited as `alert.send_failed` with `reason=cancelled`). Shutdown therefore never waits on a dead receiver.
+- Each send runs on a context detached from the loop with a 60 s budget; outcomes are recorded on a context of their own so a cut-off send is still recorded. Every send and failure is an audit row (`alert.sent`, `alert.send_failed`, actor `system`).
 - `RecordPoll` and `RecordEvent` are two statements; a crash between them loses at most one event row, and the next poll re-derives the state.
 - The webhook is sealed under `kypulse:setting:alert_webhook`; `alert_webhook_status` is plaintext and holds no secret.
 - Messages link to `AppURL/#/apps/<id>`; step 2c makes that route exist.

@@ -22,12 +22,16 @@ var (
 	evPollStoreError = logging.DeclareEvent("poll_store_error", "poll result could not be stored", slog.LevelError)
 	evAlertDropped   = logging.DeclareEvent("alert_dropped", "alert dropped: the delivery queue is full", slog.LevelWarn)
 	evPollDueFailed  = logging.DeclareEvent("poll_due_failed", "could not list the targets due for a poll", slog.LevelError)
+	evAlertCancelled = logging.DeclareEvent("alert_cancelled", "alert not sent: the process is stopping", slog.LevelWarn)
 	fState           = logging.DeclareString("state")
 	fPrevious        = logging.DeclareString("previous")
 )
 
 // sendBudget bounds one delivery, retries included, after the poll's own context is gone.
 const sendBudget = 60 * time.Second
+
+// recordBudget bounds the store writes that record a delivery's outcome.
+const recordBudget = 10 * time.Second
 
 // ErrNoWebhook is SendTest's answer when nothing is configured; the API maps it to 412.
 var ErrNoWebhook = errors.New("monitor: no webhook is configured")
@@ -41,8 +45,12 @@ type Service struct {
 	AppURL    string
 	Now       func() time.Time
 	QueueSize int // deliveries waiting for the sender; default 64
+	// ShutdownGrace is how long an in-flight delivery may go on once the process is stopping;
+	// default 5 s.
+	ShutdownGrace time.Duration
 
 	once   sync.Once
+	drain  sync.Once
 	queue  chan delivery
 	sender sync.WaitGroup
 }
@@ -61,32 +69,39 @@ func (s *Service) init() {
 		if s.QueueSize <= 0 {
 			s.QueueSize = 64
 		}
+		if s.ShutdownGrace <= 0 {
+			s.ShutdownGrace = 5 * time.Second
+		}
 		s.queue = make(chan delivery, s.QueueSize)
 	})
 }
 
 // Start launches the one sender goroutine. Observe only enqueues, so a slow receiver never
-// holds a poll worker.
+// holds a poll worker. Once ctx ends nothing more is sent: what is still queued is recorded
+// as cancelled, so Drain returns promptly even with a dead receiver.
 func (s *Service) Start(ctx context.Context) {
 	s.init()
 	s.sender.Add(1)
 	go func() {
 		defer s.sender.Done()
 		for d := range s.queue {
-			if d.done != nil {
+			switch {
+			case d.done != nil:
 				close(d.done)
-				continue
+			case ctx.Err() != nil:
+				s.cancelled(d)
+			default:
+				s.send(ctx, d)
 			}
-			s.send(ctx, d)
 		}
 	}()
 }
 
-// Drain closes the queue and waits for the sender to deliver what is left. Call it once, after
-// the poller has stopped: an Observe after Drain panics.
+// Drain closes the queue and waits for the sender to finish what is left. Call it after the
+// poller has stopped: an Observe after Drain panics. A second call just waits.
 func (s *Service) Drain() {
 	s.init()
-	close(s.queue)
+	s.drain.Do(func() { close(s.queue) })
 	s.sender.Wait()
 }
 
@@ -201,11 +216,21 @@ func (s *Service) Observe(ctx context.Context, o poller.Observation) {
 }
 
 // send delivers one message on a context detached from the loop, records the outcome on the
-// event and in the delivery status, and audits it. The result is data, not an error.
+// event and in the delivery status, and audits it. The result is data, not an error. When
+// the loop's ctx ends mid-send the delivery gets ShutdownGrace more, then is cut off.
 func (s *Service) send(ctx context.Context, d delivery) {
-	targetID, eventID, msg := d.targetID, d.eventID, d.msg
 	sendCtx, cancel := context.WithTimeout(context.WithoutCancel(ctx), sendBudget)
 	defer cancel()
+	stop := context.AfterFunc(ctx, func() {
+		grace := time.NewTimer(s.ShutdownGrace)
+		defer grace.Stop()
+		select {
+		case <-grace.C:
+			cancel()
+		case <-sendCtx.Done():
+		}
+	})
+	defer stop()
 
 	cfg, ok, err := s.Webhooks.Load(sendCtx)
 	if !ok && err == nil {
@@ -214,19 +239,37 @@ func (s *Service) send(ctx context.Context, d delivery) {
 	// An unreadable webhook (e.g. a rotated deployment key) is a failed delivery, recorded
 	// like any other. Only notify.Reason is stored: err.Error() can name the webhook URL.
 	if err == nil {
-		err = s.Notifier.Send(sendCtx, cfg, msg)
+		err = s.Notifier.Send(sendCtx, cfg, d.msg)
 	}
+	s.record(d, err)
+}
+
+// cancelled records a delivery that was never attempted because the process is stopping.
+func (s *Service) cancelled(d delivery) {
+	s.record(d, context.Canceled)
+}
+
+// record writes a delivery's outcome on a context of its own, so a cut-off send is still
+// recorded. Only notify.Reason is stored: err.Error() can name the webhook URL.
+func (s *Service) record(d delivery, err error) {
+	ctx, cancel := context.WithTimeout(context.Background(), recordBudget)
+	defer cancel()
+	targetID, msg := d.targetID, d.msg
 	status := DeliveryStatus{At: s.now(), OK: err == nil, Error: notify.Reason(err)}
 	action, details := "alert.sent", "target="+targetID+" state="+msg.State
-	if err != nil {
+	switch {
+	case err == nil:
+		s.Logger.Log(ctx, evAlertSent, logging.TargetID(targetID), fState(msg.State))
+	case status.Error == "cancelled":
 		action, details = "alert.send_failed", details+" reason="+status.Error
-		s.Logger.Log(sendCtx, evAlertFailed, logging.TargetID(targetID), fState(msg.State), logging.Err(err))
-	} else {
-		s.Logger.Log(sendCtx, evAlertSent, logging.TargetID(targetID), fState(msg.State))
+		s.Logger.Log(ctx, evAlertCancelled, logging.TargetID(targetID), fState(msg.State))
+	default:
+		action, details = "alert.send_failed", details+" reason="+status.Error
+		s.Logger.Log(ctx, evAlertFailed, logging.TargetID(targetID), fState(msg.State), logging.Err(err))
 	}
-	_ = s.Webhooks.SetStatus(sendCtx, status)
-	_ = s.Store.Targets().SetEventNotified(sendCtx, eventID, err == nil, status.Error)
-	_ = s.Store.Audit().LogAudit(sendCtx, &store.AuditRecord{UserID: "system", Action: action, Resource: targetID, Details: details})
+	_ = s.Webhooks.SetStatus(ctx, status)
+	_ = s.Store.Targets().SetEventNotified(ctx, d.eventID, err == nil, status.Error)
+	_ = s.Store.Audit().LogAudit(ctx, &store.AuditRecord{UserID: "system", Action: action, Resource: targetID, Details: details})
 }
 
 // Silence writes only the target's silence columns, the source of truth for silencing, so a
