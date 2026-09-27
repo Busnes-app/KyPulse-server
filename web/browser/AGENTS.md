@@ -27,6 +27,9 @@ This directory owns test setup, disposable server launch and UI assertions. The 
   exercises filters/pagination, offline retry, safe text, bursts, recent app lines and
   revocation, then signs in as the real viewer to assert deep-link/API/detail denial.
   It deletes its watched target on exit and preserves the webhook form's exact URL selector.
+  Each case extracts the displayed sender origin and passes it to the real Go `Pair`
+  preflight via `TestPairScreenCommandOrigin`; the transport is fake, so this checks URL
+  compatibility without claiming TLS/network reachability from the browser runner.
 
 ## Work Guidance
 

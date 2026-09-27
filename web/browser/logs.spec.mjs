@@ -1,4 +1,6 @@
 import { test, expect } from '@playwright/test';
+import { execFileSync } from 'node:child_process';
+import { fileURLToPath } from 'node:url';
 
 async function signIn(page, username = 'admin') {
   await page.goto('/');
@@ -24,10 +26,20 @@ test('admin logs, activity, pairing, filters, retry and viewer boundaries', asyn
     await expect(page.getByRole('heading', { name: 'Logs', exact: true })).toBeVisible();
     await page.getByLabel('Bind log source to watched app').selectOption(target.id);
     await page.getByLabel('Log source name', { exact: true }).fill(sourceName);
+    await expect(page.getByLabel('Sender HTTPS origin')).toHaveValue('');
+    await page.getByLabel('Sender HTTPS origin').fill('https://pulse.example.com:8443/');
     await page.getByRole('button', { name: 'Add source', exact: true }).click();
     const command = page.locator('.log-command');
     await expect(command).toContainText(`--name ${sourceName}`);
-    const code = (await command.textContent()).match(/--code (\d{6})/)[1];
+    const commandText = await command.textContent();
+    const commandOrigin = commandText.match(/--url '([^']+)' --code/)[1];
+    expect(commandOrigin).toBe('https://pulse.example.com:8443');
+    execFileSync('go', ['test', './internal/sender', '-run', '^TestPairScreenCommandOrigin$', '-count=1'], {
+      cwd: fileURLToPath(new URL('../../', import.meta.url)),
+      env: { ...process.env, KYPULSE_TEST_SCREEN_PAIR_ORIGIN: commandOrigin },
+      timeout: 60000,
+    });
+    const code = commandText.match(/--code (\d{6})/)[1];
     const claim = await page.request.post('/api/log-sources/claim', { headers: await csrf(page), data: { pairing_code: code, name: sourceName } });
     expect(claim.ok()).toBe(true);
     const claimed = await claim.json();

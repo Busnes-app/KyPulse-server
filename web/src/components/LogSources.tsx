@@ -1,11 +1,12 @@
 import { useEffect, useRef, useState } from 'react';
-import { createPairing, getSources, getSourceTargets, logError, revokeSource, type LogSource, type Pairing } from '../logs';
+import { createPairing, getSources, getSourceTargets, logError, revokeSource, senderOrigin, type LogSource, type Pairing } from '../logs';
 
 export function LogSources() {
   const [sources, setSources] = useState<LogSource[]>([]);
   const [targets, setTargets] = useState<{ id: string; name: string }[]>([]);
   const [target, setTarget] = useState('');
   const [name, setName] = useState('my-app');
+  const [origin, setOrigin] = useState(() => window.location.protocol === 'https:' ? window.location.origin : '');
   const [pairing, setPairing] = useState<Pairing | null>(null);
   const [error, setError] = useState('');
   const [busy, setBusy] = useState(false);
@@ -36,7 +37,10 @@ export function LogSources() {
   const generate = async () => {
     const controller = lifetime.current;
     if (!controller) return;
-    setBusy(true); setError(''); setPairing(null);
+    setError('');
+    let validated: string;
+    try { validated = senderOrigin(origin); } catch (err) { setError(logError(err)); return; }
+    setOrigin(validated); setBusy(true); setPairing(null);
     try {
       const next = await createPairing(target, controller.signal);
       if (!controller.signal.aborted && Date.parse(next.expires_at) > Date.now()) setPairing(next);
@@ -56,17 +60,19 @@ export function LogSources() {
   };
   return <section className="dr-section" aria-label="Log sources"><h2>Log sources</h2>
     <p className="dr-hint">Choose an optional watched app before creating a single-use, 15-minute code. The sender supplies its name when it claims the code.</p>
+    <p className="dr-hint" id="sender-origin-help">Use this kyPulse instance’s HTTPS address reachable from the sender, with a trusted TLS certificate. Configure TLS first if needed. The sender refuses loopback and link-local destinations.</p>
     <form className="log-filters" onSubmit={e => { e.preventDefault(); void generate(); }}>
       <label>Bind log source to watched app<select value={target} disabled={busy || !!pairing || loading} onChange={e => setTarget(e.target.value)}>
         <option value="">Unbound</option>{targets.map(t => <option key={t.id} value={t.id}>{t.name}</option>)}
       </select></label>
+      <label>Sender HTTPS origin<input type="url" required aria-describedby="sender-origin-help" placeholder="https://pulse.example.com" value={origin} disabled={busy || !!pairing} onChange={e => setOrigin(e.target.value)} /></label>
       <label>Log source name<input value={name} disabled={busy || !!pairing} required pattern="[A-Za-z0-9][A-Za-z0-9_.\-]{0,63}" maxLength={64} onChange={e => setName(e.target.value)} /></label>
       <button type="submit" disabled={busy || loading || !!pairing}>Add source</button>
       <button type="button" disabled={busy || loading} onClick={() => setRefresh(r => r + 1)}>Refresh sources</button>
     </form>
     {pairing && <div role="status">
       <p>Pairing code: <strong>{pairing.code}</strong> · expires {pairing.expires_at}</p>
-      <pre className="log-command">kypulse-send pair --url {window.location.origin} --code {pairing.code} --name {name}</pre>
+      <pre className="log-command">kypulse-send pair --url '{origin}' --code {pairing.code} --name {name}</pre>
       <button type="button" onClick={() => setPairing(null)}>Hide code</button>
     </div>}
     {error && <p className="form-error" role="alert">{error}</p>}

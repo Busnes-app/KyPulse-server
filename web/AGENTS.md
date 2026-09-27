@@ -33,7 +33,10 @@ Owns user interface components, service worker caching, PWA installation manifes
 - `LogSources` binds the watched app before issuing a code. The sender supplies its name;
   the UI name field builds the displayed command only. Codes stay in component state and
   disappear at expiry/unmount. Source tokens are never fetched or rendered; revocation
-  requires explicit confirmation.
+  requires explicit confirmation. The sender HTTPS origin defaults to the current origin
+  only on HTTPS pages; HTTP pages require the operator to supply it. Validate an origin
+  without credentials/path/query/fragment before creating a code; use its canonical URL
+  in the command. Explain reachable trusted TLS setup; never infer TLS from an HTTP URL.
 - Activity displays server burst summaries as screen-only triage hints. Its selected-app
   empty state uses `has_app_events`, so an actor/outcome/time filter cannot falsely label
   an app as lacking retained audit events. All coverage statements name 7-day retention.

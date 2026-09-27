@@ -97,3 +97,15 @@ export async function revokeSource(id: string, signal: AbortSignal): Promise<voi
   if (v.revoked !== true) throw new Error('Unexpected revoke response');
 }
 export const logError = (error: unknown) => error instanceof Error ? error.message : 'Request failed';
+
+// Match Pair's origin-only input and emit a shell-safe canonical URL. Reachability,
+// certificate trust and destination-address enforcement remain the sender's checks.
+export function senderOrigin(value: string): string {
+  const raw = value.trim();
+  const message = 'Enter an HTTPS server origin without credentials, a path, a query or a fragment.';
+  if (!/^https:\/\/[^/?#\s\\@]+\/?$/i.test(raw)) throw new Error(message);
+  let url: URL;
+  try { url = new URL(raw); } catch { throw new Error(message); }
+  if (url.protocol !== 'https:' || url.username || url.password || url.pathname !== '/' || url.search || url.hash || !/^(?:[a-z0-9.-]+|\[[a-f0-9:]+\])$/i.test(url.hostname)) throw new Error(message);
+  return url.origin;
+}

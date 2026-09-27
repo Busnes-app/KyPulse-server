@@ -63,3 +63,21 @@ func TestPairSaveFailureNamesRevocation(t *testing.T) {
 		t.Fatalf("failure=%v", err)
 	}
 }
+
+// Browser regressions supply the exact --url emitted by the source UI. Exercise
+// Pair's real URL preflight without claiming a source or assuming test-host TLS.
+func TestPairScreenCommandOrigin(t *testing.T) {
+	origin := os.Getenv("KYPULSE_TEST_SCREEN_PAIR_ORIGIN")
+	if origin == "" {
+		origin = "https://pulse.example.com:8443"
+	}
+	called := false
+	h := postFunc(func([]byte) (*egress.Response, error) {
+		called = true
+		return &egress.Response{StatusCode: 200, Body: []byte(`{"token":"` + strings.Repeat("ab", 32) + `","source":{"id":"screen-source"}}`)}, nil
+	})
+	state, err := Pair(context.Background(), h, filepath.Join(t.TempDir(), "state"), origin, "123456", "screen-source")
+	if err != nil || !called || state.URL != origin {
+		t.Fatalf("screen origin %q: state=%+v called=%v err=%v", origin, state, called, err)
+	}
+}
