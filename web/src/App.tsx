@@ -4,7 +4,6 @@ import { Dashboard } from './pages/Dashboard';
 import { Login } from './pages/Login';
 import { ChangePassword } from './pages/ChangePassword';
 import { Backup } from './pages/Backup';
-import { SCIMAdmin } from './pages/SCIMAdmin';
 import { Settings } from './pages/Settings';
 import './styles/theme.css';
 import './ky-ui/tokens.css';
@@ -64,7 +63,7 @@ export const App: React.FC = () => {
   if (loading) {
     return (
       <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'var(--bg)', color: 'var(--ink)' }}>
-        Loading {settings?.app_name || 'Busnes.app'}...
+        Loading {settings?.app_name || 'kyPulse'}...
       </div>
     );
   }
@@ -74,7 +73,7 @@ export const App: React.FC = () => {
       <>
       {notice && <p role="status" style={{ padding: 16 }}>{notice}</p>}
       <Login
-        appName={settings?.app_name || 'Busnes.app'}
+        appName={settings?.app_name || 'kyPulse'}
         onSuccess={(u) => {
           setNotice('');
           setUser(u);
@@ -95,7 +94,7 @@ export const App: React.FC = () => {
   return (
     <div className="app-shell">
       <AppHeader
-        appName={settings?.app_name || 'Busnes.app'}
+        appName={settings?.app_name || 'kyPulse'}
         activeTab={activeTab}
         onTabChange={(tab) => setActiveTab(tab)}
         user={user}
@@ -104,7 +103,6 @@ export const App: React.FC = () => {
 
       <main className="app-main">
         {activeTab === 'dashboard' && <Dashboard settings={settings} user={user} onNavigate={(tab) => setActiveTab(tab)} />}
-        {activeTab === 'scim' && <SCIMAdmin />}
         {activeTab === 'backup' && <Backup />}
         {activeTab === 'settings' && <Settings settings={settings} />}
       </main>

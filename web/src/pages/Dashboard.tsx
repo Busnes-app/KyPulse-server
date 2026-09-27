@@ -1,5 +1,5 @@
 import React from 'react';
-import { Key, Archive, Database, Users, CheckCircle2, ArrowRight } from 'lucide-react';
+import { Key, Archive, Database, CheckCircle2, ArrowRight } from 'lucide-react';
 
 interface DashboardProps {
   settings: any;
@@ -17,15 +17,6 @@ export const Dashboard: React.FC<DashboardProps> = ({ settings, user, onNavigate
       icon: Archive,
       action: () => onNavigate('backup'),
       actionLabel: 'Run Restore Drill',
-    },
-    {
-      title: 'SCIM 2.0 Inbound Provisioning',
-      desc: 'RFC 7643/7644 automatic user and group provisioning from enterprise IdPs.',
-      status: settings?.scim_enabled ? 'Active' : 'Disabled',
-      statusType: settings?.scim_enabled ? 'success' : 'neutral',
-      icon: Users,
-      action: () => onNavigate('scim'),
-      actionLabel: 'Manage Directory',
     },
     {
       title: 'Single Sign-On & Federation',
@@ -54,7 +45,7 @@ export const Dashboard: React.FC<DashboardProps> = ({ settings, user, onNavigate
           Welcome, {user?.display_name || user?.username}!
         </h1>
         <p style={{ color: 'var(--ink)', fontSize: '15px' }}>
-          {settings?.app_name || 'Busnes.app'} is initialized on the Ky Server Base platform.
+          {settings?.app_name || 'kyPulse'} watches the Ky suite: health, logs and alerts land here.
         </p>
       </div>
 
