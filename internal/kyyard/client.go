@@ -167,6 +167,10 @@ func Reason(err error) string {
 		return ""
 	case errors.Is(err, ErrUnauthorized):
 		return "unauthorized"
+	case errors.Is(err, ErrPairingRefused):
+		return "pairing_refused" // egress already uses "refused" for connection refused
+	case errors.Is(err, ErrRateLimited):
+		return "rate_limited"
 	case errors.As(err, &se):
 		return fmt.Sprintf("status_%d", se.Code)
 	}

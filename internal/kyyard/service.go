@@ -24,6 +24,10 @@ var (
 	fContainers  = logging.DeclareInt("containers")
 )
 
+// pulledStates are the KyYard endpoint states that can hold an inventory; pending, expired
+// and revoked endpoints have none.
+var pulledStates = map[string]bool{"approved": true, "active": true, "offline": true}
+
 type restartPoint struct {
 	at    time.Time
 	count int64
@@ -82,6 +86,18 @@ func (s *Service) Kick() {
 	}
 }
 
+// Open adopts the stored pairing so Status reports it before the first pull lands.
+func (s *Service) Open(ctx context.Context) error {
+	cfg, ok, err := s.Pairing.Load(ctx)
+	if err != nil {
+		return err
+	}
+	if ok {
+		s.Adopt(cfg)
+	}
+	return nil
+}
+
 // Run pulls every `every` until ctx ends, then closes done. The first pull is immediate.
 // Kick wakes it early, for a pairing that wants its first real pull without blocking the
 // request that just landed it: PullNow single-flights on pullMu, so a slow loop pull already
@@ -125,6 +141,7 @@ func (s *Service) PullNow(ctx context.Context) error {
 	cfg, ok, err := s.Pairing.Load(ctx)
 	if err != nil {
 		s.fail(gen, "unreadable")
+		s.Logger.Log(ctx, evPullFailed, logging.ReasonCode("unreadable"))
 		return err
 	}
 	if !ok {
@@ -142,16 +159,17 @@ func (s *Service) PullNow(ctx context.Context) error {
 	facts := map[string]ContainerFacts{}
 	points := map[string]restartPoint{}
 	for _, ep := range eps {
-		if ep.Runtime != "docker" {
+		if ep.Runtime != "docker" || !pulledStates[ep.State] {
 			continue
 		}
 		inv, err := c.Inventory(ctx, ep.ID)
-		if err != nil {
-			s.fail(gen, Reason(err))
-			s.Logger.Log(ctx, evPullFailed, logging.ReasonCode(Reason(err)))
-			return err
+		var samples []Sample
+		if err == nil {
+			samples, err = c.Samples(ctx, ep.ID)
 		}
-		samples, err := c.Samples(ctx, ep.ID)
+		if Reason(err) == "status_404" {
+			continue // no inventory yet (approved, never reported); no facts, no history
+		}
 		if err != nil {
 			s.fail(gen, Reason(err))
 			s.Logger.Log(ctx, evPullFailed, logging.ReasonCode(Reason(err)))
@@ -165,8 +183,10 @@ func (s *Service) PullNow(ctx context.Context) error {
 		}
 		for _, ct := range inv.Containers {
 			health, exit := ParseStatus(ct.Status)
-			f := ContainerFacts{Link: LinkFor(ep.ID, ct.Name), EndpointID: ep.ID, EndpointName: ep.Name, ContainerID: ct.ID, Name: ct.Name, Image: ct.Image, State: ct.State, Status: ct.Status, Health: health, ExitCode: exit, ObservedAt: inv.ObservedAt}
+			f := ContainerFacts{Link: LinkFor(ep.ID, ct.Name), EndpointID: ep.ID, EndpointName: ep.Name, ContainerID: ct.ID, Name: ct.Name, Image: ct.Image, State: ct.State, Status: ct.Status, Health: health, ExitCode: exit, ObservedAt: inv.ObservedAt, EndpointOffline: ep.State == "offline"}
 			if smp, ok := byContainer[ct.ID]; ok {
+				at := smp.ObservedAt
+				f.HasSample, f.SampleAt = true, &at
 				f.MemoryBytes, f.MemoryLimit, f.RestartCount = smp.MemoryBytes, smp.MemoryLimit, smp.RestartCount
 				points[f.Link] = restartPoint{at: now, count: smp.RestartCount}
 			}
@@ -185,14 +205,15 @@ func (s *Service) PullNow(ctx context.Context) error {
 	return nil
 }
 
-// fail records a pull failure, unless gen shows an unpair landed since the pull started.
+// fail records a pull failure, unless gen shows an unpair landed since the pull started. The
+// pairing and the last snapshot stay as they are.
 func (s *Service) fail(gen uint64, reason string) {
 	s.mu.Lock()
 	defer s.mu.Unlock()
 	if s.gen != gen {
 		return
 	}
-	s.paired, s.lastErr = true, reason
+	s.lastErr = reason
 }
 
 // mergeHistory appends this pull's restart points, trims to historyWindow, drops links no
@@ -270,8 +291,9 @@ func (s *Service) Adopt(cfg Config) {
 	s.mu.Unlock()
 }
 
+// stale: no successful pull within StaleAfter, or the token was refused.
 func (s *Service) stale(now time.Time) bool {
-	return s.paired && (s.fetchedAt == nil || now.Sub(*s.fetchedAt) > StaleAfter)
+	return s.paired && (s.lastErr == "unauthorized" || s.fetchedAt == nil || now.Sub(*s.fetchedAt) > StaleAfter)
 }
 
 func (s *Service) Status(now time.Time) StatusView {
@@ -292,7 +314,10 @@ func (s *Service) Facts(link string, now time.Time) (ContainerFacts, bool) {
 	if !ok {
 		return ContainerFacts{}, false
 	}
-	f.Stale = s.stale(now)
+	f.Stale = s.stale(now) || f.EndpointOffline
+	if pts := s.history[link]; len(pts) > 0 {
+		f.HistoryMinutes = min(60, int(now.Sub(pts[0].at)/time.Minute))
+	}
 	return f, true
 }
 

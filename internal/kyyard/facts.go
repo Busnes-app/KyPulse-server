@@ -36,22 +36,28 @@ func LinkFor(endpointID, name string) string { return endpointID + "/" + name }
 
 // ContainerFacts is what the app detail page shows for a linked container.
 type ContainerFacts struct {
-	Link             string    `json:"link"`
-	EndpointID       string    `json:"endpoint_id"`
-	EndpointName     string    `json:"endpoint_name"`
-	ContainerID      string    `json:"container_id"`
-	Name             string    `json:"name"`
-	Image            string    `json:"image"`
-	State            string    `json:"state"`
-	Status           string    `json:"status"`
-	Health           string    `json:"health"`
-	ExitCode         *int      `json:"exit_code,omitempty"`
-	ObservedAt       time.Time `json:"observed_at"`
-	MemoryBytes      int64     `json:"memory_bytes"`
-	MemoryLimit      int64     `json:"memory_limit"`
-	RestartCount     int64     `json:"restart_count"`
-	RestartsLastHour int64     `json:"restarts_last_hour"`
-	Stale            bool      `json:"stale"`
+	Link            string    `json:"link"`
+	EndpointID      string    `json:"endpoint_id"`
+	EndpointName    string    `json:"endpoint_name"`
+	ContainerID     string    `json:"container_id"`
+	Name            string    `json:"name"`
+	Image           string    `json:"image"`
+	State           string    `json:"state"`
+	Status          string    `json:"status"`
+	Health          string    `json:"health"`
+	ExitCode        *int      `json:"exit_code,omitempty"`
+	ObservedAt      time.Time `json:"observed_at"` // inventory time
+	EndpointOffline bool      `json:"endpoint_offline"`
+	// Memory and restart fields mean something only when HasSample; KyYard samples running
+	// containers only.
+	HasSample        bool       `json:"has_sample"`
+	SampleAt         *time.Time `json:"sample_at,omitempty"`
+	MemoryBytes      int64      `json:"memory_bytes"`
+	MemoryLimit      int64      `json:"memory_limit"`
+	RestartCount     int64      `json:"restart_count"`
+	RestartsLastHour int64      `json:"restarts_last_hour"`
+	HistoryMinutes   int        `json:"history_minutes"` // span RestartsLastHour covers, capped at 60
+	Stale            bool       `json:"stale"`
 }
 
 // Suggestion prefills the add form: the container's name and its link.

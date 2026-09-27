@@ -133,6 +133,9 @@ func runServer(lg *logging.Logger) {
 	if err != nil {
 		fatal("Failed to build the KyYard reader: %v", err)
 	}
+	if err := yard.Open(ctx); err != nil {
+		log.Printf("[KYYARD] the stored pairing cannot be read; pair again in Settings")
+	}
 	srv := api.NewServer(cfg, st, lg, mon, yard)
 	backupDone := make(chan struct{})
 	go backupLoop(ctx, cfg, st, backupDone)

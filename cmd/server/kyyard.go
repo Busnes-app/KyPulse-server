@@ -16,7 +16,9 @@ func newKyYard(cfg *config.Config, st store.Store, lg *logging.Logger) (*kyyard.
 	if err != nil {
 		return nil, err
 	}
-	return &kyyard.Service{Pairing: pairing, HTTP: egress.New(egress.Options{AllowHTTP: cfg.KyYard.AllowHTTP}), Logger: lg}, nil
+	// KyYard caps an inventory snapshot at 1 MiB (protocol.MaxSnapshotBytes); 2 MiB leaves room
+	// for the envelope around it.
+	return &kyyard.Service{Pairing: pairing, HTTP: egress.New(egress.Options{AllowHTTP: cfg.KyYard.AllowHTTP, MaxBody: 2 << 20}), Logger: lg}, nil
 }
 
 // kyyardLoop refreshes the snapshot until ctx ends and closes done.

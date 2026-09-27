@@ -117,6 +117,25 @@ func TestBodyOverTheCapIsAnError(t *testing.T) {
 	}
 }
 
+// TestGetWithHonoursALargerMaxBody: KyYard's reader raises the cap to 2 MiB for inventories
+// near KyYard's own 1 MiB snapshot bound, which the 64 KiB default would refuse.
+func TestGetWithHonoursALargerMaxBody(t *testing.T) {
+	body := strings.Repeat("x", 12<<20/10)
+	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		_, _ = w.Write([]byte(body))
+	}))
+	defer srv.Close()
+	c := testClient(t, srv, "10.0.0.5", Options{AllowHTTP: true})
+	if _, err := c.GetWith(context.Background(), "http://yard.lan/inventory", nil); !errors.Is(err, ErrBodyTooLarge) {
+		t.Fatalf("default cap: %v", err)
+	}
+	c = testClient(t, srv, "10.0.0.5", Options{AllowHTTP: true, MaxBody: 2 << 20})
+	resp, err := c.GetWith(context.Background(), "http://yard.lan/inventory", nil)
+	if err != nil || len(resp.Body) != len(body) {
+		t.Fatalf("2 MiB cap: %v", err)
+	}
+}
+
 func TestTimeoutIsNamed(t *testing.T) {
 	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		select {

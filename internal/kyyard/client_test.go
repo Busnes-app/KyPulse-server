@@ -4,6 +4,8 @@ import (
 	"context"
 	"encoding/json"
 	"errors"
+	"fmt"
+	"strings"
 	"sync"
 	"testing"
 
@@ -117,13 +119,53 @@ func TestClaimPostsServiceNameAndSealsNothingInErrors(t *testing.T) {
 	}
 }
 
+func TestReasonNamesClaimFailures(t *testing.T) {
+	if got := kyyard.Reason(kyyard.ErrPairingRefused); got != "pairing_refused" {
+		t.Errorf("refused: %q", got)
+	}
+	if got := kyyard.Reason(kyyard.ErrRateLimited); got != "rate_limited" {
+		t.Errorf("rate limited: %q", got)
+	}
+}
+
+// TestInventoryNearKyYardsSnapshotCapParses: KyYard caps a snapshot at 1 MiB; a 1.2 MiB answer
+// (snapshot plus envelope, containers with 32 labels each) must decode. The egress side of the
+// same bound is TestGetWithHonoursALargerMaxBody.
+func TestInventoryNearKyYardsSnapshotCapParses(t *testing.T) {
+	labels := map[string]string{}
+	for i := range 32 {
+		labels[fmt.Sprintf("com.example.label-%02d", i)] = strings.Repeat("v", 40)
+	}
+	var containers []map[string]any
+	size := 0
+	for i := 0; size < 12<<20/10; i++ {
+		ct := map[string]any{"id": fmt.Sprintf("c%04d", i), "name": fmt.Sprintf("app-%04d", i), "image": "ghcr.io/busnes-app/app:1", "state": "running", "status": "Up 1 hour", "labels": labels}
+		b, _ := json.Marshal(ct)
+		size += len(b)
+		containers = append(containers, ct)
+	}
+	h := answers(map[string]struct {
+		code int
+		body any
+	}{"/api/organizations/org_a/endpoints/ep_1/inventory": {200, map[string]any{"endpoint_id": "ep_1", "state": "active", "observed_at": "2026-09-27T10:00:00Z", "snapshot": map[string]any{"containers": containers}}}})
+	body, _ := json.Marshal(map[string]any{"snapshot": map[string]any{"containers": containers}})
+	if len(body) < 12<<20/10 || len(body) > 2<<20 {
+		t.Fatalf("fixture is %d bytes", len(body))
+	}
+	c := &kyyard.Client{HTTP: h, Config: kyyard.Config{URL: "https://yard.lan", Token: "tok", OrganizationID: "org_a"}}
+	inv, err := c.Inventory(context.Background(), "ep_1")
+	if err != nil || len(inv.Containers) != len(containers) || inv.Containers[len(containers)-1].Name != fmt.Sprintf("app-%04d", len(containers)-1) {
+		t.Fatalf("inventory: %d containers, %v", len(inv.Containers), err)
+	}
+}
+
 func TestClientReadsWithBearerAndClassifiesErrors(t *testing.T) {
 	h := answers(map[string]struct {
 		code int
 		body any
 	}{
 		"/api/organizations/org_a/endpoints?limit=200": {200, []map[string]any{{"id": "ep_1", "name": "host-1", "runtime": "docker", "state": "active"}, {"id": "ep_2", "name": "k8s", "runtime": "kubernetes", "state": "active"}}},
-		"/api/organizations/org_a/endpoints/ep_1/inventory": {200, map[string]any{"endpoint_id": "ep_1", "state": "complete", "observed_at": "2026-09-27T10:00:00Z", "received_at": "2026-09-27T10:00:01Z",
+		"/api/organizations/org_a/endpoints/ep_1/inventory": {200, map[string]any{"endpoint_id": "ep_1", "state": "active", "observed_at": "2026-09-27T10:00:00Z", "received_at": "2026-09-27T10:00:01Z",
 			"snapshot": map[string]any{"containers": []map[string]any{{"id": "c1", "name": "kyvault", "image": "ghcr.io/busnes-app/kyvault:1.2", "state": "running", "status": "Up 3 hours (healthy)"}}}}},
 		"/api/organizations/org_a/endpoints/ep_1/samples": {200, []map[string]any{{"container_id": "c1", "observed_at": "2026-09-27T10:00:00Z", "memory_bytes": 1000, "memory_limit": 4000, "restart_count": 2}}},
 	})

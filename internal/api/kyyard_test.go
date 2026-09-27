@@ -84,7 +84,7 @@ func pairedYard() *fakeYard {
 		}{
 			"/api/service-tokens/claim":                    {200, map[string]any{"token": "kyyard-test-token", "organization": map[string]string{"id": "org_a", "name": "A"}}},
 			"/api/organizations/org_a/endpoints?limit=200": {200, []map[string]any{{"id": "ep_1", "name": "host-1", "runtime": "docker", "state": "active"}}},
-			"/api/organizations/org_a/endpoints/ep_1/inventory": {200, map[string]any{"endpoint_id": "ep_1", "state": "complete", "observed_at": "2026-09-27T10:00:00Z", "received_at": "2026-09-27T10:00:01Z",
+			"/api/organizations/org_a/endpoints/ep_1/inventory": {200, map[string]any{"endpoint_id": "ep_1", "state": "active", "observed_at": "2026-09-27T10:00:00Z", "received_at": "2026-09-27T10:00:01Z",
 				"snapshot": map[string]any{"containers": []map[string]any{{"id": "c1", "name": "kyvault", "image": "ghcr.io/busnes-app/kyvault:1.2", "state": "running", "status": "Up 3 hours (healthy)"}}}}},
 			"/api/organizations/org_a/endpoints/ep_1/samples": {200, []map[string]any{{"container_id": "c1", "observed_at": "2026-09-27T10:00:00Z", "memory_bytes": 1000, "memory_limit": 4000, "restart_count": 2}}},
 		},
@@ -275,10 +275,10 @@ func TestKyYardClaimErrorMapping(t *testing.T) {
 		code       int
 		body       any
 		wantStatus int
-		wantReason string // checked against the 502 body's "reason" field; ignored otherwise
+		wantReason string // the audit row's reason, and the 502 body's "reason" field
 	}{
-		{"refused", 403, map[string]string{"error": "no"}, http.StatusForbidden, ""},
-		{"rate_limited", 429, map[string]string{"error": "slow down"}, http.StatusTooManyRequests, ""},
+		{"refused", 403, map[string]string{"error": "no"}, http.StatusForbidden, "pairing_refused"},
+		{"rate_limited", 429, map[string]string{"error": "slow down"}, http.StatusTooManyRequests, "rate_limited"},
 		{"upstream_error", 500, nil, http.StatusBadGateway, "status_500"},
 	}
 	for _, tc := range cases {
@@ -315,8 +315,8 @@ func TestKyYardClaimErrorMapping(t *testing.T) {
 					continue
 				}
 				found = true
-				if !strings.Contains(r.Details, "outcome=failure") {
-					t.Fatalf("details must record the failure: %q", r.Details)
+				if !strings.Contains(r.Details, "outcome=failure") || !strings.Contains(r.Details, "reason="+tc.wantReason) {
+					t.Fatalf("details must record the failure and its reason: %q", r.Details)
 				}
 				if strings.Contains(r.Details, "123456") {
 					t.Fatalf("audit leaks the pairing code: %q", r.Details)

@@ -28,11 +28,14 @@ way.
 Every watched app can be linked to a KyYard container (a `endpoint/name` value, with
 suggestions from `GET /api/kyyard/containers` in the add/edit form for admins). The app
 detail page then shows KyYard's facts for that container: state, Docker health, image,
-memory, restarts and when it was last observed. A pairing answers `stale:true` with no
-`fetched_at` right after pairing ("first pull pending"); the alert bar and Settings both
-treat that as pending, not a failure, and show data as stale once a pull has run but failed
-or is late. The Settings card re-reads pairing status every 2s for up to 30s while pending,
-so it flips to fresh or stale on its own once the first pull lands.
+memory, restarts and when it was last observed. Memory and restarts appear only once KyYard
+has a sample (it samples running containers only); a container on an offline endpoint is
+marked so and shown stale. kyPulse reads the first 200 endpoints of the organization, and
+only Docker endpoints that are approved, active or offline. A pairing answers `stale:true`
+with no `fetched_at` right after pairing or a restart ("first pull pending"); the alert bar
+and Settings both treat that as pending, not a failure, and show data as stale once a pull
+has run but failed or is late, or at once when KyYard refuses the token. The Settings card
+re-reads pairing status every 5s while pending.
 
 Unpairing is two steps, one on each side: the Settings card's Unpair button deletes the URL
 and token here only; a KyYard administrator must separately revoke the token on KyYard's
