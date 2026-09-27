@@ -291,7 +291,8 @@ func TestSilenceStopsSendsAndUntilFixedClears(t *testing.T) {
 	observe(svc, "a", poller.OK, now.Add(4*30*time.Second))
 	observe(svc, "a", poller.OK, now.Add(5*30*time.Second))
 	tg, _ = st.Targets().GetTarget(ctx, "a")
-	if tg.State != "ok" || poster.calls != 1 || poster.sent[0].State != "ok" || tg.UntilFixed || monitor.Track(tg).UntilFixed {
+	// The down was never announced, so the recovery is not sent either.
+	if tg.State != "ok" || poster.calls != 0 || tg.UntilFixed || monitor.Track(tg).UntilFixed {
 		t.Fatalf("recovery: state=%s calls=%d untilFixed=%v track=%+v", tg.State, poster.calls, tg.UntilFixed, monitor.Track(tg))
 	}
 	if err := svc.Silence(ctx, "a", time.Hour, false); err != nil {

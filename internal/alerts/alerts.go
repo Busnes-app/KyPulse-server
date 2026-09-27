@@ -38,6 +38,9 @@ type Track struct {
 	// LastNotified is when the last webhook for the current problem went out; zero when the
 	// target is fine. Reminders are counted from it.
 	LastNotified time.Time `json:"last_notified,omitempty"`
+	// Announced is true once a webhook for the current problem was sent; only then is the
+	// recovery sent too.
+	Announced bool `json:"announced,omitempty"`
 	// SilencedUntil suppresses webhooks until then; UntilFixed silences until the next OK.
 	SilencedUntil time.Time `json:"silenced_until,omitempty"`
 	UntilFixed    bool      `json:"until_fixed,omitempty"`
@@ -99,30 +102,31 @@ type Decision struct {
 	Reminder bool // a repeat for a problem already announced
 }
 
-// Decide says whether a webhook goes out now. A transition into a problem or back to OK is
-// sent once; while the problem persists, a reminder goes out every ReminderEvery. Silence
-// stops the webhook only; the transition is still recorded and shown on screen, and it still
-// stamps LastNotified, so once the silence lapses the hourly reminder resumes counting from
-// the transition rather than never firing for that incident.
+// Decide says whether a webhook goes out now. A transition into a problem is sent once;
+// while the problem persists, a reminder goes out every ReminderEvery. The recovery is sent
+// only if the problem was announced. Silence stops the webhook only; the transition is still
+// recorded and shown on screen, and it still stamps LastNotified, so once the silence lapses
+// the hourly reminder resumes counting from the transition rather than never firing.
 func Decide(t Track, tr *Transition, now time.Time) (Decision, Track) {
 	silenced := t.UntilFixed || now.Before(t.SilencedUntil)
 	if tr != nil {
-		if tr.From == Pending && tr.To == OK {
-			return Decision{}, t // a new target coming up is not news
+		if tr.To == OK {
+			announced := t.Announced
+			t.Announced = false
+			return Decision{Send: announced}, t
 		}
-		if tr.To != OK {
-			t.LastNotified = now // reminders count from here, silenced or not; a recovery has nothing to remind
-		}
-		if silenced && tr.To != OK {
+		t.LastNotified = now // reminders count from here, silenced or not
+		if silenced {
 			return Decision{}, t
 		}
+		t.Announced = true
 		return Decision{Send: true}, t
 	}
 	if t.State == OK || t.State == Pending || silenced {
 		return Decision{}, t
 	}
 	if !t.LastNotified.IsZero() && now.Sub(t.LastNotified) >= ReminderEvery {
-		t.LastNotified = now
+		t.LastNotified, t.Announced = now, true
 		return Decision{Send: true, Reminder: true}, t
 	}
 	return Decision{}, t

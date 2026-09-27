@@ -116,8 +116,9 @@ func TestStatusSummary(t *testing.T) {
 	ctx := context.Background()
 	_ = st.Targets().CreateTarget(ctx, &store.Target{ID: "a", Name: "A", URL: "http://a/", IntervalSec: 30, Enabled: true, State: "down", Cause: "refused"})
 	_ = st.Targets().CreateTarget(ctx, &store.Target{ID: "b", Name: "B", URL: "http://b/", IntervalSec: 30, Enabled: true, State: "ok"})
+	_ = st.Targets().CreateTarget(ctx, &store.Target{ID: "c", Name: "C", URL: "http://c/", IntervalSec: 30, Enabled: false, State: "down", Cause: "refused"})
 	s := decodeMap(t, do(t, srv, "GET", "/api/status", viewer))
-	if s["total"] != float64(2) || s["down"] != float64(1) || s["ok"] != float64(1) {
+	if s["total"] != float64(3) || s["down"] != float64(1) || s["ok"] != float64(1) || s["paused"] != float64(1) {
 		t.Fatalf("summary: %v", s)
 	}
 	problems := s["problems"].([]any)

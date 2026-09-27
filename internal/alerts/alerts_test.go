@@ -116,8 +116,8 @@ func TestDecideSendsOnChangeAndRemindsHourly(t *testing.T) {
 	if d := feed(OK); !d.Send || d.Reminder {
 		t.Fatalf("recovery: %+v", d)
 	}
-	if !tr.LastNotified.IsZero() {
-		t.Fatal("recovery must clear LastNotified")
+	if !tr.LastNotified.IsZero() || tr.Announced {
+		t.Fatal("recovery must clear LastNotified and Announced")
 	}
 }
 
@@ -184,7 +184,25 @@ func TestSilenceUntilFixedEndsOnRecovery(t *testing.T) {
 		t.Fatalf("recovery must clear the silence: %+v", tr)
 	}
 	d, _ := Decide(tr, &trs[0], t0)
-	if !d.Send {
-		t.Fatal("the recovery itself is sent: the operator asked to hear when it is fixed")
+	if d.Send {
+		t.Fatal("the operator never heard about the problem, so there is nothing to close")
+	}
+}
+
+func TestRecoveryIsNotSentForAnUnannouncedProblem(t *testing.T) {
+	tr := Track{SilencedUntil: t0.Add(8 * time.Hour)}
+	now := t0
+	for _, s := range []poller.State{OK, Down, Down, Down, OK, OK} {
+		var trans *Transition
+		var d Decision
+		tr, trans = Next(tr, poller.Result{State: s}, now)
+		d, tr = Decide(tr, trans, now)
+		if d.Send {
+			t.Fatalf("%s at %s sent under a silence covering the whole incident", s, now)
+		}
+		now = now.Add(30 * time.Second)
+	}
+	if tr.State != OK || tr.Announced {
+		t.Fatalf("track: %+v", tr)
 	}
 }

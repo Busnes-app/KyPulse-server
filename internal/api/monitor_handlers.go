@@ -279,6 +279,10 @@ func (s *Server) handleStatus(w http.ResponseWriter, r *http.Request) {
 	var problems []problem
 	var checkedAt *time.Time
 	for _, t := range targets {
+		if !t.Enabled {
+			counts["paused"]++ // a paused target is never a problem
+			continue
+		}
 		counts[t.State]++
 		if t.State == "down" || t.State == "degraded" {
 			problems = append(problems, problem{ID: t.ID, Name: t.Name, State: t.State, Since: t.StateSince, Cause: t.Cause})
@@ -310,6 +314,7 @@ func (s *Server) handleStatus(w http.ResponseWriter, r *http.Request) {
 		"degraded":   counts["degraded"],
 		"down":       counts["down"],
 		"pending":    counts["pending"],
+		"paused":     counts["paused"],
 		"problems":   problems,
 		"webhook":    webhook,
 	})
