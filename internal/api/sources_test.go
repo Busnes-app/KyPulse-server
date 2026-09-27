@@ -2,15 +2,103 @@ package api_test
 
 import (
 	"bytes"
+	"context"
+	"crypto/sha256"
+	"encoding/hex"
 	"encoding/json"
 	"fmt"
 	"net/http"
 	"net/http/httptest"
 	"strings"
 	"testing"
+	"time"
 
 	"github.com/Busnes-app/kypulse-server/internal/auth"
 )
+
+func TestLogSourceBoundaryRefusalsAudited(t *testing.T) {
+	srv, st, _ := setupTestServer(t)
+	admin := loginAs(t, srv, st, "auditadmin", "admin")
+	viewer := loginAs(t, srv, st, "auditviewer", "viewer")
+	const marker = "credential-and-body-marker"
+	const sourceToken = "source-bearer-token"
+	hash := sha256.Sum256([]byte(sourceToken))
+	if err := st.Sources().CreateCode(context.Background(), "audit-source-code", "", time.Now().Add(time.Minute)); err != nil {
+		t.Fatal(err)
+	}
+	if _, err := st.Sources().Claim(context.Background(), "audit-source-code", hex.EncodeToString(hash[:]), "host"); err != nil {
+		t.Fatal(err)
+	}
+	tests := []struct {
+		method, path, action, reason string
+		cookie                       *http.Cookie
+		bearer, body                 string
+		csrf                         bool
+		status                       int
+	}{
+		{"POST", "/api/log-sources/pairing", "admin.log_pairing", "authentication", nil, "", marker, false, 401},
+		{"GET", "/api/log-sources", "admin.log_source_list", "authentication", nil, marker, "", false, 401},
+		{"DELETE", "/api/log-sources/unknown", "admin.log_source_revoke", "authentication", nil, "", marker, false, 401},
+		{"POST", "/api/log-sources/pairing", "admin.log_pairing", "role", viewer, "", marker, true, 403},
+		{"GET", "/api/log-sources", "admin.log_source_list", "role", viewer, "", "", true, 403},
+		{"DELETE", "/api/log-sources/unknown", "admin.log_source_revoke", "role", viewer, "", marker, true, 403},
+		{"POST", "/api/log-sources/pairing", "admin.log_pairing", "authentication", nil, marker, marker, false, 401},
+		{"GET", "/api/log-sources", "admin.log_source_list", "authentication", nil, sourceToken, "", false, 401},
+		{"DELETE", "/api/log-sources/unknown", "admin.log_source_revoke", "csrf", admin, "", marker, false, 403},
+		{"POST", "/api/log-sources/pairing", "admin.log_pairing", "csrf", admin, "", marker, false, 403},
+		{"POST", "/api/log-sources/claim", "log_source.claim", "csrf", viewer, "", marker, false, 403},
+	}
+	for _, tc := range tests {
+		t.Run(tc.method+tc.path+tc.reason, func(t *testing.T) {
+			_, before, err := st.Audit().ListAuditRecords(context.Background(), 0, 200)
+			if err != nil {
+				t.Fatal(err)
+			}
+			r := httptest.NewRequest(tc.method, tc.path, strings.NewReader(tc.body))
+			if tc.cookie != nil {
+				r.AddCookie(tc.cookie)
+			}
+			if tc.csrf {
+				r.AddCookie(&http.Cookie{Name: auth.CSRFCookieName, Value: "test-csrf"})
+				r.Header.Set(auth.HeaderCSRF, "test-csrf")
+			}
+			if tc.bearer != "" {
+				r.Header.Set("Authorization", "Bearer "+tc.bearer)
+			}
+			w := httptest.NewRecorder()
+			srv.ServeHTTP(w, r)
+			if w.Code != tc.status {
+				t.Fatalf("status=%d want=%d", w.Code, tc.status)
+			}
+			records, after, err := st.Audit().ListAuditRecords(context.Background(), 0, 200)
+			if err != nil {
+				t.Fatal(err)
+			}
+			if after != before+1 {
+				t.Fatalf("audit count %d -> %d", before, after)
+			}
+			row := records[0]
+			if row.Action != tc.action || row.Details != "outcome=refused reason="+tc.reason {
+				t.Fatalf("audit action=%q details=%q", row.Action, row.Details)
+			}
+			if strings.Contains(row.Resource+row.Details, marker) {
+				t.Fatalf("credential/body leaked in audit")
+			}
+		})
+	}
+	_, before, err := st.Audit().ListAuditRecords(context.Background(), 0, 200)
+	if err != nil {
+		t.Fatal(err)
+	}
+	r := httptest.NewRequest("GET", "/api/log-sources", nil)
+	r.AddCookie(admin)
+	w := httptest.NewRecorder()
+	srv.ServeHTTP(w, r)
+	_, after, err := st.Audit().ListAuditRecords(context.Background(), 0, 200)
+	if err != nil || w.Code != 200 || after != before {
+		t.Fatalf("successful list status=%d audit %d->%d err=%v", w.Code, before, after, err)
+	}
+}
 
 func TestLogSourcePairingRoutes(t *testing.T) {
 	srv, st, _ := setupTestServer(t)

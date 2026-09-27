@@ -21,6 +21,23 @@ func sourceHash(secret string) string {
 	return hex.EncodeToString(digest[:])
 }
 
+// sourceAuditAction names only registered source methods, so shared middleware can audit
+// denials before a source handler runs without auditing unrelated routes.
+func sourceAuditAction(r *http.Request) string {
+	switch {
+	case r.Method == http.MethodPost && r.URL.Path == "/api/log-sources/pairing":
+		return "admin.log_pairing"
+	case r.Method == http.MethodPost && r.URL.Path == "/api/log-sources/claim":
+		return "log_source.claim"
+	case r.Method == http.MethodGet && r.URL.Path == "/api/log-sources":
+		return "admin.log_source_list"
+	case r.Method == http.MethodDelete && strings.HasPrefix(r.URL.Path, "/api/log-sources/") && strings.TrimPrefix(r.URL.Path, "/api/log-sources/") != "" && !strings.Contains(strings.TrimPrefix(r.URL.Path, "/api/log-sources/"), "/"):
+		return "admin.log_source_revoke"
+	default:
+		return ""
+	}
+}
+
 // oneJSON permits only one JSON object and caps source route bodies independently of the API cap.
 func oneJSON(w http.ResponseWriter, r *http.Request, dst any) error {
 	defer r.Body.Close()
@@ -110,7 +127,7 @@ func (s *Server) handleClaimLogSource(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	token := hex.EncodeToString(random[:])
-	source, err := s.store.Sources().Claim(r.Context(), sourceHash(req.Code), sourceHash(token), req.Name, time.Now().UTC())
+	source, err := s.store.Sources().Claim(r.Context(), sourceHash(req.Code), sourceHash(token), req.Name)
 	if errors.Is(err, store.ErrInvalidSourceName) {
 		s.audit(r.Context(), "", r, "log_source.claim", "", "outcome=refused reason=bad_name")
 		s.writeError(w, http.StatusBadRequest, "Invalid source name")

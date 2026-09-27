@@ -24,7 +24,7 @@ type LogSource struct {
 
 type SourceStore interface {
 	CreateCode(context.Context, string, string, time.Time) error
-	Claim(context.Context, string, string, string, time.Time) (LogSource, error)
+	Claim(context.Context, string, string, string) (LogSource, error)
 	Authenticate(context.Context, string) (LogSource, error)
 	List(context.Context) ([]LogSource, error)
 	Revoke(context.Context, string, time.Time) error
@@ -38,6 +38,7 @@ func isUniqueViolation(err error) bool {
 }
 
 func (s *sourceStore) CreateCode(ctx context.Context, codeHash, targetID string, expiresAt time.Time) error {
+	expiresAt = expiresAt.UTC()
 	tx, err := s.store.db.BeginTx(ctx, nil)
 	if err != nil {
 		return err
@@ -69,7 +70,7 @@ func (s *sourceStore) CreateCode(ctx context.Context, codeHash, targetID string,
 	return tx.Commit()
 }
 
-func (s *sourceStore) Claim(ctx context.Context, codeHash, tokenHash, name string, now time.Time) (LogSource, error) {
+func (s *sourceStore) Claim(ctx context.Context, codeHash, tokenHash, name string) (LogSource, error) {
 	var source LogSource
 	if !sourceNameRE.MatchString(name) {
 		return source, ErrInvalidSourceName
@@ -82,6 +83,8 @@ func (s *sourceStore) Claim(ctx context.Context, codeHash, tokenHash, name strin
 	if _, err = s.store.logs.lock(ctx, tx); err != nil {
 		return source, err
 	}
+	// Eligibility is decided after waiting for the same lock used by append and revoke.
+	now := time.Now().UTC()
 	if _, err = tx.ExecContext(ctx, s.store.rebind("DELETE FROM log_pairing_codes WHERE expires_at <= ?"), now); err != nil {
 		return source, err
 	}

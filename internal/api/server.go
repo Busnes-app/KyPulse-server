@@ -326,6 +326,9 @@ func (s *Server) requireAdmin(h http.HandlerFunc) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		user, _, err := s.sessions.AuthenticateRequest(r)
 		if err != nil {
+			if action := sourceAuditAction(r); action != "" {
+				s.audit(r.Context(), "", r, action, "", "outcome=refused reason=authentication")
+			}
 			if errors.Is(err, auth.ErrPasswordChangeRequired) {
 				s.writeJSON(w, http.StatusForbidden, map[string]string{"error": "Change your password before continuing", "code": "password_change_required"})
 			} else {
@@ -334,6 +337,9 @@ func (s *Server) requireAdmin(h http.HandlerFunc) http.HandlerFunc {
 			return
 		}
 		if user.Role != "admin" {
+			if action := sourceAuditAction(r); action != "" {
+				s.audit(r.Context(), user.ID, r, action, "", "outcome=refused reason=role")
+			}
 			s.writeError(w, http.StatusForbidden, "Administrator role required")
 			return
 		}
@@ -387,6 +393,9 @@ func (s *Server) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if isUnsafeMethod(r.Method) && hasSessionCookie(r) && !csrfExempt(r.URL.Path) && !auth.ValidateCSRF(r) {
+		if action := sourceAuditAction(r); action != "" {
+			s.audit(r.Context(), s.actorID(r), r, action, "", "outcome=refused reason=csrf")
+		}
 		s.writeError(w, http.StatusForbidden, "Invalid CSRF token")
 		return
 	}

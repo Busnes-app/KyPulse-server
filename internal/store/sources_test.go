@@ -26,7 +26,7 @@ func TestSourceClaimSingleUseAndAttribution(t *testing.T) {
 		wg.Add(1)
 		go func(i int) {
 			defer wg.Done()
-			_, err := st.Sources().Claim(ctx, "code-hash", fmt.Sprintf("hash-%d", i), "host", now)
+			_, err := st.Sources().Claim(ctx, "code-hash", fmt.Sprintf("hash-%d", i), "host")
 			if err == nil {
 				winners.Add(1)
 			}
@@ -81,7 +81,7 @@ func TestSourceCodeExpiryAndTarget(t *testing.T) {
 	if err := st.Sources().CreateCode(ctx, "expired", "", now); err != nil {
 		t.Fatal(err)
 	}
-	if _, err := st.Sources().Claim(ctx, "expired", "token", "host", now); !errors.Is(err, ErrNotFound) {
+	if _, err := st.Sources().Claim(ctx, "expired", "token", "host"); !errors.Is(err, ErrNotFound) {
 		t.Fatalf("deadline=%v", err)
 	}
 	if err := st.Sources().CreateCode(ctx, "duplicate-name-1", "", now.Add(time.Minute)); err != nil {
@@ -91,7 +91,7 @@ func TestSourceCodeExpiryAndTarget(t *testing.T) {
 		t.Fatal(err)
 	}
 	for i, code := range []string{"duplicate-name-1", "duplicate-name-2"} {
-		if _, err := st.Sources().Claim(ctx, code, fmt.Sprintf("token-%d", i), "host", now); err != nil {
+		if _, err := st.Sources().Claim(ctx, code, fmt.Sprintf("token-%d", i), "host"); err != nil {
 			t.Fatal(err)
 		}
 	}
@@ -101,10 +101,47 @@ func TestSourceCodeExpiryAndTarget(t *testing.T) {
 	if err := st.Sources().CreateCode(ctx, "rollback-code", "", now.Add(time.Minute)); err != nil {
 		t.Fatal(err)
 	}
-	if _, err := st.Sources().Claim(ctx, "rollback-code", "token-0", "host", now); !errors.Is(err, ErrAlreadyExists) {
+	if _, err := st.Sources().Claim(ctx, "rollback-code", "token-0", "host"); !errors.Is(err, ErrAlreadyExists) {
 		t.Fatalf("duplicate token=%v", err)
 	}
-	if _, err := st.Sources().Claim(ctx, "rollback-code", "token-2", "host", now); err != nil {
+	if _, err := st.Sources().Claim(ctx, "rollback-code", "token-2", "host"); err != nil {
 		t.Fatalf("code consumed after failed insert: %v", err)
+	}
+}
+
+func TestSourceClaimExpiresWhileWaitingForUsageLock(t *testing.T) {
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+	st := newLogTestStore(t)
+	expires := time.Now().UTC().Add(200 * time.Millisecond)
+	if err := st.Sources().CreateCode(ctx, "blocked-code", "", expires); err != nil {
+		t.Fatal(err)
+	}
+	tx, err := st.db.BeginTx(ctx, nil)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if _, err := st.logs.lock(ctx, tx); err != nil {
+		t.Fatal(err)
+	}
+	started := make(chan struct{})
+	done := make(chan error, 1)
+	go func() {
+		close(started)
+		_, err := st.Sources().Claim(ctx, "blocked-code", "blocked-token", "host")
+		done <- err
+	}()
+	<-started
+	time.Sleep(time.Until(expires) + 50*time.Millisecond)
+	select {
+	case err := <-done:
+		t.Fatalf("claim finished before lock release: %v", err)
+	default:
+	}
+	if err := tx.Rollback(); err != nil {
+		t.Fatal(err)
+	}
+	if err := <-done; !errors.Is(err, ErrNotFound) {
+		t.Fatalf("claim after expiry=%v", err)
 	}
 }
