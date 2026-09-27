@@ -263,6 +263,10 @@ Everything comes back as of the capsule's `created_at`: users, passwords, MFA en
 sessions. Anything you revoked or changed after that moment is
 undone, and a session cookie minted before the capsule still validates against the restored
 server, because sessions are database rows and the capsule brought them back.
+Source identities and token hashes also return. Collected log lines, imported activity and
+pending log pairing codes are excluded from SQLite capsules, so their history and pending codes
+do not return after restore. kyPulse's own keyed audit chain remains. PostgreSQL capsules are
+unsupported; the backup refuses to seal without a consistent SQLite snapshot.
 
 1. Revoke sessions. There is no per-user control in the UI and no global revoke; sessions
    are rows in the `sessions` table. Delete them all, once, before anyone signs in:

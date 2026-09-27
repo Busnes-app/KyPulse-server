@@ -21,7 +21,11 @@ live in `recoveryclient` and in the settings rows it reads and writes through th
 - `Collect` snapshots SQLite with the lib's `SQLiteSnapshot` (`VACUUM INTO`; the store runs in
   WAL mode, so a plain file read misses uncheckpointed commits) and returns
   `ErrNoDatabaseSnapshot` for any other driver, so a capsule without a consistent database is
-  never sealed. It also carries the encryption key (`data/encryption.key`, required — restores
+  never sealed. Before reading the temporary snapshot, it securely deletes collected log lines,
+  imported activity and pending log pairing codes, resets log usage and compacts the copy;
+  deletion or compaction failures refuse the capsule. Source identities and token hashes, users,
+  targets, settings and kyPulse's own keyed audit chain remain. Postgres capsules remain
+  unsupported. It also carries the encryption key (`data/encryption.key`, required — restores
   a database whose MFA secrets are gone otherwise), the audit chain key (`data/audit.key`,
   required — without it the restored audit log cannot be verified), and the pinned recovery
   public key (`data/recovery.pub`, only when paired).
