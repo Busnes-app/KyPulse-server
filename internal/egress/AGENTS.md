@@ -1,7 +1,7 @@
 # Egress
 
 ## Purpose
-The one outbound HTTP client: health polls, KyYard and webhooks. Private and LAN destinations are allowed; loopback, link-local (cloud metadata), unspecified, multicast and reserved ranges are refused at dial time; redirects are refused; bodies are capped.
+The one outbound HTTP client: health polls, KyYard and webhooks. Private and LAN destinations are allowed; loopback, link-local and the known cloud metadata addresses (`fd00:ec2::254`, `100.100.100.200`), unspecified, multicast, RFC 5737 documentation and reserved ranges are refused at dial time; redirects are refused; bodies are capped.
 
 ## Ownership
 Owns `Client`, `ValidateURL`, `Cause` and the address policy. No caller builds its own `http.Client`.

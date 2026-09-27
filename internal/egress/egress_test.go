@@ -44,6 +44,9 @@ func TestValidateURL(t *testing.T) {
 		{"https://224.0.0.1/", false, ErrRefusedAddress},
 		{"https://[fe80::1]/", false, ErrRefusedAddress},
 		{"https://198.18.0.1/", false, ErrRefusedAddress},
+		{"http://[fd00:ec2::254]/latest/meta-data", true, ErrRefusedAddress},
+		{"http://100.100.100.200/latest/meta-data", true, ErrRefusedAddress},
+		{"https://203.0.113.7/", false, ErrRefusedAddress},
 	}
 	for _, tc := range cases {
 		if got := ValidateURL(tc.url, tc.allowHTTP); !errors.Is(got, tc.want) {

@@ -1,7 +1,7 @@
 // Package egress is the one outbound HTTP client: health polls, KyYard and webhooks all go
 // through it. Private and LAN addresses are allowed, because that is where the apps live;
-// loopback, link-local (cloud metadata included), unspecified, multicast and reserved ranges
-// are refused at dial time, so a DNS rebind cannot slip past a check made at resolution.
+// loopback, link-local and the known cloud metadata addresses, unspecified, multicast and
+// reserved ranges are refused at dial time, so a DNS rebind cannot slip past a check made at resolution.
 // Redirects are refused and response bodies are capped.
 package egress
 
@@ -181,7 +181,10 @@ func Cause(err error) string {
 	return "network"
 }
 
-var reservedRanges = mustCIDRs("0.0.0.0/8", "192.0.0.0/24", "198.18.0.0/15", "240.0.0.0/4", "64:ff9b::/96", "fec0::/10")
+var reservedRanges = mustCIDRs("0.0.0.0/8", "192.0.0.0/24", "198.18.0.0/15", "240.0.0.0/4", "64:ff9b::/96", "fec0::/10",
+	"192.0.2.0/24", "198.51.100.0/24", "203.0.113.0/24", // RFC 5737 documentation
+	"fd00:ec2::254/128", "100.100.100.200/32", // AWS IPv6 and Alibaba metadata, inside ULA and CGNAT
+)
 
 // allowedIP admits private (RFC 1918, ULA) and CGNAT addresses and refuses everything that
 // can only mean this host, this link, or nowhere.

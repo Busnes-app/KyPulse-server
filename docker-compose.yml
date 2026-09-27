@@ -47,8 +47,8 @@ services:
       - KYPULSE_BACKUP_KEEP=${KYPULSE_BACKUP_KEEP:-7}
       - KYPULSE_BACKUP_DEPOSIT_INTERVAL=${KYPULSE_BACKUP_DEPOSIT_INTERVAL:-24h}
       - KYPULSE_BACKUP_ALLOW_PRIVATE_RECOVERY=${KYPULSE_BACKUP_ALLOW_PRIVATE_RECOVERY:-false}
-      # Alerts. The webhook itself is set in the UI and stored sealed; this only admits a
-      # plain-http receiver on your own network (off: HTTPS required).
+      # Alerts. The webhook itself is set in the UI and stored sealed; this admits a
+      # plain-http webhook URL to any host; loopback and link-local stay refused.
       - KYPULSE_ALERT_ALLOW_HTTP=${KYPULSE_ALERT_ALLOW_HTTP:-false}
       # Concurrent health polls (1..32).
       - KYPULSE_POLL_WORKERS=${KYPULSE_POLL_WORKERS:-4}
