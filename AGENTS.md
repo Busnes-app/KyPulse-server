@@ -32,6 +32,12 @@ Design authority: `docs/superpowers/specs/2026-09-26-kypulse-design.md`. Plans l
   write are admin-only.
 - Every process line is a JSON record on stderr through `ky-primitives/logging`; there is no
   log file and no log socket.
+- Collected Logs and imported Activity are admin-only, including app-detail queries.
+  Sender Bearer tokens authenticate only log ingestion; source identity and watched-target
+  binding come from the claimed token, never a request body. Revocation ends ingestion.
+- Collected logs and imported activity share seven-day receive-time retention and the
+  `KYPULSE_LOG_MAX_BYTES` logical payload budget. SQLite capsules exclude both tables and
+  pending pairing codes; source identities and token hashes remain.
 - `GET /healthz` is public and is what an external monitor watches; kyPulse does not monitor
   itself.
 - The audit trail is a keyed hash chain (`internal/store/audit.go`); a log the store cannot

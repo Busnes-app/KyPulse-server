@@ -15,7 +15,8 @@ Design: [`docs/superpowers/specs/2026-09-26-kypulse-design.md`](docs/superpowers
 | Status, Alerts, app detail, alert bar, webhook form | done |
 | KyYard pairing, container facts, stale marking | done |
 | kyPulse's own tamper-evident audit trail | done |
-| Log ingest, `kypulse-send`, Logs and Activity tabs, KyYard log and audit-feed pulls | planned (build step 4) |
+| Source pairing, log ingest, admin log and activity APIs, retention | done |
+| `kypulse-send`, Logs and Activity tabs, KyYard log and audit-feed pulls | planned (client build step) |
 
 ## Quick start
 
@@ -48,6 +49,45 @@ Watch kyPulse's own `GET /healthz` from outside. kyPulse does not monitor itself
 
 Roles are `admin` and `viewer`. A viewer sees Status, Alerts, app detail and a read-only
 Settings & DB; every write and Backup are admin-only, and the server enforces it.
+Collected Logs and imported Activity, including app-detail log queries, are admin-only.
+
+## Sending logs
+
+An admin creates a six-digit code with `POST /api/log-sources/pairing` and JSON
+`{"target_id":"<watched target ID>"}`. Omit `target_id` for a source that appears only in
+global log queries. The code expires after 15 minutes and can be claimed once. A sender
+claims it without a user session using `POST /api/log-sources/claim` and
+`{"pairing_code":"123456","name":"host-app"}`. Keep the returned `token` secret: it is
+shown only on claim, and the database stores its hash. An admin can list source IDs with
+`GET /api/log-sources` and revoke one with `DELETE /api/log-sources/<id>`; revocation stops
+future ingestion and keeps historical rows. Browser session writes require CSRF; a claim
+without a session does not.
+
+Send UTF-8 NDJSON to `POST /api/ingest/logs` with
+`Authorization: Bearer <source token>` and `Content-Type: application/x-ndjson`:
+
+```json
+{"line":"{\"timestamp\":\"2026-09-27T12:00:00Z\",\"app\":\"kyvault\",\"level\":\"INFO\",\"event\":\"started\",\"message\":\"service started\"}"}
+```
+
+Each record needs a string `line`, which may contain an original JSON line or plain text;
+optional `time` is an RFC3339Nano transport timestamp and `truncated` is a boolean.
+Unknown fields are accepted. Source identity and watched-target binding come from the
+token, never the body; an application `app` field is an untrusted label. A bound source
+appears in that target's detail queries even if its `app` label differs. An unbound source
+appears in global queries. Logs shaped like audit events also create imported Activity
+rows; they are indexed observations, not verified entries in kyPulse's own audit chain.
+
+The complete request is limited to 1 MiB and 1,000 records. Decoded lines beyond 16 KiB
+are cut at a UTF-8 boundary and marked truncated. Empty batches, blank records, malformed
+NDJSON or times fail the whole batch with 400; oversized requests return 413 and content
+types or encodings other than NDJSON and identity return 415. Invalid or revoked tokens
+return 401. Each source may send 60 requests per minute; 429 includes `Retry-After`.
+A 204 means the full batch committed, subject to normal retention. Pairing claims are
+limited to five attempts per minute per client IP and 30 globally; 429 also includes
+`Retry-After`. Admins can read `GET /api/logs` and `GET /api/activity` with descending ID
+pages (`limit` defaults to 100, maximum 200; `before_id` is exclusive). Both return
+`{"items":[...],"next_before_id":0}` when no next page exists; viewers get 403.
 
 ## Watching apps
 
@@ -158,10 +198,15 @@ there is no log file.
 Keep `encryption.key` and `audit.key` with the database: without them the sealed settings
 cannot be opened and the audit trail cannot be verified. Backups carry both.
 
-Logs and activity share a seven-day retention period and the byte limit above. The limit is
-enforced during each append and checked again at startup and hourly. It measures logical
-stored payload bytes, including row overhead, rather than the database file size. SQLite may
-reuse freed pages after deletion without immediately shrinking its file.
+Logs and activity share a seven-day retention period and the byte limit above. Age uses
+receive time, so a sender's future timestamp cannot extend retention. The limit is
+enforced during each append and checked again at startup and hourly; oldest received rows
+go first. It measures stored UTF-8 field bytes plus a fixed row allowance, including
+derived activity separately, rather than database, index or WAL file size. A committed
+batch may be evicted by retention. SQLite may reuse freed pages after deletion without
+immediately shrinking its file. SQLite recovery capsules exclude collected log lines,
+imported activity and pending pairing codes, including residual text in free pages; they
+keep source identities and token hashes. PostgreSQL capsules are unsupported.
 
 ## Compose overlays
 
@@ -230,6 +275,10 @@ has every request and response shape.
 | `POST/PUT/DELETE /api/targets…`, `POST /api/targets/{id}/silence` | admin |
 | `GET/PUT/DELETE /api/alerts/webhook`, `POST /api/alerts/webhook/test` | admin |
 | `POST /api/kyyard/pair`, `DELETE /api/kyyard`, `GET /api/kyyard/containers` | admin |
+| `POST /api/log-sources/pairing`, `GET /api/log-sources`, `DELETE /api/log-sources/{id}` | admin |
+| `POST /api/log-sources/claim` | public |
+| `POST /api/ingest/logs` | source Bearer token |
+| `GET /api/logs`, `GET /api/activity` | admin |
 | `/api/backup/…` | admin |
 
 ## Develop
