@@ -233,19 +233,38 @@ func TestSendErrorsNeverCarryTheURL(t *testing.T) {
 	}
 }
 
+// blockPoster makes every Post wait until the test releases it. The release is registered as
+// a cleanup so a failing assertion can never leave Drain waiting on the sender forever.
+func blockPoster(t *testing.T, poster *fakePoster, entered int) (release func()) {
+	t.Helper()
+	poster.block, poster.entered = make(chan struct{}), make(chan struct{}, entered)
+	var once sync.Once
+	release = func() { once.Do(func() { close(poster.block) }) }
+	t.Cleanup(release)
+	return release
+}
+
 func TestSlowDeliveryDoesNotBlockObserve(t *testing.T) {
 	svc, st, poster, now := newService(t)
-	poster.block, poster.entered = make(chan struct{}), make(chan struct{}, 2)
+	release := blockPoster(t, poster, 2)
 	oneDownFromDown(t, st, "a", *now)
 	oneDownFromDown(t, st, "b", *now)
-	start := time.Now()
-	observeAsync(svc, "a", poller.Down, *now)
-	observeAsync(svc, "b", poller.Down, *now)
-	if elapsed := time.Since(start); elapsed > 100*time.Millisecond {
-		t.Fatalf("Observe waited on a blocked receiver: %v", elapsed)
+	// Both observations must return while the receiver is still blocked. A wall-clock bound
+	// would measure the database, so the proof is structural: the calls complete before the
+	// block is released, or this deadline trips.
+	observed := make(chan struct{})
+	go func() {
+		observeAsync(svc, "a", poller.Down, *now)
+		observeAsync(svc, "b", poller.Down, *now)
+		close(observed)
+	}()
+	select {
+	case <-observed:
+	case <-time.After(10 * time.Second):
+		t.Fatal("Observe waited on a blocked receiver")
 	}
 	<-poster.entered
-	close(poster.block)
+	release()
 	monitor.Flush(svc)
 	if poster.calls != 2 {
 		t.Fatalf("calls = %d, want 2", poster.calls)
@@ -254,7 +273,7 @@ func TestSlowDeliveryDoesNotBlockObserve(t *testing.T) {
 
 func TestQueueOverflowDropsAndRecords(t *testing.T) {
 	svc, st, poster, now := newServiceSized(t, 1)
-	poster.block, poster.entered = make(chan struct{}), make(chan struct{}, 3)
+	release := blockPoster(t, poster, 3)
 	for _, id := range []string{"a", "b", "c"} {
 		oneDownFromDown(t, st, id, *now)
 	}
@@ -262,7 +281,7 @@ func TestQueueOverflowDropsAndRecords(t *testing.T) {
 	<-poster.entered                          // the sender holds a
 	observeAsync(svc, "b", poller.Down, *now) // fills the queue
 	observeAsync(svc, "c", poller.Down, *now) // dropped
-	close(poster.block)
+	release()
 	monitor.Flush(svc)
 	ev, _, _ := st.Targets().ListEvents(context.Background(), "c", 0, 1)
 	if len(ev) != 1 || ev[0].Notified || ev[0].NotifyError != "queue_full" {
