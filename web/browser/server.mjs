@@ -16,7 +16,7 @@ const options = {
     KYPULSE_HOST: '127.0.0.1', KYPULSE_PORT: '5391', KYPULSE_DB_DRIVER: 'sqlite',
     KYPULSE_DATA_DIR: join(dir, 'data'), KYPULSE_BACKUP_DIR: join(dir, 'backups'),
     KYPULSE_ADMIN_PASSWORD: 'BrowserInitial123!', KYPULSE_CAPTCHA_PROVIDER: 'none',
-    KYPULSE_ALERT_ALLOW_HTTP: 'true',
+    KYPULSE_ALERT_ALLOW_HTTP: 'true', KYPULSE_KYYARD_ALLOW_HTTP: 'true',
   },
   stdio: 'inherit',
 };

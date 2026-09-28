@@ -1,3 +1,4 @@
+import { KyYardCollection } from '../components/KyYardCollectors';
 import { useState } from 'react';
 import { getLogs, type LogUser } from '../logs';
 import { LogLines, PageControls, useLogPage } from '../components/LogTimeline';
@@ -18,6 +19,7 @@ function AdminLogs() {
     setRangeError(''); page.apply(query.toString());
   };
   return <div className="dr-page"><h1>Logs</h1><p className="dr-hint">Retained for up to 7 days, subject to the shared size limit. Times are UTC.</p>
+    <KyYardCollection />
     <form className="log-filters" onSubmit={event => { event.preventDefault(); apply(); }}>
       <label>Log app<input value={filters.app} maxLength={256} onChange={e => setFilters({ ...filters, app: e.target.value })} /></label>
       <label>Log level<input value={filters.level} onChange={e => setFilters({ ...filters, level: e.target.value })} /></label>

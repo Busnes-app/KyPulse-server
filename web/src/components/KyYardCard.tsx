@@ -1,3 +1,4 @@
+import { KyYardCollectors } from './KyYardCollectors';
 import React, { useEffect, useState } from 'react';
 import { Database, Link2, Unlink } from 'lucide-react';
 import { ApiError, getKyYard, kyYardPending, pairKyYard, sinceLabel, timeLabel, unpairKyYard, type KyYardStatus } from '../monitor';
@@ -17,12 +18,12 @@ export const KyYardCard: React.FC<{ onChanged: () => void }> = ({ onChanged }) =
   const load = () => getKyYard().then(setStatus).catch(() => setStatus(null));
   useEffect(() => { void load(); }, []);
 
-  // While "first pull pending", re-read every 5s until the first pull lands or fails.
+  // Keep collector freshness visible after the first inventory pull too.
   useEffect(() => {
-    if (!status || !kyYardPending(status)) return;
+    if (!status?.paired) return;
     const id = window.setInterval(() => { getKyYard().then(setStatus).catch(() => {}); }, POLL_MS);
     return () => window.clearInterval(id);
-  }, [status?.paired, status?.fetched_at, status?.error]);
+  }, [status?.paired]);
 
   const pair = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -69,6 +70,7 @@ export const KyYardCard: React.FC<{ onChanged: () => void }> = ({ onChanged }) =
             <div className="dr-fact"><span className="dr-fact-label">Last pull</span><span className="dr-fact-value">{status.fetched_at ? `${timeLabel(status.fetched_at)} (${sinceLabel(status.fetched_at)} ago)` : 'never'}</span></div>
             <div className="dr-fact"><span className="dr-fact-label">State</span><span className={kyYardPending(status) ? 'dr-fact-value' : status.stale ? 'dr-fact-value dr-danger' : 'dr-fact-value dr-ok'}>{kyYardPending(status) ? 'first pull pending' : status.stale ? `stale${status.error ? ` (${status.error})` : ''}` : 'fresh'}</span></div>
           </div>
+          <KyYardCollectors status={status} />
           {status.error === 'unauthorized' && <p className="form-error">KyYard refused the token: it was revoked. Unpair and pair again with a new code.</p>}
           <p className="dr-hint">Revoking the token happens in KyYard (Members → Service tokens); unpairing here only forgets it.</p>
           <div className="dr-actions"><button type="button" className="btn-danger" disabled={busy} onClick={unpair}><Unlink size={14} />Unpair</button></div>

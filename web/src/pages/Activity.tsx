@@ -1,3 +1,4 @@
+import { KyYardCollection } from '../components/KyYardCollectors';
 import { useState } from 'react';
 import { getActivity, type LogUser } from '../logs';
 import { PageControls, useLogPage } from '../components/LogTimeline';
@@ -18,6 +19,7 @@ function AdminActivity() {
     setRangeError(''); setAppliedApp(filters.app); page.apply(query.toString());
   };
   return <div className="dr-page"><h1>Activity</h1><p className="dr-hint">Audit events retained for up to 7 days, subject to the shared size limit. Imported chains are not verified. Times are UTC.</p>
+    <KyYardCollection />
     <form className="log-filters" onSubmit={event => { event.preventDefault(); apply(); }}>
       <label>Activity app<input value={filters.app} maxLength={256} onChange={e => setFilters({ ...filters, app: e.target.value })} /></label>
       <label>Actor<input value={filters.actor} maxLength={256} onChange={e => setFilters({ ...filters, actor: e.target.value })} /></label>

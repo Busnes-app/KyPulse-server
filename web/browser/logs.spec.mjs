@@ -1,6 +1,29 @@
 import { test, expect } from '@playwright/test';
+import { createServer } from 'node:http';
+import { networkInterfaces } from 'node:os';
 import { execFileSync } from 'node:child_process';
 import { fileURLToPath } from 'node:url';
+
+let yard;
+let yardURL;
+test.beforeAll(async () => {
+  const ip = Object.values(networkInterfaces()).flat().find(i => i?.family === 'IPv4' && !i.internal && /^(10\.|192\.168\.|172\.(1[6-9]|2\d|3[01])\.)/.test(i.address))?.address;
+  test.skip(!ip, 'no private IPv4 interface for fake KyYard');
+  yard = createServer((req, res) => {
+    res.setHeader('Content-Type', 'application/json');
+    if (req.url === '/api/service-tokens/claim') { res.end(JSON.stringify({ token: 'browser-yard-token', organization: { id: 'browser-org', name: 'Browser KyYard' } })); return; }
+    if (req.headers.authorization !== 'Bearer browser-yard-token') { res.writeHead(401); res.end(); return; }
+    if (req.url.endsWith('/endpoints?limit=200')) { res.end(JSON.stringify([{ id: 'browser-ep', name: 'Browser endpoint', runtime: 'docker', state: 'active' }])); return; }
+    if (req.url.endsWith('/inventory')) { res.end(JSON.stringify({ endpoint_id: 'browser-ep', state: 'active', observed_at: new Date().toISOString(), received_at: new Date().toISOString(), snapshot: { containers: [{ id: 'browser-ct', name: 'browser-app', state: 'running', status: 'Up', image: 'test' }] } })); return; }
+    if (req.url.endsWith('/samples')) { res.end('[]'); return; }
+    if (req.url.includes('/logs?')) { res.setHeader('Content-Type', 'text/plain'); res.end(`${new Date().toISOString()} browser collection line\n`); return; }
+    if (req.url.includes('/audit?')) { res.end('[]'); return; } // deployed old API remains visibly unsupported
+    res.writeHead(404); res.end();
+  });
+  await new Promise(resolve => yard.listen(0, '0.0.0.0', resolve));
+  yardURL = `http://${ip}:${yard.address().port}`;
+});
+test.afterAll(async () => { if (yard) await new Promise(resolve => yard.close(resolve)); });
 
 async function signIn(page, username = 'admin') {
   await page.goto('/');
@@ -14,16 +37,21 @@ async function csrf(page) {
 }
 
 test('admin logs, activity, pairing, filters, retry and viewer boundaries', async ({ page, context }, testInfo) => {
-  test.setTimeout(90000);
+  test.setTimeout(150000);
   await signIn(page);
   const app = `logs-${testInfo.project.name}`;
   const sourceName = `sender-${testInfo.project.name}`;
-  const targetResponse = await page.request.post('/api/targets', { headers: await csrf(page), data: { name: app, url: 'https://example.com/healthz', interval_sec: 30, enabled: false } });
+  const targetResponse = await page.request.post('/api/targets', { headers: await csrf(page), data: { name: app, url: 'https://example.com/healthz', interval_sec: 30, enabled: false, container: 'browser-ep/browser-app' } });
   expect(targetResponse.status()).toBe(201);
   const { target } = await targetResponse.json();
   try {
+    const pairing = await page.request.post('/api/kyyard/pair', { headers: await csrf(page), data: { url: yardURL, pairing_code: '123456' } });
+    expect(pairing.status()).toBe(200);
     await page.goto('/#/logs');
     await expect(page.getByRole('heading', { name: 'Logs', exact: true })).toBeVisible();
+    await expect(page.getByRole('region', { name: 'KyYard collection' })).toContainText('Audit feed: no successful collection yet · stale (audit_cursor_unsupported)', { timeout: 80000 });
+    await expect(page.getByRole('region', { name: 'KyYard collection' })).toContainText(/Container logs: last success.*fresh/);
+    await expect(page.getByRole('region', { name: 'KyYard collection' })).toContainText(/Inventory: last success.*fresh/);
     await page.getByLabel('Bind log source to watched app').selectOption(target.id);
     await page.getByLabel('Log source name', { exact: true }).fill(sourceName);
     await expect(page.getByLabel('Sender HTTPS origin')).toHaveValue('');
@@ -82,6 +110,7 @@ test('admin logs, activity, pairing, filters, retry and viewer boundaries', asyn
     await expect(page.getByLabel('Literal text')).toHaveValue('');
 
     await page.goto('/#/activity');
+    await expect(page.getByRole('region', { name: 'KyYard collection' })).toContainText('audit_cursor_unsupported');
     await page.getByLabel('Activity app').fill(app);
     await page.getByLabel('Actor', { exact: true }).fill('alice');
     await page.getByLabel('Outcome', { exact: true }).fill('failure');
@@ -98,6 +127,8 @@ test('admin logs, activity, pairing, filters, retry and viewer boundaries', asyn
     await page.getByRole('button', { name: 'Apply', exact: true }).click();
     await expect(page.getByText(/no audit events: not on shared logging/)).toBeVisible();
     await expect(page.getByText(/Within the retained 7-day window/)).toBeVisible();
+    await page.goto('/#/settings');
+    await expect(page.getByRole('region', { name: 'KyYard collection' })).toContainText('audit_cursor_unsupported');
     await page.goto(`/#/apps/${target.id}`);
     await expect(page.getByRole('region', { name: 'Recent logs' }).locator('li')).toHaveCount(20);
     await expect(page.getByRole('region', { name: 'Recent logs' }).getByText(`${xss} literal %_`, { exact: true })).toBeVisible();
@@ -130,6 +161,7 @@ test('admin logs, activity, pairing, filters, retry and viewer boundaries', asyn
     // Restore an admin session for cleanup even if a viewer assertion failed.
     const login = await page.request.post('/api/auth/login', { data: { username: 'admin', password: 'BrowserUpdated456!' } });
     expect(login.ok()).toBe(true);
+    await page.request.delete('/api/kyyard', { headers: await csrf(page) });
     await page.request.delete(`/api/targets/${target.id}`, { headers: await csrf(page) });
   }
 });

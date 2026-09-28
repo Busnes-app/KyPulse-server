@@ -58,6 +58,10 @@ func TestCollectExcludesCollectedDataAndPreservesState(t *testing.T) {
 		t.Fatal(err)
 	}
 
+	cursorMarker := "cursor-" + marker
+	if err := live.Logs().AppendImported(ctx, store.LogBatch{}, store.LogCursor{Key: cursorMarker}, store.LogCursor{Key: cursorMarker, Value: cursorMarker}, 1<<20); err != nil {
+		t.Fatal(err)
+	}
 	payload, err := backup.Collect(ctx, cfg, "1.0.0")
 	if err != nil {
 		t.Fatal(err)
@@ -81,7 +85,7 @@ func TestCollectExcludesCollectedDataAndPreservesState(t *testing.T) {
 	for _, tc := range []struct {
 		table string
 		want  int
-	}{{"log_lines", 0}, {"activity", 0}, {"log_pairing_codes", 0}, {"log_sources", 1}, {"targets", 1}, {"users", 1}, {"audit_records", 1}} {
+	}{{"log_cursors", 0}, {"log_lines", 0}, {"activity", 0}, {"log_pairing_codes", 0}, {"log_sources", 1}, {"targets", 1}, {"users", 1}, {"audit_records", 1}} {
 		var got int
 		if err := sqlQueryCount(path, tc.table, &got); err != nil {
 			t.Fatal(err)
@@ -122,6 +126,9 @@ func TestCollectExcludesCollectedDataAndPreservesState(t *testing.T) {
 	}
 	if activity, err := live.Logs().ListActivity(ctx, store.ActivityFilter{}); err != nil || len(activity) != 1 {
 		t.Fatalf("live activity = %+v, %v", activity, err)
+	}
+	if cur, err := live.Logs().Cursor(ctx, cursorMarker); err != nil || cur != cursorMarker {
+		t.Fatalf("live cursor %q %v", cur, err)
 	}
 	var pending int
 	if err := sqlQueryCount(cfg.Database.DSN, "log_pairing_codes", &pending); err != nil || pending != 1 {

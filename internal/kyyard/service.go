@@ -8,6 +8,7 @@ import (
 	"time"
 
 	"github.com/Busnes-app/ky-primitives/logging"
+	"github.com/Busnes-app/kypulse-server/internal/store"
 )
 
 const (
@@ -35,10 +36,16 @@ type restartPoint struct {
 
 // Service keeps the latest KyYard snapshot in memory and refreshes it on a schedule.
 type Service struct {
-	Pairing *Pairing
-	HTTP    HTTP
-	Logger  *logging.Logger
-	Now     func() time.Time
+	Pairing     *Pairing
+	HTTP        HTTP
+	LogHTTP     HTTP
+	Store       store.Store
+	MaxLogBytes int64
+	collectMu   sync.Mutex
+	logStatus   CollectorStatus
+	auditStatus CollectorStatus
+	Logger      *logging.Logger
+	Now         func() time.Time
 
 	// pullMu single-flights PullNow: the handler's first pull right after a pairing and the
 	// loop's own tick must not run concurrently and race each other's commit.
@@ -276,15 +283,11 @@ func (s *Service) clearIfCurrent(gen uint64) {
 // Caller holds s.mu.
 func (s *Service) resetLocked() {
 	s.paired, s.cfg, s.facts, s.history, s.fetchedAt, s.lastErr = false, Config{}, nil, nil, nil, ""
+	s.logStatus, s.auditStatus = CollectorStatus{}, CollectorStatus{}
 }
 
-// Adopt marks cfg paired in memory with no snapshot yet: Status reports paired:true,
-// stale:true and no fetched_at until the first pull -- normally kicked right after -- lands.
-// It does not touch gen, so callers must run it last, in this order: Save cfg to disk, then
-// Clear (invalidates any pull still in flight under the previous pairing), then Adopt. Save
-// first so a failed save leaves the previous pairing's in-memory state untouched rather than
-// reporting unpaired with a perfectly good pairing still on disk; Clear before Adopt so a
-// concurrent pull under the old pairing cannot commit over what Adopt is about to set.
+// Adopt marks an existing stored pairing in memory with no snapshot yet. Open uses it
+// during startup; live pairing changes use Replace to couple save and lifecycle changes.
 func (s *Service) Adopt(cfg Config) {
 	s.mu.Lock()
 	s.paired, s.cfg, s.facts, s.fetchedAt, s.lastErr = true, cfg, nil, nil, ""
@@ -302,7 +305,7 @@ func (s *Service) Status(now time.Time) StatusView {
 	if !s.paired {
 		return StatusView{}
 	}
-	return StatusView{Paired: true, URL: s.cfg.URL, Organization: s.cfg.OrganizationName, FetchedAt: s.fetchedAt, Stale: s.stale(now), Error: s.lastErr}
+	return StatusView{Paired: true, URL: s.cfg.URL, Organization: s.cfg.OrganizationName, FetchedAt: s.fetchedAt, Stale: s.stale(now), Error: s.lastErr, Inventory: collectorView(CollectorStatus{LastSuccess: s.fetchedAt, Error: s.lastErr}, now), Logs: collectorView(s.logStatus, now), Audit: collectorView(s.auditStatus, now)}
 }
 
 // Facts answers for a target's container link; false when the latest snapshot has no such

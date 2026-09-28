@@ -175,3 +175,6 @@ func Display(s string) string {
 	}
 	return b.String()
 }
+
+// Bounded normalizes an imported text field with the same limits as application logs.
+func Bounded(s string) string { value, _ := bounded(s); return value }

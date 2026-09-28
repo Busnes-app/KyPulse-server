@@ -17,10 +17,15 @@ Owns user interface components, service worker caching, PWA installation manifes
 - Register the service worker from the production JS bundle; keep `script-src 'self'` intact.
 - Worker caching is limited to the same-origin public shell, manifest and assets. HTML is network-first with offline fallback so deployments refresh; dynamic/auth routes stay uncached.
 - `Backup.tsx` warns for as long as `database_driver` from `/api/backup/status` is not `sqlite`: only the SQLite path can snapshot a database into a capsule, so a Postgres deployment makes no capsules at all.
-- `KyYardCard` (Settings, admin only) pairs/unpairs KyYard and shows organization, URL, last pull and state; unpairing here forgets the URL and token locally and does not revoke the token in KyYard. `monitor.kyYardPending` (`paired && !fetched_at && !error`) is the one place that defines "first pull pending"; while pending, `KyYardCard` re-reads `getKyYard()` every 5s with no cap (cleared on unmount, on the next status change, and so on unpair). The `AlertBar` shows a neutral "first pull pending" line instead of the stale line while pending. `KyYardFacts` (app detail) shows the linked container's facts, or a hint when unlinked, unpaired, not yet seen in KyYard's inventory, or still pending; memory and restarts only when `has_sample` (with the sample age), otherwise "no sample yet"; "endpoint offline" beside the state. `TargetForm`'s container field offers `kyYardContainers()` suggestions as a datalist (fetched only for admins; a 403/error yields an empty list); picking an exact link prefills an empty name.
+- `KyYardCard` (Settings, admin only) pairs/unpairs KyYard and shows organization, URL, last pull and state; unpairing here forgets the URL and token locally and does not revoke the token in KyYard. `monitor.kyYardPending` (`paired && !fetched_at && !error`) is the one place that defines "first pull pending"; while paired, `KyYardCard` re-reads `getKyYard()` every 5s (cleared on unmount/unpair). The `AlertBar` shows a neutral "first pull pending" line instead of the stale line while pending. `KyYardFacts` (app detail) shows the linked container's facts, or a hint when unlinked, unpaired, not yet seen in KyYard's inventory, or still pending; memory and restarts only when `has_sample` (with the sample age), otherwise "no sample yet"; "endpoint offline" beside the state. `TargetForm`'s container field offers `kyYardContainers()` suggestions as a datalist (fetched only for admins; a 403/error yields an empty list); picking an exact link prefills an empty name.
 
 
 ### Admin log screens
+
+- `KyYardCollectors` displays separate inventory/container-log/audit-feed last-success ages,
+  stale flags and fixed errors in Settings and admin Logs/Activity. The latter pages own a
+  cancellable 15 s status subscription. Unsupported audit cursor APIs name the required
+  upstream update; the UI explains inclusive replay and possible gaps at the 1,000-line cap.
 
 - `src/logs.ts` checks read/write JSON at the API boundary. Source writes use `secureFetch`;
   a 401/403 clears the authenticated shell. Logs/Activity remount for a new user identity,

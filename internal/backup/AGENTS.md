@@ -22,7 +22,7 @@ live in `recoveryclient` and in the settings rows it reads and writes through th
   WAL mode, so a plain file read misses uncheckpointed commits) and returns
   `ErrNoDatabaseSnapshot` for any other driver, so a capsule without a consistent database is
   never sealed. Before reading the temporary snapshot, it securely deletes collected log lines,
-  imported activity and pending log pairing codes, resets log usage and compacts the copy;
+  imported activity, collection cursors and pending log pairing codes, resets log usage and compacts the copy;
   deletion or compaction failures refuse the capsule. Source identities and token hashes, users,
   targets, settings and kyPulse's own keyed audit chain remain. Postgres capsules remain
   unsupported. It also carries the encryption key (`data/encryption.key`, required — restores

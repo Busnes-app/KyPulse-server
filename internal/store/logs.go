@@ -102,7 +102,13 @@ func Evict(rows []RetainedRow, now time.Time, maxBytes int64) []RetainedRow {
 	return out
 }
 
+type LogCursor struct{ Key, Value string }
+
+var ErrCursorConflict = errors.New("log cursor changed")
+
 type LogStore interface {
+	Cursor(ctx context.Context, key string) (string, error)
+	AppendImported(ctx context.Context, batch LogBatch, previous, next LogCursor, maxBytes int64) error
 	Append(ctx context.Context, sourceID string, batch LogBatch, maxBytes int64) error
 	List(ctx context.Context, f LogFilter) ([]LogLine, error)
 	ListActivity(ctx context.Context, f ActivityFilter) ([]Activity, error)
@@ -135,7 +141,24 @@ func (l *logStore) lock(ctx context.Context, tx *sql.Tx) (int64, error) {
 	err := tx.QueryRowContext(ctx, "SELECT bytes FROM log_usage WHERE id=1").Scan(&total)
 	return total, err
 }
+func (l *logStore) Cursor(ctx context.Context, key string) (string, error) {
+	var value string
+	err := l.store.db.QueryRowContext(ctx, l.store.rebind("SELECT value FROM log_cursors WHERE key=?"), key).Scan(&value)
+	if errors.Is(err, sql.ErrNoRows) {
+		return "", nil
+	}
+	return value, err
+}
+func (l *logStore) AppendImported(ctx context.Context, batch LogBatch, previous, next LogCursor, maxBytes int64) error {
+	if previous.Key == "" || previous.Key != next.Key {
+		return ErrCursorConflict
+	}
+	return l.append(ctx, "", batch, &previous, &next, maxBytes)
+}
 func (l *logStore) Append(ctx context.Context, sourceID string, batch LogBatch, maxBytes int64) error {
+	return l.append(ctx, sourceID, batch, nil, nil, maxBytes)
+}
+func (l *logStore) append(ctx context.Context, sourceID string, batch LogBatch, previous, next *LogCursor, maxBytes int64) error {
 	tx, err := l.store.db.BeginTx(ctx, nil)
 	if err != nil {
 		return err
@@ -144,6 +167,19 @@ func (l *logStore) Append(ctx context.Context, sourceID string, batch LogBatch, 
 	total, err := l.lock(ctx, tx)
 	if err != nil {
 		return err
+	}
+	if previous != nil {
+		var value string
+		err = tx.QueryRowContext(ctx, l.store.rebind("SELECT value FROM log_cursors WHERE key=?"), previous.Key).Scan(&value)
+		if err != nil && !errors.Is(err, sql.ErrNoRows) {
+			return err
+		}
+		if value != previous.Value {
+			return ErrCursorConflict
+		}
+		if _, err = tx.ExecContext(ctx, l.store.rebind("INSERT INTO log_cursors(key,value) VALUES(?,?) ON CONFLICT(key) DO UPDATE SET value=excluded.value"), next.Key, next.Value); err != nil {
+			return err
+		}
 	}
 	if sourceID != "" {
 		var source LogSource

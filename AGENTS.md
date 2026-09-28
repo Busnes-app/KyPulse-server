@@ -13,8 +13,8 @@ Design authority: `docs/superpowers/specs/2026-09-26-kypulse-design.md`. Plans l
 
 - `cmd/server/`: process entry, CLI subcommands (`init-admin`, `backup-drill`,
   `export-capsule`, `deposit`, `restore`, `audit-verify`, `version`), the log bridge, the
-  backup scheduler and the KyYard pull loop.
-- `cmd/kypulse-send/`: sender pairing CLI; input commands arrive with their readers.
+  backup scheduler, KyYard inventory loop and separately joined log/audit collection worker.
+- `cmd/kypulse-send/`: sender pairing CLI and file/stdin/Docker readers.
 - `internal/`: one package per concern; each has its own AGENTS.md.
 - `internal/egress`, `internal/poller`, `internal/alerts`, `internal/notify`, `internal/monitor`,
   `internal/kyyard`: the monitoring backend; each has its own AGENTS.md.
@@ -38,7 +38,7 @@ Design authority: `docs/superpowers/specs/2026-09-26-kypulse-design.md`. Plans l
   binding come from the claimed token, never a request body. Revocation ends ingestion.
 - Collected logs and imported activity share seven-day receive-time retention and the
   `KYPULSE_LOG_MAX_BYTES` logical payload budget. SQLite capsules exclude both tables and
-  pending pairing codes; source identities and token hashes remain.
+  pending pairing codes and collection cursors; source identities and token hashes remain.
 - `GET /healthz` is public and is what an external monitor watches; kyPulse does not monitor
   itself.
 - The audit trail is a keyed hash chain (`internal/store/audit.go`); a log the store cannot
@@ -80,5 +80,5 @@ Design authority: `docs/superpowers/specs/2026-09-26-kypulse-design.md`. Plans l
 - `internal/alerts/AGENTS.md`: alert thresholds, transitions, reminders, silences.
 - `internal/notify/AGENTS.md`: webhook presets and delivery retries.
 - `internal/monitor/AGENTS.md`: glues polling, alerts and delivery to the store.
-- `internal/kyyard/AGENTS.md`: KyYard pairing, bearer client, endpoint/inventory/sample reads.
+- `internal/kyyard/AGENTS.md`: KyYard pairing, inventory/sample snapshots, durable log/audit collection.
 - `web/AGENTS.md`: PWA, themes, ky-ui vendoring, browser regressions.

@@ -144,6 +144,7 @@ func sanitizeSnapshot(ctx context.Context, path string) (err error) {
 		"DELETE FROM activity",
 		"DELETE FROM log_lines",
 		"DELETE FROM log_pairing_codes",
+		"DELETE FROM log_cursors",
 		"UPDATE log_usage SET bytes=0",
 	} {
 		if _, err := tx.ExecContext(ctx, statement); err != nil {

@@ -323,6 +323,10 @@ CREATE TABLE log_pairing_codes (
 CREATE INDEX idx_log_pairing_codes_expires ON log_pairing_codes(expires_at);
 `,
 	},
+	{Version: 9, Name: "log_cursors",
+		SQLite:   `CREATE TABLE log_cursors (key TEXT PRIMARY KEY, value TEXT NOT NULL);`,
+		Postgres: `CREATE TABLE log_cursors (key TEXT PRIMARY KEY, value TEXT NOT NULL);`,
+	},
 }
 
 // Run executes all pending migrations for the specified database driver and returns the

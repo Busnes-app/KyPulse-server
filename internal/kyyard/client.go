@@ -106,8 +106,9 @@ type Sample struct {
 
 // Client reads one organization with a bearer token.
 type Client struct {
-	HTTP   HTTP
-	Config Config
+	HTTP    HTTP
+	LogHTTP HTTP
+	Config  Config
 }
 
 func (c *Client) get(ctx context.Context, path string, out any) error {
@@ -165,6 +166,12 @@ func Reason(err error) string {
 	switch {
 	case err == nil:
 		return ""
+	case errors.Is(err, ErrAuditCursorUnsupported):
+		return "audit_cursor_unsupported"
+	case errors.Is(err, ErrAuditPage):
+		return "audit_invalid_page"
+	case errors.Is(err, ErrLogResponse):
+		return "logs_invalid_response"
 	case errors.Is(err, ErrUnauthorized):
 		return "unauthorized"
 	case errors.Is(err, ErrPairingRefused):

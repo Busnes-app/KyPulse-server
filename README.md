@@ -17,7 +17,7 @@ Design: [`docs/superpowers/specs/2026-09-26-kypulse-design.md`](docs/superpowers
 | kyPulse's own tamper-evident audit trail | done |
 | Source pairing, log ingest, admin log and activity APIs, retention | done |
 | `kypulse-send` Linux sender | done |
-| Logs and Activity tabs, KyYard log and audit-feed pulls | planned (client build step) |
+| Admin Logs/Activity screens and KyYard log/audit collection | done; audit requires the KyYard cursor API |
 
 ## Quick start
 
@@ -45,7 +45,9 @@ Watch kyPulse's own `GET /healthz` from outside. kyPulse does not monitor itself
 - **App detail** (`#/apps/<id>`, the link webhook messages carry). Current state with the
   exact failing request, the checks from the last response, alert history, KyYard container
   facts, and, for admins, silence (1 h, 8 h, until fixed), edit and delete.
-- **Settings & DB**. The alert webhook and KyYard pairing (admins), theme, database driver.
+- **Logs** (admins). Filtered log timeline, raw text, source pairing/revocation and collection status.
+- **Activity** (admins). Imported audit events, filters, failed-sign-in burst hints and collection status.
+- **Settings & DB**. The alert webhook, KyYard pairing/collector ages (admins), theme, database driver.
 - **Backup** (admins). KyRecovery pairing, schedule, local copies, restore drill.
 
 Roles are `admin` and `viewer`. A viewer sees Status, Alerts, app detail and a read-only
@@ -180,8 +182,9 @@ kyPulse can read one KyYard organization with a read-only service token.
 
 The token is sealed at rest, never logged and never shown. kyPulse then pulls every 60 s:
 Docker endpoints that are approved, active or offline (the first 200), their container
-inventory and latest resource samples. Nothing KyYard sends is stored; it lives in memory
-and a restart re-pulls it.
+inventory and latest resource samples. Inventory and samples live in memory and a restart
+re-pulls them. A separate 60-second worker collects linked-container logs and organization
+audit activity, with durable cursors committed atomically with each imported batch.
 
 Link a watched app to a container (`endpoint/name`; admins get suggestions in the add and
 edit form) and its detail page shows state and exit code, Docker health, image, memory
@@ -191,7 +194,25 @@ containers only); a container on an offline endpoint is marked and shown stale.
 
 Right after pairing or a restart the card and the bar say **first pull pending**. KyYard data
 is shown **stale** when no pull has succeeded for 3 minutes, and at once when KyYard refuses
-the token (it was revoked: unpair and pair again).
+the token (it was revoked: unpair and pair again). Admin Logs, Activity and Settings show
+independent inventory, container-log and audit-feed last-success ages and errors. A failed
+collector does not stop health polling or clear another collector's error.
+
+Only resolved linked containers are collected, including links on apps with health polling
+paused. Several watched apps sharing one container cause one fetch and an attributed copy
+per app. Log requests use the saved inclusive timestamp, so equal-timestamp duplicates are
+expected. Each pull keeps at most 1,000 application lines, 16 KiB per line, under a 32 MiB
+response cap and 30-second request timeout. Matching KyYard notices and local truncation
+notices are retained as collector warnings. A full tail says **history may be incomplete:
+pull reached 1000 lines**: Docker's newest-N tail is not lossless pagination. For complete
+high-volume collection use file/Docker sender input or an existing external collector.
+
+The audit feed requires KyYard's `after_id` cursor API (`items`, `next_after_id`), reads 200
+ascending rows per page and at most five pages per tick, and commits each page before the
+next request. An older KyYard's array response produces `audit_cursor_unsupported` without
+advancing its cursor; update KyYard to enable this collector. Container logs and health
+continue independently. Remote audit chain verification is not performed. Re-pairing uses
+a fresh generation and starts new cursors; already imported history remains until retention.
 
 Unpairing takes two steps, one on each side: **Unpair** here deletes the URL and token in
 kyPulse only; a KyYard administrator must also revoke the token on the Members page. The
@@ -246,8 +267,8 @@ go first. It measures stored UTF-8 field bytes plus a fixed row allowance, inclu
 derived activity separately, rather than database, index or WAL file size. A committed
 batch may be evicted by retention. SQLite may reuse freed pages after deletion without
 immediately shrinking its file. SQLite recovery capsules exclude collected log lines,
-imported activity and pending pairing codes, including residual text in free pages; they
-keep source identities and token hashes. PostgreSQL capsules are unsupported.
+imported activity, collection cursors and pending pairing codes, including residual text in
+free pages; they keep source identities and token hashes. PostgreSQL capsules are unsupported.
 
 ## Compose overlays
 
