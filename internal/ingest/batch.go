@@ -55,7 +55,8 @@ func Decode(body []byte) ([]Record, error) {
 			}
 			var err error
 			row.Time, err = time.Parse(time.RFC3339Nano, value)
-			if err != nil {
+			row.Time = row.Time.UTC()
+			if err != nil || row.Time.Year() < 0 || row.Time.Year() > 9999 {
 				return nil, ErrInvalidBatch
 			}
 		}

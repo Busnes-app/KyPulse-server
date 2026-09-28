@@ -342,3 +342,60 @@ func TestActivitySummaryIgnoresPaginationAndDistinguishesFilteredEmpty(t *testin
 		}
 	}
 }
+
+func TestIngestUTCTimestampRange(t *testing.T) {
+	for _, stamp := range []string{"9999-12-31T23:59:59-01:00", "0000-01-01T00:00:00+01:00"} {
+		for _, input := range []string{"transport", "application", "application-with-transport"} {
+			t.Run(input+"/"+stamp, func(t *testing.T) {
+				srv, st, _ := setupTestServer(t)
+				admin := loginAs(t, srv, st, "rangeadmin", "admin")
+				token, _ := pairedLogSource(t, st)
+				app := map[string]any{"seq": 1, "hash": "h", "fields": []string{}, "action": "sign-in"}
+				row := map[string]string{}
+				wantStatus, wantRows := 204, 1
+				if input == "transport" {
+					row["time"] = stamp
+					wantStatus, wantRows = 400, 0
+				} else {
+					app["timestamp"] = stamp
+				}
+				transport := time.Date(2026, 9, 27, 12, 0, 0, 0, time.UTC)
+				if input == "application-with-transport" {
+					row["time"] = transport.Format(time.RFC3339Nano)
+				}
+				line, _ := json.Marshal(app)
+				row["line"] = string(line)
+				body, _ := json.Marshal(row)
+				// A rejected timestamp must reject the whole batch, including its valid prefix.
+				if input == "transport" {
+					body = append([]byte("{\"line\":\"valid prefix\"}\n"), body...)
+				}
+				if w := ingestRequest(srv, token, body, false); w.Code != wantStatus {
+					t.Errorf("ingest status=%d, want %d: %s", w.Code, wantStatus, w.Body.String())
+				}
+				for _, path := range []string{"/api/logs", "/api/activity"} {
+					w := do(t, srv, "GET", path, admin)
+					var page struct {
+						Items []struct {
+							Time       time.Time `json:"time"`
+							ReceivedAt time.Time `json:"received_at"`
+						}
+					}
+					if err := json.Unmarshal(w.Body.Bytes(), &page); w.Code != 200 || err != nil || len(page.Items) != wantRows {
+						t.Errorf("%s: status=%d rows=%d err=%v body=%s", path, w.Code, len(page.Items), err, w.Body.String())
+						continue
+					}
+					for _, item := range page.Items {
+						want := item.ReceivedAt
+						if input == "application-with-transport" {
+							want = transport
+						}
+						if !item.Time.Equal(want) {
+							t.Errorf("%s: time=%v, want fallback %v", path, item.Time, want)
+						}
+					}
+				}
+			})
+		}
+	}
+}

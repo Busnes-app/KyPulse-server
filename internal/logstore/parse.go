@@ -36,7 +36,8 @@ func Parse(raw, sourceID, source, targetID string, transportTime, receivedAt tim
 	if receivedAt.IsZero() {
 		receivedAt = time.Now().UTC()
 	}
-	if transportTime.IsZero() {
+	transportTime = transportTime.UTC()
+	if transportTime.IsZero() || transportTime.Year() < 0 || transportTime.Year() > 9999 {
 		transportTime = receivedAt
 	}
 	line := store.LogLine{Time: transportTime, ReceivedAt: receivedAt, SourceID: sourceID, Source: source, TargetID: targetID, Message: raw, Raw: raw, Truncated: truncated}
@@ -75,7 +76,10 @@ func Parse(raw, sourceID, source, targetID string, transportTime, receivedAt tim
 	get := func(k string) string { var s string; _ = json.Unmarshal(obj[k], &s); s, _ = bounded(s); return s }
 	if ts := get("timestamp"); ts != "" {
 		if t, err := time.Parse(time.RFC3339Nano, ts); err == nil {
-			line.Time = t
+			t = t.UTC()
+			if t.Year() >= 0 && t.Year() <= 9999 {
+				line.Time = t
+			}
 		}
 	}
 	line.App = get("app")
