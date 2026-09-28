@@ -15,7 +15,9 @@ Design: [`docs/superpowers/specs/2026-09-26-kypulse-design.md`](docs/superpowers
 | Status, Alerts, app detail, alert bar, webhook form | done |
 | KyYard pairing, container facts, stale marking | done |
 | kyPulse's own tamper-evident audit trail | done |
-| Log ingest, `kypulse-send`, Logs and Activity tabs, KyYard log and audit-feed pulls | planned (build step 4) |
+| Source pairing, log ingest, admin log and activity APIs, retention | done |
+| `kypulse-send` Linux sender | done |
+| Admin Logs/Activity screens and KyYard log/audit collection | done; audit requires the KyYard cursor API |
 
 ## Quick start
 
@@ -43,11 +45,100 @@ Watch kyPulse's own `GET /healthz` from outside. kyPulse does not monitor itself
 - **App detail** (`#/apps/<id>`, the link webhook messages carry). Current state with the
   exact failing request, the checks from the last response, alert history, KyYard container
   facts, and, for admins, silence (1 h, 8 h, until fixed), edit and delete.
-- **Settings & DB**. The alert webhook and KyYard pairing (admins), theme, database driver.
+- **Logs** (admins). Filtered log timeline, raw text, source pairing/revocation and collection status.
+- **Activity** (admins). Imported audit events, filters, failed-sign-in burst hints and collection status.
+- **Settings & DB**. The alert webhook, KyYard pairing/collector ages (admins), theme, database driver.
 - **Backup** (admins). KyRecovery pairing, schedule, local copies, restore drill.
 
 Roles are `admin` and `viewer`. A viewer sees Status, Alerts, app detail and a read-only
 Settings & DB; every write and Backup are admin-only, and the server enforces it.
+Collected Logs and imported Activity, including app-detail log queries, are admin-only.
+
+## Sending logs
+
+An admin creates a six-digit code with `POST /api/log-sources/pairing` and JSON
+`{"target_id":"<watched target ID>"}`. Omit `target_id` for a source that appears only in
+global log queries. The code expires after 15 minutes and can be claimed once. A sender
+claims it without a user session using `POST /api/log-sources/claim` and
+`{"pairing_code":"123456","name":"host-app"}`. Keep the returned `token` secret: it is
+shown only on claim, and the database stores its hash. An admin can list source IDs with
+`GET /api/log-sources` and revoke one with `DELETE /api/log-sources/<id>`; revocation stops
+future ingestion and keeps historical rows. Browser session writes require CSRF; a claim
+without a session does not.
+
+Send UTF-8 NDJSON to `POST /api/ingest/logs` with
+`Authorization: Bearer <source token>` and `Content-Type: application/x-ndjson`:
+
+```json
+{"line":"{\"timestamp\":\"2026-09-27T12:00:00Z\",\"app\":\"kyvault\",\"level\":\"INFO\",\"event\":\"started\",\"message\":\"service started\"}"}
+```
+
+Each record needs a string `line`, which may contain an original JSON line or plain text;
+optional `time` is an RFC3339Nano transport timestamp and `truncated` is a boolean.
+Unknown fields are accepted. Source identity and watched-target binding come from the
+token, never the body; an application `app` field is an untrusted label. A bound source
+appears in that target's detail queries even if its `app` label differs. An unbound source
+appears in global queries. Logs shaped like audit events also create imported Activity
+rows; they are indexed observations, not verified entries in kyPulse's own audit chain.
+
+The complete request is limited to 1 MiB and 1,000 records. Decoded lines beyond 16 KiB
+are cut at a UTF-8 boundary and marked truncated. Empty batches, blank records, malformed
+NDJSON or times fail the whole batch with 400; oversized requests return 413 and content
+types or encodings other than NDJSON and identity return 415. Invalid or revoked tokens
+return 401. Each source may send 60 requests per minute; 429 includes `Retry-After`.
+A 204 means the full batch committed, subject to normal retention. Pairing claims are
+limited to five attempts per minute per client IP and 30 globally; 429 also includes
+`Retry-After`. Admins can read `GET /api/logs` and `GET /api/activity` with descending ID
+pages (`limit` defaults to 100, maximum 200; `before_id` is exclusive). Both return
+`{"items":[...],"next_before_id":0}` when no next page exists; viewers get 403.
+
+### Linux sender
+
+`make build` produces `kypulse` and `kypulse-send`. Pair a source using the admin's
+six-digit code, then run one input mode with the same owner-only state directory:
+
+```sh
+kypulse-send pair --url https://pulse.example.com --code 123456 --name host-app
+kypulse-send file --path /var/log/app.log
+app 2>&1 | kypulse-send stdin
+kypulse-send docker --container app,worker --socket /var/run/docker.sock
+```
+
+The sender requires Linux. Its default state is `$XDG_STATE_HOME/kypulse-send` or
+`~/.local/state/kypulse-send`; the directory is mode 0700, the token and checkpoint are
+mode 0600, and one process holds its lock. Use `--state-dir` on each command for another
+source. kyPulse can revoke a source by deleting it from the admin source list, after
+which delivery gets 401. TLS uses the host's normal system root certificates.
+
+One bounded queue combines all configured inputs. It sends every 2 s or at 500 lines,
+splitting earlier at the encoded 1 MiB request limit. Up to 16 MiB is held in memory;
+overflow discards oldest lines and sends a `dropped N lines` marker. Checkpoints advance
+only after a successful request. A crash can replay acknowledged lines when the checkpoint
+was not saved; stdin and the queue are lost on restart. File input follows rename rotation
+and truncation, but deleted history and an indistinguishable inode reuse can leave gaps or
+duplicates. Docker resolves names to immutable IDs and follows stdout and stderr separately,
+up to 32 distinct containers. It requests history inclusively from the earliest saved
+Unix-second timestamp. It replays every line at the checkpoint timestamp, including
+acknowledged lines, because rotation can remove an earlier line and renumber equal-time
+occurrences. This can produce duplicates after sender restart. If newer lines arrive
+without the saved timestamp, the sender emits a gap marker. Docker cannot prove every
+history loss; malformed or oversized frames produce errors or gap markers. A TTY container
+has one merged raw stdout stream. A completed Docker follow response ends that reader;
+restart the sender to watch a later restart of that container. Other configured readers
+continue until their own streams complete.
+
+SIGINT/SIGTERM stops input and gives pending delivery up to five seconds to drain,
+including a file's terminal partial record. A reader error uses the same bounded drain
+and is returned to the operator. Expiry cancels the active request or retry wait; only
+acknowledged positions remain saved. Unsent stdin and buffered records are lost on exit,
+while file/Docker replay still depends on retained upstream history. Clean EOF without a
+signal continues delivery and retries normally. Retry, drop and delivery-stop diagnostics
+use the structured stderr logger.
+
+Docker socket access is root-equivalent. Prefer a read-only socket proxy exposing only
+`/version`, versioned container inspect and logs routes. Mounting a Docker socket with `:ro`
+does not make its API read-only. The sender accepts only a local Unix socket, never a remote
+Docker URL.
 
 ## Watching apps
 
@@ -99,8 +190,9 @@ kyPulse can read one KyYard organization with a read-only service token.
 
 The token is sealed at rest, never logged and never shown. kyPulse then pulls every 60 s:
 Docker endpoints that are approved, active or offline (the first 200), their container
-inventory and latest resource samples. Nothing KyYard sends is stored; it lives in memory
-and a restart re-pulls it.
+inventory and latest resource samples. Inventory and samples live in memory and a restart
+re-pulls them. A separate 60-second worker collects linked-container logs and organization
+audit activity, with durable cursors committed atomically with each imported batch.
 
 Link a watched app to a container (`endpoint/name`; admins get suggestions in the add and
 edit form) and its detail page shows state and exit code, Docker health, image, memory
@@ -110,7 +202,25 @@ containers only); a container on an offline endpoint is marked and shown stale.
 
 Right after pairing or a restart the card and the bar say **first pull pending**. KyYard data
 is shown **stale** when no pull has succeeded for 3 minutes, and at once when KyYard refuses
-the token (it was revoked: unpair and pair again).
+the token (it was revoked: unpair and pair again). Admin Logs, Activity and Settings show
+independent inventory, container-log and audit-feed last-success ages and errors. A failed
+collector does not stop health polling or clear another collector's error.
+
+Only resolved linked containers are collected, including links on apps with health polling
+paused. Several watched apps sharing one container cause one fetch and an attributed copy
+per app. Log requests use the saved inclusive timestamp, so equal-timestamp duplicates are
+expected. Each pull keeps at most 1,000 application lines, 16 KiB per line, under a 32 MiB
+response cap and 30-second request timeout. Matching KyYard notices and local truncation
+notices are retained as collector warnings. A full tail says **history may be incomplete:
+pull reached 1000 lines**: Docker's newest-N tail is not lossless pagination. For complete
+high-volume collection use file/Docker sender input or an existing external collector.
+
+The audit feed requires KyYard's `after_id` cursor API (`items`, `next_after_id`), reads 200
+ascending rows per page and at most five pages per tick, and commits each page before the
+next request. An older KyYard's array response produces `audit_cursor_unsupported` without
+advancing its cursor; update KyYard to enable this collector. Container logs and health
+continue independently. Remote audit chain verification is not performed. Re-pairing uses
+a fresh generation and starts new cursors; already imported history remains until retention.
 
 Unpairing takes two steps, one on each side: **Unpair** here deletes the URL and token in
 kyPulse only; a KyYard administrator must also revoke the token on the Members page. The
@@ -149,6 +259,7 @@ there is no log file.
 | `KYPULSE_POLL_WORKERS` | `4` | concurrent health polls, 1 to 32 |
 | `KYPULSE_ALERT_ALLOW_HTTP` | `false` | admit a plain-http webhook URL |
 | `KYPULSE_KYYARD_ALLOW_HTTP` | `false` | admit a plain-http KyYard URL |
+| `KYPULSE_LOG_MAX_BYTES` | `1073741824` (1 GiB) | maximum retained log and activity payload bytes; minimum 131072 |
 | `KYPULSE_BACKUP_DIR` | empty (`/app/backups` in Compose) | sealed local backup copies; empty keeps none |
 | `KYPULSE_BACKUP_KEEP` | `7` | local copies kept |
 | `KYPULSE_BACKUP_DEPOSIT_INTERVAL` | `24h` | default backup schedule; `0` off, at least `15m` |
@@ -156,6 +267,16 @@ there is no log file.
 
 Keep `encryption.key` and `audit.key` with the database: without them the sealed settings
 cannot be opened and the audit trail cannot be verified. Backups carry both.
+
+Logs and activity share a seven-day retention period and the byte limit above. Age uses
+receive time, so a sender's future timestamp cannot extend retention. The limit is
+enforced during each append and checked again at startup and hourly; oldest received rows
+go first. It measures stored UTF-8 field bytes plus a fixed row allowance, including
+derived activity separately, rather than database, index or WAL file size. A committed
+batch may be evicted by retention. SQLite may reuse freed pages after deletion without
+immediately shrinking its file. SQLite recovery capsules exclude collected log lines,
+imported activity, collection cursors and pending pairing codes, including residual text in
+free pages; they keep source identities and token hashes. PostgreSQL capsules are unsupported.
 
 ## Compose overlays
 
@@ -224,6 +345,10 @@ has every request and response shape.
 | `POST/PUT/DELETE /api/targets…`, `POST /api/targets/{id}/silence` | admin |
 | `GET/PUT/DELETE /api/alerts/webhook`, `POST /api/alerts/webhook/test` | admin |
 | `POST /api/kyyard/pair`, `DELETE /api/kyyard`, `GET /api/kyyard/containers` | admin |
+| `POST /api/log-sources/pairing`, `GET /api/log-sources`, `DELETE /api/log-sources/{id}` | admin |
+| `POST /api/log-sources/claim` | public |
+| `POST /api/ingest/logs` | source Bearer token |
+| `GET /api/logs`, `GET /api/activity` | admin |
 | `/api/backup/…` | admin |
 
 ## Develop

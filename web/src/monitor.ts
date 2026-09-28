@@ -93,7 +93,16 @@ export interface TargetInput {
   container?: string;
 }
 
+export interface CollectorStatus {
+ last_success?: string;
+ stale: boolean;
+ error?: string;
+}
+
 export interface KyYardStatus {
+ inventory?: CollectorStatus;
+ logs?: CollectorStatus;
+ audit?: CollectorStatus;
   paired: boolean;
   url?: string;
   organization?: string;
@@ -184,7 +193,7 @@ export const saveWebhook = (input: { preset: string; url: string; token: string;
 export const deleteWebhook = () => secureFetch('/api/alerts/webhook', { method: 'DELETE' }).then((r) => readJSON<void>(r));
 export const testWebhook = () => secureFetch('/api/alerts/webhook/test', { method: 'POST' }).then((r) => readJSON<{ ok: boolean }>(r));
 
-export const getKyYard = () => fetch('/api/kyyard').then((r) => readJSON<KyYardStatus>(r));
+export const getKyYard = (signal?: AbortSignal) => fetch('/api/kyyard', { signal }).then((r) => readJSON<KyYardStatus>(r));
 export const pairKyYard = (input: { url: string; pairing_code: string }) =>
   secureFetch('/api/kyyard/pair', { method: 'POST', ...json(input) }).then((r) => readJSON<KyYardStatus>(r));
 export const unpairKyYard = () => secureFetch('/api/kyyard', { method: 'DELETE' }).then((r) => readJSON<void>(r));

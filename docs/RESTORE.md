@@ -30,7 +30,7 @@ Everything a fresh server needs to be the old one:
 
 | Path in the capsule | What it is |
 |---|---|
-| `data/kypulse.db` | The whole database: users, sessions, MFA state, audit log, settings, the sealed KyRecovery token |
+| `data/kypulse.db` | Application database: users, sessions, MFA state, keyed audit trail, settings and sealed tokens; collected history, import cursors and pending log pairing codes are excluded |
 | `data/encryption.key` | 32 bytes. Every TOTP secret and the KyRecovery pairing token are encrypted under it |
 | `data/audit.key` | 32 bytes. Keys the audit hash chain; without it the restored log cannot be verified |
 | `data/recovery.pub` | The suite recovery public key, so the restored server comes back pinned (present when the backup had a key) |
@@ -263,6 +263,11 @@ Everything comes back as of the capsule's `created_at`: users, passwords, MFA en
 sessions. Anything you revoked or changed after that moment is
 undone, and a session cookie minted before the capsule still validates against the restored
 server, because sessions are database rows and the capsule brought them back.
+Source identities and token hashes also return. Collected log lines, imported activity, KyYard
+collection cursors and pending log pairing codes are excluded from SQLite capsules. Their
+history and pending codes do not return; KyYard collection starts with empty cursors.
+kyPulse's own keyed audit chain remains. PostgreSQL capsules are unsupported; the backup
+refuses to seal without a consistent SQLite snapshot.
 
 1. Revoke sessions. There is no per-user control in the UI and no global revoke; sessions
    are rows in the `sessions` table. Delete them all, once, before anyone signs in:

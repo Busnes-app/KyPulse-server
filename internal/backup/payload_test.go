@@ -1,19 +1,169 @@
 package backup_test
 
 import (
+	"bytes"
 	"context"
+	"crypto/rand"
+	"database/sql"
 	"encoding/hex"
 	"errors"
 	"os"
 	"path/filepath"
 	"slices"
 	"testing"
+	"time"
 
 	"github.com/Busnes-app/ky-primitives/recoveryclient"
 	"github.com/Busnes-app/kypulse-server/internal/backup"
 	"github.com/Busnes-app/kypulse-server/internal/config"
 	"github.com/Busnes-app/kypulse-server/internal/store"
 )
+
+func TestCollectExcludesCollectedDataAndPreservesState(t *testing.T) {
+	ctx := context.Background()
+	cfg, live := sqliteInstance(t)
+	user := &store.User{ID: "backup_user", Username: "backup-user", Role: store.RoleAdmin, Status: "active", SSOProvider: "local"}
+	if err := live.Users().CreateUser(ctx, user); err != nil {
+		t.Fatal(err)
+	}
+	if err := live.Targets().CreateTarget(ctx, &store.Target{ID: "backup_target", Name: "Backup Target", URL: "https://example.com/", IntervalSec: 30}); err != nil {
+		t.Fatal(err)
+	}
+	if err := live.Settings().SetSetting(ctx, "backup_canary", "preserved"); err != nil {
+		t.Fatal(err)
+	}
+	if err := live.Audit().LogAudit(ctx, &store.AuditRecord{UserID: user.ID, Action: "backup.test", Resource: "backup_target"}); err != nil {
+		t.Fatal(err)
+	}
+	if err := live.Sources().CreateCode(ctx, "claimed-code", "backup_target", time.Now().Add(time.Hour)); err != nil {
+		t.Fatal(err)
+	}
+	source, err := live.Sources().Claim(ctx, "claimed-code", "token-hash", "backup-host")
+	if err != nil {
+		t.Fatal(err)
+	}
+	if err := live.Sources().CreateCode(ctx, "pending-code", "backup_target", time.Now().Add(time.Hour)); err != nil {
+		t.Fatal(err)
+	}
+	secret := make([]byte, 32)
+	if _, err := rand.Read(secret); err != nil {
+		t.Fatal(err)
+	}
+	marker := hex.EncodeToString(secret)
+	now := time.Now().UTC()
+	if err := live.Logs().Append(ctx, source.ID, store.LogBatch{
+		Logs:     []store.LogLine{{Time: now, ReceivedAt: now, Raw: marker, Message: marker}},
+		Activity: []store.Activity{{Time: now, ReceivedAt: now, Action: "imported." + marker}},
+	}, 1<<20); err != nil {
+		t.Fatal(err)
+	}
+
+	cursorMarker := "cursor-" + marker
+	if err := live.Logs().AppendImported(ctx, store.LogBatch{}, store.LogCursor{Key: cursorMarker}, store.LogCursor{Key: cursorMarker, Value: cursorMarker}, 1<<20); err != nil {
+		t.Fatal(err)
+	}
+	payload, err := backup.Collect(ctx, cfg, "1.0.0")
+	if err != nil {
+		t.Fatal(err)
+	}
+	f := findFile(payload.Files, "data/kypulse.db")
+	if f == nil {
+		t.Fatal("missing database")
+	}
+	if bytes.Contains(f.Data, []byte(marker)) {
+		t.Fatal("raw collected secret remains in SQLite payload")
+	}
+	path := filepath.Join(t.TempDir(), "restored.db")
+	if err := os.WriteFile(path, f.Data, 0600); err != nil {
+		t.Fatal(err)
+	}
+	copyStore, err := store.Open(ctx, config.DatabaseConfig{Driver: "sqlite", DSN: path, AuditKey: cfg.Database.AuditKey})
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer copyStore.Close()
+	for _, tc := range []struct {
+		table string
+		want  int
+	}{{"log_cursors", 0}, {"log_lines", 0}, {"activity", 0}, {"log_pairing_codes", 0}, {"log_sources", 1}, {"targets", 1}, {"users", 1}, {"audit_records", 1}} {
+		var got int
+		if err := sqlQueryCount(path, tc.table, &got); err != nil {
+			t.Fatal(err)
+		}
+		if got != tc.want {
+			t.Errorf("snapshot %s rows = %d, want %d", tc.table, got, tc.want)
+		}
+	}
+	var usage int64
+	db, err := sql.Open("sqlite", path)
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer db.Close()
+	if err := db.QueryRowContext(ctx, "SELECT bytes FROM log_usage WHERE id=1").Scan(&usage); err != nil {
+		t.Fatal(err)
+	}
+	if usage != 0 {
+		t.Errorf("snapshot log usage = %d", usage)
+	}
+	if _, err := copyStore.Users().GetUserByID(ctx, user.ID); err != nil {
+		t.Fatal(err)
+	}
+	if _, err := copyStore.Targets().GetTarget(ctx, "backup_target"); err != nil {
+		t.Fatal(err)
+	}
+	if got, err := copyStore.Settings().GetSetting(ctx, "backup_canary"); err != nil || got != "preserved" {
+		t.Fatalf("snapshot setting = %q, %v", got, err)
+	}
+	if got, err := copyStore.Sources().Authenticate(ctx, "token-hash"); err != nil || got.ID != source.ID {
+		t.Fatalf("snapshot source = %+v, %v", got, err)
+	}
+	if chain, err := copyStore.Audit().VerifyChain(ctx); err != nil || chain.Count != 1 {
+		t.Fatalf("snapshot audit chain = %+v, %v", chain, err)
+	}
+	if lines, err := live.Logs().List(ctx, store.LogFilter{}); err != nil || len(lines) != 1 {
+		t.Fatalf("live logs = %+v, %v", lines, err)
+	}
+	if activity, err := live.Logs().ListActivity(ctx, store.ActivityFilter{}); err != nil || len(activity) != 1 {
+		t.Fatalf("live activity = %+v, %v", activity, err)
+	}
+	if cur, err := live.Logs().Cursor(ctx, cursorMarker); err != nil || cur != cursorMarker {
+		t.Fatalf("live cursor %q %v", cur, err)
+	}
+	var pending int
+	if err := sqlQueryCount(cfg.Database.DSN, "log_pairing_codes", &pending); err != nil || pending != 1 {
+		t.Fatalf("live pending codes = %d, %v", pending, err)
+	}
+}
+
+func TestCollectRefusesFailedSnapshotSanitization(t *testing.T) {
+	cfg, st := sqliteInstance(t)
+	now := time.Now().UTC()
+	if err := st.Logs().Append(context.Background(), "", store.LogBatch{Logs: []store.LogLine{{Time: now, ReceivedAt: now, Raw: "canary"}}}, 1024); err != nil {
+		t.Fatal(err)
+	}
+	db, err := sql.Open("sqlite", cfg.Database.DSN)
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer db.Close()
+	if _, err := db.Exec(`CREATE TRIGGER refuse_log_delete BEFORE DELETE ON log_lines BEGIN SELECT RAISE(ABORT, 'refuse deletion'); END`); err != nil {
+		t.Fatal(err)
+	}
+	_, err = backup.Collect(context.Background(), cfg, "1.0.0")
+	if !errors.Is(err, backup.ErrNoDatabaseSnapshot) {
+		t.Fatalf("sanitization failure returned %v, want ErrNoDatabaseSnapshot", err)
+	}
+}
+
+func sqlQueryCount(dsn, table string, count *int) error {
+	db, err := sql.Open("sqlite", dsn)
+	if err != nil {
+		return err
+	}
+	defer db.Close()
+	return db.QueryRow("SELECT COUNT(*) FROM " + table).Scan(count)
+}
 
 // payloadConfig is a real SQLite store in a temp data dir: the collectors snapshot the live
 // database, so there has to be one.

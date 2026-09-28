@@ -1,6 +1,6 @@
 # UI verification
 
-kyPulse's own screens (step 2c): alert bar, Status, Alerts, app detail, webhook form.
+kyPulse screens: alert bar, Status, Alerts, app detail, webhook, admin Logs/Activity and KyYard collection status.
 
 ## Capture conditions
 
@@ -20,10 +20,16 @@ to Status, no horizontal overflow). Viewer-role rendering of Status, Alerts and 
 is covered by component tests; the `#/backup` redirect and the Settings webhook gate rely on
 the server's 403s (`internal/api` authorisation tests).
 
-KyYard (pairing card, stale alert-bar line, container facts, suggestion prefill) is covered by
-component tests only (`KyYardCard.test.tsx`, `AlertBar.test.tsx`, `AppDetail.test.tsx`,
-`Status.test.tsx`); there is no browser run against a real or fake KyYard in CI, so no
-screenshots below include it.
+`logs.spec.mjs` also runs a fake KyYard on the private interface and exercises real pairing,
+linked-container collection on the 60-second worker, and independent inventory/log/audit
+status on Logs, Activity and Settings. The fake's old array audit API remains visibly
+unsupported while inventory and logs succeed. The same case verifies source pairing,
+filters, pagination, offline retry, plain-text rendering, burst hints and real viewer denial.
+Component tests cover stale ages and separate errors; container facts/suggestion variants
+retain their component coverage. This is not a real KyYard deployment or Docker-engine soak.
+
+Logs and Activity screenshots are saved per project under ignored `web/test-results/`;
+existing committed screenshots below cover the monitoring screens.
 
 ## Screenshots
 

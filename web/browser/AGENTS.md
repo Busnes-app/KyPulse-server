@@ -12,12 +12,24 @@ This directory owns test setup, disposable server launch and UI assertions. The 
 
 - Never reuse a development or production server. Launch the compiled `.browser/server` with a minimal environment and an owned temporary data directory; remove that directory on exit.
 - Use loopback only, with `KYPULSE_APP_URL` matching the test origin. Bootstrap credentials are disposable test values, not deployment defaults.
-- `server.mjs` sets `KYPULSE_ALERT_ALLOW_HTTP=true` because the fake webhook in `monitor.spec.mjs` is plain HTTP; this is a test-only relaxation, never a deployment default.
+- `server.mjs` sets `KYPULSE_ALERT_ALLOW_HTTP=true` because the fake webhook in `monitor.spec.mjs` is plain HTTP. It also enables `KYPULSE_KYYARD_ALLOW_HTTP` for the owned fake KyYard in `logs.spec.mjs`; these are test-only relaxations.
 - Test light/dark at 390px and 1280px, using real authentication and API state. Do not disable service workers, relax CSP/CSRF, or substitute mocked responses.
 - Screenshots and failure traces live in ignored `test-results/` and CI artifacts, not production assets.
 - `monitor.spec.mjs` runs its own fake health/webhook server on `0.0.0.0` and targets it by the
   host's private IPv4, because the egress guard refuses loopback; it skips when no such
   interface exists.
+
+
+- `server.mjs` initializes disposable admin/viewer accounts before starting HTTP. The
+  viewer starts from the existing CLI password-hash path, then native `node:sqlite` lowers
+  its role and clears its initial-password flag in this owned test database only.
+- `logs.spec.mjs` pairs a bound source, ingests sample log/audit lines through real routes,
+  exercises filters/pagination, offline retry, safe text, bursts, recent app lines and
+  revocation, then signs in as the real viewer to assert deep-link/API/detail denial.
+  It exercises live KyYard collection status in Logs/Activity/Settings against a private-interface fake upstream with a legacy audit array, and unpairs/deletes its watched target on exit and preserves the webhook form's exact URL selector.
+  Each case extracts the displayed sender origin and passes it to the real Go `Pair`
+  preflight via `TestPairScreenCommandOrigin`; the transport is fake, so this checks URL
+  compatibility without claiming TLS/network reachability from the browser runner.
 
 ## Work Guidance
 

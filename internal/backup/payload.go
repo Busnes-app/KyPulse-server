@@ -115,7 +115,47 @@ func snapshotSQLite(ctx context.Context, dsn, dataDir string) ([]byte, error) {
 	if err := recoveryclient.SQLiteSnapshot(ctx, db, path); err != nil {
 		return nil, fmt.Errorf("%w: %v", ErrNoDatabaseSnapshot, err)
 	}
+	if err := sanitizeSnapshot(ctx, path); err != nil {
+		return nil, fmt.Errorf("%w: sanitize SQLite snapshot: %v", ErrNoDatabaseSnapshot, err)
+	}
 	return os.ReadFile(path)
+}
+
+func sanitizeSnapshot(ctx context.Context, path string) (err error) {
+	copyDB, err := sql.Open("sqlite", path)
+	if err != nil {
+		return err
+	}
+	defer func() { err = errors.Join(err, copyDB.Close()) }()
+	conn, err := copyDB.Conn(ctx)
+	if err != nil {
+		return err
+	}
+	defer func() { err = errors.Join(err, conn.Close()) }()
+	if _, err := conn.ExecContext(ctx, "PRAGMA secure_delete=ON"); err != nil {
+		return err
+	}
+	tx, err := conn.BeginTx(ctx, nil)
+	if err != nil {
+		return err
+	}
+	defer tx.Rollback()
+	for _, statement := range []string{
+		"DELETE FROM activity",
+		"DELETE FROM log_lines",
+		"DELETE FROM log_pairing_codes",
+		"DELETE FROM log_cursors",
+		"UPDATE log_usage SET bytes=0",
+	} {
+		if _, err := tx.ExecContext(ctx, statement); err != nil {
+			return err
+		}
+	}
+	if err := tx.Commit(); err != nil {
+		return err
+	}
+	_, err = conn.ExecContext(ctx, "VACUUM")
+	return err
 }
 
 // Members names what a capsule carries, for the screen; it is what Collect would seal now.

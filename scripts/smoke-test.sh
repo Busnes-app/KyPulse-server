@@ -10,6 +10,7 @@ WORK="$(mktemp -d)"
 PORT="${KYPULSE_SMOKE_PORT:-18080}"
 BASE="http://127.0.0.1:${PORT}"
 ADMIN_PASS="SmokeTestAdminPass123!"
+FINAL_PASS="FinalSmokePassword123!"
 SERVER_PID=""
 FAILURES=0
 
@@ -147,9 +148,9 @@ check "reset login cannot read backup state" "$(status -b "$WORK/cookies" "$BASE
 CSRF="$(awk '$6 == "ky_csrf" { print $7 }' "$WORK/cookies")"
 check "operator password replacement succeeds" \
   "$(status -b "$WORK/cookies" -H "X-CSRF-Token: $CSRF" -H 'Content-Type: application/json' \
-    -d '{"current_password":"OperatorResetPass789!","new_password":"FinalSmokePassword123!"}' "$BASE/api/auth/change-password")" "200"
+    -d '{"current_password":"OperatorResetPass789!","new_password":"'"$FINAL_PASS"'"}' "$BASE/api/auth/change-password")" "200"
 LOGIN_BODY="$(curl -s -c "$WORK/cookies" -H 'Content-Type: application/json' \
-  -d '{"username":"admin","password":"FinalSmokePassword123!"}' "$BASE/api/auth/login")"
+  -d '{"username":"admin","password":"'"$FINAL_PASS"'"}' "$BASE/api/auth/login")"
 contains "reset replacement signs in" "$LOGIN_BODY" '"authenticated":true'
 contains "admin settings include db_driver" "$(curl -s -b "$WORK/cookies" "$BASE/api/settings")" '"db_driver"'
 check "deposit CLI refuses without a key" \
@@ -161,6 +162,44 @@ check "viewer-tier status needs a session" "$(status "$BASE/api/status")" "401"
 check "admin creates a target" "$(status -X POST -H 'Content-Type: application/json' -b "$WORK/cookies" -H "X-CSRF-Token: $CSRF" -d '{"name":"self","url":"'"http://localhost:$PORT/healthz"'","interval_sec":10}' "$BASE/api/targets")" "201"
 contains "targets list shows it" "$(curl -s -b "$WORK/cookies" "$BASE/api/targets")" '"name":"self"'
 check "webhook must be https without the opt-in" "$(status -X PUT -H 'Content-Type: application/json' -b "$WORK/cookies" -H "X-CSRF-Token: $CSRF" -d '{"preset":"ntfy","url":"http://ntfy.lan/t"}' "$BASE/api/alerts/webhook")" "400"
+
+echo "==> collected logs"
+# The product has no user-creation route. Copy the test admin's password hash into an
+# isolated viewer row so the smoke test can exercise a real viewer session.
+python3 - "$WORK/data/kypulse.db" <<'PY'
+import sqlite3
+import sys
+
+with sqlite3.connect(sys.argv[1]) as db:
+    db.execute("""INSERT INTO users (id, username, password_hash, role, created_at, updated_at)
+                  SELECT 'smoke-viewer', 'smoke-viewer', password_hash, 'viewer',
+                         created_at, updated_at FROM users WHERE username='admin'""")
+PY
+VIEWER_LOGIN="$(curl -s -c "$WORK/viewer-cookies" -H 'Content-Type: application/json' \
+  -d '{"username":"smoke-viewer","password":"'"$FINAL_PASS"'"}' "$BASE/api/auth/login")"
+contains "viewer signs in" "$VIEWER_LOGIN" '"role":"viewer"'
+TARGET_ID="$(curl -s -b "$WORK/cookies" "$BASE/api/targets" | python3 -c 'import json,sys; print(next(t["id"] for t in json.load(sys.stdin)["targets"] if t["name"] == "self"))')"
+PAIRING="$(curl -s -b "$WORK/cookies" -H "X-CSRF-Token: $CSRF" -H 'Content-Type: application/json' \
+  -d '{"target_id":"'"$TARGET_ID"'"}' "$BASE/api/log-sources/pairing")"
+PAIRING_CODE="$(printf '%s' "$PAIRING" | python3 -c 'import json,sys; print(json.load(sys.stdin)["code"])')"
+CLAIM="$(curl -s -H 'Content-Type: application/json' \
+  -d '{"pairing_code":"'"$PAIRING_CODE"'","name":"smoke-sender"}' "$BASE/api/log-sources/claim")"
+SOURCE_TOKEN="$(printf '%s' "$CLAIM" | python3 -c 'import json,sys; print(json.load(sys.stdin)["token"])')"
+SOURCE_ID="$(printf '%s' "$CLAIM" | python3 -c 'import json,sys; print(json.load(sys.stdin)["source"]["id"])')"
+check "claim without session binds the source" \
+  "$(printf '%s' "$CLAIM" | python3 -c 'import json,sys; print(json.load(sys.stdin)["source"]["target_id"])')" "$TARGET_ID"
+LOG_BODY='{"line":"{\"timestamp\":\"2026-09-27T12:00:00Z\",\"app\":\"kyvault\",\"level\":\"INFO\",\"event\":\"started\",\"message\":\"service started\"}","source":"forged"}'
+check "source token ingests one line" "$(status -H "Authorization: Bearer $SOURCE_TOKEN" \
+  -H 'Content-Type: application/x-ndjson' --data-binary "$LOG_BODY" "$BASE/api/ingest/logs")" "204"
+contains "admin reads the stored line" "$(curl -s -b "$WORK/cookies" "$BASE/api/logs?target_id=$TARGET_ID")" '"message":"service started"'
+contains "stored source is authoritative" "$(curl -s -b "$WORK/cookies" "$BASE/api/logs?target_id=$TARGET_ID")" '"source":"smoke-sender"'
+check "viewer cannot read logs" "$(status -b "$WORK/viewer-cookies" "$BASE/api/logs")" "403"
+check "viewer cannot read activity" "$(status -b "$WORK/viewer-cookies" "$BASE/api/activity")" "403"
+check "source token cannot read logs" "$(status -H "Authorization: Bearer $SOURCE_TOKEN" "$BASE/api/logs")" "401"
+check "admin revokes the source" "$(status -b "$WORK/cookies" -H "X-CSRF-Token: $CSRF" \
+  -X DELETE "$BASE/api/log-sources/$SOURCE_ID")" "200"
+check "revoked token cannot ingest" "$(status -H "Authorization: Bearer $SOURCE_TOKEN" \
+  -H 'Content-Type: application/x-ndjson' --data-binary "$LOG_BODY" "$BASE/api/ingest/logs")" "401"
 
 echo "==> KyYard"
 contains "kyyard status is unpaired" "$(curl -s -b "$WORK/cookies" "$BASE/api/kyyard")" '"paired":false'

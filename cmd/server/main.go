@@ -20,6 +20,7 @@ import (
 	"github.com/Busnes-app/kypulse-server/internal/backup"
 	"github.com/Busnes-app/kypulse-server/internal/config"
 	"github.com/Busnes-app/kypulse-server/internal/crypto"
+	"github.com/Busnes-app/kypulse-server/internal/kyyard"
 	"github.com/Busnes-app/kypulse-server/internal/store"
 )
 
@@ -143,6 +144,10 @@ func runServer(lg *logging.Logger) {
 	go monitorLoop(ctx, mon, pl, monitorDone)
 	kyyardDone := make(chan struct{})
 	go kyyardLoop(ctx, yard, kyyardDone)
+	collectionDone := make(chan struct{})
+	go yard.RunCollection(ctx, kyyard.PullEvery, collectionDone)
+	retentionDone := make(chan struct{})
+	go logRetentionLoop(ctx, st, cfg.Logs.MaxBytes, lg, retentionDone)
 
 	addr := fmt.Sprintf("%s:%d", cfg.Server.Host, cfg.Server.Port)
 	httpServer := &http.Server{
@@ -176,6 +181,12 @@ func runServer(lg *logging.Logger) {
 	waitCtx, waitCancel := context.WithTimeout(context.Background(), backupWaitTimeout)
 	defer waitCancel()
 	waitForBackupWork(waitCtx, backupDone, monitorDone, kyyardDone, srv.WaitDetached)
+	<-collectionDone // join cancellation before closing the store
+	select {
+	case <-retentionDone:
+	case <-waitCtx.Done():
+		lg.Log(context.Background(), logRetentionAbandoned, logRetentionReason("shutdown_timeout"))
+	}
 	log.Println("[KYPULSE] Server stopped")
 }
 

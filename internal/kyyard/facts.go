@@ -71,10 +71,25 @@ type Suggestion struct {
 
 // StatusView is the pairing as the API and the alert bar see it. The token is not here.
 type StatusView struct {
-	Paired       bool       `json:"paired"`
-	URL          string     `json:"url,omitempty"`
-	Organization string     `json:"organization,omitempty"`
-	FetchedAt    *time.Time `json:"fetched_at,omitempty"`
-	Stale        bool       `json:"stale"`
-	Error        string     `json:"error,omitempty"`
+	Inventory    CollectorStatus `json:"inventory"`
+	Logs         CollectorStatus `json:"logs"`
+	Audit        CollectorStatus `json:"audit"`
+	Paired       bool            `json:"paired"`
+	URL          string          `json:"url,omitempty"`
+	Organization string          `json:"organization,omitempty"`
+	FetchedAt    *time.Time      `json:"fetched_at,omitempty"`
+	Stale        bool            `json:"stale"`
+	Error        string          `json:"error,omitempty"`
+}
+
+// CollectorStatus has independently owned freshness and fixed error reasons.
+type CollectorStatus struct {
+	LastSuccess *time.Time `json:"last_success,omitempty"`
+	Error       string     `json:"error,omitempty"`
+	Stale       bool       `json:"stale"`
+}
+
+func collectorView(s CollectorStatus, now time.Time) CollectorStatus {
+	s.Stale = s.LastSuccess == nil || now.Sub(*s.LastSuccess) > StaleAfter || s.Error == "unauthorized"
+	return s
 }

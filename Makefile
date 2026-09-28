@@ -7,8 +7,9 @@ build-web:
 	@cd web && npm ci && npm run build
 
 build:
-	@echo "==> Compiling kypulse binary..."
+	@echo "==> Compiling kypulse binaries..."
 	@go build -o kypulse ./cmd/server
+	@go build -o kypulse-send ./cmd/kypulse-send
 
 test:
 	@echo "==> Running test suite..."
@@ -52,4 +53,4 @@ docker-build:
 	@docker build -t kypulse .
 
 clean:
-	@rm -rf kypulse web/dist web/node_modules data/ backups/ coverage.out
+	@rm -rf kypulse kypulse-send web/dist web/node_modules data/ backups/ coverage.out

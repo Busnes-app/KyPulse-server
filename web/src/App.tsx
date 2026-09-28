@@ -3,6 +3,8 @@ import { AppHeader } from './components/AppHeader';
 import { AlertBar } from './components/AlertBar';
 import { Status } from './pages/Status';
 import { Alerts } from './pages/Alerts';
+import { Logs } from './pages/Logs';
+import { Activity } from './pages/Activity';
 import { AppDetail } from './pages/AppDetail';
 import { Login } from './pages/Login';
 import { ChangePassword } from './pages/ChangePassword';
@@ -75,14 +77,20 @@ export const App: React.FC = () => {
     return () => window.clearInterval(timer);
   }, [signedIn, refreshStatus]);
 
-  // A viewer typing #/backup lands on Status; unknown paths do too.
+  // Viewers deep-linking to an admin page land on Status; unknown paths do too.
   const isAdmin = user?.role === 'admin';
   useEffect(() => {
     if (!signedIn) return;
-    const known = ['status', 'alerts', 'apps', 'settings', 'backup'];
+    const known = ['status', 'alerts', 'apps', 'settings', 'backup', 'logs', 'activity'];
     const head = route.parts[0] ?? 'status';
-    if (!known.includes(head) || (head === 'backup' && !isAdmin) || (head === 'apps' && route.parts.length !== 2)) navigate('/status');
+    if (!known.includes(head) || (['backup', 'logs', 'activity'].includes(head) && !isAdmin) || (head === 'apps' && route.parts.length !== 2)) navigate('/status');
   }, [signedIn, isAdmin, route]);
+
+  useEffect(() => {
+    const denied = () => { setUser(null); setStatus(null); setNotice('Session or administrator access ended. Sign in again.'); };
+    window.addEventListener('logs-auth-denied', denied);
+    return () => window.removeEventListener('logs-auth-denied', denied);
+  }, []);
 
   const handleLogout = async () => {
     await secureFetch('/api/auth/logout', { method: 'POST' });
@@ -136,7 +144,9 @@ export const App: React.FC = () => {
         <AlertBar status={status} loading={statusLoading} isAdmin={isAdmin} />
         {head === 'status' && <Status user={user} onChanged={refreshStatus} />}
         {head === 'alerts' && <Alerts user={user} />}
-        {head === 'apps' && route.parts[1] && <AppDetail key={route.parts[1]} id={route.parts[1]} user={user} onChanged={refreshStatus} />}
+        {head === 'apps' && route.parts[1] && <AppDetail key={`${route.parts[1]}:${user.id}:${user.role}`} id={route.parts[1]} user={user} onChanged={refreshStatus} />}
+        {head === 'logs' && isAdmin && <Logs user={user} />}
+        {head === 'activity' && isAdmin && <Activity user={user} />}
         {head === 'backup' && isAdmin && <Backup />}
         {head === 'settings' && <Settings settings={settings} user={user} onChanged={refreshStatus} />}
       </main>

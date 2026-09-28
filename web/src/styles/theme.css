@@ -476,3 +476,12 @@ dialog.modal-window::backdrop {
 .form-error { color: var(--danger); font-size: 13px; margin: 0 0 12px; }
 .form-ok { color: var(--success); font-size: 13px; margin: 0 0 12px; }
 @media (max-width: 720px) { .alert-bar { padding: 8px 12px; } .alert-bar-link { margin-left: 0; } }
+
+/* Stored text stays within the page at phone widths, including unbroken raw lines. */
+.log-filters { display: flex; flex-wrap: wrap; align-items: end; gap: 12px; margin: 16px 0; }
+.log-filters label { display: flex; flex-direction: column; gap: 5px; max-width: 100%; }
+.log-filters input, .log-filters select { max-width: 100%; min-width: 0; }
+.log-lines { list-style: none; margin: 16px 0; padding: 0; }
+.log-lines li { border-bottom: 1px solid var(--line); padding: 12px 0; overflow-wrap: anywhere; }
+.log-lines pre, .log-command { white-space: pre-wrap; overflow-wrap: anywhere; font-size: 13px; }
+.log-lines summary { cursor: pointer; }

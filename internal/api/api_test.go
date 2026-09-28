@@ -14,7 +14,6 @@ import (
 	"net/http"
 	"net/http/httptest"
 	"os"
-	"path/filepath"
 	"strconv"
 	"strings"
 	"testing"
@@ -433,10 +432,10 @@ func TestExportCapsuleRejectsAnOversizedPayload(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	// A real database one blob past the per-member cap: the collector snapshots with VACUUM
-	// INTO, so the file has to be a database, and zeroblob makes a large one instantly.
-	big := filepath.Join(t.TempDir(), "oversized.db")
-	db, err := sql.Open("sqlite", big)
+	// Grow the migrated database past the per-member cap. The collector sanitizes
+	// log tables before sealing, so an unrelated hand-built database cannot reach
+	// the size check.
+	db, err := sql.Open("sqlite", cfg.Database.DSN)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -444,9 +443,6 @@ func TestExportCapsuleRejectsAnOversizedPayload(t *testing.T) {
 		t.Fatal(err)
 	}
 	_ = db.Close()
-	cfg.Database.Driver = "sqlite"
-	cfg.Database.DSN = big
-
 	w := adminPost(t, srv, loginAs(t, srv, st, "alice", "admin"), "/api/backup/export-capsule")
 
 	if w.Code != http.StatusRequestEntityTooLarge {

@@ -27,6 +27,12 @@ type Config struct {
 	Alerts   AlertsConfig   `json:"alerts"`
 	Poll     PollConfig     `json:"poll"`
 	KyYard   KyYardConfig   `json:"kyyard"`
+	Logs     LogsConfig     `json:"logs"`
+}
+
+// LogsConfig limits retained log and activity payload bytes.
+type LogsConfig struct {
+	MaxBytes int64 `json:"max_bytes"`
 }
 
 // ServerConfig defines HTTP and network settings.
@@ -202,6 +208,16 @@ func LoadFromEnv() (*Config, error) {
 	if pollWorkers < 1 || pollWorkers > 32 {
 		return nil, fmt.Errorf("KYPULSE_POLL_WORKERS: must be 1..32, got %d", pollWorkers)
 	}
+	logMaxBytes := int64(1 << 30)
+	if raw, ok := os.LookupEnv("KYPULSE_LOG_MAX_BYTES"); ok {
+		logMaxBytes, err = strconv.ParseInt(strings.TrimSpace(raw), 10, 64)
+		if err != nil {
+			return nil, fmt.Errorf("KYPULSE_LOG_MAX_BYTES: %w", err)
+		}
+	}
+	if logMaxBytes < 128<<10 {
+		return nil, fmt.Errorf("KYPULSE_LOG_MAX_BYTES: must be at least %d bytes", 128<<10)
+	}
 
 	cfg := &Config{
 		Server: ServerConfig{
@@ -258,6 +274,7 @@ func LoadFromEnv() (*Config, error) {
 		Alerts: AlertsConfig{AllowHTTP: getEnvBool("KYPULSE_ALERT_ALLOW_HTTP", false)},
 		Poll:   PollConfig{Workers: pollWorkers},
 		KyYard: KyYardConfig{AllowHTTP: getEnvBool("KYPULSE_KYYARD_ALLOW_HTTP", false)},
+		Logs:   LogsConfig{MaxBytes: logMaxBytes},
 	}
 
 	return cfg, nil

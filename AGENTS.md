@@ -13,7 +13,8 @@ Design authority: `docs/superpowers/specs/2026-09-26-kypulse-design.md`. Plans l
 
 - `cmd/server/`: process entry, CLI subcommands (`init-admin`, `backup-drill`,
   `export-capsule`, `deposit`, `restore`, `audit-verify`, `version`), the log bridge, the
-  backup scheduler and the KyYard pull loop.
+  backup scheduler, KyYard inventory loop and separately joined log/audit collection worker.
+- `cmd/kypulse-send/`: sender pairing CLI and file/stdin/Docker readers.
 - `internal/`: one package per concern; each has its own AGENTS.md.
 - `internal/egress`, `internal/poller`, `internal/alerts`, `internal/notify`, `internal/monitor`,
   `internal/kyyard`: the monitoring backend; each has its own AGENTS.md.
@@ -32,6 +33,15 @@ Design authority: `docs/superpowers/specs/2026-09-26-kypulse-design.md`. Plans l
   write are admin-only.
 - Every process line is a JSON record on stderr through `ky-primitives/logging`; there is no
   log file and no log socket.
+- Sender CLI SIGINT/SIGTERM and reader failures allow a five-second delivery drain, then
+  cancel HTTP/retry waits and join readers. Clean EOF alone continues normal retries.
+  Reader failures surface after draining; unacknowledged positions remain unchanged.
+- Collected Logs and imported Activity are admin-only, including app-detail queries.
+  Sender Bearer tokens authenticate only log ingestion; source identity and watched-target
+  binding come from the claimed token, never a request body. Revocation ends ingestion.
+- Collected logs and imported activity share seven-day receive-time retention and the
+  `KYPULSE_LOG_MAX_BYTES` logical payload budget. SQLite capsules exclude both tables and
+  pending pairing codes and collection cursors; source identities and token hashes remain.
 - `GET /healthz` is public and is what an external monitor watches; kyPulse does not monitor
   itself.
 - The audit trail is a keyed hash chain (`internal/store/audit.go`); a log the store cannot
@@ -65,10 +75,13 @@ Design authority: `docs/superpowers/specs/2026-09-26-kypulse-design.md`. Plans l
 - `internal/sso/AGENTS.md`: KySignOn, OIDC, SAML SP, `RoleFor`.
 - `internal/store/AGENTS.md`: SQLite/Postgres DAL, migrations, roles.
 - `internal/testdb/AGENTS.md`: isolated test databases.
+- `internal/logstore/AGENTS.md`: bounded log parsing, display sanitization and activity burst rules.
+- `internal/ingest/AGENTS.md`: bounded NDJSON batch validation.
+- `internal/sender/AGENTS.md`: sender pairing, owned state, bounded delivery and checkpoints.
 - `internal/egress/AGENTS.md`: the one outbound HTTP client.
 - `internal/poller/AGENTS.md`: health polling and response normalisation.
 - `internal/alerts/AGENTS.md`: alert thresholds, transitions, reminders, silences.
 - `internal/notify/AGENTS.md`: webhook presets and delivery retries.
 - `internal/monitor/AGENTS.md`: glues polling, alerts and delivery to the store.
-- `internal/kyyard/AGENTS.md`: KyYard pairing, bearer client, endpoint/inventory/sample reads.
+- `internal/kyyard/AGENTS.md`: KyYard pairing, inventory/sample snapshots, durable log/audit collection.
 - `web/AGENTS.md`: PWA, themes, ky-ui vendoring, browser regressions.
