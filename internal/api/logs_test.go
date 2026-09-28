@@ -198,7 +198,7 @@ func TestLogReadsAreAdminOnlyAndSanitized(t *testing.T) {
 	for i := 0; i < 201; i++ {
 		raw := fmt.Sprintf("entry-%03d", i)
 		if i == 0 {
-			raw = "literal %_ [31mred\x7f"
+			raw = "literal %_ \x1b[31mred\x7f"
 		}
 		line := store.LogLine{Time: now, ReceivedAt: now, App: "app", Message: raw, Raw: raw}
 		if err := st.Logs().Append(context.Background(), "", store.LogBatch{Logs: []store.LogLine{line}}, 1<<30); err != nil {
