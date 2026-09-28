@@ -23,7 +23,8 @@ func pairedLogSource(t *testing.T, st store.Store) (string, store.LogSource) {
 	t.Helper()
 	token := "log-token-" + strings.ReplaceAll(t.Name(), "/", "-")
 	hash := sha256.Sum256([]byte(token))
-	code := "log-code-" + token
+	codeHash := sha256.Sum256([]byte("log-code-" + token))
+	code := hex.EncodeToString(codeHash[:])
 	if err := st.Sources().CreateCode(context.Background(), code, "", time.Now().Add(time.Minute)); err != nil {
 		t.Fatal(err)
 	}
