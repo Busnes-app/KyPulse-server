@@ -1,6 +1,7 @@
 package main
 
 import (
+	"bytes"
 	"context"
 	"encoding/binary"
 	"encoding/json"
@@ -10,13 +11,16 @@ import (
 	"net"
 	"net/http"
 	"net/http/httptest"
+	"os"
 	"path/filepath"
 	"strings"
 	"sync/atomic"
+	"syscall"
 	"testing"
 	"time"
 
 	"github.com/Busnes-app/ky-primitives/keyfile"
+	"github.com/Busnes-app/ky-primitives/logging"
 	"github.com/Busnes-app/kypulse-server/internal/egress"
 	"github.com/Busnes-app/kypulse-server/internal/ingest"
 	"github.com/Busnes-app/kypulse-server/internal/sender"
@@ -55,7 +59,7 @@ func TestCLIReaderErrorSurfaces(t *testing.T) {
 	if err := keyfile.Store(filepath.Join(dir, "token"), make([]byte, 32), keyfile.Hex); err != nil {
 		t.Fatal(err)
 	}
-	if err := runWith([]string{"stdin", "--state-dir", dir}, failedStdin{}, &fakeHTTP{}); err == nil || !strings.Contains(err.Error(), "source broke") {
+	if err := runWith([]string{"stdin", "--state-dir", dir}, failedStdin{}, &fakeHTTP{}, nil); err == nil || !strings.Contains(err.Error(), "source broke") {
 		t.Fatalf("reader error: %v", err)
 	}
 }
@@ -72,7 +76,7 @@ func TestCLIStdinFinalPartialToIngest(t *testing.T) {
 	r, w := io.Pipe()
 	go func() { _, _ = io.WriteString(w, "first\nfinal partial"); _ = w.Close() }()
 	fake := &fakeHTTP{}
-	if err := runWith([]string{"stdin", "--state-dir", dir}, r, fake); err != nil {
+	if err := runWith([]string{"stdin", "--state-dir", dir}, r, fake, nil); err != nil {
 		t.Fatal(err)
 	}
 	if len(fake.rows) != 2 || fake.rows[0].Line != "first" || fake.rows[1].Line != "final partial" {
@@ -96,7 +100,7 @@ func TestCLITerminalFailureJoinsStdin(t *testing.T) {
 	r, w := io.Pipe()
 	defer w.Close()
 	done := make(chan error, 1)
-	go func() { done <- runWith([]string{"stdin", "--state-dir", dir}, r, rejectHTTP{}) }()
+	go func() { done <- runWith([]string{"stdin", "--state-dir", dir}, r, rejectHTTP{}, nil) }()
 	_, _ = io.WriteString(w, "line\n")
 	select {
 	case err := <-done:
@@ -121,7 +125,7 @@ func TestDockerContainerLimitBeforeSocketAccess(t *testing.T) {
 	for i := range 33 {
 		names = append(names, fmt.Sprintf("container-%d", i))
 	}
-	err := runWith([]string{"docker", "--state-dir", dir, "--container", strings.Join(names, ","), "--socket", "/missing/docker.sock"}, nil, &fakeHTTP{})
+	err := runWith([]string{"docker", "--state-dir", dir, "--container", strings.Join(names, ","), "--socket", "/missing/docker.sock"}, nil, &fakeHTTP{}, nil)
 	if err == nil || !strings.Contains(err.Error(), "max 32") {
 		t.Fatalf("limit: %v", err)
 	}
@@ -191,7 +195,7 @@ func TestDockerReadersCompleteIndependently(t *testing.T) {
 	fake := &fakeHTTP{}
 	done := make(chan error, 1)
 	go func() {
-		done <- runWith([]string{"docker", "--state-dir", dir, "--socket", socket, "--container", "one,two"}, nil, fake)
+		done <- runWith([]string{"docker", "--state-dir", dir, "--socket", socket, "--container", "one,two"}, nil, fake, nil)
 	}()
 	for _, ch := range []<-chan struct{}{firstDone, secondStarted} {
 		select {
@@ -216,5 +220,169 @@ func TestDockerReadersCompleteIndependently(t *testing.T) {
 	}
 	if firstCalls.Load() != 1 || secondCalls.Load() != 1 || len(fake.rows) != 2 {
 		t.Fatalf("calls=%d/%d rows=%+v", firstCalls.Load(), secondCalls.Load(), fake.rows)
+	}
+}
+
+type shutdownHTTP struct {
+	status   int
+	calls    int
+	started  chan struct{}
+	canceled chan struct{}
+}
+
+func (h *shutdownHTTP) Post(ctx context.Context, _, _ string, _ []byte, _ map[string]string) (*egress.Response, error) {
+	h.calls++
+	if h.calls == 1 {
+		close(h.started)
+	}
+	if h.status == 0 {
+		<-ctx.Done()
+		close(h.canceled)
+		return nil, ctx.Err()
+	}
+	return &egress.Response{StatusCode: h.status, Header: http.Header{"Retry-After": []string{"300"}}}, nil
+}
+
+func cliState(t *testing.T) string {
+	t.Helper()
+	dir := filepath.Join(t.TempDir(), "state")
+	state := sender.State{URL: "https://example.com", SourceID: "test", Positions: map[string]sender.Position{"stdin:stdin": {Kind: "stdin", Input: "stdin", Offset: 4}}}
+	if err := sender.SaveState(dir, state); err != nil {
+		t.Fatal(err)
+	}
+	if err := keyfile.Store(filepath.Join(dir, "token"), bytes.Repeat([]byte{0xab}, 32), keyfile.Hex); err != nil {
+		t.Fatal(err)
+	}
+	return dir
+}
+
+func TestCLISignalDuringOutage(t *testing.T) {
+	for _, status := range []int{503, 429, 0} {
+		t.Run(fmt.Sprint(status), func(t *testing.T) {
+			dir := cliState(t)
+			before, err := os.ReadFile(filepath.Join(dir, "positions.json"))
+			if err != nil {
+				t.Fatal(err)
+			}
+			var logs bytes.Buffer
+			logger, err := logging.New(logging.Config{App: "kypulse-send", Out: &logs})
+			if err != nil {
+				t.Fatal(err)
+			}
+			h := &shutdownHTTP{status: status, started: make(chan struct{}), canceled: make(chan struct{})}
+			input := io.ReadCloser(io.NopCloser(strings.NewReader("unsent\n")))
+			if status == 429 {
+				r, w := io.Pipe()
+				defer w.Close()
+				input = r
+				go func() { _, _ = io.WriteString(w, strings.Repeat("unsent\n", 500)) }()
+			}
+			done := make(chan error, 1)
+			go func() {
+				done <- runWith([]string{"stdin", "--state-dir", dir}, input, h, logger)
+			}()
+			select {
+			case <-h.started:
+			case <-time.After(3 * time.Second):
+				t.Fatal("no POST")
+			}
+			started := time.Now()
+			if err := syscall.Kill(os.Getpid(), syscall.SIGTERM); err != nil {
+				t.Fatal(err)
+			}
+			select {
+			case err := <-done:
+				if err != nil {
+					t.Fatalf("signal shutdown: %v", err)
+				}
+			case <-time.After(7 * time.Second):
+				t.Fatal("SIGTERM did not stop delivery during outage")
+			}
+			if status != 0 {
+				found := false
+				for _, line := range strings.Split(strings.TrimSpace(logs.String()), "\n") {
+					var event map[string]any
+					if err := json.Unmarshal([]byte(line), &event); err != nil {
+						t.Fatalf("invalid JSON event %q: %v", line, err)
+					}
+					if event["event"] == "sender_delivery_retry" {
+						found = true
+					}
+				}
+				if !found || strings.Contains(logs.String(), strings.Repeat("ab", 32)) || strings.Contains(logs.String(), "Bearer") {
+					t.Fatalf("missing retry or leaked credentials: %s", logs.String())
+				}
+			}
+			if elapsed := time.Since(started); elapsed < 4*time.Second {
+				t.Fatalf("drain cut short: %v", elapsed)
+			}
+			if status == 0 {
+				select {
+				case <-h.canceled:
+				default:
+					t.Fatal("HTTP was not joined before return")
+				}
+			}
+			after, err := os.ReadFile(filepath.Join(dir, "positions.json"))
+			if err != nil || !bytes.Equal(before, after) {
+				t.Fatalf("unacknowledged checkpoint changed: %s %v", after, err)
+			}
+		})
+	}
+}
+
+func TestCLIReaderErrorDuringOutage(t *testing.T) {
+	dir := cliState(t)
+	h := &shutdownHTTP{status: 503, started: make(chan struct{})}
+	done := make(chan error, 1)
+	input := io.NopCloser(io.MultiReader(strings.NewReader("unsent\n"), failedStdin{}))
+	go func() { done <- runWith([]string{"stdin", "--state-dir", dir}, input, h, nil) }()
+	select {
+	case err := <-done:
+		if err == nil || !strings.Contains(err.Error(), "source broke") {
+			t.Fatalf("reader error lost: %v", err)
+		}
+	case <-time.After(7 * time.Second):
+		t.Fatal("reader error hidden by outage")
+	}
+	state, _, err := sender.LoadState(dir)
+	if err != nil || state.Positions["stdin:stdin"].Offset != 4 {
+		t.Fatalf("checkpoint: %+v %v", state, err)
+	}
+}
+
+type signalHTTP struct{ fakeHTTP }
+
+func (h *signalHTTP) Post(ctx context.Context, url, contentType string, body []byte, headers map[string]string) (*egress.Response, error) {
+	resp, err := h.fakeHTTP.Post(ctx, url, contentType, body, headers)
+	if len(h.rows) == 1 {
+		return resp, syscall.Kill(os.Getpid(), syscall.SIGTERM)
+	}
+	return resp, err
+}
+
+func TestCLISignalFlushesFilePartial(t *testing.T) {
+	dir := cliState(t)
+	path := filepath.Join(t.TempDir(), "input.log")
+	if err := os.WriteFile(path, []byte("first\nfinal partial"), 0600); err != nil {
+		t.Fatal(err)
+	}
+	h := &signalHTTP{}
+	done := make(chan error, 1)
+	go func() { done <- runWith([]string{"file", "--state-dir", dir, "--path", path}, nil, h, nil) }()
+	select {
+	case err := <-done:
+		if err != nil {
+			t.Fatal(err)
+		}
+	case <-time.After(4 * time.Second):
+		t.Fatal("partial file did not drain promptly")
+	}
+	if len(h.rows) != 2 || h.rows[1].Line != "final partial" {
+		t.Fatalf("rows: %+v", h.rows)
+	}
+	state, _, err := sender.LoadState(dir)
+	if err != nil || state.Positions["file:"+path].Offset != 19 {
+		t.Fatalf("checkpoint: %+v %v", state, err)
 	}
 }

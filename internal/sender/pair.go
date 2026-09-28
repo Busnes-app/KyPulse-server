@@ -26,7 +26,7 @@ func Pair(ctx context.Context, h HTTP, dir, rawURL, code, name string) (State, e
 		return State{}, err
 	}
 	u, err := url.Parse(rawURL)
-	if err != nil || u.Path != "" && u.Path != "/" || u.RawQuery != "" || u.Fragment != "" {
+	if err != nil || u.Path != "" && u.Path != "/" || strings.ContainsAny(rawURL, "?#") {
 		return State{}, errors.New("sender: URL must be a server origin")
 	}
 	if len(code) != 6 || strings.Trim(code, "0123456789") != "" {

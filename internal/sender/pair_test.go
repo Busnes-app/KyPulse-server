@@ -3,6 +3,7 @@ package sender
 import (
 	"context"
 	"encoding/hex"
+	"errors"
 	"os"
 	"path/filepath"
 	"strings"
@@ -79,5 +80,18 @@ func TestPairScreenCommandOrigin(t *testing.T) {
 	state, err := Pair(context.Background(), h, filepath.Join(t.TempDir(), "state"), origin, "123456", "screen-source")
 	if err != nil || !called || state.URL != origin {
 		t.Fatalf("screen origin %q: state=%+v called=%v err=%v", origin, state, called, err)
+	}
+}
+
+func TestPairRejectsQueryAndFragmentDelimiters(t *testing.T) {
+	for _, suffix := range []string{"?", "#", "/?", "/#", "?a=b", "#fragment"} {
+		t.Run(suffix, func(t *testing.T) {
+			called := false
+			h := postFunc(func([]byte) (*egress.Response, error) { called = true; return nil, errors.New("unexpected claim") })
+			_, err := Pair(context.Background(), h, filepath.Join(t.TempDir(), "state"), "https://example.com"+suffix, "123456", "host")
+			if err == nil || called {
+				t.Fatalf("origin accepted: err=%v called=%v", err, called)
+			}
+		})
 	}
 }

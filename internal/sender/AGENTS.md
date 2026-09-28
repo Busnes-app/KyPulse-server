@@ -6,7 +6,8 @@ Pairs a source and delivers bounded NDJSON batches with acknowledged input posit
 
 ## Ownership
 
-`pair.go` claims a source. `state.go` owns owner-only state, token and Linux lifetime lock.
+`pair.go` claims a source from an HTTPS origin without query/fragment delimiters.
+`state.go` owns owner-only state, token and Linux lifetime lock.
 `sender.go` owns queueing, overflow markers, retry and checkpoint transitions. `file.go`,
 `stdin.go` and `docker.go` feed `Item` values into `Run`.
 
@@ -30,6 +31,7 @@ Pairs a source and delivers bounded NDJSON batches with acknowledged input posit
   records and emits a marker, so delivery has no unconditional no-loss guarantee.
 - `Run` freezes one batch per request. A 2xx acknowledges its records and marker; only then
   does it atomically save positions. A failed save stops delivery, allowing replay.
+  Every exit cancels and joins the active delivery worker before releasing the state lock.
 - The queue and in-flight batch share a 16 MiB budget. Overflow drops oldest queued
   records and sends a marker with the latest position of each discarded stream.
 - Production HTTP uses `egress.Client` with HTTPS, guarded destinations, no redirects and

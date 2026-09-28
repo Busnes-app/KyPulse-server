@@ -85,7 +85,9 @@ func TestRetrySameFrozenBatchAndCancel(t *testing.T) {
 	items := make(chan Item, 1)
 	items <- Item{Record: ingest.Record{Line: "a"}, Position: Position{Kind: "stdin", Input: "stdin", Ordinal: 1}}
 	close(items)
-	_ = s.Run(ctx, items)
+	if err := s.Run(ctx, items); err != nil && !errors.Is(err, context.Canceled) {
+		t.Fatalf("unexpected Run error: %v", err)
+	}
 	if calls != 2 {
 		t.Fatalf("calls=%d", calls)
 	}
@@ -327,13 +329,24 @@ func TestCancellationStopsRetry(t *testing.T) {
 func TestDockerStreamsShareQueueButCheckpointIndependently(t *testing.T) {
 	dir := filepath.Join(t.TempDir(), "state")
 	calls := 0
+	failed := make(chan struct{})
+	release := make(chan struct{})
+	defer close(release)
 	s := Sender{HTTP: postFunc(func(body []byte) (*egress.Response, error) {
 		calls++
 		if calls == 2 {
 			return &egress.Response{StatusCode: 503}, nil
 		}
 		return &egress.Response{StatusCode: 204}, nil
-	}), StateDir: dir, Token: make([]byte, 32), State: State{URL: "https://example.com", SourceID: "one", Positions: map[string]Position{}}, wait: func(context.Context, time.Duration) error { return nil }}
+	}), StateDir: dir, Token: make([]byte, 32), State: State{URL: "https://example.com", SourceID: "one", Positions: map[string]Position{}}, wait: func(ctx context.Context, _ time.Duration) error {
+		close(failed)
+		select {
+		case <-release:
+			return nil
+		case <-ctx.Done():
+			return ctx.Err()
+		}
+	}}
 	prepareSender(t, &s)
 	items := make(chan Item, 501)
 	quiet := Position{Kind: "docker", Input: "quiet", Stream: "stderr", Timestamp: "2026-09-27T12:00:00Z", Ordinal: 1}
@@ -342,7 +355,24 @@ func TestDockerStreamsShareQueueButCheckpointIndependently(t *testing.T) {
 		items <- Item{Record: ingest.Record{Line: "busy"}, Position: Position{Kind: "docker", Input: "busy", Stream: "stdout", Timestamp: "2026-09-27T12:00:00Z", Ordinal: i}}
 	}
 	close(items)
-	if err := s.Run(context.Background(), items); err != nil {
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
+	done := make(chan error, 1)
+	go func() { done <- s.Run(ctx, items) }()
+	select {
+	case <-failed:
+	case <-time.After(3 * time.Second):
+		t.Fatal("failed batch was not held")
+	}
+	held, _, err := LoadState(dir)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if held.Positions[PositionKey(quiet)] != quiet || held.Positions["docker:busy:stdout"].Ordinal != 499 || len(held.Positions) != 2 {
+		t.Fatalf("unacknowledged busy position advanced: %+v", held.Positions)
+	}
+	release <- struct{}{}
+	if err := <-done; err != nil {
 		t.Fatal(err)
 	}
 	saved, _, err := LoadState(dir)

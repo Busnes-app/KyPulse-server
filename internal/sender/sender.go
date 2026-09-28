@@ -104,6 +104,8 @@ func makeBatch(queue []queued, count uint64, positions map[string]Position) batc
 }
 
 func (s *Sender) Run(ctx context.Context, input <-chan Item) error {
+	ctx, cancel := context.WithCancel(ctx)
+	defer cancel()
 	lock, err := Lock(s.StateDir)
 	if err != nil {
 		return err
@@ -140,6 +142,13 @@ func (s *Sender) Run(ctx context.Context, input <-chan Item) error {
 	var used int
 	var active *batch
 	var done chan result
+	// Join the active request/retry before releasing state ownership.
+	defer func() {
+		cancel()
+		if done != nil {
+			<-done
+		}
+	}()
 	var tick <-chan time.Time
 	var startErr error
 	closed := false
@@ -233,6 +242,7 @@ func (s *Sender) Run(ctx context.Context, input <-chan Item) error {
 			tick = nil
 			start()
 		case r := <-done:
+			done = nil
 			if r.err != nil {
 				if s.Logger != nil {
 					s.Logger.Log(ctx, deliveryStopped, logging.Err(r.err))

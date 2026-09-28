@@ -127,6 +127,14 @@ has one merged raw stdout stream. A completed Docker follow response ends that r
 restart the sender to watch a later restart of that container. Other configured readers
 continue until their own streams complete.
 
+SIGINT/SIGTERM stops input and gives pending delivery up to five seconds to drain,
+including a file's terminal partial record. A reader error uses the same bounded drain
+and is returned to the operator. Expiry cancels the active request or retry wait; only
+acknowledged positions remain saved. Unsent stdin and buffered records are lost on exit,
+while file/Docker replay still depends on retained upstream history. Clean EOF without a
+signal continues delivery and retries normally. Retry, drop and delivery-stop diagnostics
+use the structured stderr logger.
+
 Docker socket access is root-equivalent. Prefer a read-only socket proxy exposing only
 `/version`, versioned container inspect and logs routes. Mounting a Docker socket with `:ro`
 does not make its API read-only. The sender accepts only a local Unix socket, never a remote

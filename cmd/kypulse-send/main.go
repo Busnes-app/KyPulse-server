@@ -20,6 +20,8 @@ import (
 	"github.com/Busnes-app/kypulse-server/internal/sender"
 )
 
+const shutdownGrace = 5 * time.Second
+
 var fatalEvent = logging.DeclareEvent("sender_fatal", "sender exiting after an error", slog.LevelError)
 
 func main() {
@@ -35,17 +37,13 @@ func main() {
 	if err != nil {
 		os.Exit(1)
 	}
-	if err := run(os.Args[1:]); err != nil {
+	if err := runWith(os.Args[1:], os.Stdin, nil, lg); err != nil {
 		lg.Log(context.Background(), fatalEvent, logging.Err(err))
 		os.Exit(1)
 	}
 }
 
-func run(args []string) error {
-	return runWith(args, os.Stdin, nil)
-}
-
-func runWith(args []string, stdin io.ReadCloser, http sender.HTTP) error {
+func runWith(args []string, stdin io.ReadCloser, http sender.HTTP, logger *logging.Logger) error {
 	if len(args) == 0 {
 		return errors.New("usage: kypulse-send pair|file|docker|stdin")
 	}
@@ -96,7 +94,7 @@ func runWith(args []string, stdin io.ReadCloser, http sender.HTTP) error {
 				return err
 			}
 		}
-		return runInput(args[0], *path, *containers, *socket, *stateDir, stdin, http)
+		return runInput(args[0], *path, *containers, *socket, *stateDir, stdin, http, logger)
 	}
 	if *path != "" || *containers != "" || *socket != "/var/run/docker.sock" {
 		return errors.New("sender: input flags are only valid for inputs")
@@ -111,7 +109,7 @@ func runWith(args []string, stdin io.ReadCloser, http sender.HTTP) error {
 	return nil
 }
 
-func runInput(kind, path, containers, socket, dir string, stdin io.ReadCloser, http sender.HTTP) error {
+func runInput(kind, path, containers, socket, dir string, stdin io.ReadCloser, http sender.HTTP, logger *logging.Logger) error {
 	state, token, err := sender.LoadState(dir)
 	if err != nil {
 		return err
@@ -189,19 +187,55 @@ func runInput(kind, path, containers, socket, dir string, stdin io.ReadCloser, h
 			readerDone <- first
 		}
 	}()
-	s := sender.Sender{HTTP: http, StateDir: dir, Token: token, State: state}
-	deliveryErr := s.Run(deliveryCtx, items)
-	if deliveryErr != nil {
-		cancelReader()
-		closeStdin()
-		<-readerDone
-		return deliveryErr
+	s := sender.Sender{HTTP: http, StateDir: dir, Token: token, State: state, Logger: logger}
+	deliveryDone := make(chan error, 1)
+	go func() { deliveryDone <- s.Run(deliveryCtx, items) }()
+	var readerErr error
+	var drain <-chan time.Time
+	var drainTimer *time.Timer
+	defer func() {
+		if drainTimer != nil {
+			drainTimer.Stop()
+		}
+	}()
+	// Only shutdown or a reader failure bounds delivery; clean EOF keeps retrying.
+	startDrain := func() {
+		if drainTimer == nil {
+			drainTimer = time.NewTimer(shutdownGrace)
+			drain = drainTimer.C
+		}
 	}
-	readerErr := <-readerDone
-	cancelReader()
-	closeStdin()
-	if readerErr != nil && signalCtx.Err() == nil {
-		return readerErr
+	signalDone := signalCtx.Done()
+	for {
+		select {
+		case <-signalDone:
+			signalDone = nil
+			startDrain()
+		case readerErr = <-readerDone:
+			readerDone = nil
+			if readerErr != nil {
+				cancelReader()
+				startDrain()
+			}
+		case <-drain:
+			drain = nil
+			cancelDelivery()
+		case deliveryErr := <-deliveryDone:
+			cancelReader()
+			closeStdin()
+			if readerDone != nil {
+				joinedErr := <-readerDone
+				if deliveryErr == nil {
+					readerErr = joinedErr
+				}
+			}
+			if readerErr != nil && signalCtx.Err() == nil {
+				return readerErr
+			}
+			if signalCtx.Err() != nil && errors.Is(deliveryErr, context.Canceled) {
+				return nil
+			}
+			return deliveryErr
+		}
 	}
-	return nil
 }
