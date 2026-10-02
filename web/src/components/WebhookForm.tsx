@@ -4,7 +4,7 @@ import { ApiError, deleteWebhook, getWebhook, saveWebhook, testWebhook, timeLabe
 
 const presets = [
   { id: 'ntfy', label: 'ntfy', hint: 'Topic URL, e.g. https://ntfy.sh/kypulse. Token is optional (access token).' },
-  { id: 'gotify', label: 'Gotify', hint: 'Server URL. The app token goes in the Token field, never in the URL.' },
+  { id: 'gotify', label: 'Gotify', hint: 'Server URL. An app token is required in the Token field, never in the URL.' },
   { id: 'discord', label: 'Discord', hint: 'Channel webhook URL. No token.' },
   { id: 'generic', label: 'Generic JSON', hint: 'Any HTTPS endpoint; token is sent as a Bearer header when set.' },
 ];
@@ -12,7 +12,7 @@ const presets = [
 interface WebhookFormProps { onChanged: () => void }
 
 // WebhookForm configures the one outbound alert webhook. The token is write-only: the server
-// only reports whether one is saved, and an empty field keeps it.
+// only reports whether one is saved. An empty field keeps it for the same preset and origin.
 export const WebhookForm: React.FC<WebhookFormProps> = ({ onChanged }) => {
   const [info, setInfo] = useState<WebhookInfo | null>(null);
   const [preset, setPreset] = useState('ntfy');
@@ -93,22 +93,23 @@ export const WebhookForm: React.FC<WebhookFormProps> = ({ onChanged }) => {
       )}
       <div className="form-grid">
         <label>Preset
-          <select value={preset} onChange={(e) => setPreset(e.target.value)}>
+          <select value={preset} onChange={(e) => { setPreset(e.target.value); setClearToken(false); }}>
             {presets.map((p) => <option key={p.id} value={p.id}>{p.label}</option>)}
           </select>
         </label>
         <label>URL<input type="url" value={url} onChange={(e) => setUrl(e.target.value)} required placeholder="https://" /></label>
         <label>Token (write-only)
           <input type="password" autoComplete="off" value={token} onChange={(e) => setToken(e.target.value)} disabled={clearToken}
-            placeholder={info?.has_token ? 'saved; leave empty to keep' : 'none'} />
+            placeholder={info?.has_token ? 'saved; leave empty to keep' : preset === 'gotify' ? 'app token required' : 'none'} />
         </label>
-        {info?.has_token && (
+        {info?.has_token && preset !== 'gotify' && (
           <label style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
             <input type="checkbox" style={{ width: 'auto' }} checked={clearToken} onChange={(e) => setClearToken(e.target.checked)} />Remove the saved token
           </label>
         )}
       </div>
       {hint && <p className="dr-hint">{hint}</p>}
+      {info?.has_token && <p className="dr-hint">Leaving Token empty keeps the saved token only when the preset, URL scheme and host are unchanged.</p>}
       {message && <p className={message.kind === 'ok' ? 'form-ok' : 'form-error'} role={message.kind === 'ok' ? 'status' : 'alert'}>{message.text}</p>}
       <div className="dr-actions">
         <button type="submit" disabled={busy}>Save webhook</button>

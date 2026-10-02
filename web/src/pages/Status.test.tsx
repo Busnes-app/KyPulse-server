@@ -74,7 +74,7 @@ describe('Status', () => {
     expect(await screen.findByText(/No apps are watched yet/)).toBeTruthy();
   });
 
-  it('prefills an empty name when a KyYard datalist entry is picked', async () => {
+  it('prefills an empty name when a KyYard datalist entry is committed on blur', async () => {
     const fetchMock = stub([
       [/GET \/api\/targets$/, { targets: [] }],
       [/GET \/api\/kyyard\/containers$/, [{ link: 'ep_1/kyvault', endpoint_name: 'ep_1', name: 'kyvault', image: 'kyvault:latest', state: 'running' }]],
@@ -86,6 +86,8 @@ describe('Status', () => {
     expect(screen.queryByRole('button', { name: /Use/ })).toBeNull();
     await waitFor(() => expect(document.querySelector('#kyyard-suggestions option[value="ep_1/kyvault"]')).toBeTruthy());
     fireEvent.change(screen.getByLabelText('KyYard container'), { target: { value: 'ep_1/kyvault' } });
+    expect((screen.getByLabelText('Name') as HTMLInputElement).value).toBe('');
+    fireEvent.blur(screen.getByLabelText('KyYard container'));
     expect((screen.getByLabelText('Name') as HTMLInputElement).value).toBe('kyvault');
     expect((screen.getByLabelText('KyYard container') as HTMLInputElement).value).toBe('ep_1/kyvault');
     fireEvent.change(screen.getByLabelText('Health URL'), { target: { value: 'https://kyvault.lan/healthz' } });

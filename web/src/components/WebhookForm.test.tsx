@@ -81,6 +81,18 @@ describe('WebhookForm', () => {
     expect(screen.queryByRole('button', { name: 'Remove webhook' })).toBeNull();
   });
 
+  it('explains the required Gotify app token and surfaces server validation', async () => {
+    stub([[/^PUT \/api\/alerts\/webhook$/, { error: 'notify: Gotify app token is required' }, 400]]);
+    render(<WebhookForm onChanged={() => {}} />);
+    await screen.findByDisplayValue('https://ntfy.sh/kypulse');
+    fireEvent.change(screen.getByLabelText('Preset'), { target: { value: 'gotify' } });
+    expect(screen.getByText(/An app token is required/)).toBeTruthy();
+    expect(screen.getByText(/only when the preset, URL scheme and host are unchanged/)).toBeTruthy();
+    expect(screen.queryByLabelText(/Remove the saved token/)).toBeNull();
+    fireEvent.click(screen.getByRole('button', { name: 'Save webhook' }));
+    expect(await screen.findByRole('alert')).toHaveProperty('textContent', 'notify: Gotify app token is required');
+  });
+
   it('clears the form after the webhook is removed', async () => {
     stub([[/^DELETE \/api\/alerts\/webhook$/, null, 204]]);
     vi.stubGlobal('confirm', vi.fn(() => true));
