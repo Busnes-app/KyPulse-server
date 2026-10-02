@@ -184,12 +184,19 @@ func TestWebhookTokenIsWriteOnly(t *testing.T) {
 	if got := put(map[string]any{"preset": "gotify", "url": "https://gotify.lan/other", "token": ""}); got["has_token"] != true {
 		t.Fatalf("same host: %v", got)
 	}
-	// A different host must not inherit it.
-	if got := put(map[string]any{"preset": "gotify", "url": "https://gotify2.lan", "token": ""}); got["url"] != "https://gotify2.lan" || got["has_token"] != false {
-		t.Fatalf("changed host: %v", got)
+	// Gotify cannot move to another host without a new app token.
+	if w := doJSON(t, srv, "PUT", "/api/alerts/webhook", admin, map[string]any{"preset": "gotify", "url": "https://gotify2.lan", "token": ""}); w.Code != http.StatusBadRequest {
+		t.Fatalf("changed host without Gotify token: %d %s", w.Code, w.Body.String())
+	}
+	if got := decodeMap(t, do(t, srv, "GET", "/api/alerts/webhook", admin)); got["url"] != "https://gotify.lan/other" || got["has_token"] != true {
+		t.Fatalf("invalid save must preserve the working webhook: %v", got)
 	}
 	put(map[string]any{"preset": "gotify", "url": "https://gotify2.lan", "token": "gk-2"})
-	if got := put(map[string]any{"preset": "gotify", "url": "https://gotify2.lan", "clear_token": true}); got["has_token"] != false {
+	if w := doJSON(t, srv, "PUT", "/api/alerts/webhook", admin, map[string]any{"preset": "gotify", "url": "https://gotify2.lan", "clear_token": true}); w.Code != http.StatusBadRequest {
+		t.Fatalf("clearing required Gotify token: %d %s", w.Code, w.Body.String())
+	}
+	// Other presets may explicitly clear the token.
+	if got := put(map[string]any{"preset": "generic", "url": "https://gotify2.lan", "clear_token": true}); got["has_token"] != false {
 		t.Fatalf("clear_token: %v", got)
 	}
 	rows, _, _ := st.Audit().ListAuditRecords(context.Background(), 0, 50)
@@ -202,7 +209,7 @@ func TestWebhookTokenIsWriteOnly(t *testing.T) {
 			t.Errorf("webhook_set audit must name the host only: %q", row.Details)
 		}
 	}
-	if sets < 5 {
+	if sets < 4 {
 		t.Fatalf("webhook_set audit rows: %d", sets)
 	}
 	for _, bad := range []map[string]string{
@@ -219,6 +226,26 @@ func TestWebhookTokenIsWriteOnly(t *testing.T) {
 	}
 	if w := doJSON(t, srv, "POST", "/api/alerts/webhook/test", admin, nil); w.Code != http.StatusPreconditionFailed {
 		t.Fatalf("test without webhook: %d %s", w.Code, w.Body.String())
+	}
+}
+
+func TestWebhookSchemeChangeDoesNotCarrySavedToken(t *testing.T) {
+	srv, st, cfg := setupTestServer(t)
+	cfg.Alerts.AllowHTTP = true
+	admin := loginAs(t, srv, st, "alice", "admin")
+	for _, schemes := range [][2]string{{"https", "http"}, {"http", "https"}} {
+		oldURL, newURL := schemes[0]+"://hook.lan:8443/old", schemes[1]+"://hook.lan:8443/new"
+		w := doJSON(t, srv, "PUT", "/api/alerts/webhook", admin, map[string]string{"preset": "generic", "url": oldURL, "token": "saved-secret"})
+		if w.Code != http.StatusOK {
+			t.Fatalf("initial save: %d %s", w.Code, w.Body.String())
+		}
+		w = doJSON(t, srv, "PUT", "/api/alerts/webhook", admin, map[string]string{"preset": "generic", "url": newURL})
+		if w.Code != http.StatusOK {
+			t.Fatalf("changed scheme: %d %s", w.Code, w.Body.String())
+		}
+		if got := decodeMap(t, do(t, srv, "GET", "/api/alerts/webhook", admin)); got["has_token"] != false || got["url"] != newURL {
+			t.Fatalf("changed scheme must not carry a saved token: %v", got)
+		}
 	}
 }
 

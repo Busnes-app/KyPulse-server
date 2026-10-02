@@ -355,11 +355,12 @@ type webhookRequest struct {
 }
 
 // sameReceiver reports whether a stored token may ride along to the new config: same preset
-// and same URL host, so an edit cannot hand the token to a different server.
+// and same URL scheme and host, so an edit cannot hand the token to a different receiver
+// or silently downgrade it to plaintext HTTP.
 func sameReceiver(old notify.Config, preset, rawURL string) bool {
 	a, errA := url.Parse(old.URL)
 	b, errB := url.Parse(rawURL)
-	return errA == nil && errB == nil && old.Preset == notify.Preset(preset) && a.Host == b.Host
+	return errA == nil && errB == nil && old.Preset == notify.Preset(preset) && a.Scheme == b.Scheme && a.Host == b.Host
 }
 
 func (s *Server) handleSetWebhook(w http.ResponseWriter, r *http.Request) {
