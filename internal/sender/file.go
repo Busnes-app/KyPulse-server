@@ -214,16 +214,21 @@ func ReadFile(ctx context.Context, path string, start Position, out chan<- Item)
 			}
 			continue
 		}
-		fi, err := f.Stat()
-		if err != nil {
-			return err
-		}
 		current, statErr := os.Stat(path)
 		if statErr != nil && !errors.Is(statErr, os.ErrNotExist) {
 			return statErr
 		}
+		fi, err := f.Stat()
+		if err != nil {
+			return err
+		}
 		offset := base + lines.total
 		changed := statErr == nil && !samePosition(current, identity)
+		// The old file may have grown after read reached EOF. Check its size
+		// after observing the replacement so its final bytes are drained first.
+		if changed && fi.Size() > offset {
+			continue
+		}
 		shrunk := fi.Size() < offset
 		if changed || shrunk {
 			if lines.partial() {
