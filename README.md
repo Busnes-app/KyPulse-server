@@ -170,11 +170,13 @@ Set in Settings & DB by an admin, sealed at rest with the deployment key. Preset
 | Preset | Sends |
 |---|---|
 | ntfy | text body with title and priority headers; optional access token |
-| Gotify | token in `X-Gotify-Key`, never in the URL |
+| Gotify | required app token in `X-Gotify-Key`, never in the URL |
 | Discord | JSON `content` |
 | Generic | `{"app","state","previous","reason","time","url"}`; optional bearer token |
 
-The token is write-only: it is never shown again, and leaving the field empty keeps it.
+The token is write-only: it is never shown again. Leaving the field empty keeps it only
+when the preset, URL scheme and host (including port) stay the same. A Gotify edit that
+would leave no app token is refused and preserves the previous configuration.
 **Send test** makes one attempt and shows the answer. Real alerts retry 3 times with backoff;
 continued failure raises "Alerts not being delivered" in the alert bar. Messages carry the
 app name, the transition, a reason code, the time and a link, never log lines, user names or

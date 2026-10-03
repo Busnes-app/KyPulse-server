@@ -14,8 +14,8 @@ test.beforeAll(async () => {
     if (req.url === '/api/service-tokens/claim') { res.end(JSON.stringify({ token: 'browser-yard-token', organization: { id: 'browser-org', name: 'Browser KyYard' } })); return; }
     if (req.headers.authorization !== 'Bearer browser-yard-token') { res.writeHead(401); res.end(); return; }
     if (req.url.endsWith('/endpoints?limit=200')) { res.end(JSON.stringify([{ id: 'browser-ep', name: 'Browser endpoint', runtime: 'docker', state: 'active' }])); return; }
-    if (req.url.endsWith('/inventory')) { res.end(JSON.stringify({ endpoint_id: 'browser-ep', state: 'active', observed_at: new Date().toISOString(), received_at: new Date().toISOString(), snapshot: { containers: [{ id: 'browser-ct', name: 'browser-app', state: 'running', status: 'Up', image: 'test' }] } })); return; }
-    if (req.url.endsWith('/samples')) { res.end('[]'); return; }
+    if (req.url.endsWith('/inventory')) { res.end(JSON.stringify({ endpoint_id: 'browser-ep', state: 'active', observed_at: new Date().toISOString(), received_at: new Date().toISOString(), snapshot: { containers: [{ id: 'browser-ct', name: 'browser-app', state: 'running', status: 'Up', image: 'test' }, { id: 'browser-worker', name: 'browser-app-worker', state: 'running', status: 'Up', image: 'test' }] } })); return; }
+    if (req.url.endsWith('/samples')) { res.end(JSON.stringify([{ container_id: 'browser-ct', observed_at: new Date().toISOString(), memory_bytes: 1048576, memory_limit: 0, restart_count: 5 }])); return; }
     if (req.url.includes('/logs?')) { res.setHeader('Content-Type', 'text/plain'); res.end(`${new Date().toISOString()} browser collection line\n`); return; }
     if (req.url.includes('/audit?')) { res.end('[]'); return; } // deployed old API remains visibly unsupported
     res.writeHead(404); res.end();
@@ -47,6 +47,24 @@ test('admin logs, activity, pairing, filters, retry and viewer boundaries', asyn
   try {
     const pairing = await page.request.post('/api/kyyard/pair', { headers: await csrf(page), data: { url: yardURL, pairing_code: '123456' } });
     expect(pairing.status()).toBe(200);
+    await expect.poll(async () => (await (await page.request.get('/api/kyyard/containers')).json()).length).toBe(2);
+    // Leave Status so its suggestions reload after this API-side pairing.
+    await page.goto('/#/settings');
+    await expect(page.getByRole('form', { name: 'Alert webhook' })).toBeVisible();
+    await page.goto('/#/status');
+    await page.getByRole('button', { name: 'Add app' }).click();
+    const container = page.getByLabel('KyYard container');
+    await expect(page.locator('#kyyard-suggestions option')).toHaveCount(2);
+    await container.pressSequentially('browser-ep/browser-app');
+    await expect(page.getByLabel('Name', { exact: true })).toHaveValue('');
+    await container.pressSequentially('-worker');
+    await expect(page.getByLabel('Name', { exact: true })).toHaveValue('');
+    await container.press('Tab');
+    await expect(page.getByLabel('Name', { exact: true })).toHaveValue('browser-app-worker');
+    await page.getByRole('button', { name: 'Cancel', exact: true }).click();
+    await page.goto(`/#/apps/${target.id}`);
+    await expect(page.getByText('0 since monitoring began (under 1 min)')).toBeVisible();
+    await expect(page.getByText(/5 total · sampled/)).toBeVisible();
     await page.goto('/#/logs');
     await expect(page.getByRole('heading', { name: 'Logs', exact: true })).toBeVisible();
     await expect(page.getByRole('region', { name: 'KyYard collection' })).toContainText('Audit feed: no successful collection yet · stale (audit_cursor_unsupported)', { timeout: 80000 });

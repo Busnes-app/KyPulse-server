@@ -22,7 +22,7 @@ export const KyYardFacts: React.FC<{ facts: ContainerFacts | null; link?: string
       {facts.has_sample && facts.sample_at ? (
         <>
           <div className="dr-fact"><span className="dr-fact-label">Memory</span><span className="dr-fact-value">{facts.memory_limit > 0 ? `${mib(facts.memory_bytes)} of ${mib(facts.memory_limit)}` : mib(facts.memory_bytes)}</span><span className="dr-fact-note">sampled {sinceLabel(facts.sample_at)} ago</span></div>
-          <div className="dr-fact"><span className="dr-fact-label">Restarts</span><span className="dr-fact-value">{facts.restarts_last_hour} {facts.history_minutes >= 55 ? 'in the last hour' : `since ${facts.history_minutes} min ago`}</span><span className="dr-fact-note">{facts.restart_count} total · sampled {sinceLabel(facts.sample_at)} ago</span></div>
+          <div className="dr-fact"><span className="dr-fact-label">Restarts</span><span className="dr-fact-value">{facts.restarts_last_hour} {facts.history_minutes >= 55 ? 'in the last hour' : facts.history_minutes === 0 ? 'since monitoring began (under 1 min)' : `since ${facts.history_minutes} min ago`}</span><span className="dr-fact-note">{facts.restart_count} total · sampled {sinceLabel(facts.sample_at)} ago</span></div>
         </>
       ) : (
         <div className="dr-fact"><span className="dr-fact-label">Resources</span><span className="dr-fact-value">no sample yet (only running containers are sampled)</span></div>

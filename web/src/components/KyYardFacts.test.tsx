@@ -33,6 +33,12 @@ describe('KyYardFacts', () => {
     expect(screen.getByText('2 since 20 min ago')).toBeTruthy();
   });
 
+  it('explains the initial restart history instead of saying zero minutes ago', () => {
+    show(facts({ history_minutes: 0, restarts_last_hour: 0 }));
+    expect(screen.getByText('0 since monitoring began (under 1 min)')).toBeTruthy();
+    expect(screen.getByText('5 total · sampled 3m ago')).toBeTruthy();
+  });
+
   it('hides memory and restarts without a sample', () => {
     show(facts({ has_sample: false, sample_at: undefined, state: 'exited', memory_bytes: 0, restarts_last_hour: 0 }));
     expect(screen.getByText('no sample yet (only running containers are sampled)')).toBeTruthy();

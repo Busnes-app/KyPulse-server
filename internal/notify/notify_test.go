@@ -17,6 +17,14 @@ var msg = Message{App: "KyVault", State: "down", Previous: "ok", Reason: "refuse
 	Time: time.Date(2026, 9, 26, 10, 41, 0, 0, time.UTC), URL: "https://pulse.lan/apps/kyvault"}
 
 func TestValidate(t *testing.T) {
+	for _, token := range []string{"", " \t"} {
+		if err := Validate(Config{Preset: Gotify, URL: "https://gotify.lan", Token: token}, false); err == nil {
+			t.Error("Gotify must require an app token")
+		}
+	}
+	if err := Validate(Config{Preset: Gotify, URL: "https://gotify.lan", Token: "app-token"}, false); err != nil {
+		t.Errorf("Gotify with token: %v", err)
+	}
 	if err := Validate(Config{Preset: "slack", URL: "https://x.lan/"}, false); !errors.Is(err, ErrBadPreset) {
 		t.Errorf("bad preset: %v", err)
 	}

@@ -21,9 +21,8 @@ export const TargetForm: React.FC<TargetFormProps> = ({ initial, submitLabel, su
   const [error, setError] = useState('');
   const [busy, setBusy] = useState(false);
 
-  // Picking a datalist entry (an exact link match) prefills an empty name.
+  // Commit on blur: an exact link can also be a prefix of the one still being typed.
   const pickContainer = (value: string) => {
-    setContainer(value);
     const s = suggestions?.find((x) => x.link === value);
     if (s && !name.trim()) setName(s.name);
   };
@@ -51,7 +50,7 @@ export const TargetForm: React.FC<TargetFormProps> = ({ initial, submitLabel, su
           <input type="checkbox" style={{ width: 'auto' }} checked={enabled} onChange={(e) => setEnabled(e.target.checked)} />Enabled
         </label>
         <label>KyYard container
-          <input list="kyyard-suggestions" value={container} onChange={(e) => pickContainer(e.target.value)} placeholder="endpoint/name" />
+          <input list="kyyard-suggestions" value={container} onChange={(e) => setContainer(e.target.value)} onBlur={(e) => pickContainer(e.currentTarget.value)} placeholder="endpoint/name" />
         </label>
         {suggestions && suggestions.length > 0 && (
           <datalist id="kyyard-suggestions">

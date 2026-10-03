@@ -39,6 +39,9 @@ func Validate(c Config, allowHTTP bool) error {
 	default:
 		return ErrBadPreset
 	}
+	if c.Preset == Gotify && strings.TrimSpace(c.Token) == "" {
+		return errors.New("notify: Gotify app token is required")
+	}
 	return egress.ValidateURL(c.URL, allowHTTP)
 }
 

@@ -74,10 +74,24 @@ test('status, alerts, detail page and the alert bar in every state', async ({ pa
   await page.screenshot({ path: testInfo.outputPath('alerts.png'), fullPage: true });
   // Webhook that fails → "Alerts not being delivered".
   await page.getByRole('link', { name: 'Settings & DB' }).click();
+  await page.getByLabel('Preset').selectOption('gotify');
+  await page.getByLabel('URL', { exact: true }).fill(base);
+  await page.getByRole('button', { name: 'Save webhook' }).click();
+  await expect(page.getByRole('alert').filter({ hasText: 'Gotify app token is required' })).toBeVisible();
+  await page.getByLabel('Token (write-only)').fill('browser-gotify-token');
+  await page.getByRole('button', { name: 'Save webhook' }).click();
+  await expect(page.getByRole('status').filter({ hasText: 'Webhook saved' })).toBeVisible();
+  await expect(page.getByLabel('Token (write-only)')).toHaveValue('');
+  await expect(page.getByLabel('Remove the saved token')).toHaveCount(0);
+  expect((await (await page.request.get('/api/alerts/webhook')).json()).has_token).toBe(true);
+  // A blank field keeps the saved Gotify token on the same receiver.
+  await page.getByRole('button', { name: 'Save webhook' }).click();
+  await expect(page.getByRole('status').filter({ hasText: 'Webhook saved' })).toBeVisible();
   await page.getByLabel('Preset').selectOption('generic');
   await page.getByLabel('URL', { exact: true }).fill(`${base}/hook`);
   await page.getByRole('button', { name: 'Save webhook' }).click();
   await expect(page.getByRole('status').filter({ hasText: 'Webhook saved' })).toBeVisible();
+  expect((await (await page.request.get('/api/alerts/webhook')).json()).has_token).toBe(false);
   await page.getByRole('button', { name: 'Send test' }).click();
   await expect(page.getByRole('alert').filter({ hasText: /Test failed/ })).toBeVisible({ timeout: 60_000 });
   await expect(page.getByRole('alert').filter({ hasText: 'Alerts not being delivered' })).toBeVisible({ timeout: 30_000 });

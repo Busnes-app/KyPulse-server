@@ -155,6 +155,14 @@ func (s *Service) PullNow(ctx context.Context) error {
 		s.clearIfCurrent(gen)
 		return nil
 	}
+	// Recover a pairing that could not be read at startup, before any upstream read.
+	s.mu.Lock()
+	if s.gen != gen {
+		s.mu.Unlock()
+		return nil
+	}
+	s.paired, s.cfg = true, cfg
+	s.mu.Unlock()
 	c := &Client{HTTP: s.HTTP, Config: cfg}
 	eps, err := c.Endpoints(ctx)
 	if err != nil {
@@ -165,10 +173,12 @@ func (s *Service) PullNow(ctx context.Context) error {
 	now := s.now()
 	facts := map[string]ContainerFacts{}
 	points := map[string]restartPoint{}
+	eligible, pulled := 0, 0
 	for _, ep := range eps {
 		if ep.Runtime != "docker" || !pulledStates[ep.State] {
 			continue
 		}
+		eligible++
 		inv, err := c.Inventory(ctx, ep.ID)
 		var samples []Sample
 		if err == nil {
@@ -182,6 +192,7 @@ func (s *Service) PullNow(ctx context.Context) error {
 			s.Logger.Log(ctx, evPullFailed, logging.ReasonCode(Reason(err)))
 			return err
 		}
+		pulled++
 		byContainer := map[string]Sample{}
 		for _, smp := range samples {
 			if prev, ok := byContainer[smp.ContainerID]; !ok || smp.ObservedAt.After(prev.ObservedAt) {
@@ -199,6 +210,12 @@ func (s *Service) PullNow(ctx context.Context) error {
 			}
 			facts[f.Link] = f
 		}
+	}
+	if eligible > 0 && pulled == 0 {
+		err := StatusError{Code: 404}
+		s.fail(gen, Reason(err))
+		s.Logger.Log(ctx, evPullFailed, logging.ReasonCode(Reason(err)))
+		return err
 	}
 	s.mu.Lock()
 	if s.gen != gen {

@@ -142,6 +142,67 @@ func TestOpenAdoptsTheStoredPairingBeforeAnyPull(t *testing.T) {
 	}
 }
 
+func TestPullRecoversPairingAfterStartupReadFailure(t *testing.T) {
+	h := yard()
+	h.err = context.DeadlineExceeded
+	svc, now := pairedService(t, h)
+	svc.Clear()
+	ctx, cancel := context.WithCancel(context.Background())
+	cancel()
+	if err := svc.Open(ctx); err == nil {
+		t.Fatal("startup read must fail")
+	}
+	if err := svc.PullNow(context.Background()); err == nil {
+		t.Fatal("upstream pull must still fail")
+	}
+	if st := svc.Status(*now); !st.Paired || st.URL != "https://yard.lan" || st.Organization != "A" || st.Error != "timeout" || st.FetchedAt != nil || !st.Stale {
+		t.Fatalf("readable pairing must be visible even while upstream is down: %+v", st)
+	}
+}
+
+func TestAllMissingEndpointDataFailsPullWithoutReplacingSnapshot(t *testing.T) {
+	for _, route := range []string{"inventory", "samples"} {
+		t.Run(route, func(t *testing.T) {
+			h := yard()
+			svc, now := pairedService(t, h)
+			if err := svc.PullNow(context.Background()); err != nil {
+				t.Fatal(err)
+			}
+			last := svc.Status(*now).FetchedAt
+			for _, ep := range []string{"ep_1", "ep_2"} {
+				delete(h.answers, "/api/organizations/org_a/endpoints/"+ep+"/"+route)
+			}
+			*now = now.Add(time.Minute)
+			if err := svc.PullNow(context.Background()); kyyard.Reason(err) != "status_404" {
+				t.Fatalf("missing endpoint data: %v", err)
+			}
+			if st := svc.Status(*now); st.Error != "status_404" || st.FetchedAt == nil || !st.FetchedAt.Equal(*last) {
+				t.Fatalf("all-404 pull must not advance last success: %+v", st)
+			}
+			if _, ok := svc.Facts("ep_1/kyvault", *now); !ok {
+				t.Fatal("last successful snapshot must survive")
+			}
+		})
+	}
+}
+
+func TestNoEligibleEndpointsIsSuccessfulEmptyInventory(t *testing.T) {
+	h := answers(map[string]struct {
+		code int
+		body any
+	}{"/api/organizations/org_a/endpoints?limit=200": {200, []map[string]any{
+		{"id": "ep_p", "runtime": "docker", "state": "pending"},
+		{"id": "ep_k", "runtime": "kubernetes", "state": "active"},
+	}}})
+	svc, now := pairedService(t, h)
+	if err := svc.PullNow(context.Background()); err != nil {
+		t.Fatal(err)
+	}
+	if st := svc.Status(*now); st.FetchedAt == nil || st.Error != "" || st.Stale {
+		t.Fatalf("no eligible endpoints is not an upstream failure: %+v", st)
+	}
+}
+
 func TestUnreadablePairingIsLogged(t *testing.T) {
 	svc, _ := pairedService(t, yard())
 	if err := svc.Pairing.Settings.SetSetting(context.Background(), "kyyard_enc", "not-sealed"); err != nil {
