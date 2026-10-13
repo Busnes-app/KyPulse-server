@@ -73,6 +73,7 @@ Design authority: `docs/superpowers/specs/2026-09-26-kypulse-design.md`. Plans l
 - `make ci`: tidy check, gofmt, vet, race tests, frontend tests, smoke test.
 - `.github/workflows/ci.yml` additionally runs Postgres tests, Playwright browser regressions,
   govulncheck, the Docker image smoke and the image-coordinate check.
+- Publishing a GitHub release `vX.Y.Z` runs `release-image.yml`. It refuses a malformed tag, a tag that disagrees with `config.AppVersion` and `web/package.json`, and any commit on which a ci.yml job in its `REQUIRED` list (all seven, by their `name:`) did not pass. It then builds `:X.Y.Z` with provenance and SBOM, attests and verifies it (identity `release-image.yml@refs/tags/vX.Y.Z`), and moves `:stable` to that digest only for the highest non-prerelease. It never moves `:latest`; `master` CI owns that. A job added to ci.yml must be added to `REQUIRED` too.
 
 ## Child DOX Index
 
