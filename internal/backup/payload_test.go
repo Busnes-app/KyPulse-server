@@ -10,6 +10,7 @@ import (
 	"os"
 	"path/filepath"
 	"slices"
+	"strings"
 	"testing"
 	"time"
 
@@ -35,7 +36,7 @@ func TestCollectExcludesCollectedDataAndPreservesState(t *testing.T) {
 	if err := live.Audit().LogAudit(ctx, &store.AuditRecord{UserID: user.ID, Action: "backup.test", Resource: "backup_target"}); err != nil {
 		t.Fatal(err)
 	}
-	if err := live.Sources().CreateCode(ctx, "claimed-code", "backup_target", time.Now().Add(time.Hour)); err != nil {
+	if err := live.Sources().CreateOffboardingCode(ctx, "claimed-code", "backup_target", time.Now().Add(time.Hour)); err != nil {
 		t.Fatal(err)
 	}
 	source, err := live.Sources().Claim(ctx, "claimed-code", "token-hash", "backup-host")
@@ -51,10 +52,12 @@ func TestCollectExcludesCollectedDataAndPreservesState(t *testing.T) {
 	}
 	marker := hex.EncodeToString(secret)
 	now := time.Now().UTC()
-	if err := live.Logs().Append(ctx, source.ID, store.LogBatch{
-		Logs:     []store.LogLine{{Time: now, ReceivedAt: now, Raw: marker, Message: marker}},
-		Activity: []store.Activity{{Time: now, ReceivedAt: now, Action: "imported." + marker}},
-	}, 1<<20); err != nil {
+	receipt := store.LogReceipt{Sequence: 1, Digest: strings.Repeat("ab", 32)}
+	batch := store.LogBatch{
+		Logs:     []store.LogLine{{App: "kyoffboard", Time: now, ReceivedAt: now, Raw: marker, Message: marker}},
+		Activity: []store.Activity{{App: "kyoffboard", Actor: "kyoffboard", Target: "bookstack:" + strings.Repeat("ab", 32), Outcome: "failed", Time: now, ReceivedAt: now, Action: "offboarding.failed"}},
+	}
+	if err := live.Logs().AppendSequenced(ctx, source.ID, batch, receipt, 1<<20); err != nil {
 		t.Fatal(err)
 	}
 
@@ -85,7 +88,7 @@ func TestCollectExcludesCollectedDataAndPreservesState(t *testing.T) {
 	for _, tc := range []struct {
 		table string
 		want  int
-	}{{"log_cursors", 0}, {"log_lines", 0}, {"activity", 0}, {"log_pairing_codes", 0}, {"log_sources", 1}, {"targets", 1}, {"users", 1}, {"audit_records", 1}} {
+	}{{"log_cursors", 0}, {"log_lines", 0}, {"activity", 0}, {"log_pairing_codes", 0}, {"log_sources", 1}, {"targets", 1}, {"target_events", 1}, {"users", 1}, {"audit_records", 1}} {
 		var got int
 		if err := sqlQueryCount(path, tc.table, &got); err != nil {
 			t.Fatal(err)
@@ -115,8 +118,20 @@ func TestCollectExcludesCollectedDataAndPreservesState(t *testing.T) {
 	if got, err := copyStore.Settings().GetSetting(ctx, "backup_canary"); err != nil || got != "preserved" {
 		t.Fatalf("snapshot setting = %q, %v", got, err)
 	}
-	if got, err := copyStore.Sources().Authenticate(ctx, "token-hash"); err != nil || got.ID != source.ID {
+	if got, err := copyStore.Sources().Authenticate(ctx, "token-hash"); err != nil || got.ID != source.ID || !got.OffboardingAlerts {
 		t.Fatalf("snapshot source = %+v, %v", got, err)
+	}
+	if err := copyStore.Logs().AppendSequenced(ctx, source.ID, batch, receipt, 1<<20); err != nil {
+		t.Fatalf("snapshot receipt replay: %v", err)
+	}
+	if err := copyStore.Logs().AppendSequenced(ctx, source.ID, batch, store.LogReceipt{Sequence: 3, Digest: receipt.Digest}, 1<<20); !errors.Is(err, store.ErrLogSequence) {
+		t.Fatalf("snapshot receipt lost: %v", err)
+	}
+	if event, err := copyStore.Targets().NextOffboardingAlert(ctx); err != nil || event.TargetID != "backup_target" || event.NotifyError != "pending" {
+		t.Fatalf("snapshot pending alert lost: %+v %v", event, err)
+	}
+	if _, total, err := copyStore.Targets().ListEvents(ctx, "", 0, 10); err != nil || total != 1 {
+		t.Fatalf("snapshot replay duplicated alert: %d %v", total, err)
 	}
 	if chain, err := copyStore.Audit().VerifyChain(ctx); err != nil || chain.Count != 1 {
 		t.Fatalf("snapshot audit chain = %+v, %v", chain, err)

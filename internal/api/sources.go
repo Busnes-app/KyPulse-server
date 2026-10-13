@@ -61,7 +61,8 @@ func oneJSON(w http.ResponseWriter, r *http.Request, dst any) error {
 
 func (s *Server) handleCreateLogPairing(w http.ResponseWriter, r *http.Request) {
 	var req struct {
-		TargetID string `json:"target_id"`
+		TargetID          string `json:"target_id"`
+		OffboardingAlerts bool   `json:"offboarding_alerts"`
 	}
 	if err := oneJSON(w, r, &req); err != nil {
 		s.audit(r.Context(), s.actorID(r), r, "admin.log_pairing", "", "outcome=refused reason=bad_json")
@@ -77,7 +78,11 @@ func (s *Server) handleCreateLogPairing(w http.ResponseWriter, r *http.Request) 
 			return
 		}
 		code := fmt.Sprintf("%06d", n.Int64())
-		err = s.store.Sources().CreateCode(r.Context(), sourceHash(code), req.TargetID, expires)
+		if req.OffboardingAlerts {
+			err = s.store.Sources().CreateOffboardingCode(r.Context(), sourceHash(code), req.TargetID, expires)
+		} else {
+			err = s.store.Sources().CreateCode(r.Context(), sourceHash(code), req.TargetID, expires)
+		}
 		if errors.Is(err, store.ErrAlreadyExists) {
 			continue
 		}
@@ -91,7 +96,11 @@ func (s *Server) handleCreateLogPairing(w http.ResponseWriter, r *http.Request) 
 			s.writeError(w, http.StatusInternalServerError, "Failed to create pairing code")
 			return
 		}
-		s.audit(r.Context(), s.actorID(r), r, "admin.log_pairing", req.TargetID, "outcome=success")
+		details := "outcome=success"
+		if req.OffboardingAlerts {
+			details += " offboarding_alerts=true"
+		}
+		s.audit(r.Context(), s.actorID(r), r, "admin.log_pairing", req.TargetID, details)
 		s.writeJSON(w, http.StatusOK, map[string]any{"code": code, "expires_at": expires})
 		return
 	}
@@ -144,7 +153,7 @@ func (s *Server) handleClaimLogSource(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	s.audit(r.Context(), "", r, "log_source.claim", source.ID, "outcome=success")
-	s.writeJSON(w, http.StatusOK, map[string]any{"token": token, "source": map[string]string{"id": source.ID, "name": source.Name, "target_id": source.TargetID}})
+	s.writeJSON(w, http.StatusOK, map[string]any{"token": token, "source": map[string]any{"id": source.ID, "name": source.Name, "target_id": source.TargetID, "offboarding_alerts": source.OffboardingAlerts}})
 }
 
 func sixDigits(code string) bool {

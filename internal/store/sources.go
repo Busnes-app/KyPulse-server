@@ -15,15 +15,17 @@ var sourceNameRE = regexp.MustCompile(`^[A-Za-z0-9][A-Za-z0-9_.-]{0,63}$`)
 var ErrInvalidSourceName = errors.New("invalid source name")
 
 type LogSource struct {
-	ID        string     `json:"id"`
-	Name      string     `json:"name"`
-	TargetID  string     `json:"target_id"`
-	CreatedAt time.Time  `json:"created_at"`
-	RevokedAt *time.Time `json:"revoked_at"`
+	ID                string     `json:"id"`
+	Name              string     `json:"name"`
+	TargetID          string     `json:"target_id"`
+	CreatedAt         time.Time  `json:"created_at"`
+	RevokedAt         *time.Time `json:"revoked_at"`
+	OffboardingAlerts bool       `json:"offboarding_alerts"`
 }
 
 type SourceStore interface {
 	CreateCode(context.Context, string, string, time.Time) error
+	CreateOffboardingCode(context.Context, string, string, time.Time) error
 	Claim(context.Context, string, string, string) (LogSource, error)
 	Authenticate(context.Context, string) (LogSource, error)
 	List(context.Context) ([]LogSource, error)
@@ -54,6 +56,18 @@ func isUniqueViolation(err error) bool {
 }
 
 func (s *sourceStore) CreateCode(ctx context.Context, codeHash, targetID string, expiresAt time.Time) error {
+	return s.createCode(ctx, codeHash, targetID, expiresAt, false)
+}
+
+// CreateOffboardingCode grants alert production for one administrator-selected target.
+func (s *sourceStore) CreateOffboardingCode(ctx context.Context, codeHash, targetID string, expiresAt time.Time) error {
+	if targetID == "" {
+		return ErrNotFound
+	}
+	return s.createCode(ctx, codeHash, targetID, expiresAt, true)
+}
+
+func (s *sourceStore) createCode(ctx context.Context, codeHash, targetID string, expiresAt time.Time, alerts bool) error {
 	expiresAt = expiresAt.UTC()
 	tx, err := s.store.db.BeginTx(ctx, nil)
 	if err != nil {
@@ -76,7 +90,7 @@ func (s *sourceStore) CreateCode(ctx context.Context, codeHash, targetID string,
 			return err
 		}
 	}
-	_, err = tx.ExecContext(ctx, s.store.rebind("INSERT INTO log_pairing_codes(code_hash,target_id,expires_at) VALUES(?,?,?)"), codeHash, nullableID(targetID), expiresAt)
+	_, err = tx.ExecContext(ctx, s.store.rebind("INSERT INTO log_pairing_codes(code_hash,target_id,expires_at,offboarding_alerts) VALUES(?,?,?,?)"), codeHash, nullableID(targetID), expiresAt, alerts)
 	if err != nil {
 		if isUniqueViolation(err) {
 			return ErrAlreadyExists
@@ -105,7 +119,7 @@ func (s *sourceStore) Claim(ctx context.Context, codeHash, tokenHash, name strin
 		return source, err
 	}
 	var target sql.NullString
-	err = tx.QueryRowContext(ctx, s.store.rebind("DELETE FROM log_pairing_codes WHERE code_hash=? AND expires_at > ? RETURNING target_id"), codeHash, now).Scan(&target)
+	err = tx.QueryRowContext(ctx, s.store.rebind("DELETE FROM log_pairing_codes WHERE code_hash=? AND expires_at > ? RETURNING target_id,offboarding_alerts"), codeHash, now).Scan(&target, &source.OffboardingAlerts)
 	if errors.Is(err, sql.ErrNoRows) {
 		if err := tx.Commit(); err != nil {
 			return source, err
@@ -116,8 +130,8 @@ func (s *sourceStore) Claim(ctx context.Context, codeHash, tokenHash, name strin
 		return source, err
 	}
 	// A failed insert rolls back the code deletion, leaving it claimable.
-	source = LogSource{ID: uuid.NewString(), Name: name, TargetID: target.String, CreatedAt: now}
-	_, err = tx.ExecContext(ctx, s.store.rebind("INSERT INTO log_sources(id,name,target_id,token_hash,created_at) VALUES(?,?,?,?,?)"), source.ID, source.Name, nullableID(source.TargetID), tokenHash, now)
+	source.ID, source.Name, source.TargetID, source.CreatedAt = uuid.NewString(), name, target.String, now
+	_, err = tx.ExecContext(ctx, s.store.rebind("INSERT INTO log_sources(id,name,target_id,token_hash,created_at,offboarding_alerts) VALUES(?,?,?,?,?,?)"), source.ID, source.Name, nullableID(source.TargetID), tokenHash, now, source.OffboardingAlerts)
 	if err != nil {
 		if isUniqueViolation(err) {
 			return LogSource{}, ErrAlreadyExists
@@ -131,7 +145,7 @@ func (s *sourceStore) Claim(ctx context.Context, codeHash, tokenHash, name strin
 }
 
 func (s *sourceStore) Authenticate(ctx context.Context, tokenHash string) (LogSource, error) {
-	row := s.store.db.QueryRowContext(ctx, s.store.rebind("SELECT id,name,target_id,created_at,revoked_at FROM log_sources WHERE token_hash=? AND revoked_at IS NULL"), tokenHash)
+	row := s.store.db.QueryRowContext(ctx, s.store.rebind("SELECT id,name,target_id,created_at,revoked_at,offboarding_alerts FROM log_sources WHERE token_hash=? AND revoked_at IS NULL"), tokenHash)
 	return scanSource(row)
 }
 
@@ -139,7 +153,7 @@ func scanSource(row interface{ Scan(...any) error }) (LogSource, error) {
 	var source LogSource
 	var target sql.NullString
 	var revoked sql.NullTime
-	err := row.Scan(&source.ID, &source.Name, &target, &source.CreatedAt, &revoked)
+	err := row.Scan(&source.ID, &source.Name, &target, &source.CreatedAt, &revoked, &source.OffboardingAlerts)
 	if errors.Is(err, sql.ErrNoRows) {
 		return source, ErrNotFound
 	}
@@ -154,7 +168,7 @@ func scanSource(row interface{ Scan(...any) error }) (LogSource, error) {
 }
 
 func (s *sourceStore) List(ctx context.Context) ([]LogSource, error) {
-	rows, err := s.store.db.QueryContext(ctx, "SELECT id,name,target_id,created_at,revoked_at FROM log_sources ORDER BY created_at DESC,id DESC")
+	rows, err := s.store.db.QueryContext(ctx, "SELECT id,name,target_id,created_at,revoked_at,offboarding_alerts FROM log_sources ORDER BY created_at DESC,id DESC")
 	if err != nil {
 		return nil, err
 	}

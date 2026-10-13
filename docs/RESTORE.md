@@ -35,9 +35,21 @@ Everything a fresh server needs to be the old one:
 | `data/audit.key` | 32 bytes. Keys the audit hash chain; without it the restored log cannot be verified |
 | `data/recovery.pub` | The suite recovery public key, so the restored server comes back pinned (present when the backup had a key) |
 | `config/settings.json` | App name, URL, port, database driver. For your reference when re-deploying; nothing reads it |
+| `config/installer-source-credentials.json` | Protected plaintext tokens and original file references for active installer-owned log sources; sealed inside the capsule and checked against its database |
 
 The restored directory is the live directory in the clear. Treat it like the running server's
 `data/`.
+
+For an installer-managed instance, retain the source credential member privately. After
+verifying the restored capsule and source bindings, place each token back at its recorded
+product-target file with mode 0600 and the product container's owner. Verify the destination
+belongs to this installation before writing, and refuse an existing different credential.
+Restore the matching bridge-side credential and receipt state through the suite restore
+procedure before resuming ingestion. The product restore command only extracts within its
+empty destination directory; recorded absolute paths are references, not write instructions.
+Revoked sources remain revoked and have no token in this member. Older capsules may lack
+the member: an active installer-owned source then fails the credential drill and needs an
+independently retained credential. Complete unattended cross-target recovery is not yet qualified.
 
 Watched apps, their alert history and the sealed webhook are in the database and restore with
 it; the webhook opens only under the same encryption key.

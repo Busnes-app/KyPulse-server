@@ -327,6 +327,20 @@ CREATE INDEX idx_log_pairing_codes_expires ON log_pairing_codes(expires_at);
 		SQLite:   `CREATE TABLE log_cursors (key TEXT PRIMARY KEY, value TEXT NOT NULL);`,
 		Postgres: `CREATE TABLE log_cursors (key TEXT PRIMARY KEY, value TEXT NOT NULL);`,
 	},
+	{Version: 10, Name: "log_source_receipts",
+		SQLite: `ALTER TABLE log_sources ADD COLUMN ingest_seq BIGINT NOT NULL DEFAULT 0;
+ALTER TABLE log_sources ADD COLUMN ingest_digest TEXT NOT NULL DEFAULT '';`,
+		Postgres: `ALTER TABLE log_sources ADD COLUMN ingest_seq BIGINT NOT NULL DEFAULT 0;
+ALTER TABLE log_sources ADD COLUMN ingest_digest TEXT NOT NULL DEFAULT '';`,
+	},
+	{Version: 11, Name: "offboarding_alert_sources",
+		SQLite: `ALTER TABLE log_sources ADD COLUMN offboarding_alerts INTEGER NOT NULL DEFAULT 0;
+ALTER TABLE log_pairing_codes ADD COLUMN offboarding_alerts INTEGER NOT NULL DEFAULT 0;
+CREATE INDEX idx_pending_offboarding_alerts ON target_events(id) WHERE cause='offboarding_failed' AND notify_error='pending' AND notified=FALSE;`,
+		Postgres: `ALTER TABLE log_sources ADD COLUMN offboarding_alerts BOOLEAN NOT NULL DEFAULT FALSE;
+ALTER TABLE log_pairing_codes ADD COLUMN offboarding_alerts BOOLEAN NOT NULL DEFAULT FALSE;
+CREATE INDEX idx_pending_offboarding_alerts ON target_events(id) WHERE cause='offboarding_failed' AND notify_error='pending' AND notified=FALSE;`,
+	},
 }
 
 // Run executes all pending migrations for the specified database driver and returns the

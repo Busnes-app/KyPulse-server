@@ -7,6 +7,27 @@ import (
 	"strings"
 )
 
+// RequestNetwork reports the same client address used for sessions and limits.
+// Only the configured transport peer may supply forwarding metadata. The last
+// scheme entry belongs to the nearest trusted proxy; earlier entries are ignored.
+func RequestNetwork(r *http.Request, trusted []netip.Prefix) (clientIP string, proxyTrusted bool, scheme string) {
+	clientIP = ClientIP(r, trusted)
+	peer, err := netip.ParseAddr(peerIP(r))
+	proxyTrusted = err == nil && isTrusted(peer, trusted)
+	scheme = "http"
+	if r.TLS != nil {
+		scheme = "https"
+	}
+	if proxyTrusted {
+		parts := strings.Split(strings.Join(r.Header.Values("X-Forwarded-Proto"), ","), ",")
+		switch last := strings.TrimSpace(parts[len(parts)-1]); last {
+		case "http", "https":
+			scheme = last
+		}
+	}
+	return
+}
+
 // ClientIP returns the address a request should be attributed to: the rate limiter's key and
 // the IP bound into a session. Both must agree, or a caller could be throttled as one client
 // and recorded as another.

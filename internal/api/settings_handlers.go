@@ -47,7 +47,7 @@ func (s *Server) handleGetSettings(w http.ResponseWriter, r *http.Request) {
 		// Sealed rows (suffix _enc) never leave the process in either form; the kyrecovery
 		// prefix covers its legacy plaintext spelling.
 		for k := range settings {
-			if strings.HasPrefix(k, "kyrecovery_token") || strings.HasSuffix(k, "_enc") {
+			if strings.HasPrefix(k, "installer.") || strings.HasPrefix(k, "kyrecovery_token") || strings.HasSuffix(k, "_enc") {
 				delete(settings, k)
 			}
 		}
