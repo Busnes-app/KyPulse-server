@@ -3,6 +3,8 @@ package store
 import (
 	"context"
 	"errors"
+	"github.com/Busnes-app/ky-primitives/applysetup"
+	"github.com/Busnes-app/kypulse-server/internal/config"
 	"time"
 )
 
@@ -29,6 +31,7 @@ func validRole(role string) bool { return role == RoleAdmin || role == RoleViewe
 
 // Store defines the unified storage contract implemented across SQLite, PostgreSQL, and MySQL.
 type Store interface {
+	ApplyInstaller(context.Context, config.InstallerBundle, bool) (applysetup.Report, error)
 	Users() UserStore
 	Sessions() SessionStore
 	Audit() AuditStore
@@ -103,5 +106,6 @@ type TargetStore interface {
 	SetSilence(ctx context.Context, id string, until *time.Time, untilFixed bool) error // nil until and false clear it
 	RecordEvent(ctx context.Context, e *TargetEvent) error                              // sets e.ID
 	SetEventNotified(ctx context.Context, id int64, notified bool, notifyError string) error
+	NextOffboardingAlert(ctx context.Context) (*TargetEvent, error)                                  // oldest pending; ErrNotFound when empty
 	ListEvents(ctx context.Context, targetID string, offset, limit int) ([]*TargetEvent, int, error) // targetID "" = all; newest first
 }

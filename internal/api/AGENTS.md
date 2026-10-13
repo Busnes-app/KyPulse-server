@@ -7,6 +7,13 @@ Exposes HTTP REST routes, authentication endpoints, Single Sign-On callbacks, ba
 Owns HTTP routing, request parsing, session cookie validation, CORS headers, and error response formatting.
 
 ## Local Contracts
+- `ApplyInstaller` serves only private local IPC. It validates the candidate runtime configuration before store writes, preserves the immutable live snapshot and reports restart activation pending until the saved configuration is actually loaded. Public `GET /api/installer/network` returns only this request client address, peer trust and scheme, with no-store; it reuses authentication address resolution and trusts only the nearest configured proxy. Installer ownership rows are omitted from settings responses.
+- The private bundle additionally accepts `monitoring` targets/sources. Validate source
+  references, keys and the runtime self origin before reading credentials; prepare separate
+  target-file token hashes before the combined store transaction. Native monitoring activates
+  live and adds no restart requirement. Setup-created sources retain the same ingestion-only
+  authority and optional target-bound offboarding alert grant as administrator pairing;
+  public callers cannot reach the setup route or supply prepared token hashes.
 - POST `/api/auth/change-password` accepts a restricted local session, current password and a different policy-valid new password. Browser CSRF and per-IP/account limits apply. Success revokes all sessions and requires sign-in again; flagged sessions get `password_change_required` on protected routes and public-only settings.
 - All JSON API endpoints return structured errors `{"error": "message"}` upon failure.
 - Non-API routes fall back to serving `web.Handler()` for client-side SPA routing.
@@ -15,7 +22,22 @@ Owns HTTP routing, request parsing, session cookie validation, CORS headers, and
 - Viewer reads use `s.requireSession`; monitoring writes and the webhook use `s.requireAdmin`. The webhook token is write-only: never in `GET /api/alerts/webhook`, `/api/settings` (sealed `_enc` rows are filtered by suffix) or `/api/status`. Audit actions: `admin.target_create|update|delete|silence`, `admin.webhook_set|delete|test`; `alert.sent|send_failed` are written by `internal/monitor` with actor `system`. A webhook URL is never audited: `admin.webhook_set` records `preset`, `scheme`, `host` and `allow_http`.
 - Every audit row goes through `s.audit`, which bounds both text fields and logs `audit_write_failed` when the row cannot be written.
 - Log-source routes are explicit method patterns: admin `POST /api/log-sources/pairing` (`{target_id?}` → six-digit code and expiry), public `POST /api/log-sources/claim` (`{pairing_code,name}` → one-time token and source identity), admin `GET /api/log-sources` and admin `DELETE /api/log-sources/{id}`. All responses, including errors, use `Cache-Control: no-store`; admin and session-backed claim writes use normal CSRF protection. Source Bearer tokens do not authenticate a user session. Pairing and claim bodies are one JSON object capped at 4 KiB. Claim has a fixed global 30/min counter outside the evictable attempt map, followed by a 5/min trusted-proxy-aware IP counter; 429 carries `Retry-After`. Codes and tokens never enter audit rows. Successful claim and revoke, failures and refusals use `s.audit` with identifiers or reason codes. The shared admin wrapper audits source-route authentication/role denials, and the pre-route CSRF gate audits source-route CSRF denials; each denied request gets one row. Successful list reads do not create audit rows.
-- `POST /api/ingest/logs` accepts only source Bearer tokens and NDJSON. Authenticate before reading the body; source quotas use their own stable 60/min counter and return 429 with `Retry-After`. Require `application/x-ndjson` and identity content encoding (415 otherwise), cap the wire body at 1 MiB (413), reject malformed batches as a whole (400), and return 204 only after `Append` commits using `cfg.Logs.MaxBytes`. Invalid or revoked tokens return 401. `GET /api/logs` and `GET /api/activity` are admin-only, return sanitized text in descending ID pages (`items`, `next_before_id`), and send `Cache-Control: no-store`. Read authorization denials are audited by the admin wrapper. Filters are fixed per route, malformed filters return 400, page size defaults to 100 and is capped at 200, and `before_id` is exclusive. App-detail logs use the same admin-only `/api/logs?target_id=…` route; the stored target binding comes from the source token, never an application-supplied field.
+- `POST /api/ingest/logs` accepts only source Bearer tokens and NDJSON. Authenticate before reading the body; source quotas use their own stable 60/min counter and return 429 with `Retry-After`. Require `application/x-ndjson` and identity content encoding (415 otherwise), cap the wire body at 1 MiB (413), reject malformed batches as a whole (400), and return 204 only after the batch commits using `cfg.Logs.MaxBytes` or its latest sequence receipt verifies. Invalid or revoked tokens return 401. `GET /api/logs` and `GET /api/activity` are admin-only, return sanitized text in descending ID pages (`items`, `next_before_id`), and send `Cache-Control: no-store`. Read authorization denials are audited by the admin wrapper. Filters are fixed per route, malformed filters return 400, page size defaults to 100 and is capped at 200, and `before_id` is exclusive. App-detail logs use the same admin-only `/api/logs?target_id=…` route; the stored target binding comes from the source token, never an application-supplied field.
+
+- Sequenced ingestion uses one canonical positive int64 `Ky-Log-Sequence`, starting at 1. A 204 includes `Ky-Log-Receipt: ky.log-ingest/1`, the sequence and `Ky-Log-Digest` (SHA-256 of the exact NDJSON bytes). Only the next sequence or an exact replay of the latest body succeeds; gaps, stale sequences, changed replay bytes and legacy writes after activation return 409 without a receipt. Malformed headers return 400. Authentication, quotas and whole-batch validation still apply to replay. Use a dedicated source and one ordered sender; advance only after persisting the verified acknowledgment.
+- Non-browser `OPTIONS /api/ingest/logs` authenticates exactly one source Bearer header and
+  uses the same source quota, returning 204 with `Ky-Log-Receipt: ky.log-ingest/1` and
+  `Ky-Log-Source` (this source UUID). It writes no log or activity rows. Verify this before
+  first sequenced mutation; old servers cannot safely supply the receipt protocol. Ordinary
+  browser CORS preflights keep their existing response and expose no source capability.
+  Revoked/invalid credentials get 401 without capability headers; source tokens still cannot
+  read collected logs/activity or administer sources.
+- Admin pairing optionally accepts `offboarding_alerts:true` with a required watched
+  `target_id`; the claim cannot change this grant or target. A granted, still-bound source's
+  authenticated OPTIONS adds `Ky-Log-Alerts: ky.offboarding-alerts/1`. Each sequenced batch
+  must be one recognized kyoffboard started/success/failed projection; invalid shape is
+  400, unsequenced writes and lost target scope are 409, without a receipt. Failures create
+  native Alerts rows atomically; source tokens retain no administration or read authority.
 
 | Method | Path | Handler | Response |
 |---|---|---|---|
@@ -75,6 +97,19 @@ Owns HTTP routing, request parsing, session cookie validation, CORS headers, and
 ## Verification
 - `go test -v ./internal/api/...` (`authz_test.go` pins the per-role exposure of every privileged route; `backup_test.go` the backup routes, on SQLite only because a run snapshots the database)
 - `scripts/smoke-test.sh` asserts the same boundaries against a running binary
+- Set `KYQ_TEST_INSTALLER_RELAY_ROOT` to the isolated KyQuickStart checkout and run
+  `go test -race ./internal/api -run TestOffboardAuditRelayNative -count=1` with the local
+  product workspace. The real native API/store commits then loses a socket response; the
+  installer fixture resumes its retained backoff through the actual `kyoffboard` executable
+  using verified public TLS trust and protected target configuration. Assert three POSTs
+  produce exactly two log/activity rows with native source attribution, then joined SIGTERM
+  and retained receipt/lease proof. No live deployment or product account mutation occurs.
+- With the same fixture variable, `go test -race ./internal/api -run
+  '^TestOffboardFailureRelayNative$' -count=1` verifies an actual installer audit outbox
+  against native ingestion, source alert capability, durable failure creation, fresh monitor
+  webhook delivery and replay suppression on SQLite or disposable PostgreSQL. It uses a
+  private synthetic native revocation failure and webhook transport stand-in; it does not
+  prove deployed product failures, production webhook connectivity or KyIdentity composition.
 
 ## Child DOX Index
 None.

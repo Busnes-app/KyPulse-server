@@ -235,6 +235,20 @@ func (t *targetStore) SetEventNotified(ctx context.Context, id int64, notified b
 	return nil
 }
 
+func (t *targetStore) NextOffboardingAlert(ctx context.Context) (*TargetEvent, error) {
+	var e TargetEvent
+	err := t.store.db.QueryRowContext(ctx, `SELECT id,target_id,at,from_state,to_state,cause,reminder,notified,notify_error
+FROM target_events WHERE cause='offboarding_failed' AND notify_error='pending' AND notified=FALSE ORDER BY id LIMIT 1`).Scan(
+		&e.ID, &e.TargetID, &e.At, &e.FromState, &e.ToState, &e.Cause, &e.Reminder, &e.Notified, &e.NotifyError)
+	if errorsIs(err, sql.ErrNoRows) {
+		return nil, ErrNotFound
+	}
+	if err != nil {
+		return nil, err
+	}
+	return &e, nil
+}
+
 func (t *targetStore) ListEvents(ctx context.Context, targetID string, offset, limit int) ([]*TargetEvent, int, error) {
 	if limit <= 0 {
 		limit = 50

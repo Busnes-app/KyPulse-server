@@ -92,6 +92,40 @@ limited to five attempts per minute per client IP and 30 globally; 429 also incl
 pages (`limit` defaults to 100, maximum 200; `before_id` is exclusive). Both return
 `{"items":[...],"next_before_id":0}` when no next page exists; viewers get 403.
 
+Before a dedicated ordered sender's first batch, send authenticated non-browser OPTIONS to
+`/api/ingest/logs`; require 204, `Ky-Log-Receipt: ky.log-ingest/1` and `Ky-Log-Source`
+with the paired source's UUID. This uses the source quota, writes no collected rows and
+does not grant access to logs or administration. An older server without these headers
+must be refused before sending a sequenced batch. Then add `Ky-Log-Sequence: 1` and increase by one only
+after durably saving the acknowledgment. A successful response includes
+`Ky-Log-Receipt: ky.log-ingest/1`, `Ky-Log-Sequence` and `Ky-Log-Digest` (lowercase
+SHA-256 of the exact NDJSON request bytes). Persist the current body and sequence before
+sending, and retry those same bytes if the response is lost. Only the latest matching
+batch is acknowledged again without new rows. Gaps, older sequences, changed replay
+bytes and writes without the header after activation return 409. Normal quotas and
+validation apply to retries. One source must have one ordered writer. This option is
+used by the installer's optional resident offboarding audit relay; `kypulse-send` still
+uses its existing unsequenced delivery. Native release and deployment qualification remain
+required before enabling this integration in production.
+
+Receipts survive retention and recovery snapshots; collected logs and activity do not.
+An acknowledgment therefore proves past acceptance, not permanent archival. A sender
+ahead of a restored receipt needs explicit reconciliation rather than skipping the gap.
+
+For offboarding failure alerts, an administrator pairs a dedicated source with
+`{"target_id":"<watched target UUID>","offboarding_alerts":true}`. The source's claim
+cannot change this grant or target. Its authenticated OPTIONS adds
+`Ky-Log-Alerts: ky.offboarding-alerts/1`; KyQuickStart checks this with
+`audit.require_alerts:true`. Each batch must contain one sequenced kyoffboard audit
+projection. Failed outcomes create one native Alerts event atomically with the receipt.
+The existing serial sender checks pending failures each second, including after restart,
+and uses the configured webhook without changing poll health. Pause/silence/no webhook
+produce explicit `paused`/`silenced`/`unconfigured` notification results. A cancelled send
+stays pending; other failures use the normal retries and safe error codes. Recorded success
+and receipt replay do not resend. A crash after external webhook success but before saving
+its outcome may repeat the webhook. Use one monitoring service per database. SQLite
+recovery snapshots retain source grants and alert events while excluding collected payloads.
+
 ### Linux sender
 
 `make build` produces `kypulse` and `kypulse-send`. Pair a source using the admin's
@@ -373,3 +407,6 @@ interface for the fake watched app. Contributor rules live in [`AGENTS.md`](AGEN
 ## License
 
 See [`LICENSE.txt`](LICENSE.txt).
+
+Container-local installer setup and its current acceptance limits are documented in
+[installer setup](docs/INSTALLER_SETUP.md).

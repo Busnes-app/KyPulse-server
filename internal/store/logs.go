@@ -3,7 +3,9 @@ package store
 import (
 	"context"
 	"database/sql"
+	"encoding/hex"
 	"errors"
+	"math"
 	"sort"
 	"strings"
 	"time"
@@ -105,11 +107,35 @@ func Evict(rows []RetainedRow, now time.Time, maxBytes int64) []RetainedRow {
 type LogCursor struct{ Key, Value string }
 
 var ErrCursorConflict = errors.New("log cursor changed")
+var ErrLogSequence = errors.New("log source sequence conflicts with its receipt")
+var ErrOffboardingAudit = errors.New("invalid offboarding audit batch")
+var ErrLogAlertScope = errors.New("offboarding alert source has no target")
+
+// offboardingAudit validates the single bounded projection emitted by kyoffboard.
+// Its source's administrator-owned target, not the product/binding label, owns the alert.
+func offboardingAudit(batch LogBatch) bool {
+	if len(batch.Logs) != 1 || len(batch.Activity) != 1 || batch.Logs[0].Truncated || batch.Logs[0].App != "kyoffboard" {
+		return false
+	}
+	a := batch.Activity[0]
+	app, binding, ok := strings.Cut(a.Target, ":")
+	digest, err := hex.DecodeString(binding)
+	return ok && sourceNameRE.MatchString(app) && err == nil && len(digest) == 32 && strings.ToLower(binding) == binding &&
+		a.App == "kyoffboard" && a.Actor == "kyoffboard" && a.IP == "" && a.ExternalKey == "" &&
+		(a.Outcome == "started" || a.Outcome == "success" || a.Outcome == "failed") && a.Action == "offboarding."+a.Outcome
+}
+
+// LogReceipt is one source's ordered ingest acknowledgment, not a keyed audit chain.
+type LogReceipt struct {
+	Sequence int64
+	Digest   string
+}
 
 type LogStore interface {
 	Cursor(ctx context.Context, key string) (string, error)
 	AppendImported(ctx context.Context, batch LogBatch, previous, next LogCursor, maxBytes int64) error
 	Append(ctx context.Context, sourceID string, batch LogBatch, maxBytes int64) error
+	AppendSequenced(ctx context.Context, sourceID string, batch LogBatch, receipt LogReceipt, maxBytes int64) error
 	List(ctx context.Context, f LogFilter) ([]LogLine, error)
 	ListActivity(ctx context.Context, f ActivityFilter) ([]Activity, error)
 	ActivityBursts(ctx context.Context, f ActivityFilter, rule ActivityBurstRule) ([]ActivityBurst, error)
@@ -153,12 +179,19 @@ func (l *logStore) AppendImported(ctx context.Context, batch LogBatch, previous,
 	if previous.Key == "" || previous.Key != next.Key {
 		return ErrCursorConflict
 	}
-	return l.append(ctx, "", batch, &previous, &next, maxBytes)
+	return l.append(ctx, "", batch, &previous, &next, nil, maxBytes)
 }
 func (l *logStore) Append(ctx context.Context, sourceID string, batch LogBatch, maxBytes int64) error {
-	return l.append(ctx, sourceID, batch, nil, nil, maxBytes)
+	return l.append(ctx, sourceID, batch, nil, nil, nil, maxBytes)
 }
-func (l *logStore) append(ctx context.Context, sourceID string, batch LogBatch, previous, next *LogCursor, maxBytes int64) error {
+func (l *logStore) AppendSequenced(ctx context.Context, sourceID string, batch LogBatch, receipt LogReceipt, maxBytes int64) error {
+	raw, err := hex.DecodeString(receipt.Digest)
+	if sourceID == "" || receipt.Sequence <= 0 || err != nil || len(raw) != 32 || strings.ToLower(receipt.Digest) != receipt.Digest {
+		return ErrLogSequence
+	}
+	return l.append(ctx, sourceID, batch, nil, nil, &receipt, maxBytes)
+}
+func (l *logStore) append(ctx context.Context, sourceID string, batch LogBatch, previous, next *LogCursor, receipt *LogReceipt, maxBytes int64) error {
 	tx, err := l.store.db.BeginTx(ctx, nil)
 	if err != nil {
 		return err
@@ -181,15 +214,42 @@ func (l *logStore) append(ctx context.Context, sourceID string, batch LogBatch, 
 			return err
 		}
 	}
+	var offboardingAlerts bool
 	if sourceID != "" {
 		var source LogSource
 		var target sql.NullString
-		err = tx.QueryRowContext(ctx, l.store.rebind("SELECT name,target_id FROM log_sources WHERE id=? AND revoked_at IS NULL"), sourceID).Scan(&source.Name, &target)
+		var sequence int64
+		var digest string
+		err = tx.QueryRowContext(ctx, l.store.rebind("SELECT name,target_id,ingest_seq,ingest_digest,offboarding_alerts FROM log_sources WHERE id=? AND revoked_at IS NULL"), sourceID).Scan(&source.Name, &target, &sequence, &digest, &offboardingAlerts)
 		if errors.Is(err, sql.ErrNoRows) {
 			return ErrNotFound
 		}
 		if err != nil {
 			return err
+		}
+		if offboardingAlerts {
+			if !target.Valid {
+				return ErrLogAlertScope
+			}
+			if receipt == nil {
+				return ErrLogSequence
+			}
+			if !offboardingAudit(batch) {
+				return ErrOffboardingAudit
+			}
+		}
+		if receipt != nil {
+			if receipt.Sequence == sequence && receipt.Digest == digest {
+				return nil
+			}
+			if sequence == math.MaxInt64 || receipt.Sequence != sequence+1 {
+				return ErrLogSequence
+			}
+			if _, err := tx.ExecContext(ctx, l.store.rebind("UPDATE log_sources SET ingest_seq=?,ingest_digest=? WHERE id=?"), receipt.Sequence, receipt.Digest, sourceID); err != nil {
+				return err
+			}
+		} else if sequence != 0 {
+			return ErrLogSequence // A sequenced source cannot fall back to unacknowledged writes.
 		}
 		source.TargetID = target.String
 		for i := range batch.Logs {
@@ -260,6 +320,15 @@ func (l *logStore) append(ctx context.Context, sourceID string, batch LogBatch, 
 			return err
 		}
 		added += r.Bytes
+	}
+	if offboardingAlerts && batch.Activity[0].Outcome == "failed" {
+		// A receipt, its audit payload and its alert either all commit or all roll back.
+		// Notification is pending independently of the health-poll state machine.
+		a := batch.Activity[0]
+		q := l.store.rebind(`INSERT INTO target_events(target_id,at,from_state,to_state,cause,reminder,notified,notify_error) VALUES(?,?,?,?,?,?,?,?)`)
+		if _, err := tx.ExecContext(ctx, q, a.TargetID, a.ReceivedAt.UTC(), "", "down", "offboarding_failed", false, false, "pending"); err != nil {
+			return err
+		}
 	}
 	if err = l.pruneTx(ctx, tx, time.Time{}, maxBytes, total+added); err != nil {
 		return err

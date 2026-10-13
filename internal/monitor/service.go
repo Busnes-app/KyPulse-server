@@ -58,10 +58,11 @@ type Service struct {
 // delivery is one queued message. done is a flush marker for tests: the sender closes it
 // instead of sending.
 type delivery struct {
-	targetID string
-	eventID  int64
-	msg      notify.Message
-	done     chan struct{}
+	targetID   string
+	eventID    int64
+	msg        notify.Message
+	done       chan struct{}
+	persistent bool // offboarding alert survives cancellation for the next process
 }
 
 func (s *Service) init() {
@@ -84,17 +85,57 @@ func (s *Service) Start(ctx context.Context) {
 	s.sender.Add(1)
 	go func() {
 		defer s.sender.Done()
-		for d := range s.queue {
-			switch {
-			case d.done != nil:
-				close(d.done)
-			case ctx.Err() != nil:
-				s.cancelled(d)
-			default:
-				s.send(ctx, d)
+		ticker := time.NewTicker(time.Second)
+		defer ticker.Stop()
+		for {
+			select {
+			case d, ok := <-s.queue:
+				if !ok {
+					return
+				}
+				switch {
+				case d.done != nil:
+					close(d.done)
+				case ctx.Err() != nil:
+					s.cancelled(d)
+				default:
+					s.send(ctx, d)
+				}
+			case <-ticker.C:
+				if ctx.Err() == nil {
+					s.sendOffboarding(ctx)
+				}
 			}
 		}
 	}()
+}
+
+// sendOffboarding consumes one durable failure on the existing serial sender. A crash
+// before recording the outcome may repeat the webhook; it cannot create another alert.
+func (s *Service) sendOffboarding(ctx context.Context) {
+	ev, err := s.Store.Targets().NextOffboardingAlert(ctx)
+	if errors.Is(err, store.ErrNotFound) {
+		return
+	}
+	if err != nil {
+		s.Logger.Log(ctx, evPollStoreError, logging.Err(err))
+		return
+	}
+	tg, err := s.Store.Targets().GetTarget(ctx, ev.TargetID)
+	if err != nil || ctx.Err() != nil {
+		return
+	}
+	reason := ""
+	if !tg.Enabled {
+		reason = "paused"
+	} else if tg.UntilFixed || (tg.SilencedUntil != nil && s.now().Before(*tg.SilencedUntil)) {
+		reason = "silenced"
+	}
+	if reason != "" {
+		_ = s.Store.Targets().SetEventNotified(ctx, ev.ID, false, reason)
+		return
+	}
+	s.send(ctx, delivery{targetID: tg.ID, eventID: ev.ID, persistent: true, msg: notify.Message{App: tg.Name, State: ev.ToState, Previous: ev.FromState, Reason: ev.Cause, Time: ev.At, URL: s.AppURL + "/#/apps/" + tg.ID}})
 }
 
 // Drain closes the queue and waits for the sender to finish what is left. Call it after the
@@ -234,6 +275,9 @@ func (s *Service) send(ctx context.Context, d delivery) {
 
 	cfg, ok, err := s.Webhooks.Load(sendCtx)
 	if !ok && err == nil {
+		if d.persistent {
+			_ = s.Store.Targets().SetEventNotified(sendCtx, d.eventID, false, "unconfigured")
+		}
 		return // no webhook configured: nothing to send, nothing to record
 	}
 	// An unreadable webhook (e.g. a rotated deployment key) is a failed delivery, recorded
@@ -268,7 +312,11 @@ func (s *Service) record(d delivery, err error) {
 		s.Logger.Log(ctx, evAlertFailed, logging.TargetID(targetID), fState(msg.State), logging.Err(err))
 	}
 	_ = s.Webhooks.SetStatus(ctx, status)
-	_ = s.Store.Targets().SetEventNotified(ctx, d.eventID, err == nil, status.Error)
+	notifyError := status.Error
+	if d.persistent && status.Error == "cancelled" {
+		notifyError = "pending"
+	}
+	_ = s.Store.Targets().SetEventNotified(ctx, d.eventID, err == nil, notifyError)
 	_ = s.Store.Audit().LogAudit(ctx, &store.AuditRecord{UserID: "system", Action: action, Resource: targetID, Details: details})
 }
 

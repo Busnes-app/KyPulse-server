@@ -8,7 +8,8 @@ deployment key, the payload the scaffold seals (`Collect`), and the drill's veri
 checks (`Checks`).
 
 ## Ownership
-Owns the settings adapter (`settings.go`), payload collection (`payload.go`), and restore-drill
+Owns the settings adapter (`settings.go`), payload collection (`payload.go`,
+`source_credentials.go`), and restore-drill
 checks (`drill.go`) and serialized drill entry point (`run_drill.go`). It holds no private key, no share, and no pairing state of its own — those
 live in `recoveryclient` and in the settings rows it reads and writes through the adapter.
 
@@ -24,7 +25,13 @@ live in `recoveryclient` and in the settings rows it reads and writes through th
   never sealed. Before reading the temporary snapshot, it securely deletes collected log lines,
   imported activity, collection cursors and pending log pairing codes, resets log usage and compacts the copy;
   deletion or compaction failures refuse the capsule. Source identities and token hashes, users,
-  targets, settings and kyPulse's own keyed audit chain remain. Postgres capsules remain
+  targets, settings and kyPulse's own keyed audit chain remain. Source sequence receipts remain
+  too: replay of the latest acknowledged batch succeeds without reintroducing its excluded
+  payload. Administrator-owned offboarding source grants and target alert events, including
+  pending notification, remain; receipt replay cannot duplicate a restored alert. Collected
+  log history requires a separate archive; a receipt is not that archive.
+  A sender ahead of the restored receipt receives a sequence conflict and needs explicit
+  reconciliation. Postgres capsules remain
   unsupported. It also carries the encryption key (`data/encryption.key`, required — restores
   a database whose MFA secrets are gone otherwise), the audit chain key (`data/audit.key`,
   required — without it the restored audit log cannot be verified), and the pinned recovery
@@ -51,6 +58,17 @@ live in `recoveryclient` and in the settings rows it reads and writes through th
   their contracts are in the `recoveryclient` README. `client_test.go` pins only what this
   package's wiring buys: `KYPULSE_BACKUP_ALLOW_PRIVATE_RECOVERY` admits RFC1918 and CGNAT and
   nothing else.
+
+- `source_credentials.go` collects active installer-owned source tokens from protected
+  files using ownership and hashes in the immutable SQLite snapshot. Missing, unsafe or
+  changed credentials refuse backup. The private capsule member
+  `config/installer-source-credentials.json` binds source IDs and original file references
+  to their plaintext tokens (maximum 1 MiB); it never enters reports or public metadata.
+  Revoked sources keep their database revocation and need no token. Drills require complete
+  source bindings and matching hashes, even if the recipe omits the member; older capsules
+  without installer-owned active sources remain drillable. Restore extracts the member
+  inside the private restore directory and never writes its absolute references. Installer
+  target placement and bridge-side copies still require suite restore qualification.
 
 ## Verification
 - `go test -v ./internal/backup/...` covers decoded seal/open checks, malformed recipes,

@@ -7,6 +7,15 @@ Provides the unified Database Abstraction Layer (DAL) supporting pluggable backe
 Owns data models, store interfaces (`UserStore`, `SessionStore`, `AuditStore`, `SettingsStore`, `TargetStore`, `LogStore`, `SourceStore`), dialect translations, and schema migrations. `audit.go` owns the audit hash chain.
 
 ## Local Contracts
+- `ApplyInstaller` creates missing configuration and issuer/subject-owned administrator/viewer accounts atomically with one keyed audit-chain event; check/resume adds no rows. Foreign names/subjects, different setup ownership, inactive identities and role drift refuse without reactivation or credential changes. Configuration records retain only target-held file references.
+- Monitoring enrollment shares that transaction and audit. Deterministic setup/key UUIDs
+  and `installer.target.*`/`installer.source.*` definitions prove ownership. Refuse foreign
+  names/token hashes, changed definitions, revoked sources and missing or drifted owned
+  objects; never regrant or repair them implicitly. Store only native token hashes and
+  protected file references. Apply locks `log_usage` before target/source access; check is
+  read-only. Resume preserves health, silence, source receipt sequence and log/activity rows.
+  Omitted targets/sources remain installed. Reports use `configuration` objects named
+  `monitoring.target.<key>` and `monitoring.source.<key>` with native IDs.
 - `targets.track_json` and `targets.last_result` are JSON owned by `internal/monitor` (`alerts.Track`, `poller.Result`); the store stores and returns them verbatim. `state`, `state_since` and `cause` are denormalised from the track for listing. Silences live in `silenced_until`/`until_fixed`, not in the track JSON, so an admin's silence and a poll never write the same value. Deleting a target cascades its events.
 - `CompletePasswordChange` atomically compares the old password, updates a flagged local account, clears the flag, deletes sessions/MFA challenges and records `auth.password_changed`. Session/MFA issuance locks the same user row against the verified hash; MFA challenges persist the creation-time password hash, and consumption returns that snapshot to reject stale completions. Migration 4 discards preexisting challenges because their credential snapshot is unknown.
 - `ResetAdminPassword` reactivates a local administrator with the replacement flag set and shares the atomic grant purge and audit path with `CompletePasswordChange`; it also works for disabled accounts.
@@ -29,6 +38,16 @@ Owns data models, store interfaces (`UserStore`, `SessionStore`, `AuditStore`, `
   SQLite converts seconds and fractional seconds separately to integral microseconds to
   avoid Julian-day floating-point errors at the inclusive boundary; PostgreSQL uses epoch
   microseconds. No retained-row collection is materialized in Go.
+
+- Migration 10 keeps one `ingest_seq`/`ingest_digest` receipt per paired source. `AppendSequenced` checks active source ownership under the existing `log_usage` transaction lock and commits the next receipt, logs, activity, usage and pruning together. Exact latest replay makes no writes, even after retention deletes its payload; conflicts and failed inserts leave the receipt unchanged. Internal imports and unsequenced sources retain their existing behavior. These receipts are acknowledgment state, separate from the keyed audit chain.
+- Migration 11 adds an administrator-selected `offboarding_alerts` pairing/source grant,
+  default off. It requires a watched target and is copied from the consumed code, never the
+  claimant's JSON. Granted sources require sequenced single-log/single-activity kyoffboard
+  projections. Failed outcomes insert one `offboarding_failed` target event with pending
+  notification in the same transaction as the receipt and payload; replay adds nothing.
+  Target deletion removes the events and alert scope; subsequent writes refuse rather than
+  silently omit alerts. Health tracks are unchanged. `NextOffboardingAlert` reads the oldest
+  pending event through a partial index; the monitor owns delivery and terminal reasons.
 
 ## Verification
 - `go test -v ./internal/store/...`

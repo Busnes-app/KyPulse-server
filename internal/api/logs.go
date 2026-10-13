@@ -1,6 +1,8 @@
 package api
 
 import (
+	"crypto/sha256"
+	"encoding/hex"
 	"errors"
 	"io"
 	"mime"
@@ -51,29 +53,54 @@ func (s *Server) allowIngest(sourceID string) bool {
 	return w.count <= 60
 }
 
-func (s *Server) handleIngestLogs(w http.ResponseWriter, r *http.Request) {
+func (s *Server) authenticateLogSource(w http.ResponseWriter, r *http.Request) (store.LogSource, bool) {
 	fail := func(status int, reason, message string) {
 		s.audit(r.Context(), "", r, "log.ingest", "", "outcome=refused reason="+reason)
 		s.writeError(w, status, message)
 	}
 	authorization := r.Header.Get("Authorization")
-	if len(authorization) > 135 || !strings.HasPrefix(authorization, "Bearer ") || len(authorization) <= 7 || strings.ContainsAny(authorization[7:], " \t\r\n") {
+	if len(r.Header.Values("Authorization")) != 1 || len(authorization) > 135 || !strings.HasPrefix(authorization, "Bearer ") || len(authorization) <= 7 || strings.IndexFunc(authorization[7:], func(r rune) bool { return r <= 32 || r >= 127 }) >= 0 {
 		fail(http.StatusUnauthorized, "authentication", "Invalid source token")
-		return
+		return store.LogSource{}, false
 	}
 	source, err := s.store.Sources().Authenticate(r.Context(), sourceHash(authorization[7:]))
 	if errors.Is(err, store.ErrNotFound) {
 		fail(http.StatusUnauthorized, "authentication", "Invalid source token")
-		return
+		return store.LogSource{}, false
 	}
 	if err != nil {
 		fail(http.StatusInternalServerError, "store", "Failed to authenticate source")
-		return
+		return store.LogSource{}, false
 	}
 	if !s.allowIngest(source.ID) {
 		w.Header().Set("Retry-After", "60")
 		fail(http.StatusTooManyRequests, "rate_limit", "Too many requests")
+		return store.LogSource{}, false
+	}
+	return source, true
+}
+
+func (s *Server) handleIngestCapabilities(w http.ResponseWriter, r *http.Request) {
+	source, ok := s.authenticateLogSource(w, r)
+	if !ok {
 		return
+	}
+	w.Header().Set("Ky-Log-Receipt", "ky.log-ingest/1")
+	w.Header().Set("Ky-Log-Source", source.ID)
+	if source.OffboardingAlerts && source.TargetID != "" {
+		w.Header().Set("Ky-Log-Alerts", "ky.offboarding-alerts/1")
+	}
+	w.WriteHeader(http.StatusNoContent)
+}
+
+func (s *Server) handleIngestLogs(w http.ResponseWriter, r *http.Request) {
+	source, ok := s.authenticateLogSource(w, r)
+	if !ok {
+		return
+	}
+	fail := func(status int, reason, message string) {
+		s.audit(r.Context(), "", r, "log.ingest", "", "outcome=refused reason="+reason)
+		s.writeError(w, status, message)
 	}
 	media, _, err := mime.ParseMediaType(r.Header.Get("Content-Type"))
 	if err != nil || media != "application/x-ndjson" {
@@ -99,6 +126,20 @@ func (s *Server) handleIngestLogs(w http.ResponseWriter, r *http.Request) {
 		fail(http.StatusBadRequest, "batch", "Invalid log batch")
 		return
 	}
+	var receipt *store.LogReceipt
+	if values := r.Header.Values("Ky-Log-Sequence"); len(values) != 0 {
+		if len(values) != 1 {
+			fail(http.StatusBadRequest, "sequence", "Invalid log sequence")
+			return
+		}
+		sequence, err := strconv.ParseInt(values[0], 10, 64)
+		if err != nil || sequence <= 0 || strconv.FormatInt(sequence, 10) != values[0] {
+			fail(http.StatusBadRequest, "sequence", "Invalid log sequence")
+			return
+		}
+		digest := sha256.Sum256(data)
+		receipt = &store.LogReceipt{Sequence: sequence, Digest: hex.EncodeToString(digest[:])}
+	}
 	now := s.ingestNow().UTC()
 	batch := store.LogBatch{Logs: make([]store.LogLine, 0, len(rows))}
 	for _, row := range rows {
@@ -108,13 +149,29 @@ func (s *Server) handleIngestLogs(w http.ResponseWriter, r *http.Request) {
 			batch.Activity = append(batch.Activity, *activity)
 		}
 	}
-	if err := s.store.Logs().Append(r.Context(), source.ID, batch, s.config.Logs.MaxBytes); err != nil {
+	if receipt == nil {
+		err = s.store.Logs().Append(r.Context(), source.ID, batch, s.config.Logs.MaxBytes)
+	} else {
+		err = s.store.Logs().AppendSequenced(r.Context(), source.ID, batch, *receipt, s.config.Logs.MaxBytes)
+	}
+	if err != nil {
 		if errors.Is(err, store.ErrNotFound) {
 			fail(http.StatusUnauthorized, "revoked", "Invalid source token")
+		} else if errors.Is(err, store.ErrLogSequence) {
+			fail(http.StatusConflict, "sequence", "Log sequence conflicts with source receipt")
+		} else if errors.Is(err, store.ErrLogAlertScope) {
+			fail(http.StatusConflict, "alert_target", "Offboarding alert target is unavailable")
+		} else if errors.Is(err, store.ErrOffboardingAudit) {
+			fail(http.StatusBadRequest, "offboarding_audit", "Invalid offboarding audit batch")
 		} else {
 			fail(http.StatusInternalServerError, "store", "Failed to store logs")
 		}
 		return
+	}
+	if receipt != nil {
+		w.Header().Set("Ky-Log-Receipt", "ky.log-ingest/1")
+		w.Header().Set("Ky-Log-Sequence", strconv.FormatInt(receipt.Sequence, 10))
+		w.Header().Set("Ky-Log-Digest", receipt.Digest)
 	}
 	w.WriteHeader(http.StatusNoContent)
 }

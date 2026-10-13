@@ -38,3 +38,4 @@ coverage.out
 .DS_Store
 .idea/
 .vscode/
+/kypulse-send

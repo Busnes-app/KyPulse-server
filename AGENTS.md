@@ -12,7 +12,7 @@ Design authority: `docs/superpowers/specs/2026-09-26-kypulse-design.md`. Plans l
 ## Ownership
 
 - `cmd/server/`: process entry, CLI subcommands (`init-admin`, `backup-drill`,
-  `export-capsule`, `deposit`, `restore`, `audit-verify`, `version`), the log bridge, the
+  `export-capsule`, `deposit`, `restore`, `audit-verify`, `version`, `apply-setup`), the log bridge, the
   backup scheduler, KyYard inventory loop and separately joined log/audit collection worker.
 - `cmd/kypulse-send/`: sender pairing CLI and file/stdin/Docker readers.
 - `internal/`: one package per concern; each has its own AGENTS.md.
@@ -23,6 +23,8 @@ Design authority: `docs/superpowers/specs/2026-09-26-kypulse-design.md`. Plans l
 - `docs/RESTORE.md`: restore runbook.
 
 ## Local Contracts
+
+- Container-local installer setup uses the shared `ky.product-setup/1` envelope and private runtime-owned Unix socket, never a public setup route. Discover capabilities before using it; read [installer setup](docs/INSTALLER_SETUP.md). New identities and monitoring targets/sources are explicitly owned; foreign objects are not adopted. Saved runtime configuration activates at graceful restart; monitoring rows activate live. Read-only inspection verifies ownership and current state. The adapter supports local backup configuration; recovery pairing and KyYard enrollment remain explicit follow-on gates.
 
 - Module `github.com/Busnes-app/kypulse-server`; binary `kypulse`; image
   `ghcr.io/busnes-app/kypulse-server`; every setting is `KYPULSE_*` except the suite-wide
@@ -39,6 +41,13 @@ Design authority: `docs/superpowers/specs/2026-09-26-kypulse-design.md`. Plans l
 - Collected Logs and imported Activity are admin-only, including app-detail queries.
   Sender Bearer tokens authenticate only log ingestion; source identity and watched-target
   binding come from the claimed token, never a request body. Revocation ends ingestion.
+  Optional ordered ingest receipts acknowledge the latest exact batch without duplicate rows;
+  authenticated non-browser OPTIONS proves that capability and this source's identity before
+  sending. Browser preflight and other source-token privileges remain separate.
+  Administrator-granted offboarding sources atomically create failure Alerts on their
+  watched target; the existing sender consumes pending notifications across restart.
+  Sender ordering and wire rules live in `internal/api/AGENTS.md`. Receipts survive recovery
+  snapshots alongside source identities, while collected payloads are excluded.
 - Collected logs and imported activity share seven-day receive-time retention and the
   `KYPULSE_LOG_MAX_BYTES` logical payload budget. SQLite capsules exclude both tables and
   pending pairing codes and collection cursors; source identities and token hashes remain.

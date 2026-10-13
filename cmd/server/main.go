@@ -13,6 +13,7 @@ import (
 	"syscall"
 	"time"
 
+	"github.com/Busnes-app/ky-primitives/applysetup"
 	"github.com/Busnes-app/ky-primitives/logging"
 	"github.com/Busnes-app/ky-primitives/password"
 	"github.com/Busnes-app/ky-primitives/recoveryclient"
@@ -33,6 +34,12 @@ func main() {
 
 	if len(os.Args) > 1 {
 		switch os.Args[1] {
+		case "apply-setup":
+			if err := runInstaller(os.Args[2:]); err != nil {
+				fmt.Fprintln(os.Stderr, err)
+				os.Exit(1)
+			}
+			return
 		case "init-admin":
 			runInitAdmin(os.Args[2:])
 			return
@@ -94,6 +101,9 @@ func runServer(lg *logging.Logger) {
 		fatal("Failed to initialize database (%s): %v", cfg.Database.Driver, err)
 	}
 	defer st.Close()
+	if err := loadInstallerConfiguration(ctx, cfg, st); err != nil {
+		fatal("Installer configuration invalid: %v", err)
+	}
 	placed := st.Audit().Placement()
 	lg.Log(ctx, auditChainPlaced, fChainMode(placed.Mode), logging.Count(int64(placed.Count)), fChainHead(placed.Head))
 
@@ -161,6 +171,21 @@ func runServer(lg *logging.Logger) {
 	stop := make(chan os.Signal, 1)
 	signal.Notify(stop, os.Interrupt, syscall.SIGTERM)
 
+	socket, err := config.InstallerSocket(cfg.Database.DataDir)
+	if err != nil {
+		fatal("Installer IPC unavailable: %v", err)
+	}
+	closeSetup, err := applysetup.StartLocal(ctx, socket, srv.ApplyInstaller, func() {
+		select {
+		case stop <- syscall.SIGTERM:
+		default:
+		}
+	})
+	if err != nil {
+		fatal("Installer IPC unavailable: %v", err)
+	}
+	defer closeSetup()
+
 	go func() {
 		log.Printf("[KYPULSE] %s listening on http://%s (DB: %s)", cfg.Server.AppName, addr, cfg.Database.Driver)
 		if err := httpServer.ListenAndServe(); err != nil && err != http.ErrServerClosed {
@@ -169,6 +194,7 @@ func runServer(lg *logging.Logger) {
 	}()
 
 	<-stop
+	closeSetup()
 	log.Println("[KYPULSE] Shutting down gracefully...")
 
 	shutdownCtx, shutdownCancel := context.WithTimeout(context.Background(), shutdownTimeout)

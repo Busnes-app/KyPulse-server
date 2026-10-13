@@ -7,6 +7,13 @@ Manages environment and file-based configuration loading, defaults, and type con
 Owns environment variable parsing, configuration validation, default fallbacks, and security key generations.
 
 ## Local Contracts
+- `installer.go` validates protected target credential references and exact product callback/issuer, refuses explicit conflicting authentication, and narrows the saved installer configuration before runtime construction. Default auto-provisioning is disabled for a new installer configuration; an explicitly configured value or active issuer is not silently overridden.
+- `monitoring.go` owns kyPulse's bundle extension: at most 32 keyed health targets and 32
+  keyed sources referencing those targets. Validate public intent before credential reads;
+  refuse self origin, unsafe target URLs, duplicate keys/names and foreign target references.
+  Source files contain distinct private lowercase 32-byte hexadecimal tokens; active SSO
+  credentials cannot be reused. Prepared token hashes are private Go fields omitted from
+  serialized bundles and reports. The store receives prepared intent and owns atomic writes.
 - `LoadFromEnv() (*Config, error)` must supply safe, valid defaults for all subsystems.
 - Never log plaintext secrets or sensitive tokens.
 - `KYPULSE_TRUSTED_PROXIES` is a comma-separated list of reverse-proxy IPs or CIDRs, empty by default, parsed once at startup into `[]netip.Prefix`; an unparsable entry fails startup. Only a request whose peer address is in the list may speak for another client through `X-Forwarded-For`. `0.0.0.0/0` and `::/0` are refused at startup; list only the proxy's own address or subnet.

@@ -252,6 +252,11 @@ func (s *Server) allowClaim(ip string) bool {
 }
 
 func (s *Server) routes() {
+	s.mux.HandleFunc("GET /api/installer/network", func(w http.ResponseWriter, r *http.Request) {
+		ip, trusted, scheme := auth.RequestNetwork(r, s.config.Security.TrustedProxies)
+		w.Header().Set("Cache-Control", "no-store")
+		s.writeJSON(w, 200, map[string]any{"clientIp": ip, "proxyHeadersTrusted": trusted, "scheme": scheme})
+	})
 	// Liveness for monitors and readiness probes; public and cached by the lib. Two checks:
 	// the database answers (down if not), and the audit chain can take the next record
 	// (degraded if not: the server still serves, but audited actions fail).
@@ -322,6 +327,7 @@ func (s *Server) routes() {
 	s.mux.HandleFunc("GET /api/log-sources", s.requireAdmin(s.handleListLogSources))
 	s.mux.HandleFunc("DELETE /api/log-sources/{id}", s.requireAdmin(s.handleRevokeLogSource))
 	s.mux.HandleFunc("POST /api/ingest/logs", s.handleIngestLogs)
+	s.mux.HandleFunc("OPTIONS /api/ingest/logs", s.handleIngestCapabilities)
 	s.mux.HandleFunc("GET /api/logs", s.requireAdmin(s.handleListLogs))
 	s.mux.HandleFunc("GET /api/activity", s.requireAdmin(s.handleListActivity))
 
@@ -394,6 +400,10 @@ func (s *Server) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	if r.Method == http.MethodOptions {
 		if origin != "" && !sameOrigin(origin, s.config.Server.AppURL) {
 			http.Error(w, "Origin not allowed", http.StatusForbidden)
+			return
+		}
+		if r.URL.Path == "/api/ingest/logs" && origin == "" && r.Header.Get("Access-Control-Request-Method") == "" {
+			s.mux.ServeHTTP(w, r)
 			return
 		}
 		w.WriteHeader(http.StatusOK)
