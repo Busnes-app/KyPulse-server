@@ -20,10 +20,12 @@ test-race:
 	@go test -race -covermode=atomic -coverprofile=coverage.out ./...
 	@go tool cover -func=coverage.out | tail -1
 
-# Runs the same suite against PostgreSQL; needs a reachable server.
+# Runs the same suite against PostgreSQL; needs a reachable server. The default DSN matches
+# CI's throwaway one, e.g. docker run --rm -d -p 127.0.0.1:5432:5432 -e POSTGRES_USER=ci
+# -e POSTGRES_PASSWORD=ci -e POSTGRES_DB=ci_test postgres:17-alpine
 test-postgres:
 	@echo "==> Running test suite against PostgreSQL..."
-	@KYPULSE_TEST_POSTGRES_DSN="$${KYPULSE_TEST_POSTGRES_DSN:-postgres://postgres:postgrespassword@127.0.0.1:5432/kypulse?sslmode=disable}" go test -count=1 ./...
+	@KYPULSE_TEST_POSTGRES_DSN="$${KYPULSE_TEST_POSTGRES_DSN:-postgres://ci:ci@127.0.0.1:5432/ci_test?sslmode=disable}" go test -count=1 ./...
 
 test-web:
 	@echo "==> Running frontend test suite..."

@@ -199,8 +199,8 @@ ls -A data | wc -l
 
 That must print `0`. If it does not, the old directory still holds data, and you keep a copy
 of it before anything else: it holds every change made after the capsule was sealed, and it
-is the only record Step 5 can walk. The container runs as root, so the files are root-owned;
-copy as root into a directory you create at mode 700:
+is the only record Step 5 can walk. The files belong to the container's uid (10001, or root
+before the non-root image), so copy as root into a directory you create at mode 700:
 
 ```bash
 mkdir -m 700 old-data
@@ -222,8 +222,14 @@ With `0` confirmed, copy the restored files in and start:
 
 ```bash
 sudo cp -a restored/data/. data/ && sudo chmod 600 data/*
+sudo mkdir -p secrets && sudo mv -f data/audit.key secrets/audit.key
+sudo chown -R 10001:10001 data secrets
 docker compose up -d
 ```
+
+The container runs as uid 10001 and refuses key files it does not own. Compose reads the
+audit key from `secrets/audit.key` (README, Audit key); the `mv` replaces any older key
+there with the one the restored log was written under.
 
 Keep `KYPULSE_APP_URL` and `KYPULSE_APP_NAME` identical to the old deployment, from
 `config/settings.json`: the app name is what every capsule is sealed under and what
@@ -304,9 +310,10 @@ refuses to seal without a consistent SQLite snapshot.
 
    What can be rotated, and how:
 
-   - `KYPULSE_SESSION_SECRET` signs the proof-of-work login challenge, nothing durable. Replace it
-     with `openssl rand -hex 32` written straight into `.env`, not echoed, then
-     `docker compose up -d`.
+   - The session secret signs the proof-of-work login challenge, nothing durable. Under
+     Compose it is `data/session.key`: `docker compose down && sudo rm data/session.key &&
+     docker compose up -d` mints a new one. A deployment that sets `KYPULSE_SESSION_SECRET`
+     replaces it with `openssl rand -hex 32` written straight into its environment, not echoed.
    - The KyRecovery pairing token: ask the KyRecovery admin to revoke this service and pair
      again from the screen; the same key comes back, so the pairing is accepted.
 

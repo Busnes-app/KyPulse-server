@@ -31,15 +31,30 @@ services:
     # Covers cmd/server's shutdownTimeout (5s HTTP drain) plus backupWaitTimeout (17m for a
     # deposit already on the wire), so SIGKILL cannot land on a capsule mid-upload.
     stop_grace_period: 20m
+    # Runs as uid 10001 (the image's USER) on a read-only root filesystem with no capabilities.
+    # ./data, ./backups and ./secrets must be owned by 10001 (README, Quick start).
+    read_only: true
+    tmpfs:
+      - /tmp
+    cap_drop: [ALL]
+    security_opt:
+      - no-new-privileges:true
     ports:
       - "8080:8080"
     environment:
+      - KYPULSE_ENV=production
       - KYPULSE_PORT=8080
       - KYPULSE_HOST=0.0.0.0
       - KYPULSE_APP_NAME=kyPulse
-      - KYPULSE_APP_URL=http://localhost:8080
+      # The address users open. Session cookies are Secure, so a browser on another machine
+      # needs https here (behind a TLS proxy); only http://localhost works without it.
+      - KYPULSE_APP_URL=${KYPULSE_APP_URL:-http://localhost:8080}
       - KYPULSE_DB_DRIVER=sqlite
       - KYPULSE_DATA_DIR=/app/data
+      # The audit key lives apart from the database, so write access to ./data alone cannot
+      # re-sign the audit chain. An existing data/audit.key is still used until it is moved
+      # here (README, Audit key).
+      - KYPULSE_AUDIT_KEY_FILE=/app/secrets/audit.key
       # Disaster recovery. Sealed capsules land in KYPULSE_BACKUP_DIR (empty = no local copies);
       # the schedule below is only the default the admin screen overrides. KYPULSE_DNS lives in
       # docker-compose.lan-dns.yml, never here.
@@ -60,8 +75,15 @@ services:
     volumes:
       - ./data:/app/data
       - ./backups:/app/backups
+      - ./secrets:/app/secrets
 
-  # Optional PostgreSQL service for enterprise heavy DB mode
+  # Optional PostgreSQL service for enterprise heavy DB mode. Reachable only from the app on
+  # the compose network, never published. Set POSTGRES_PASSWORD in .env (openssl rand -hex 32);
+  # postgres refuses to initialise without one. Then set, in the app's environment:
+  #   KYPULSE_DB_DRIVER=postgres
+  #   KYPULSE_DB_DSN=postgres://postgres:<POSTGRES_PASSWORD>@postgres:5432/kypulse?sslmode=disable
+  # (An unset password cannot be a `:?` error here: Compose interpolates every profile, so it
+  # would break the default SQLite install too.)
   postgres:
     image: postgres:17-alpine
     container_name: kypulse_postgres
@@ -69,10 +91,8 @@ services:
     profiles: ["postgres"]
     environment:
       POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: postgrespassword
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-}
       POSTGRES_DB: kypulse
-    ports:
-      - "5432:5432"
     volumes:
       - pgdata:/var/lib/postgresql/data
 
