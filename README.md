@@ -22,15 +22,47 @@ Design: [`docs/superpowers/specs/2026-09-26-kypulse-design.md`](docs/superpowers
 ## Quick start
 
 ```sh
+mkdir -p data backups secrets && sudo chown 10001:10001 data backups secrets
 docker compose up -d
 docker compose logs app | grep 'Initial bootstrap'   # the generated admin password
 ```
 
+The container runs as uid 10001 on a read-only root filesystem with every capability
+dropped, so the three directories must belong to that uid; Docker would otherwise create them
+owned by root and the server refuses to start with `permission denied`.
+
 Open <http://localhost:8080>, sign in as `admin` with that password, and replace it when
-asked. Set `KYPULSE_ADMIN_PASSWORD` before the first start to choose it instead. For anything
-reachable beyond your own machine, set `KYPULSE_ENV=production`, a durable
-`KYPULSE_SESSION_SECRET` and a matching `KYPULSE_APP_URL`, and put kyPulse behind a TLS
-proxy (see `KYPULSE_TRUSTED_PROXIES`).
+asked. Set `KYPULSE_ADMIN_PASSWORD` before the first start to choose it instead. Compose runs
+in `KYPULSE_ENV=production`, so session cookies are `Secure`: a browser on the same machine
+can use `http://localhost`, anyone else needs kyPulse behind a TLS proxy with
+`KYPULSE_APP_URL=https://...` in `.env` (see `KYPULSE_TRUSTED_PROXIES`).
+
+### Upgrading to a non-root container
+
+Images before this change ran as root, so an existing `./data` and `./backups` are root-owned
+and the new image cannot open them. Once, before `docker compose up -d`:
+
+```sh
+docker compose down
+mkdir -p secrets && sudo chown -R 10001:10001 data backups secrets
+```
+
+Then move the audit key out of the database directory (next section).
+
+### Audit key
+
+The audit key signs the audit hash chain. Next to `kypulse.db`, anyone who can rewrite the
+database can also re-sign the chain, so Compose keeps it in `./secrets`
+(`KYPULSE_AUDIT_KEY_FILE=/app/secrets/audit.key`). An existing `data/audit.key` is still used
+while `secrets/audit.key` does not exist, and every start then logs `audit_key_beside_db`.
+Move it once, with the server stopped:
+
+```sh
+docker compose down && sudo mv -n data/audit.key secrets/audit.key && docker compose up -d
+```
+
+After the first start you may mount `./secrets` read-only (`./secrets:/app/secrets:ro`); a
+fresh install needs it writable once to mint the key. Back `./secrets` up with `./data`.
 
 Watch kyPulse's own `GET /healthz` from outside. kyPulse does not monitor itself.
 
@@ -271,23 +303,25 @@ there is no log file.
 
 | Variable | Default | Purpose |
 |---|---|---|
-| `KYPULSE_PORT`, `KYPULSE_HOST` | `8080`, `0.0.0.0` | listen address |
+| `KYPULSE_PORT`, `KYPULSE_HOST` | `8080`, `127.0.0.1` (`0.0.0.0` in the image) | listen address |
 | `KYPULSE_APP_URL` | `http://localhost:<port>` | public URL; CORS origin and the link in webhook messages |
 | `KYPULSE_APP_NAME` | `kyPulse` | name shown in the UI |
-| `KYPULSE_ENV` | `development` | `production` requires `KYPULSE_SESSION_SECRET` and turns on secure cookies |
-| `KYPULSE_SESSION_SECRET` | random per start | session signing key; set a durable one in production |
+| `KYPULSE_ENV` | `development` (`production` in the image and Compose) | `development` or `production`. Development listens on loopback only, mints a session secret per start and sends cookies without `Secure` |
+| `KYPULSE_ALLOW_INSECURE_DEV` | `false` | let development listen on a non-loopback `KYPULSE_HOST` |
+| `KYPULSE_SESSION_SECRET` | `<data dir>/session.key` in production, random per start in development | signs the proof-of-work login challenge |
 | `KYPULSE_ENCRYPTION_KEY` | `<data dir>/encryption.key` | 32-byte key sealing the webhook, KyYard token, TOTP secrets and KyRecovery token |
-| `KYPULSE_AUDIT_KEY` | `<data dir>/audit.key` | 32-byte key of the audit hash chain; must differ from the encryption key |
+| `KYPULSE_AUDIT_KEY` | read from `KYPULSE_AUDIT_KEY_FILE` | 32-byte key of the audit hash chain; must differ from the encryption key |
+| `KYPULSE_AUDIT_KEY_FILE` | `<data dir>/audit.key` (`/app/secrets/audit.key` in Compose) | audit keyfile, minted on first start; an existing `<data dir>/audit.key` wins while this file does not exist |
 | `KYPULSE_ADMIN_PASSWORD` | generated and printed | first admin's password on an empty database |
 | `KYPULSE_DATA_DIR` | `./data` (`/app/data` in Compose) | database, keyfiles |
 | `KYPULSE_DB_DRIVER` | `sqlite` | `sqlite` or `postgres` |
-| `KYPULSE_DB_DSN` | SQLite file in the data dir | connection string |
+| `KYPULSE_DB_DSN` | SQLite file in the data dir; required for `postgres` | connection string |
 | `KYPULSE_DB_MAX_OPEN_CONNS`, `KYPULSE_DB_MAX_IDLE_CONNS` | `25`, `5` | PostgreSQL pool |
 | `KYPULSE_TRUSTED_PROXIES` | none | proxy IPs or CIDRs allowed to set `X-Forwarded-For`; `0.0.0.0/0` is refused |
-| `KYPULSE_COOKIE_SECURE`, `KYPULSE_COOKIE_DOMAIN` | on in production, empty | session cookie |
+| `KYPULSE_COOKIE_SECURE`, `KYPULSE_COOKIE_DOMAIN` | on in production or with an `https` app URL, empty | session cookie `Secure` flag (also gates HSTS) |
 | `KYPULSE_CAPTCHA_PROVIDER` | `pow` | `pow`, `turnstile`, `friendly` or `none` |
 | `KYPULSE_CAPTCHA_SITE_KEY`, `KYPULSE_CAPTCHA_SECRET_KEY` | empty | for turnstile or friendly |
-| `KYPULSE_CAPTCHA_POW_DIFFICULTY` | `4` | proof-of-work difficulty |
+| `KYPULSE_CAPTCHA_POW_DIFFICULTY` | `50000` | proof-of-work search space (hashes tried at most) |
 | `KYPULSE_SSO_ENABLED`, `KYPULSE_SSO_AUTO_PROVISION` | `true`, `true` | single sign-on |
 | `KYPULSE_KYSIGNON_ISSUER`, `_CLIENT_ID`, `_SECRET`, `_HMAC_SECRET` | empty | KySignOn |
 | `KYPULSE_OIDC_ISSUER`, `_CLIENT_ID`, `_SECRET` | empty | generic OIDC |
@@ -301,7 +335,10 @@ there is no log file.
 | `KYPULSE_BACKUP_DEPOSIT_INTERVAL` | `24h` | default backup schedule; `0` off, at least `15m` |
 | `KYPULSE_BACKUP_ALLOW_PRIVATE_RECOVERY` | `false` | admit a KyRecovery on a private address (HTTPS still required) |
 
-Keep `encryption.key` and `audit.key` with the database: without them the sealed settings
+Integer and boolean variables must parse (`true`/`false`, `1`/`0`, `yes`/`no`, `on`/`off`);
+a typo or an empty value refuses to start rather than reading as the default.
+
+Back up `encryption.key` and `audit.key` with the database: without them the sealed settings
 cannot be opened and the audit trail cannot be verified. Backups carry both.
 
 Logs and activity share a seven-day retention period and the byte limit above. Age uses
@@ -334,9 +371,11 @@ removing the overlay from `COMPOSE_FILE` and unsetting `KYPULSE_DNS` and
 on a network with subnet `KYPULSE_NETWORK_SUBNET`, both required once the overlay is in the
 chain.
 
-**PostgreSQL**. `docker compose --profile postgres up -d` starts the bundled database; point
-kyPulse at it with `KYPULSE_DB_DRIVER=postgres` and `KYPULSE_DB_DSN`. Backups snapshot SQLite
-only, so a PostgreSQL deployment backs up its database separately.
+**PostgreSQL**. Set `POSTGRES_PASSWORD` in `.env` (`openssl rand -hex 32`), then
+`docker compose --profile postgres up -d` starts the bundled database, reachable only on the
+compose network. Point kyPulse at it with `KYPULSE_DB_DRIVER=postgres` and
+`KYPULSE_DB_DSN=postgres://postgres:<password>@postgres:5432/kypulse?sslmode=disable`. Backups
+snapshot SQLite only, so a PostgreSQL deployment backs up its database separately.
 
 The published image is `ghcr.io/busnes-app/kypulse-server`. `docker-compose.yml` explains how
 to pin a commit by digest (`KYPULSE_IMAGE`) and verify its build attestation first.

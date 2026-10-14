@@ -18,6 +18,7 @@ import (
 	"github.com/Busnes-app/kypulse-server/internal/backup"
 	"github.com/Busnes-app/kypulse-server/internal/config"
 	"github.com/Busnes-app/kypulse-server/internal/store"
+	"golang.org/x/sys/unix"
 )
 
 func TestCollectExcludesCollectedDataAndPreservesState(t *testing.T) {
@@ -130,8 +131,8 @@ func TestCollectExcludesCollectedDataAndPreservesState(t *testing.T) {
 	if event, err := copyStore.Targets().NextOffboardingAlert(ctx); err != nil || event.TargetID != "backup_target" || event.NotifyError != "pending" {
 		t.Fatalf("snapshot pending alert lost: %+v %v", event, err)
 	}
-	if _, total, err := copyStore.Targets().ListEvents(ctx, "", 0, 10); err != nil || total != 1 {
-		t.Fatalf("snapshot replay duplicated alert: %d %v", total, err)
+	if events, err := copyStore.Targets().ListEvents(ctx, "", 0, 10); err != nil || len(events) != 1 {
+		t.Fatalf("snapshot replay duplicated alert: %d %v", len(events), err)
 	}
 	if chain, err := copyStore.Audit().VerifyChain(ctx); err != nil || chain.Count != 1 {
 		t.Fatalf("snapshot audit chain = %+v, %v", chain, err)
@@ -344,6 +345,71 @@ func TestSnapshotSeesUncheckpointedCommit(t *testing.T) {
 	}
 	if check, _ := payload.VerificationRecipe["check_sqlite_integrity"].(bool); !check {
 		t.Error("recipe does not ask the drill to check the database")
+	}
+}
+
+// A crashed backup leaves an unsanitized database copy; only its exact directory pattern goes.
+func TestSweepRemovesOnlyLeftoverSnapshots(t *testing.T) {
+	dir, outside := t.TempDir(), t.TempDir()
+	mustMkdir := func(p string) {
+		if err := os.MkdirAll(p, 0700); err != nil {
+			t.Fatal(err)
+		}
+	}
+	mustMkdir(filepath.Join(dir, "snapshot-123"))
+	mustMkdir(filepath.Join(dir, "snapshot-keep"))
+	if err := os.WriteFile(filepath.Join(dir, "snapshot-123", "kypulse.db"), []byte("full copy"), 0600); err != nil {
+		t.Fatal(err)
+	}
+	if err := os.WriteFile(filepath.Join(dir, "snapshot-12"), []byte("file"), 0600); err != nil {
+		t.Fatal(err)
+	}
+	if err := os.WriteFile(filepath.Join(outside, "keep"), []byte("x"), 0600); err != nil {
+		t.Fatal(err)
+	}
+	if err := os.Symlink(outside, filepath.Join(dir, "snapshot-456")); err != nil {
+		t.Fatal(err)
+	}
+	if err := backup.SweepSnapshots(dir); err != nil {
+		t.Fatal(err)
+	}
+	if _, err := os.Stat(filepath.Join(dir, "snapshot-123")); !errors.Is(err, os.ErrNotExist) {
+		t.Fatalf("leftover kept: %v", err)
+	}
+	for _, kept := range []string{filepath.Join(dir, "snapshot-keep"), filepath.Join(dir, "snapshot-12"), filepath.Join(dir, "snapshot-456"), filepath.Join(outside, "keep")} {
+		if _, err := os.Lstat(kept); err != nil {
+			t.Fatalf("%s removed: %v", kept, err)
+		}
+	}
+	// A running snapshot (shared lock holder) keeps its directory.
+	lock, err := os.OpenFile(filepath.Join(dir, "snapshot.lock"), os.O_RDWR, 0)
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer lock.Close()
+	if err := unix.Flock(int(lock.Fd()), unix.LOCK_SH); err != nil {
+		t.Fatal(err)
+	}
+	mustMkdir(filepath.Join(dir, "snapshot-777"))
+	if err := backup.SweepSnapshots(dir); err != nil {
+		t.Fatal(err)
+	}
+	if _, err := os.Stat(filepath.Join(dir, "snapshot-777")); err != nil {
+		t.Fatalf("running snapshot removed: %v", err)
+	}
+}
+
+func TestCollectSweepsLeftoverSnapshot(t *testing.T) {
+	cfg, _ := sqliteInstance(t)
+	leftover := filepath.Join(cfg.Database.DataDir, "snapshot-42")
+	if err := os.Mkdir(leftover, 0700); err != nil {
+		t.Fatal(err)
+	}
+	if _, err := backup.Collect(context.Background(), cfg, "1.0.0"); err != nil {
+		t.Fatal(err)
+	}
+	if _, err := os.Stat(leftover); !errors.Is(err, os.ErrNotExist) {
+		t.Fatalf("leftover kept: %v", err)
 	}
 }
 

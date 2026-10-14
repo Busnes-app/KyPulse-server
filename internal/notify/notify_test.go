@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"net/http"
 	"net/url"
 	"strings"
 	"testing"
@@ -57,6 +58,14 @@ func TestBuildPresets(t *testing.T) {
 	if strings.Contains(gotify.URL, "gk") {
 		t.Error("gotify token must not be in the URL")
 	}
+	for in, want := range map[string]string{
+		"https://gotify.lan":             "https://gotify.lan/message",
+		"https://x.lan/gotify/?tenant=a": "https://x.lan/gotify/message?tenant=a",
+	} {
+		if r, err := Build(Config{Preset: Gotify, URL: in, Token: "gk"}, msg); err != nil || r.URL != want {
+			t.Errorf("gotify %s = %q %v, want %q", in, r.URL, err, want)
+		}
+	}
 
 	discord, _ := Build(Config{Preset: Discord, URL: "https://discord.com/api/webhooks/1/x"}, msg)
 	var d map[string]string
@@ -91,8 +100,9 @@ func TestTitles(t *testing.T) {
 }
 
 type fakePoster struct {
-	codes []int // one per call; a negative code means a transport error
-	calls int
+	codes      []int // one per call; a negative code means a transport error
+	calls      int
+	retryAfter string
 }
 
 func (f *fakePoster) Post(context.Context, string, string, []byte, map[string]string) (*egress.Response, error) {
@@ -101,7 +111,48 @@ func (f *fakePoster) Post(context.Context, string, string, []byte, map[string]st
 	if code < 0 {
 		return nil, errors.New("dial tcp: connection refused")
 	}
-	return &egress.Response{StatusCode: code}, nil
+	return &egress.Response{StatusCode: code, Header: http.Header{"Retry-After": {f.retryAfter}}}, nil
+}
+
+func TestJitterStaysWithinHalfToFull(t *testing.T) {
+	d := 6 * time.Second
+	seen := map[time.Duration]bool{}
+	for range 200 {
+		w := jitter(d)
+		if w < d/2 || w > d {
+			t.Fatalf("jitter(%s) = %s", d, w)
+		}
+		seen[w] = true
+	}
+	if len(seen) < 2 {
+		t.Fatal("jitter must vary")
+	}
+	if jitter(0) != 0 {
+		t.Fatal("no backoff stays no backoff")
+	}
+}
+
+func TestSendHonoursRetryAfter(t *testing.T) {
+	cfg := Config{Preset: Generic, URL: "https://hooks.lan/x"}
+	fast := []time.Duration{time.Millisecond}
+	p := &fakePoster{codes: []int{429, 200}, retryAfter: "1"}
+	start := time.Now()
+	if err := (&Notifier{Post: p, Backoff: fast}).Send(context.Background(), cfg, msg); err != nil || p.calls != 2 || time.Since(start) < time.Second {
+		t.Fatalf("Retry-After 1: err=%v calls=%d after %s", err, p.calls, time.Since(start))
+	}
+	p = &fakePoster{codes: []int{429, 200}, retryAfter: "3600"}
+	if err := (&Notifier{Post: p, Backoff: fast}).Send(context.Background(), cfg, msg); Reason(err) != "receiver_429" || p.calls != 1 {
+		t.Fatalf("Retry-After beyond the cap must end the retries: err=%v calls=%d", err, p.calls)
+	}
+	now := time.Date(2026, 9, 26, 10, 0, 0, 0, time.UTC)
+	for v, want := range map[string]time.Duration{"7": 7 * time.Second, "-3": 0, now.Add(5 * time.Second).Format(http.TimeFormat): 5 * time.Second, "99999999999999999": 24 * time.Hour} {
+		if got, ok := retryAfter(v, now); !ok || got != want {
+			t.Errorf("retryAfter(%q) = %s %v, want %s", v, got, ok, want)
+		}
+	}
+	if _, ok := retryAfter("soon", now); ok {
+		t.Error("an unparseable Retry-After must be ignored")
+	}
 }
 
 func TestSendRetriesTransportAnd5xxButNot4xx(t *testing.T) {

@@ -6,6 +6,7 @@ import (
 	"encoding/hex"
 	"errors"
 	"fmt"
+	"io/fs"
 	"net/netip"
 	"os"
 	"path/filepath"
@@ -56,6 +57,23 @@ type DatabaseConfig struct {
 	ConnMaxLifetime time.Duration `json:"conn_max_lifetime"`
 	// AuditKey keys the audit hash chain; 32 bytes, never serialised, never the encryption key.
 	AuditKey []byte `json:"-"`
+	// AuditKeyPath is the keyfile AuditKey came from; empty when KYPULSE_AUDIT_KEY supplied it.
+	AuditKeyPath string `json:"-"`
+}
+
+// AuditKeyBesideDB reports an audit keyfile in the SQLite database's own directory, where
+// whoever can rewrite the database can usually read the key and re-sign the chain.
+func (d DatabaseConfig) AuditKeyBesideDB() bool {
+	if d.Driver != "sqlite" || d.AuditKeyPath == "" {
+		return false
+	}
+	db, _, _ := strings.Cut(strings.TrimPrefix(d.DSN, "file:"), "?")
+	keyDir, err := filepath.Abs(filepath.Dir(d.AuditKeyPath))
+	if err != nil {
+		return false
+	}
+	dbDir, err := filepath.Abs(filepath.Dir(db))
+	return err == nil && keyDir == dbDir
 }
 
 // SecurityConfig holds encryption keys, cookie secrets, and session settings.
@@ -138,24 +156,44 @@ const AppVersion = "0.4.0"
 
 // LoadFromEnv initializes a Config struct populated from environment variables with sensible defaults.
 func LoadFromEnv() (*Config, error) {
-	port := getEnvInt("KYPULSE_PORT", getEnvInt("PORT", 8080))
-	host := getEnv("KYPULSE_HOST", "0.0.0.0")
+	var ev envReader
+	port := ev.int("KYPULSE_PORT", ev.int("PORT", 8080))
+	host := getEnv("KYPULSE_HOST", "127.0.0.1")
 	appURL := getEnv("KYPULSE_APP_URL", fmt.Sprintf("http://localhost:%d", port))
 	appName := getEnv("KYPULSE_APP_NAME", DefaultAppName)
 	env := getEnv("KYPULSE_ENV", "development")
+	if env != "development" && env != "production" {
+		return nil, fmt.Errorf("KYPULSE_ENV: must be development or production, got %q", env)
+	}
+	// Development mints a throwaway session secret and sends cookies without Secure; it is
+	// for a single machine, not a network.
+	allowInsecureDev := ev.bool("KYPULSE_ALLOW_INSECURE_DEV", false)
+	if err := ev.err(); err != nil {
+		return nil, err
+	}
+	if env == "development" && !isLoopback(host) && !allowInsecureDev {
+		return nil, fmt.Errorf("KYPULSE_HOST %q is not loopback: set KYPULSE_ENV=production to serve a network (KYPULSE_ALLOW_INSECURE_DEV=true overrides)", host)
+	}
 
 	driver := strings.ToLower(getEnv("KYPULSE_DB_DRIVER", "sqlite"))
 	dataDir := getEnv("KYPULSE_DATA_DIR", "./data")
 	defaultDSN := fmt.Sprintf("%s/kypulse.db?_pragma=busy_timeout(5000)&_pragma=journal_mode(WAL)&_pragma=foreign_keys(ON)", dataDir)
 	if driver == "postgres" || driver == "postgresql" {
 		driver = "postgres"
-		defaultDSN = "postgres://postgres:postgres@localhost:5432/kypulse?sslmode=disable"
+		defaultDSN = "" // no built-in credentials
 	}
 	dsn := getEnv("KYPULSE_DB_DSN", defaultDSN)
+	if dsn == "" {
+		return nil, errors.New("KYPULSE_DB_DSN is required with KYPULSE_DB_DRIVER=postgres")
+	}
 
 	sessionSecret := getEnv("KYPULSE_SESSION_SECRET", "")
-	if env == "production" && sessionSecret == "" {
-		return nil, fmt.Errorf("KYPULSE_SESSION_SECRET is required in production")
+	if sessionSecret == "" && env == "production" {
+		key, err := keyfile.LoadOrCreate(filepath.Join(dataDir, "session.key"), 32)
+		if err != nil {
+			return nil, fmt.Errorf("session secret: %w", err)
+		}
+		sessionSecret = hex.EncodeToString(key)
 	}
 	if sessionSecret == "" {
 		sessionSecret = generateRandomHex(32)
@@ -176,8 +214,10 @@ func LoadFromEnv() (*Config, error) {
 	if err != nil {
 		return nil, fmt.Errorf("KYPULSE_AUDIT_KEY: %w", err)
 	}
+	auditKeyPath := ""
 	if !ok {
-		auditKey, err = keyfile.LoadOrCreate(filepath.Join(dataDir, "audit.key"), 32)
+		auditKeyPath = resolveAuditKeyPath(dataDir)
+		auditKey, err = keyfile.LoadOrCreate(auditKeyPath, 32)
 		if err != nil {
 			return nil, fmt.Errorf("audit key: %w", err)
 		}
@@ -194,7 +234,7 @@ func LoadFromEnv() (*Config, error) {
 		return nil, fmt.Errorf("KYPULSE_BACKUP_DEPOSIT_INTERVAL: %s is below the %s minimum (0 disables)", depositInterval, MinDepositInterval)
 	}
 
-	backupKeep := getEnvInt("KYPULSE_BACKUP_KEEP", 7)
+	backupKeep := ev.int("KYPULSE_BACKUP_KEEP", 7)
 	if backupKeep < 1 {
 		return nil, fmt.Errorf("KYPULSE_BACKUP_KEEP: must be at least 1, got %d", backupKeep)
 	}
@@ -204,7 +244,7 @@ func LoadFromEnv() (*Config, error) {
 		return nil, fmt.Errorf("KYPULSE_TRUSTED_PROXIES: %w", err)
 	}
 
-	pollWorkers := getEnvInt("KYPULSE_POLL_WORKERS", 4)
+	pollWorkers := ev.int("KYPULSE_POLL_WORKERS", 4)
 	if pollWorkers < 1 || pollWorkers > 32 {
 		return nil, fmt.Errorf("KYPULSE_POLL_WORKERS: must be 1..32, got %d", pollWorkers)
 	}
@@ -233,21 +273,22 @@ func LoadFromEnv() (*Config, error) {
 			Driver:          driver,
 			DSN:             dsn,
 			DataDir:         dataDir,
-			MaxOpenConns:    getEnvInt("KYPULSE_DB_MAX_OPEN_CONNS", 25),
-			MaxIdleConns:    getEnvInt("KYPULSE_DB_MAX_IDLE_CONNS", 5),
+			MaxOpenConns:    ev.int("KYPULSE_DB_MAX_OPEN_CONNS", 25),
+			MaxIdleConns:    ev.int("KYPULSE_DB_MAX_IDLE_CONNS", 5),
 			ConnMaxLifetime: 15 * time.Minute,
 			AuditKey:        auditKey,
+			AuditKeyPath:    auditKeyPath,
 		},
 		Security: SecurityConfig{
 			SessionSecret:  sessionSecret,
 			EncryptionKey:  encryptionKey,
-			CookieSecure:   getEnvBool("KYPULSE_COOKIE_SECURE", env == "production"),
+			CookieSecure:   ev.bool("KYPULSE_COOKIE_SECURE", env == "production" || strings.HasPrefix(strings.ToLower(appURL), "https://")),
 			CookieDomain:   getEnv("KYPULSE_COOKIE_DOMAIN", ""),
 			SessionTTL:     7 * 24 * time.Hour,
 			TrustedProxies: trustedProxies,
 		},
 		SSO: SSOConfig{
-			Enabled:             getEnvBool("KYPULSE_SSO_ENABLED", true),
+			Enabled:             ev.bool("KYPULSE_SSO_ENABLED", true),
 			KySignOnIssuer:      getEnv("KYPULSE_KYSIGNON_ISSUER", ""),
 			KySignOnClientID:    getEnv("KYPULSE_KYSIGNON_CLIENT_ID", ""),
 			KySignOnSecret:      getEnv("KYPULSE_KYSIGNON_SECRET", ""),
@@ -257,24 +298,27 @@ func LoadFromEnv() (*Config, error) {
 			GenericOIDCSecret:   getEnv("KYPULSE_OIDC_SECRET", ""),
 			SAMLEntityID:        getEnv("KYPULSE_SAML_ENTITY_ID", ""),
 			SAMLMetadataURL:     getEnv("KYPULSE_SAML_METADATA_URL", ""),
-			AutoProvision:       getEnvBool("KYPULSE_SSO_AUTO_PROVISION", true),
+			AutoProvision:       ev.bool("KYPULSE_SSO_AUTO_PROVISION", true),
 		},
 		Backup: BackupConfig{
 			Dir:                  getEnv("KYPULSE_BACKUP_DIR", ""),
 			Keep:                 backupKeep,
 			DepositInterval:      depositInterval,
-			AllowPrivateRecovery: getEnvBool("KYPULSE_BACKUP_ALLOW_PRIVATE_RECOVERY", false),
+			AllowPrivateRecovery: ev.bool("KYPULSE_BACKUP_ALLOW_PRIVATE_RECOVERY", false),
 		},
 		Captcha: CaptchaConfig{
 			Provider:      getEnv("KYPULSE_CAPTCHA_PROVIDER", "pow"),
 			SiteKey:       getEnv("KYPULSE_CAPTCHA_SITE_KEY", ""),
 			SecretKey:     getEnv("KYPULSE_CAPTCHA_SECRET_KEY", ""),
-			DifficultyPoW: getEnvInt("KYPULSE_CAPTCHA_POW_DIFFICULTY", 4),
+			DifficultyPoW: ev.int("KYPULSE_CAPTCHA_POW_DIFFICULTY", 50000),
 		},
-		Alerts: AlertsConfig{AllowHTTP: getEnvBool("KYPULSE_ALERT_ALLOW_HTTP", false)},
+		Alerts: AlertsConfig{AllowHTTP: ev.bool("KYPULSE_ALERT_ALLOW_HTTP", false)},
 		Poll:   PollConfig{Workers: pollWorkers},
-		KyYard: KyYardConfig{AllowHTTP: getEnvBool("KYPULSE_KYYARD_ALLOW_HTTP", false)},
+		KyYard: KyYardConfig{AllowHTTP: ev.bool("KYPULSE_KYYARD_ALLOW_HTTP", false)},
 		Logs:   LogsConfig{MaxBytes: logMaxBytes},
+	}
+	if err := ev.err(); err != nil {
+		return nil, err
 	}
 
 	return cfg, nil
@@ -287,21 +331,61 @@ func getEnv(key, defaultVal string) string {
 	return defaultVal
 }
 
-func getEnvInt(key string, defaultVal int) int {
-	if val, ok := os.LookupEnv(key); ok {
-		if intVal, err := strconv.Atoi(strings.TrimSpace(val)); err == nil {
-			return intVal
-		}
+// envReader collects unparsable values, so a typo such as KYPULSE_COOKIE_SECURE=ture fails
+// startup instead of quietly reading as the default. A variable set but blank is unparsable.
+type envReader struct{ errs []error }
+
+func (r *envReader) int(key string, defaultVal int) int {
+	val, ok := os.LookupEnv(key)
+	if !ok {
+		return defaultVal
 	}
+	n, err := strconv.Atoi(strings.TrimSpace(val))
+	if err != nil {
+		r.errs = append(r.errs, fmt.Errorf("%s: %q is not an integer", key, val))
+		return defaultVal
+	}
+	return n
+}
+
+func (r *envReader) bool(key string, defaultVal bool) bool {
+	val, ok := os.LookupEnv(key)
+	if !ok {
+		return defaultVal
+	}
+	switch strings.ToLower(strings.TrimSpace(val)) {
+	case "true", "1", "yes", "on":
+		return true
+	case "false", "0", "no", "off":
+		return false
+	}
+	r.errs = append(r.errs, fmt.Errorf("%s: %q is not true or false", key, val))
 	return defaultVal
 }
 
-func getEnvBool(key string, defaultVal bool) bool {
-	if val, ok := os.LookupEnv(key); ok {
-		lower := strings.ToLower(strings.TrimSpace(val))
-		return lower == "true" || lower == "1" || lower == "yes" || lower == "on"
+func (r *envReader) err() error { return errors.Join(r.errs...) }
+
+// isLoopback reports a listen host reachable only from this machine.
+func isLoopback(host string) bool {
+	if host == "localhost" {
+		return true
 	}
-	return defaultVal
+	addr, err := netip.ParseAddr(host)
+	return err == nil && addr.IsLoopback()
+}
+
+// resolveAuditKeyPath is KYPULSE_AUDIT_KEY_FILE, default <dataDir>/audit.key. While the
+// configured file does not exist yet, a key already at the default path is used instead, so
+// pointing the setting elsewhere never mints a second key over an existing chain.
+func resolveAuditKeyPath(dataDir string) string {
+	legacy := filepath.Join(dataDir, "audit.key")
+	path := getEnv("KYPULSE_AUDIT_KEY_FILE", legacy)
+	if _, err := os.Lstat(path); errors.Is(err, fs.ErrNotExist) {
+		if _, err := os.Lstat(legacy); err == nil {
+			return legacy
+		}
+	}
+	return path
 }
 
 // getEnvDuration parses a Go duration such as "24h" or "90m". Negative is refused; "0" disables.

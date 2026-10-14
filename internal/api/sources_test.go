@@ -51,13 +51,15 @@ func TestLogSourceBoundaryRefusalsAudited(t *testing.T) {
 		{"POST", "/api/log-sources/pairing", "admin.log_pairing", "csrf", admin, "", marker, false, 403},
 		{"POST", "/api/log-sources/claim", "log_source.claim", "csrf", viewer, "", marker, false, 403},
 	}
-	for _, tc := range tests {
+	for i, tc := range tests {
 		t.Run(tc.method+tc.path+tc.reason, func(t *testing.T) {
 			_, before, err := st.Audit().ListAuditRecords(context.Background(), 0, 200)
 			if err != nil {
 				t.Fatal(err)
 			}
 			r := httptest.NewRequest(tc.method, tc.path, strings.NewReader(tc.body))
+			// A fresh client per case: repeats from one client are summarised, not written.
+			r.RemoteAddr = fmt.Sprintf("192.0.2.%d:1234", i+1)
 			if tc.cookie != nil {
 				r.AddCookie(tc.cookie)
 			}
@@ -223,6 +225,7 @@ func TestLogSourceClaimLimiterIgnoresForgedProxy(t *testing.T) {
 	srv, _, _ := setupTestServer(t)
 	for i := 0; i < 6; i++ {
 		r := httptest.NewRequest("POST", "/api/log-sources/claim", strings.NewReader(`{"pairing_code":"000000","name":"host"}`))
+		r.Header.Set("Content-Type", "application/json")
 		r.RemoteAddr = "198.51.100.9:1234"
 		r.Header.Set("X-Forwarded-For", "203.0.113."+string(rune('0'+i)))
 		w := httptest.NewRecorder()
@@ -244,6 +247,7 @@ func TestLogSourceClaimGlobalLimiter(t *testing.T) {
 	srv, _, _ := setupTestServer(t)
 	for i := 0; i < 31; i++ {
 		r := httptest.NewRequest("POST", "/api/log-sources/claim", strings.NewReader(`{"pairing_code":"000000","name":"host"}`))
+		r.Header.Set("Content-Type", "application/json")
 		r.RemoteAddr = fmt.Sprintf("198.51.100.%d:1234", i+1)
 		w := httptest.NewRecorder()
 		srv.ServeHTTP(w, r)
@@ -254,5 +258,45 @@ func TestLogSourceClaimGlobalLimiter(t *testing.T) {
 		if w.Code != want {
 			t.Fatalf("attempt %d=%d", i+1, w.Code)
 		}
+	}
+}
+
+// One client past its own limit must not spend the global budget everyone else pairs from.
+func TestLogSourceClaimRefusedClientDoesNotSpendGlobalBudget(t *testing.T) {
+	srv, _, _ := setupTestServer(t)
+	claim := func(addr string) int {
+		r := httptest.NewRequest("POST", "/api/log-sources/claim", strings.NewReader(`{"pairing_code":"000000","name":"host"}`))
+		r.Header.Set("Content-Type", "application/json")
+		r.RemoteAddr = addr
+		w := httptest.NewRecorder()
+		srv.ServeHTTP(w, r)
+		return w.Code
+	}
+	for i := 0; i < 40; i++ {
+		claim("198.51.100.1:1234")
+	}
+	if got := claim("198.51.100.2:1234"); got != http.StatusForbidden {
+		t.Fatalf("another client after one flooded: %d, want 403 (not rate limited)", got)
+	}
+	// IPv6 clients are one client per /64.
+	for i := 0; i < 5; i++ {
+		claim(fmt.Sprintf("[2001:db8:1:2::%x]:1234", i+1))
+	}
+	if got := claim("[2001:db8:1:2:ffff::9]:1234"); got != http.StatusTooManyRequests {
+		t.Fatalf("sixth claim from one /64: %d, want 429", got)
+	}
+	if got := claim("[2001:db8:1:3::1]:1234"); got != http.StatusForbidden {
+		t.Fatalf("next /64: %d, want 403", got)
+	}
+}
+
+func TestLogSourceClaimRequiresJSONContentType(t *testing.T) {
+	srv, _, _ := setupTestServer(t)
+	r := httptest.NewRequest("POST", "/api/log-sources/claim", strings.NewReader(`{"pairing_code":"000000","name":"host"}`))
+	r.Header.Set("Content-Type", "text/plain")
+	w := httptest.NewRecorder()
+	srv.ServeHTTP(w, r)
+	if w.Code != http.StatusBadRequest {
+		t.Fatalf("text/plain claim: %d", w.Code)
 	}
 }

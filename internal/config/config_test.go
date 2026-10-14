@@ -34,6 +34,115 @@ func TestConfigLoadDefaults(t *testing.T) {
 	if cfg.Logs.MaxBytes != 1<<30 {
 		t.Fatalf("log cap = %d", cfg.Logs.MaxBytes)
 	}
+	if cfg.Server.Host != "127.0.0.1" {
+		t.Errorf("default host = %q, want loopback", cfg.Server.Host)
+	}
+	if cfg.Captcha.DifficultyPoW != 50000 {
+		t.Errorf("default PoW difficulty = %d, want 50000", cfg.Captcha.DifficultyPoW)
+	}
+}
+
+func TestUnparsableIntOrBoolFailsStartup(t *testing.T) {
+	for key, raw := range map[string]string{
+		"KYPULSE_COOKIE_SECURE":          "ture",
+		"KYPULSE_SSO_AUTO_PROVISION":     "",
+		"KYPULSE_ALLOW_INSECURE_DEV":     "y",
+		"KYPULSE_PORT":                   "80a",
+		"KYPULSE_CAPTCHA_POW_DIFFICULTY": "50k",
+		"KYPULSE_POLL_WORKERS":           " ",
+	} {
+		t.Run(key, func(t *testing.T) {
+			t.Setenv("KYPULSE_DATA_DIR", t.TempDir())
+			t.Setenv(key, raw)
+			if _, err := config.LoadFromEnv(); err == nil || !strings.Contains(err.Error(), key) {
+				t.Fatalf("%s=%q: want a startup error naming it, got %v", key, raw, err)
+			}
+		})
+	}
+	t.Setenv("KYPULSE_DATA_DIR", t.TempDir())
+	t.Setenv("KYPULSE_COOKIE_SECURE", "Off")
+	t.Setenv("KYPULSE_APP_URL", "https://pulse.example")
+	if cfg, err := config.LoadFromEnv(); err != nil || cfg.Security.CookieSecure {
+		t.Fatalf("explicit off must parse and win: %v", err)
+	}
+}
+
+func TestCookieSecureDefaults(t *testing.T) {
+	for _, tc := range []struct {
+		env, appURL string
+		want        bool
+	}{
+		{"", "", false},
+		{"", "http://localhost:8080", false},
+		{"", "HTTPS://pulse.example", true},
+		{"production", "http://localhost:8080", true},
+	} {
+		t.Setenv("KYPULSE_DATA_DIR", t.TempDir())
+		t.Setenv("KYPULSE_ENV", tc.env)
+		t.Setenv("KYPULSE_APP_URL", tc.appURL)
+		cfg, err := config.LoadFromEnv()
+		if err != nil || cfg.Security.CookieSecure != tc.want {
+			t.Fatalf("%+v: cfg=%v err=%v", tc, cfg != nil && cfg.Security.CookieSecure, err)
+		}
+	}
+}
+
+func TestDevelopmentListensOnlyOnLoopback(t *testing.T) {
+	for _, tc := range []struct {
+		env, host, override string
+		ok                  bool
+	}{
+		{"", "127.0.0.1", "", true},
+		{"", "::1", "", true},
+		{"", "localhost", "", true},
+		{"", "0.0.0.0", "", false},
+		{"development", "192.168.1.5", "", false},
+		{"", "0.0.0.0", "true", true},
+		{"production", "0.0.0.0", "", true},
+		{"prod", "127.0.0.1", "", false},
+	} {
+		t.Setenv("KYPULSE_DATA_DIR", t.TempDir())
+		t.Setenv("KYPULSE_ENV", tc.env)
+		t.Setenv("KYPULSE_HOST", tc.host)
+		if tc.override == "" {
+			os.Unsetenv("KYPULSE_ALLOW_INSECURE_DEV")
+		} else {
+			t.Setenv("KYPULSE_ALLOW_INSECURE_DEV", tc.override)
+		}
+		if _, err := config.LoadFromEnv(); (err == nil) != tc.ok {
+			t.Errorf("%+v: err=%v", tc, err)
+		}
+	}
+}
+
+func TestProductionSessionSecretPersists(t *testing.T) {
+	dir := t.TempDir()
+	t.Setenv("KYPULSE_DATA_DIR", dir)
+	t.Setenv("KYPULSE_ENV", "production")
+	t.Setenv("KYPULSE_SESSION_SECRET", "")
+	a, err := config.LoadFromEnv()
+	if err != nil {
+		t.Fatal(err)
+	}
+	b, err := config.LoadFromEnv()
+	if err != nil || a.Security.SessionSecret != b.Security.SessionSecret || len(a.Security.SessionSecret) != 64 {
+		t.Fatalf("production session secret not durable: %v", err)
+	}
+	if _, err := os.Stat(filepath.Join(dir, "session.key")); err != nil {
+		t.Fatalf("session.key not written: %v", err)
+	}
+	t.Setenv("KYPULSE_SESSION_SECRET", "explicit")
+	if c, err := config.LoadFromEnv(); err != nil || c.Security.SessionSecret != "explicit" {
+		t.Fatalf("explicit secret not used: %v", err)
+	}
+}
+
+func TestPostgresRequiresDSN(t *testing.T) {
+	t.Setenv("KYPULSE_DATA_DIR", t.TempDir())
+	t.Setenv("KYPULSE_DB_DRIVER", "postgres")
+	if _, err := config.LoadFromEnv(); err == nil || !strings.Contains(err.Error(), "KYPULSE_DB_DSN") {
+		t.Fatalf("postgres without a DSN must refuse to start: %v", err)
+	}
 }
 
 func TestLogMaxBytesValidation(t *testing.T) {
@@ -217,5 +326,55 @@ func TestAuditKeyFromEnvOrFile(t *testing.T) {
 	t.Setenv("KYPULSE_AUDIT_KEY", "short")
 	if _, err := config.LoadFromEnv(); err == nil {
 		t.Fatal("a malformed KYPULSE_AUDIT_KEY must refuse to start")
+	}
+}
+
+func TestAuditKeyFileKeptApartFromTheDatabase(t *testing.T) {
+	data, secrets := t.TempDir(), t.TempDir()
+	t.Setenv("KYPULSE_DATA_DIR", data)
+	t.Setenv("KYPULSE_AUDIT_KEY", "")
+
+	cfg, err := config.LoadFromEnv()
+	if err != nil {
+		t.Fatal(err)
+	}
+	if !cfg.Database.AuditKeyBesideDB() {
+		t.Fatal("default <data>/audit.key must be reported as beside the database")
+	}
+
+	// An existing data/audit.key keeps being honoured after the setting moves.
+	legacy := cfg.Database.AuditKey
+	t.Setenv("KYPULSE_AUDIT_KEY_FILE", filepath.Join(secrets, "audit.key"))
+	cfg, err = config.LoadFromEnv()
+	if err != nil || !bytes.Equal(cfg.Database.AuditKey, legacy) || !cfg.Database.AuditKeyBesideDB() {
+		t.Fatalf("legacy key not honoured: %v", err)
+	}
+	if _, err := os.Stat(filepath.Join(secrets, "audit.key")); !os.IsNotExist(err) {
+		t.Fatalf("a second key was minted beside the legacy one: %v", err)
+	}
+
+	// Once moved, the configured file is used and no warning applies.
+	if err := os.Rename(filepath.Join(data, "audit.key"), filepath.Join(secrets, "audit.key")); err != nil {
+		t.Fatal(err)
+	}
+	cfg, err = config.LoadFromEnv()
+	if err != nil || !bytes.Equal(cfg.Database.AuditKey, legacy) || cfg.Database.AuditKeyBesideDB() {
+		t.Fatalf("moved key not used: %v", err)
+	}
+
+	// A fresh install mints straight into the configured directory.
+	fresh, freshSecrets := t.TempDir(), t.TempDir()
+	t.Setenv("KYPULSE_DATA_DIR", fresh)
+	t.Setenv("KYPULSE_AUDIT_KEY_FILE", filepath.Join(freshSecrets, "audit.key"))
+	if cfg, err = config.LoadFromEnv(); err != nil || cfg.Database.AuditKeyBesideDB() {
+		t.Fatalf("fresh install: %v", err)
+	}
+	if _, err := os.Stat(filepath.Join(fresh, "audit.key")); !os.IsNotExist(err) {
+		t.Fatalf("fresh install wrote the key into the data dir: %v", err)
+	}
+
+	t.Setenv("KYPULSE_AUDIT_KEY", strings.Repeat("cd", 32))
+	if cfg, err = config.LoadFromEnv(); err != nil || cfg.Database.AuditKeyPath != "" || cfg.Database.AuditKeyBesideDB() {
+		t.Fatalf("env key: %v", err)
 	}
 }

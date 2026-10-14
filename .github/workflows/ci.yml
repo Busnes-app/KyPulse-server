@@ -59,8 +59,7 @@ jobs:
           (grep -ohE 'docs/[A-Za-z0-9._/-]+\.md' README.md || true) | sort -u | xargs -r -I{} test -f {}
       - uses: actions/setup-go@b7ad1dad31e06c5925ef5d2fc7ad053ef454303e # v7.0.0
         with:
-          go-version: stable
-          check-latest: true
+          go-version-file: go.mod
           cache: true
 
       - name: gofmt
@@ -113,8 +112,7 @@ jobs:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
       - uses: actions/setup-go@b7ad1dad31e06c5925ef5d2fc7ad053ef454303e # v7.0.0
         with:
-          go-version: stable
-          check-latest: true
+          go-version-file: go.mod
           cache: true
 
       # Same suite, real Postgres: each test gets its own schema (internal/testdb).
@@ -163,8 +161,7 @@ jobs:
           persist-credentials: false
       - uses: actions/setup-go@b7ad1dad31e06c5925ef5d2fc7ad053ef454303e # v7.0.0
         with:
-          go-version: stable
-          check-latest: true
+          go-version-file: go.mod
           cache: true
       - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
         with:
@@ -194,11 +191,12 @@ jobs:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
       - uses: actions/setup-go@b7ad1dad31e06c5925ef5d2fc7ad053ef454303e # v7.0.0
         with:
-          go-version: stable
-          check-latest: true
+          go-version-file: go.mod
           cache: true
       - name: govulncheck
-        run: go run golang.org/x/vuln/cmd/govulncheck@latest ./...
+        # Pinned so a new release cannot change the gate unreviewed. Dependabot does not see
+        # `go run` pins; bump by hand.
+        run: go run golang.org/x/vuln/cmd/govulncheck@v1.9.0 ./...
 
   smoke:
     name: End-to-end smoke test
@@ -207,8 +205,7 @@ jobs:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
       - uses: actions/setup-go@b7ad1dad31e06c5925ef5d2fc7ad053ef454303e # v7.0.0
         with:
-          go-version: stable
-          check-latest: true
+          go-version-file: go.mod
           cache: true
 
       - run: shellcheck scripts/*.sh
@@ -225,11 +222,20 @@ jobs:
 
       - name: Container serves the app
         run: |
+          # The hardening docker-compose.yml applies, so the image is proven to run under it.
           docker run -d --name kypulse_ci -p 18080:8080 \
+            --read-only --tmpfs /tmp --cap-drop ALL --security-opt no-new-privileges:true \
             -e KYPULSE_ADMIN_PASSWORD='CiSmokeAdminPass123!' \
             -e KYPULSE_CAPTCHA_PROVIDER=none \
             kypulse:ci
           trap 'docker logs kypulse_ci; docker rm -f kypulse_ci' EXIT
+
+          [ "$(docker exec kypulse_ci id -u)" = 10001 ] || { echo "container runs as root"; exit 1; }
+          for _ in $(seq 30); do
+            [ "$(docker inspect -f '{{.State.Health.Status}}' kypulse_ci)" = healthy ] && break
+            sleep 2
+          done
+          [ "$(docker inspect -f '{{.State.Health.Status}}' kypulse_ci)" = healthy ] || { echo "HEALTHCHECK never passed"; exit 1; }
 
           curl -sf -o /dev/null --retry 30 --retry-delay 1 --retry-all-errors http://127.0.0.1:18080/
           curl -sf -o /dev/null http://127.0.0.1:18080/api/settings

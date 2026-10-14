@@ -94,3 +94,25 @@ func TestRealLoggerLines(t *testing.T) {
 		t.Fatalf("audit: %+v", a)
 	}
 }
+
+func TestLineCannotClaimImportedApp(t *testing.T) {
+	now := time.Now().UTC()
+	for _, app := range []string{"kyyard", "KyYard", "ky\u200byard", "k\u0443yard", "\u202ekyyard"} {
+		raw := `{"app":"` + app + `","seq":1,"hash":"h","fields":[],"action":"auth.login"}`
+		_, a := Parse(raw, "s", "sender", "t", now, now, false)
+		if a == nil || a.App != "" {
+			t.Fatalf("app %q: %+v", app, a)
+		}
+	}
+	_, a := Parse(`{"app":"kyoffboard","seq":1,"hash":"h","fields":[],"action":"offboarding.started"}`, "s", "sender", "t", now, now, false)
+	if a == nil || a.App != "kyoffboard" {
+		t.Fatalf("plain app dropped: %+v", a)
+	}
+}
+
+func TestDisplayStripsFormatCharacters(t *testing.T) {
+	in := "a\u202eb\u202ac\u2066d\u2069e\u200bf\u200d\ufeffg\u00adh"
+	if got := Display(in); got != "abcdefgh" {
+		t.Fatalf("display = %q", got)
+	}
+}

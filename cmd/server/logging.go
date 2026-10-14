@@ -23,6 +23,12 @@ var (
 	auditChainPlaced = logging.DeclareEvent("audit_chain_placed", "audit chain placed at start", slog.LevelInfo)
 	fChainMode       = logging.DeclareString("mode")
 	fChainHead       = logging.DeclareString("head")
+
+	// auditKeyBesideDB warns that write access to the database directory is enough to re-sign
+	// the audit chain.
+	auditKeyBesideDB = logging.DeclareEvent("audit_key_beside_db",
+		"audit key sits beside the database; move it to its own directory and set KYPULSE_AUDIT_KEY_FILE", slog.LevelWarn)
+	fKeyPath = logging.DeclareString("path")
 )
 
 // newLogger builds the process logger and routes the stdlib log package and the default slog

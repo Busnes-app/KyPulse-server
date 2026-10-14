@@ -90,7 +90,8 @@ func TestOffboardingAlertPairingAndIngestBoundary(t *testing.T) {
 			t.Fatalf("ingest: %d %s", w.Code, w.Body)
 		}
 	}
-	events, total, err := st.Targets().ListEvents(ctx, "", 0, 10)
+	events, err := st.Targets().ListEvents(ctx, "", 0, 10)
+	total := len(events)
 	if err != nil || total != 1 || events[0].TargetID != target.ID || events[0].Cause != "offboarding_failed" || events[0].NotifyError != "pending" {
 		t.Fatalf("native alerts: %+v %d %v", events, total, err)
 	}

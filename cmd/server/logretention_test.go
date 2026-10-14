@@ -37,6 +37,12 @@ func TestLogRetentionLoopPrunesImmediatelyAndStops(t *testing.T) {
 	if err := st.Sources().CreateCode(ctx, "expired-code", "", old); err != nil {
 		t.Fatal(err)
 	}
+	if err := st.Targets().CreateTarget(ctx, &store.Target{ID: "a", Name: "a", URL: "https://a/", Enabled: true}); err != nil {
+		t.Fatal(err)
+	}
+	if err := st.Targets().RecordEvent(ctx, &store.TargetEvent{TargetID: "a", At: now.Add(-eventRetention - time.Hour), FromState: "ok", ToState: "down"}); err != nil {
+		t.Fatal(err)
+	}
 	var codes int
 	if err := db.QueryRowContext(ctx, "SELECT COUNT(*) FROM log_pairing_codes").Scan(&codes); err != nil || codes != 1 {
 		t.Fatalf("before loop codes=%d err=%v", codes, err)
@@ -57,7 +63,11 @@ func TestLogRetentionLoopPrunesImmediatelyAndStops(t *testing.T) {
 		if err := db.QueryRowContext(ctx, "SELECT COUNT(*) FROM log_pairing_codes").Scan(&codes); err != nil {
 			t.Fatal(err)
 		}
-		if len(logs) == 0 && codes == 0 {
+		events, err := st.Targets().ListEvents(ctx, "", 0, 1)
+		if err != nil {
+			t.Fatal(err)
+		}
+		if len(logs) == 0 && codes == 0 && len(events) == 0 {
 			break
 		}
 		select {

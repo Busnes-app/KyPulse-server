@@ -22,7 +22,11 @@ live in `recoveryclient` and in the settings rows it reads and writes through th
 - `Collect` snapshots SQLite with the lib's `SQLiteSnapshot` (`VACUUM INTO`; the store runs in
   WAL mode, so a plain file read misses uncheckpointed commits) and returns
   `ErrNoDatabaseSnapshot` for any other driver, so a capsule without a consistent database is
-  never sealed. Before reading the temporary snapshot, it securely deletes collected log lines,
+  never sealed. Each snapshot holds `<data dir>/snapshot.lock` shared; whoever first takes
+  it exclusively (startup `SweepSnapshots`, or any snapshot while no other runs) removes
+  leftover `snapshot-<digits>` directories a crash left with an unsanitized copy. Symlinks
+  and other names are never touched; a removal failure refuses the snapshot and startup.
+  Keep the lock file in place. Before reading the temporary snapshot, it securely deletes collected log lines,
   imported activity, collection cursors and pending log pairing codes, resets log usage and compacts the copy;
   deletion or compaction failures refuse the capsule. Source identities and token hashes, users,
   targets, settings and kyPulse's own keyed audit chain remain. Source sequence receipts remain

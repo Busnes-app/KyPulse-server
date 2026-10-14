@@ -67,7 +67,8 @@ func TestInstallerMonitoringPrivateIPCAndNativeAlertSource(t *testing.T) {
 	if w.Code != 204 {
 		t.Fatalf("enrolled ingest: %d %s", w.Code, w.Body)
 	}
-	events, total, err := st.Targets().ListEvents(ctx, "", 0, 10)
+	events, err := st.Targets().ListEvents(ctx, "", 0, 10)
+	total := len(events)
 	if err != nil || total != 1 || events[0].TargetID != sources[0].TargetID || events[0].Cause != "offboarding_failed" {
 		t.Fatalf("enrolled failure alerts: %+v %v", events, err)
 	}

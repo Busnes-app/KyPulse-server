@@ -53,6 +53,10 @@ type Service struct {
 	drain  sync.Once
 	queue  chan delivery
 	sender sync.WaitGroup
+
+	mu       sync.Mutex
+	overflow map[string]delivery // held while the queue was full; see enqueue
+	closed   bool                // queue closed by Drain
 }
 
 // delivery is one queued message. done is a flush marker for tests: the sender closes it
@@ -74,6 +78,7 @@ func (s *Service) init() {
 			s.ShutdownGrace = 5 * time.Second
 		}
 		s.queue = make(chan delivery, s.QueueSize)
+		s.overflow = map[string]delivery{}
 	})
 }
 
@@ -91,6 +96,17 @@ func (s *Service) Start(ctx context.Context) {
 			select {
 			case d, ok := <-s.queue:
 				if !ok {
+					s.mu.Lock()
+					held := s.overflow
+					s.overflow = nil
+					s.mu.Unlock()
+					for _, d := range held {
+						if ctx.Err() != nil {
+							s.cancelled(d)
+						} else {
+							s.send(ctx, d)
+						}
+					}
 					return
 				}
 				switch {
@@ -101,10 +117,12 @@ func (s *Service) Start(ctx context.Context) {
 				default:
 					s.send(ctx, d)
 				}
+				s.refill()
 			case <-ticker.C:
 				if ctx.Err() == nil {
 					s.sendOffboarding(ctx)
 				}
+				s.refill()
 			}
 		}
 	}()
@@ -142,7 +160,12 @@ func (s *Service) sendOffboarding(ctx context.Context) {
 // poller has stopped: an Observe after Drain panics. A second call just waits.
 func (s *Service) Drain() {
 	s.init()
-	s.drain.Do(func() { close(s.queue) })
+	s.drain.Do(func() {
+		s.mu.Lock()
+		s.closed = true
+		close(s.queue)
+		s.mu.Unlock()
+	})
 	s.sender.Wait()
 }
 
@@ -210,8 +233,10 @@ func (s *Service) Observe(ctx context.Context, o poller.Observation) {
 
 	if before.UntilFixed && !track.UntilFixed {
 		// Recovery cleared the silence: the columns are the source of truth, so clear them
-		// too, not just the in-memory track.
-		_ = s.Store.Targets().SetSilence(ctx, tg.ID, nil, false)
+		// too, unless an admin set a new silence since this poll read the row.
+		if err := s.Store.Targets().ClearUntilFixed(ctx, tg.ID); err != nil {
+			s.Logger.Log(ctx, evPollStoreError, logging.TargetID(tg.ID), logging.Err(err))
+		}
 	}
 	// The silence columns own this state; never let a stale copy ride along in the JSON.
 	track.SilencedUntil, track.UntilFixed = time.Time{}, false
@@ -229,16 +254,28 @@ func (s *Service) Observe(ctx context.Context, o poller.Observation) {
 		s.Logger.Log(ctx, evPollStoreError, logging.TargetID(tg.ID), logging.Err(err))
 		return
 	}
-	if tr == nil && !decision.Send {
-		return
+	// Each transition and each flapping notice is its own event; the last one recorded is what
+	// a send reports. Without either, a send is a reminder about the current state.
+	var ev *store.TargetEvent
+	record := func(from, to alerts.State, cause string) bool {
+		ev = &store.TargetEvent{TargetID: tg.ID, At: o.At, FromState: string(from), ToState: string(to), Cause: cause, Reminder: decision.Reminder}
+		if err := s.Store.Targets().RecordEvent(ctx, ev); err != nil {
+			s.Logger.Log(ctx, evPollStoreError, logging.TargetID(tg.ID), logging.Err(err))
+			return false
+		}
+		return true
 	}
-	ev := &store.TargetEvent{TargetID: tg.ID, At: o.At, FromState: string(track.State), ToState: string(track.State), Cause: track.Cause, Reminder: decision.Reminder}
 	if tr != nil {
-		ev.FromState, ev.ToState, ev.Cause = string(tr.From), string(tr.To), tr.Cause
 		s.Logger.Log(ctx, evStateChanged, logging.TargetID(tg.ID), fState(string(tr.To)), fPrevious(string(tr.From)), logging.ReasonCode(tr.Cause))
+		if !record(tr.From, tr.To, tr.Cause) {
+			return
+		}
 	}
-	if err := s.Store.Targets().RecordEvent(ctx, ev); err != nil {
-		s.Logger.Log(ctx, evPollStoreError, logging.TargetID(tg.ID), logging.Err(err))
+	if n := decision.Notice; n != nil {
+		if !record(n.From, n.To, n.Cause) {
+			return
+		}
+	} else if tr == nil && decision.Send && !record(track.State, track.State, track.Cause) {
 		return
 	}
 	if !decision.Send {
@@ -246,13 +283,55 @@ func (s *Service) Observe(ctx context.Context, o poller.Observation) {
 	}
 	msg := notify.Message{App: tg.Name, State: ev.ToState, Previous: ev.FromState, Reason: ev.Cause,
 		Time: o.At, URL: s.AppURL + "/#/apps/" + tg.ID, Reminder: decision.Reminder}
+	s.enqueue(ctx, delivery{targetID: tg.ID, eventID: ev.ID, msg: msg})
+}
+
+// enqueue never blocks a poll worker. On a full queue a reminder is dropped, but any other
+// message is held, newest per target, and queued by the sender as room frees up: a recovery
+// is never lost to a queue full of reminders. While a target has a held message its later
+// ones wait behind it, so each target's messages stay in order.
+func (s *Service) enqueue(ctx context.Context, d delivery) {
 	s.init()
-	select {
-	case s.queue <- delivery{targetID: tg.ID, eventID: ev.ID, msg: msg}:
+	var dropped *delivery
+	s.mu.Lock()
+	held, isHeld := s.overflow[d.targetID]
+	switch {
+	case isHeld && d.msg.Reminder:
+		dropped = &d
+	case isHeld:
+		s.overflow[d.targetID], dropped = d, &held // the newer message supersedes it
 	default:
-		// Drop the newest: the queued ones are older news the operator is already owed.
-		s.Logger.Log(ctx, evAlertDropped, logging.TargetID(tg.ID), logging.Count(1))
-		_ = s.Store.Targets().SetEventNotified(ctx, ev.ID, false, "queue_full")
+		select {
+		case s.queue <- d:
+		default:
+			if d.msg.Reminder {
+				dropped = &d
+			} else {
+				s.overflow[d.targetID] = d
+			}
+		}
+	}
+	s.mu.Unlock()
+	if dropped != nil {
+		s.Logger.Log(ctx, evAlertDropped, logging.TargetID(dropped.targetID), logging.Count(1))
+		_ = s.Store.Targets().SetEventNotified(ctx, dropped.eventID, false, "queue_full")
+	}
+}
+
+// refill moves held messages into the queue while it has room.
+func (s *Service) refill() {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	for id, d := range s.overflow {
+		if s.closed {
+			return
+		}
+		select {
+		case s.queue <- d:
+			delete(s.overflow, id)
+		default:
+			return
+		}
 	}
 }
 

@@ -9,6 +9,7 @@ import (
 	"fmt"
 	"math/big"
 	"strconv"
+	"sync"
 	"time"
 
 	"github.com/Busnes-app/kypulse-server/internal/crypto"
@@ -70,33 +71,71 @@ func GeneratePoWChallenge(difficulty int, signingSecret string) (*PoWChallenge, 
 	}, nil
 }
 
-// VerifyPoWSolution decodes and validates the client's base64-encoded JSON solution.
-func VerifyPoWSolution(solutionBase64, signingSecret string) bool {
+// powUsedCap bounds the replay set. Each entry costs the caller a solved puzzle, and evicting
+// one re-opens a single replay only after another fresh solve, so eviction never beats solving.
+const powUsedCap = 10000
+
+// PoWGuard verifies solutions and accepts each signed challenge once, until it expires.
+type PoWGuard struct {
+	mu   sync.Mutex
+	used map[string]int64 // salt -> challenge expiry (unix seconds)
+}
+
+func NewPoWGuard() *PoWGuard { return &PoWGuard{used: make(map[string]int64)} }
+
+// Verify decodes and validates the client's base64-encoded JSON solution and consumes it.
+func (g *PoWGuard) Verify(solutionBase64, signingSecret string) bool {
+	sol, ok := checkPoWSolution(solutionBase64, signingSecret)
+	if !ok {
+		return false
+	}
+	now := time.Now().Unix()
+	g.mu.Lock()
+	defer g.mu.Unlock()
+	if _, seen := g.used[sol.Salt]; seen {
+		return false
+	}
+	if len(g.used) >= powUsedCap {
+		for salt, exp := range g.used {
+			if exp < now {
+				delete(g.used, salt)
+			}
+		}
+		for salt := range g.used {
+			if len(g.used) < powUsedCap {
+				break
+			}
+			delete(g.used, salt) // random: Go randomises map iteration
+		}
+	}
+	g.used[sol.Salt] = sol.ExpiresAt
+	return true
+}
+
+func checkPoWSolution(solutionBase64, signingSecret string) (PoWSolution, bool) {
 	data, err := base64.StdEncoding.DecodeString(solutionBase64)
 	if err != nil {
 		data, err = base64.RawStdEncoding.DecodeString(solutionBase64)
 		if err != nil {
-			return false
+			return PoWSolution{}, false
 		}
 	}
 
 	var sol PoWSolution
 	if err := json.Unmarshal(data, &sol); err != nil {
-		return false
+		return PoWSolution{}, false
 	}
 
 	if sol.Algorithm != "SHA-256" || sol.Salt == "" || sol.Challenge == "" || sol.Signature == "" ||
 		sol.Number < 1 || sol.MaxNumber < 1 || sol.Number > sol.MaxNumber || sol.ExpiresAt < time.Now().Unix() {
-		return false
+		return PoWSolution{}, false
 	}
 	signaturePayload := sol.Salt + ":" + sol.Challenge + ":" + strconv.Itoa(sol.MaxNumber) + ":" + strconv.FormatInt(sol.ExpiresAt, 10)
 	if !crypto.VerifyHMACSHA256([]byte(signaturePayload), signingSecret, sol.Signature) {
-		return false
+		return PoWSolution{}, false
 	}
 
 	targetStr := fmt.Sprintf("%s%d", sol.Salt, sol.Number)
 	h := sha256.Sum256([]byte(targetStr))
-	actualChallenge := hex.EncodeToString(h[:])
-
-	return actualChallenge == sol.Challenge
+	return sol, hex.EncodeToString(h[:]) == sol.Challenge
 }

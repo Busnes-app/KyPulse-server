@@ -226,6 +226,70 @@ func TestFileReusedInodeDoesNotSkipNewPrefix(t *testing.T) {
 	}
 }
 
+func TestFileRefusesSymlink(t *testing.T) {
+	dir := t.TempDir()
+	path := filepath.Join(dir, "app.log")
+	secret := filepath.Join(dir, "secret")
+	if err := os.WriteFile(secret, []byte("secret\n"), 0600); err != nil {
+		t.Fatal(err)
+	}
+	if err := os.Symlink(secret, path); err != nil {
+		t.Fatal(err)
+	}
+	if err := ReadFile(context.Background(), path, Position{}, make(chan Item, 1)); err == nil {
+		t.Fatal("symlink accepted at start")
+	}
+	if err := os.Remove(path); err != nil {
+		t.Fatal(err)
+	}
+	if err := os.WriteFile(path, []byte("one\n"), 0600); err != nil {
+		t.Fatal(err)
+	}
+	ch, _ := followFile(t, path, Position{})
+	first := nextFile(t, ch)
+	if first.Record.Line != "one" {
+		t.Fatal(first)
+	}
+	// Rotation to a symlink must not ship its target.
+	if err := os.Rename(path, path+".1"); err != nil {
+		t.Fatal(err)
+	}
+	if err := os.Symlink(secret, path); err != nil {
+		t.Fatal(err)
+	}
+	marker := nextFile(t, ch)
+	if !strings.Contains(marker.Record.Line, "refused") || marker.Position != first.Position {
+		t.Fatalf("marker: %+v want position %+v", marker, first.Position)
+	}
+	select {
+	case item := <-ch:
+		t.Fatalf("read through symlink: %+v", item)
+	case <-time.After(600 * time.Millisecond):
+	}
+	if err := os.Remove(path); err != nil {
+		t.Fatal(err)
+	}
+	if err := os.WriteFile(path, []byte("fresh\n"), 0600); err != nil {
+		t.Fatal(err)
+	}
+	if got := nextFile(t, ch); got.Record.Line != "fresh" {
+		t.Fatalf("recovery: %+v", got)
+	}
+}
+
+type ownedInfo struct {
+	os.FileInfo
+	uid uint32
+}
+
+func (o ownedInfo) Sys() any { return &syscall.Stat_t{Uid: o.uid} }
+
+func TestSameOwner(t *testing.T) {
+	if !sameOwner(ownedInfo{uid: 1000}, ownedInfo{uid: 1000}) || sameOwner(ownedInfo{uid: 1000}, ownedInfo{uid: 0}) {
+		t.Fatal("owner comparison wrong")
+	}
+}
+
 func TestFileFIFODoesNotBlockCancellation(t *testing.T) {
 	path := filepath.Join(t.TempDir(), "pipe")
 	if err := syscall.Mkfifo(path, 0600); err != nil {

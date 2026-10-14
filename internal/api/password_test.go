@@ -30,6 +30,7 @@ func TestForcedPasswordReplacement(t *testing.T) {
 	}
 	call := func(method, path, body string, cookie, csrf bool) *httptest.ResponseRecorder {
 		req := httptest.NewRequest(method, path, strings.NewReader(body))
+		req.Header.Set("Content-Type", "application/json")
 		if cookie {
 			for _, c := range login.Result().Cookies() {
 				req.AddCookie(c)
@@ -99,7 +100,9 @@ func TestForcedPasswordReplacement(t *testing.T) {
 	}{{oldPassword, 401}, {newPassword, 200}} {
 		b, _ := json.Marshal(map[string]string{"username": "admin", "password": tc.pass})
 		w := httptest.NewRecorder()
-		srv.ServeHTTP(w, httptest.NewRequest("POST", "/api/auth/login", strings.NewReader(string(b))))
+		req := httptest.NewRequest("POST", "/api/auth/login", strings.NewReader(string(b)))
+		req.Header.Set("Content-Type", "application/json")
+		srv.ServeHTTP(w, req)
 		if w.Code != tc.status {
 			t.Fatal("login after replacement", w.Code, w.Body)
 		}

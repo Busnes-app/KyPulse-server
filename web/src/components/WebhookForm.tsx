@@ -11,8 +11,9 @@ const presets = [
 
 interface WebhookFormProps { onChanged: () => void }
 
-// WebhookForm configures the one outbound alert webhook. The token is write-only: the server
-// only reports whether one is saved. An empty field keeps it for the same preset and origin.
+// WebhookForm configures the one outbound alert webhook. The URL and token are write-only:
+// the server reports only the URL's origin and whether a token is saved, so every save
+// re-enters the URL. An empty token keeps the saved one for the same preset and origin.
 export const WebhookForm: React.FC<WebhookFormProps> = ({ onChanged }) => {
   const [info, setInfo] = useState<WebhookInfo | null>(null);
   const [preset, setPreset] = useState('ntfy');
@@ -24,13 +25,8 @@ export const WebhookForm: React.FC<WebhookFormProps> = ({ onChanged }) => {
 
   const apply = (w: WebhookInfo) => {
     setInfo(w);
-    if (w.configured) {
-      setPreset(w.preset ?? 'ntfy');
-      setUrl(w.url ?? '');
-    } else {
-      setPreset('ntfy');
-      setUrl('');
-    }
+    setPreset(w.configured ? w.preset ?? 'ntfy' : 'ntfy');
+    setUrl('');
     setToken('');
     setClearToken(false);
   };
@@ -78,7 +74,8 @@ export const WebhookForm: React.FC<WebhookFormProps> = ({ onChanged }) => {
 
   const hint = presets.find((p) => p.id === preset)?.hint;
   // Send test must exercise the saved config, not an unsaved edit.
-  const dirty = preset !== info?.preset || url.trim() !== (info?.url ?? '') || token !== '' || clearToken;
+  const dirty = preset !== info?.preset || url.trim() !== '' || token !== '' || clearToken;
+  const savedURL = info?.configured && info.has_url ? `${info.url_origin ?? ''}/… (saved; re-enter to change)` : 'https://';
   return (
     <form className="panel" onSubmit={save} aria-label="Alert webhook">
       <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 12 }}>
@@ -97,7 +94,7 @@ export const WebhookForm: React.FC<WebhookFormProps> = ({ onChanged }) => {
             {presets.map((p) => <option key={p.id} value={p.id}>{p.label}</option>)}
           </select>
         </label>
-        <label>URL<input type="url" value={url} onChange={(e) => setUrl(e.target.value)} required placeholder="https://" /></label>
+        <label>URL<input type="url" autoComplete="off" value={url} onChange={(e) => setUrl(e.target.value)} required placeholder={savedURL} /></label>
         <label>Token (write-only)
           <input type="password" autoComplete="off" value={token} onChange={(e) => setToken(e.target.value)} disabled={clearToken}
             placeholder={info?.has_token ? 'saved; leave empty to keep' : preset === 'gotify' ? 'app token required' : 'none'} />
@@ -109,6 +106,7 @@ export const WebhookForm: React.FC<WebhookFormProps> = ({ onChanged }) => {
         )}
       </div>
       {hint && <p className="dr-hint">{hint}</p>}
+      {info?.configured && <p className="dr-hint">The saved URL is never shown, since it can carry the credential. Enter it again to save a change.</p>}
       {info?.has_token && <p className="dr-hint">Leaving Token empty keeps the saved token only when the preset, URL scheme and host are unchanged.</p>}
       {message && <p className={message.kind === 'ok' ? 'form-ok' : 'form-error'} role={message.kind === 'ok' ? 'status' : 'alert'}>{message.text}</p>}
       <div className="dr-actions">

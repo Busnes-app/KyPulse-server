@@ -63,6 +63,28 @@ func TestEncodedBatchCapAndCheckpoint(t *testing.T) {
 	}
 }
 
+type deadlinePost struct{ got time.Duration }
+
+func (d *deadlinePost) Post(ctx context.Context, _, _ string, _ []byte, _ map[string]string) (*egress.Response, error) {
+	deadline, _ := ctx.Deadline()
+	d.got = time.Until(deadline)
+	return &egress.Response{StatusCode: 204}, nil
+}
+
+func TestRequestTimeoutScalesWithBody(t *testing.T) {
+	if RequestTimeout(0) != 10*time.Second || RequestTimeout(1) != 18*time.Second || RequestTimeout(64<<10) != 18*time.Second || MaxRequestTimeout != 138*time.Second {
+		t.Fatalf("timeouts: %v %v %v", RequestTimeout(0), RequestTimeout(1), MaxRequestTimeout)
+	}
+	post := &deadlinePost{}
+	s := Sender{HTTP: post, Token: make([]byte, 32), State: State{URL: "https://example.com"}}
+	if err := s.deliver(context.Background(), make([]byte, ingest.MaxRequestBytes)); err != nil {
+		t.Fatal(err)
+	}
+	if post.got < 130*time.Second || post.got > MaxRequestTimeout {
+		t.Fatalf("full batch deadline %v", post.got)
+	}
+}
+
 func TestRetrySameFrozenBatchAndCancel(t *testing.T) {
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()

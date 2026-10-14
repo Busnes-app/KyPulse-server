@@ -181,6 +181,8 @@ func (s *Service) collectLogs(ctx context.Context, gen uint64, c *Client) {
 				line, activity := logstore.Parse(record.Line, "", "kyyard", target, record.Time, now, record.Truncated)
 				batch.Logs = append(batch.Logs, line)
 				if activity != nil {
+					// Attribute to the KyYard-reported container, never to what the line claims.
+					activity.App = logstore.Bounded("container:" + group.facts.Link)
 					batch.Activity = append(batch.Activity, *activity)
 				}
 			}
@@ -230,7 +232,7 @@ func (s *Service) collectAudit(ctx context.Context, gen uint64, c *Client) {
 		for _, event := range page.Items {
 			// Use the shared parser's field bounds/NUL normalization for imported audit fields.
 			// Feed mapping is explicit; remote hash-chain fields are neither required nor verified.
-			activity := store.Activity{Time: event.CreatedAt, ReceivedAt: now, App: "kyyard", Actor: logstore.Bounded(event.UserID), Action: logstore.Bounded(event.Action), Target: logstore.Bounded(event.Resource), Outcome: logstore.Bounded(event.Result), IP: logstore.Bounded(event.IPAddress), ExternalKey: c.Config.Generation + ":" + url.PathEscape(c.Config.OrganizationID) + ":" + strconv.FormatInt(event.ID, 10)}
+			activity := store.Activity{Time: event.CreatedAt, ReceivedAt: now, App: logstore.ImportedApp, Actor: logstore.Bounded(event.UserID), Action: logstore.Bounded(event.Action), Target: logstore.Bounded(event.Resource), Outcome: logstore.Bounded(event.Result), IP: logstore.Bounded(event.IPAddress), ExternalKey: c.Config.Generation + ":" + url.PathEscape(c.Config.OrganizationID) + ":" + strconv.FormatInt(event.ID, 10)}
 			batch.Activity = append(batch.Activity, activity)
 		}
 		next := strconv.FormatInt(page.NextAfterID, 10)

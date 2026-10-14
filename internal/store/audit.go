@@ -382,23 +382,27 @@ func (a *auditStore) Ready(ctx context.Context) error {
 }
 
 func (a *auditStore) VerifyChain(ctx context.Context) (ChainStatus, error) {
-	anchor, ok, err := a.loadAnchor(ctx, a.store.db)
-	if err != nil {
+	// Anchor, unkeyed count and highest sequence are one statement, so one snapshot: a row
+	// past the anchor is forged, not a concurrent append. The scan is then bounded by the
+	// anchor so appends landing after the snapshot are not read.
+	var raw sql.NullString
+	var unkeyed, maxSeq uint64
+	if err := a.store.db.QueryRowContext(ctx, a.store.rebind("SELECT (SELECT value FROM server_settings WHERE key = ?), COUNT(1) - COUNT(seq), COALESCE(MAX(seq), 0) FROM audit_records"), anchorKey).Scan(&raw, &unkeyed, &maxSeq); err != nil {
 		return ChainStatus{}, err
 	}
-	if !ok {
-		anchor = auditchain.Anchor{Count: 0, Hash: genesisHash}
-	}
-	var unkeyed uint64
-	if err := a.store.db.QueryRowContext(ctx, "SELECT COUNT(1) FROM audit_records WHERE seq IS NULL").Scan(&unkeyed); err != nil {
-		return ChainStatus{}, err
+	anchor := auditchain.Anchor{Count: 0, Hash: genesisHash}
+	if raw.Valid {
+		var err error
+		if anchor, err = decodeAnchor(raw.String); err != nil {
+			return ChainStatus{}, err
+		}
 	}
 	if unkeyed > 0 {
 		return ChainStatus{}, fmt.Errorf("%w: %d audit records carry no digest", ErrAuditUnplaceable, unkeyed)
 	}
-	// anchor was read in a separate, earlier statement; bounding this scan by anchor.Count is
-	// what keeps a concurrent append from being read back as a record "past" the anchor that
-	// was current when this call started.
+	if maxSeq > anchor.Count {
+		return ChainStatus{}, fmt.Errorf("%w: audit record %d lies past the anchor's count %d", ErrAuditUnplaceable, maxSeq, anchor.Count)
+	}
 	rows, err := a.store.db.QueryContext(ctx, a.store.rebind(`SELECT seq, prev_hash, hash, user_id, action, resource, details, ip_address, created_at
 FROM audit_records WHERE seq <= ? ORDER BY seq`), anchor.Count)
 	if err != nil {

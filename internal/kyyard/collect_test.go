@@ -43,7 +43,7 @@ func collectionService(t *testing.T, h HTTP) (*Service, store.Store) {
 			t.Fatal(err)
 		}
 	}
-	s.facts = map[string]ContainerFacts{"ep/app": {EndpointID: "ep", ContainerID: "ct"}}
+	s.facts = map[string]ContainerFacts{"ep/app": {Link: "ep/app", EndpointID: "ep", ContainerID: "ct"}}
 	return s, st
 }
 func plain(body string) *egress.Response {
@@ -360,14 +360,18 @@ func TestLogOverflowKeepsCursorAndImportedAuditShape(t *testing.T) {
 		if oversized {
 			return nil, egress.ErrBodyTooLarge
 		}
-		return plain("2026-09-27T12:00:00Z {\"app\":\"watched\",\"seq\":1,\"hash\":\"unverified\",\"fields\":[],\"action\":\"auth.login\",\"user_id\":\"alice\",\"result\":\"failure\"}\n"), nil
+		// A container claiming KyYard's identity must not forge imported audit.
+		return plain("2026-09-27T12:00:00Z {\"app\":\"kyyard\",\"seq\":1,\"hash\":\"unverified\",\"fields\":[],\"action\":\"auth.login\",\"user_id\":\"alice\",\"result\":\"failure\"}\n"), nil
 	}}
 	s, st := collectionService(t, h)
 	ctx := context.Background()
 	s.CollectNow(ctx)
-	activity, _ := st.Logs().ListActivity(ctx, store.ActivityFilter{App: "watched"})
+	activity, _ := st.Logs().ListActivity(ctx, store.ActivityFilter{App: "container:ep/app"})
 	if len(activity) != 2 || activity[0].Actor != "alice" {
 		t.Fatal(activity)
+	}
+	if forged, _ := st.Logs().ListActivity(ctx, store.ActivityFilter{App: "kyyard"}); len(forged) != 0 {
+		t.Fatalf("forged KyYard audit: %+v", forged)
 	}
 	cfg, _, _ := s.Pairing.Load(ctx)
 	key := cursorKey(cfg, "logs", "ep", "ct")

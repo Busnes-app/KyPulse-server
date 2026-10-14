@@ -2,9 +2,11 @@ package sso
 
 import (
 	"context"
+	"crypto/sha256"
 	"encoding/json"
 	"errors"
 	"fmt"
+	"sync"
 	"time"
 
 	"github.com/Busnes-app/kypulse-server/internal/config"
@@ -17,6 +19,8 @@ type KySignOnClient struct {
 	config config.SSOConfig
 	store  store.Store
 	flow   *oauthFlow
+	mu     sync.Mutex
+	seen   map[[32]byte]time.Time // sync body hash -> end of its timestamp window
 }
 
 func NewKySignOnClient(cfg config.SSOConfig, st store.Store) *KySignOnClient {
@@ -24,6 +28,7 @@ func NewKySignOnClient(cfg config.SSOConfig, st store.Store) *KySignOnClient {
 		config: cfg,
 		store:  st,
 		flow:   newOAuthFlow(cfg.KySignOnIssuer, cfg.KySignOnClientID, cfg.KySignOnSecret),
+		seen:   make(map[[32]byte]time.Time),
 	}
 }
 
@@ -68,10 +73,58 @@ func (k *KySignOnClient) HandleSyncWebhook(ctx context.Context, body []byte, sig
 	if err := json.Unmarshal(body, &payload); err != nil {
 		return fmt.Errorf("invalid json payload: %w", err)
 	}
-	if payload.Timestamp == 0 || time.Since(time.Unix(payload.Timestamp, 0)).Abs() > 5*time.Minute {
+	sent := time.Unix(payload.Timestamp, 0)
+	if payload.Timestamp == 0 || time.Since(sent).Abs() > syncWindow {
 		return errors.New("webhook timestamp is missing or expired")
 	}
+	// The payload carries no event ID, so the signed body itself is the replay key.
+	key := sha256.Sum256(body)
+	if err := k.reserve(key, sent.Add(syncWindow)); err != nil {
+		return err
+	}
+	if err := k.applySync(ctx, payload); err != nil {
+		k.release(key) // a failed delivery may be retried
+		return err
+	}
+	return nil
+}
 
+// syncWindow is how far a webhook timestamp may drift; syncSeenCap bounds the replay set.
+// Only a correctly signed body is recorded, so only the identity provider can fill it, and
+// a full set refuses rather than forgets.
+const (
+	syncWindow  = 5 * time.Minute
+	syncSeenCap = 10000
+)
+
+func (k *KySignOnClient) reserve(key [32]byte, until time.Time) error {
+	now := time.Now()
+	k.mu.Lock()
+	defer k.mu.Unlock()
+	if _, dup := k.seen[key]; dup {
+		return errors.New("webhook already delivered")
+	}
+	if len(k.seen) >= syncSeenCap {
+		for h, exp := range k.seen {
+			if now.After(exp) {
+				delete(k.seen, h)
+			}
+		}
+		if len(k.seen) >= syncSeenCap {
+			return errors.New("too many webhook deliveries")
+		}
+	}
+	k.seen[key] = until
+	return nil
+}
+
+func (k *KySignOnClient) release(key [32]byte) {
+	k.mu.Lock()
+	defer k.mu.Unlock()
+	delete(k.seen, key)
+}
+
+func (k *KySignOnClient) applySync(ctx context.Context, payload KySignOnSyncPayload) error {
 	switch payload.Event {
 	case "user.created", "user.updated":
 		existing, err := k.store.Users().GetUserBySSO(ctx, "kysignon", payload.ID)

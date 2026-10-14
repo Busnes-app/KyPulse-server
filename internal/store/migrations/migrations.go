@@ -3,6 +3,7 @@ package migrations
 import (
 	"context"
 	"database/sql"
+	sqldriver "database/sql/driver"
 	"fmt"
 	"strings"
 	"time"
@@ -343,12 +344,34 @@ CREATE INDEX idx_pending_offboarding_alerts ON target_events(id) WHERE cause='of
 	},
 }
 
+// lockKey is the Postgres session advisory lock Run holds, so replicas starting together
+// migrate one at a time and each re-reads what the other applied.
+const lockKey int64 = 7345102
+
 // Run executes all pending migrations for the specified database driver and returns the
 // versions it applied in this call, empty when the schema was already current.
 func Run(ctx context.Context, db *sql.DB, driver string) (applied []int, err error) {
 	driver = strings.ToLower(driver)
 	if driver == "postgresql" {
 		driver = "postgres"
+	}
+
+	// One pinned connection: a session advisory lock belongs to the connection that took it.
+	conn, err := db.Conn(ctx)
+	if err != nil {
+		return nil, fmt.Errorf("failed to get a migration connection: %w", err)
+	}
+	defer conn.Close()
+	if driver == "postgres" {
+		if _, err := conn.ExecContext(ctx, "SELECT pg_advisory_lock($1)", lockKey); err != nil {
+			return nil, fmt.Errorf("failed to take the migration lock: %w", err)
+		}
+		defer func() {
+			// A connection that may still hold the lock is discarded, never pooled.
+			if _, uerr := conn.ExecContext(context.WithoutCancel(ctx), "SELECT pg_advisory_unlock($1)", lockKey); uerr != nil {
+				_ = conn.Raw(func(any) error { return sqldriver.ErrBadConn })
+			}
+		}()
 	}
 
 	// Create schema_migrations table
@@ -367,16 +390,16 @@ CREATE TABLE IF NOT EXISTS schema_migrations (
 );`
 	}
 
-	if _, err := db.ExecContext(ctx, initTableQuery); err != nil {
+	if _, err := conn.ExecContext(ctx, initTableQuery); err != nil {
 		return nil, fmt.Errorf("failed to init schema_migrations: %w", err)
 	}
 
 	for _, m := range registry {
 		var exists int
-		err := db.QueryRowContext(ctx, "SELECT COUNT(1) FROM schema_migrations WHERE version = $1", m.Version).Scan(&exists)
+		err := conn.QueryRowContext(ctx, "SELECT COUNT(1) FROM schema_migrations WHERE version = $1", m.Version).Scan(&exists)
 		if err != nil {
 			// Try SQLite positional ? parameter if $1 failed
-			err = db.QueryRowContext(ctx, "SELECT COUNT(1) FROM schema_migrations WHERE version = ?", m.Version).Scan(&exists)
+			err = conn.QueryRowContext(ctx, "SELECT COUNT(1) FROM schema_migrations WHERE version = ?", m.Version).Scan(&exists)
 			if err != nil {
 				return nil, fmt.Errorf("failed to check migration version %d: %w", m.Version, err)
 			}
@@ -391,7 +414,7 @@ CREATE TABLE IF NOT EXISTS schema_migrations (
 			ddl = m.Postgres
 		}
 
-		tx, err := db.BeginTx(ctx, nil)
+		tx, err := conn.BeginTx(ctx, nil)
 		if err != nil {
 			return nil, fmt.Errorf("failed to begin migration tx for v%d: %w", m.Version, err)
 		}
