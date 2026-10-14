@@ -4,8 +4,11 @@ import (
 	"context"
 	"encoding/json"
 	"errors"
+	"fmt"
 	"log/slog"
+	"mime"
 	"net/http"
+	"net/netip"
 	"net/url"
 	"strings"
 	"sync"
@@ -35,14 +38,75 @@ var reasonChainBroken = health.DeclareReason("chain_broken")
 // they are stored, since a resource may be an operator-typed URL and details may quote a
 // remote body.
 func (s *Server) audit(ctx context.Context, userID string, r *http.Request, action, resource, details string) {
+	s.auditFrom(ctx, userID, s.requestIP(r), action, resource, details)
+}
+
+func (s *Server) auditFrom(ctx context.Context, userID, ip, action, resource, details string) {
 	if err := s.store.Audit().LogAudit(ctx, &store.AuditRecord{
 		UserID:    userID,
 		Action:    action,
 		Resource:  recoveryclient.AuditSafe(resource),
 		Details:   recoveryclient.AuditSafe(details),
-		IPAddress: s.requestIP(r),
+		IPAddress: ip,
 	}); err != nil {
 		s.lg.Log(ctx, evAuditWriteFailed, logging.Action(action), logging.Err(err))
+	}
+}
+
+// Refusals are caller-triggered, so their rows are bounded: the first per client, user,
+// action and details in a window is written at once; repeats are counted and written as one
+// "repeats=N" row after the window closes, on the next refusal. Past refusalCap buckets, new
+// keys share one overflow bucket.
+const (
+	refusalWindow = 10 * time.Minute
+	refusalCap    = 512
+	refusalSpill  = "overflow"
+)
+
+type refusalBucket struct {
+	userID, ip, action, details string
+	reset                       time.Time
+	repeats                     int
+}
+
+// auditRefusal records a refused or failed request without letting a flood of them flood
+// the audit trail.
+func (s *Server) auditRefusal(ctx context.Context, userID string, r *http.Request, action, details string) {
+	ip := s.limitIP(r)
+	key := ip + "\x00" + userID + "\x00" + action + "\x00" + details
+	now := s.refusalNow()
+	s.refusalMu.Lock()
+	var due []refusalBucket
+	for k, b := range s.refusals {
+		if now.After(b.reset) {
+			if b.repeats > 0 {
+				due = append(due, *b)
+			}
+			delete(s.refusals, k)
+		}
+	}
+	b, seen := s.refusals[key]
+	if !seen && len(s.refusals) >= refusalCap {
+		key = refusalSpill
+		if b, seen = s.refusals[key]; !seen {
+			b = &refusalBucket{ip: "*", action: "audit.refusal_overflow", details: "outcome=refused reason=overflow"}
+		}
+	} else if !seen {
+		b = &refusalBucket{userID: userID, ip: ip, action: action, details: details}
+	}
+	if seen {
+		b.repeats++
+	} else {
+		b.reset = now.Add(refusalWindow)
+		s.refusals[key] = b
+	}
+	s.refusalMu.Unlock()
+
+	for _, d := range due {
+		s.auditFrom(ctx, d.userID, d.ip, d.action, "", fmt.Sprintf("%s repeats=%d", d.details, d.repeats))
+	}
+	if !seen {
+		s.audit(ctx, userID, r, action, "", details)
 	}
 }
 
@@ -65,9 +129,14 @@ type Server struct {
 	kyyard        *kyyard.Service
 	lg            *logging.Logger
 	mux           *http.ServeMux
+	pow           *auth.PoWGuard
 	attemptsMu    sync.Mutex
 	attempts      map[string]attemptWindow
+	accounts      map[string]attemptWindow
 	claimGlobal   attemptWindow
+	refusalMu     sync.Mutex
+	refusals      map[string]*refusalBucket
+	refusalNow    func() time.Time
 	ingestMu      sync.Mutex
 	ingestWindows map[string]attemptWindow
 	ingestNow     func() time.Time
@@ -179,7 +248,11 @@ func NewServer(cfg *config.Config, st store.Store, lg *logging.Logger, mon *moni
 		kyyard:        yard,
 		lg:            lg,
 		mux:           http.NewServeMux(),
+		pow:           auth.NewPoWGuard(),
 		attempts:      make(map[string]attemptWindow),
+		accounts:      make(map[string]attemptWindow),
+		refusals:      make(map[string]*refusalBucket),
+		refusalNow:    time.Now,
 		ingestWindows: make(map[string]attemptWindow),
 		ingestNow:     time.Now,
 	}
@@ -197,6 +270,22 @@ func (s *Server) allowAttempt(key string, limit int, window time.Duration) bool 
 	}
 	entry := bumpWindow(s.attempts[key], now, window)
 	s.attempts[key] = entry
+	return entry.count <= limit
+}
+
+// allowAccount is allowAttempt for keys naming an existing account. They live apart from the
+// IP map, bounded by the user table and never evicted, so filling that map cannot reset them.
+func (s *Server) allowAccount(key string, limit int, window time.Duration) bool {
+	now := time.Now()
+	s.attemptsMu.Lock()
+	defer s.attemptsMu.Unlock()
+	for k, w := range s.accounts {
+		if now.After(w.reset) {
+			delete(s.accounts, k)
+		}
+	}
+	entry := bumpWindow(s.accounts[key], now, window)
+	s.accounts[key] = entry
 	return entry.count <= limit
 }
 
@@ -234,21 +323,26 @@ func (s *Server) requestIP(r *http.Request) string {
 	return auth.ClientIP(r, s.config.Security.TrustedProxies)
 }
 
+// limitIP is requestIP as a limiter key: an IPv6 client is keyed by its /64, since one host
+// routinely holds the whole prefix.
+func (s *Server) limitIP(r *http.Request) string {
+	ip := s.requestIP(r)
+	if addr, err := netip.ParseAddr(ip); err == nil && addr.Is6() {
+		return netip.PrefixFrom(addr.WithZone(""), 64).Masked().String()
+	}
+	return ip
+}
+
+// allowClaim checks the client first and counts only requests it admits toward the global
+// budget, so one client cannot spend everyone's pairing attempts.
 func (s *Server) allowClaim(ip string) bool {
-	now := time.Now()
-	s.attemptsMu.Lock()
-	defer s.attemptsMu.Unlock()
-	s.claimGlobal = bumpWindow(s.claimGlobal, now, time.Minute)
-	if s.claimGlobal.count > 30 {
+	if !s.allowAttempt("log-claim:"+ip, 5, time.Minute) {
 		return false
 	}
-	key := "log-claim:" + ip
-	if _, known := s.attempts[key]; !known && len(s.attempts) >= attemptsCap {
-		s.makeRoom(now)
-	}
-	entry := bumpWindow(s.attempts[key], now, time.Minute)
-	s.attempts[key] = entry
-	return entry.count <= 5
+	s.attemptsMu.Lock()
+	defer s.attemptsMu.Unlock()
+	s.claimGlobal = bumpWindow(s.claimGlobal, time.Now(), time.Minute)
+	return s.claimGlobal.count <= 30
 }
 
 func (s *Server) routes() {
@@ -341,7 +435,7 @@ func (s *Server) requireAdmin(h http.HandlerFunc) http.HandlerFunc {
 		user, _, err := s.sessions.AuthenticateRequest(r)
 		if err != nil {
 			if action := adminLogAuditAction(r); action != "" {
-				s.audit(r.Context(), "", r, action, "", "outcome=refused reason=authentication")
+				s.auditRefusal(r.Context(), "", r, action, "outcome=refused reason=authentication")
 			}
 			if errors.Is(err, auth.ErrPasswordChangeRequired) {
 				s.writeJSON(w, http.StatusForbidden, map[string]string{"error": "Change your password before continuing", "code": "password_change_required"})
@@ -352,7 +446,7 @@ func (s *Server) requireAdmin(h http.HandlerFunc) http.HandlerFunc {
 		}
 		if user.Role != "admin" {
 			if action := adminLogAuditAction(r); action != "" {
-				s.audit(r.Context(), user.ID, r, action, "", "outcome=refused reason=role")
+				s.auditRefusal(r.Context(), user.ID, r, action, "outcome=refused reason=role")
 			}
 			s.writeError(w, http.StatusForbidden, "Administrator role required")
 			return
@@ -377,7 +471,7 @@ func (s *Server) requireSession(h http.HandlerFunc) http.HandlerFunc {
 }
 
 func (s *Server) ServeHTTP(w http.ResponseWriter, r *http.Request) {
-	if strings.HasPrefix(r.URL.Path, "/api/log-sources") || r.URL.Path == "/api/ingest/logs" || r.URL.Path == "/api/logs" || r.URL.Path == "/api/activity" {
+	if strings.HasPrefix(r.URL.Path, "/api/") {
 		w.Header().Set("Cache-Control", "no-store")
 	}
 	w.Header().Set("X-Content-Type-Options", "nosniff")
@@ -412,7 +506,7 @@ func (s *Server) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 
 	if isUnsafeMethod(r.Method) && hasSessionCookie(r) && !csrfExempt(r.URL.Path) && !auth.ValidateCSRF(r) {
 		if action := adminLogAuditAction(r); action != "" {
-			s.audit(r.Context(), s.actorID(r), r, action, "", "outcome=refused reason=csrf")
+			s.auditRefusal(r.Context(), s.actorID(r), r, action, "outcome=refused reason=csrf")
 		}
 		s.writeError(w, http.StatusForbidden, "Invalid CSRF token")
 		return
@@ -435,6 +529,13 @@ func hasSessionCookie(r *http.Request) bool {
 
 func csrfExempt(path string) bool {
 	return path == "/api/auth/login" || strings.HasPrefix(path, "/api/auth/mfa/") || path == "/api/sso/kysignon/sync" || path == "/api/ingest/logs"
+}
+
+// isJSON reports a JSON request body. Cross-site HTML forms can only send simple content
+// types, so requiring this keeps them off routes the CSRF check does not cover.
+func isJSON(r *http.Request) bool {
+	media, _, err := mime.ParseMediaType(r.Header.Get("Content-Type"))
+	return err == nil && media == "application/json"
 }
 
 func sameOrigin(origin, appURL string) bool {

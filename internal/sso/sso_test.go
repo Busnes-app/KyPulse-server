@@ -99,6 +99,50 @@ func TestKySignOnWebhookSync(t *testing.T) {
 	}
 }
 
+// A captured delivery replayed inside the timestamp window must not reapply: replaying the
+// earlier "created, active" body would reactivate the account just deactivated.
+func TestKySignOnWebhookRefusesReplay(t *testing.T) {
+	st, err := store.Open(context.Background(), testdb.Config(t))
+	if err != nil {
+		t.Fatalf("failed to open store: %v", err)
+	}
+	defer st.Close()
+	const secret = "webhook-secret-999"
+	client := sso.NewKySignOnClient(config.SSOConfig{KySignOnHMACSecret: secret}, st)
+	send := func(p sso.KySignOnSyncPayload) error {
+		body, _ := json.Marshal(p)
+		return client.HandleSyncWebhook(context.Background(), body, crypto.ComputeHMACSHA256(body, secret))
+	}
+	created := sso.KySignOnSyncPayload{Event: "user.created", ID: "ext-replay", Username: "eve", Role: "viewer", Status: "active", Timestamp: time.Now().Unix()}
+	if err := send(created); err != nil {
+		t.Fatal(err)
+	}
+	deactivated := created
+	deactivated.Event = "user.deactivated"
+	if err := send(deactivated); err != nil {
+		t.Fatal(err)
+	}
+	if err := send(created); err == nil {
+		t.Fatal("replayed delivery accepted")
+	}
+	if u, _ := st.Users().GetUserBySSO(context.Background(), "kysignon", "ext-replay"); u.Status != "inactive" {
+		t.Fatalf("replay reactivated the account: %s", u.Status)
+	}
+	// A failed delivery is not recorded, so the provider's retry still applies.
+	broken := sso.NewKySignOnClient(config.SSOConfig{KySignOnHMACSecret: secret}, st)
+	st.Close()
+	retry := created
+	retry.ID, retry.Timestamp = "ext-retry", time.Now().Unix()
+	body, _ := json.Marshal(retry)
+	sig := crypto.ComputeHMACSHA256(body, secret)
+	if err := broken.HandleSyncWebhook(context.Background(), body, sig); err == nil {
+		t.Fatal("closed store accepted a delivery")
+	}
+	if err := broken.HandleSyncWebhook(context.Background(), body, sig); err == nil || err.Error() == "webhook already delivered" {
+		t.Fatalf("failed delivery was recorded as delivered: %v", err)
+	}
+}
+
 func TestSAMLServiceProvider(t *testing.T) {
 	sp := sso.NewSAMLServiceProvider("https://app.busnes.app/saml/metadata", "https://app.busnes.app/saml/acs")
 

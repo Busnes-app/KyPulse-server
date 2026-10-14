@@ -12,7 +12,7 @@ Owns the application adapters around OAuth/OIDC login, KySignOn HMAC-SHA256 sign
 - ID tokens require provider signature, issuer, audience, expiry, and one-time nonce verification before claims are trusted.
 - OAuth discovery, authorization URLs, PKCE parameters, code exchange, and token verification are delegated to `golang.org/x/oauth2` and `coreos/go-oidc`; application code only maps verified claims.
 - SAML assertion parsing is not implemented locally; metadata XML uses `encoding/xml` and no ACS route is exposed until a maintained SAML service-provider library is configured.
-- Directory webhook timestamps are accepted only within five minutes; status or role changes revoke the user's sessions.
+- Directory webhook timestamps are accepted only within five minutes; status or role changes revoke the user's sessions. The payload has no event ID, so a SHA-256 of the signed body is remembered until its timestamp window ends and a repeat is refused; a delivery that fails to apply is forgotten so the provider can retry. The set is in-memory and bounded; when full of live entries it refuses rather than forgets.
 - Provider-asserted roles pass through `RoleFor`: exactly `admin` grants admin, everything else is a viewer.
 
 ## Verification

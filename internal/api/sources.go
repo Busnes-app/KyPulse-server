@@ -41,6 +41,9 @@ func sourceAuditAction(r *http.Request) string {
 // oneJSON permits only one JSON object and caps source route bodies independently of the API cap.
 func oneJSON(w http.ResponseWriter, r *http.Request, dst any) error {
 	defer r.Body.Close()
+	if !isJSON(r) {
+		return errors.New("JSON content type required")
+	}
 	dec := json.NewDecoder(http.MaxBytesReader(w, r.Body, 4<<10))
 	var raw json.RawMessage
 	if err := dec.Decode(&raw); err != nil {
@@ -109,9 +112,9 @@ func (s *Server) handleCreateLogPairing(w http.ResponseWriter, r *http.Request) 
 }
 
 func (s *Server) handleClaimLogSource(w http.ResponseWriter, r *http.Request) {
-	if !s.allowClaim(s.requestIP(r)) {
+	if !s.allowClaim(s.limitIP(r)) {
 		w.Header().Set("Retry-After", "60")
-		s.audit(r.Context(), "", r, "log_source.claim", "", "outcome=refused reason=rate_limit")
+		s.auditRefusal(r.Context(), "", r, "log_source.claim", "outcome=refused reason=rate_limit")
 		s.writeError(w, http.StatusTooManyRequests, "Too many attempts")
 		return
 	}
@@ -120,12 +123,12 @@ func (s *Server) handleClaimLogSource(w http.ResponseWriter, r *http.Request) {
 		Name string `json:"name"`
 	}
 	if err := oneJSON(w, r, &req); err != nil {
-		s.audit(r.Context(), "", r, "log_source.claim", "", "outcome=refused reason=bad_json")
+		s.auditRefusal(r.Context(), "", r, "log_source.claim", "outcome=refused reason=bad_json")
 		s.writeError(w, http.StatusBadRequest, "Invalid request")
 		return
 	}
 	if len(req.Code) != 6 || !sixDigits(req.Code) {
-		s.audit(r.Context(), "", r, "log_source.claim", "", "outcome=failure reason=invalid_code")
+		s.auditRefusal(r.Context(), "", r, "log_source.claim", "outcome=failure reason=invalid_code")
 		s.writeError(w, http.StatusForbidden, "Invalid or expired pairing code")
 		return
 	}
@@ -138,12 +141,12 @@ func (s *Server) handleClaimLogSource(w http.ResponseWriter, r *http.Request) {
 	token := hex.EncodeToString(random[:])
 	source, err := s.store.Sources().Claim(r.Context(), sourceHash(req.Code), sourceHash(token), req.Name)
 	if errors.Is(err, store.ErrInvalidSourceName) {
-		s.audit(r.Context(), "", r, "log_source.claim", "", "outcome=refused reason=bad_name")
+		s.auditRefusal(r.Context(), "", r, "log_source.claim", "outcome=refused reason=bad_name")
 		s.writeError(w, http.StatusBadRequest, "Invalid source name")
 		return
 	}
 	if errors.Is(err, store.ErrNotFound) {
-		s.audit(r.Context(), "", r, "log_source.claim", "", "outcome=failure reason=invalid_code")
+		s.auditRefusal(r.Context(), "", r, "log_source.claim", "outcome=failure reason=invalid_code")
 		s.writeError(w, http.StatusForbidden, "Invalid or expired pairing code")
 		return
 	}

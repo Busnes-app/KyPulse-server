@@ -2,7 +2,7 @@ import { afterEach, describe, expect, it, vi } from 'vitest';
 import { cleanup, fireEvent, render, screen, waitFor } from '@testing-library/react';
 import { WebhookForm } from './WebhookForm';
 
-const saved = { configured: true, preset: 'ntfy', url: 'https://ntfy.sh/kypulse', has_token: true, last: { at: '2026-09-27T10:00:00Z', ok: false, error: 'receiver_500' } };
+const saved = { configured: true, preset: 'ntfy', url_origin: 'https://ntfy.sh', has_url: true, has_token: true, last: { at: '2026-09-27T10:00:00Z', ok: false, error: 'receiver_500' } };
 
 function stub(extra: Array<[RegExp, unknown, number?]> = [], info: unknown = saved) {
   const fn = vi.fn(async (input: RequestInfo | URL, init?: RequestInit) => {
@@ -15,35 +15,44 @@ function stub(extra: Array<[RegExp, unknown, number?]> = [], info: unknown = sav
   return fn;
 }
 
+const loaded = () => screen.findByPlaceholderText(/^https:\/\/ntfy\.sh\/… \(saved/);
+const typeURL = (value: string) => fireEvent.change(screen.getByLabelText('URL'), { target: { value } });
+
 afterEach(() => { cleanup(); vi.unstubAllGlobals(); });
 
 describe('WebhookForm', () => {
-  it('never renders the token and shows the last delivery', async () => {
+  it('never renders the token or the saved URL, and shows the last delivery', async () => {
     stub();
     const { container } = render(<WebhookForm onChanged={() => {}} />);
-    expect(await screen.findByDisplayValue('https://ntfy.sh/kypulse')).toBeTruthy();
+    const url = await loaded() as HTMLInputElement;
+    expect(url.value).toBe('');
+    expect(url.required).toBe(true); // every save re-enters the URL
     const token = screen.getByLabelText(/Token/) as HTMLInputElement;
     expect(token.value).toBe('');
     expect(token.type).toBe('password');
     expect(token.placeholder).toMatch(/saved/i);
     expect(container.textContent).toContain('receiver_500');
+    expect(container.textContent).toMatch(/Enter it again/);
   });
 
   it('keeps the saved token when the field is left empty', async () => {
     const fetchMock = stub([[/^PUT \/api\/alerts\/webhook$/, { ...saved, last: null }]]);
     const onChanged = vi.fn();
     render(<WebhookForm onChanged={onChanged} />);
-    await screen.findByDisplayValue('https://ntfy.sh/kypulse');
+    await loaded();
+    typeURL('https://ntfy.sh/kypulse');
     fireEvent.click(screen.getByRole('button', { name: 'Save webhook' }));
     await waitFor(() => expect(onChanged).toHaveBeenCalled());
     const put = fetchMock.mock.calls.find(([, init]) => (init as RequestInit)?.method === 'PUT')!;
     expect(JSON.parse((put[1] as RequestInit).body as string)).toEqual({ preset: 'ntfy', url: 'https://ntfy.sh/kypulse', token: '', clear_token: false });
+    expect((screen.getByLabelText('URL') as HTMLInputElement).value).toBe('');
   });
 
   it('sends clear_token when asked', async () => {
     const fetchMock = stub([[/^PUT \/api\/alerts\/webhook$/, { ...saved, has_token: false }]]);
     render(<WebhookForm onChanged={() => {}} />);
-    await screen.findByDisplayValue('https://ntfy.sh/kypulse');
+    await loaded();
+    typeURL('https://ntfy.sh/kypulse');
     fireEvent.click(screen.getByLabelText(/Remove the saved token/));
     fireEvent.click(screen.getByRole('button', { name: 'Save webhook' }));
     await waitFor(() => expect(fetchMock.mock.calls.some(([, init]) => (init as RequestInit)?.method === 'PUT')).toBe(true));
@@ -55,7 +64,7 @@ describe('WebhookForm', () => {
     const fetchMock = stub([[/^POST \/api\/alerts\/webhook\/test$/, { error: 'receiver_500' }, 502]]);
     const onChanged = vi.fn();
     render(<WebhookForm onChanged={onChanged} />);
-    await screen.findByDisplayValue('https://ntfy.sh/kypulse');
+    await loaded();
     fireEvent.click(screen.getByRole('button', { name: 'Send test' }));
     expect(await screen.findByText(/Test failed: receiver_500/)).toBeTruthy();
     await waitFor(() => {
@@ -68,9 +77,9 @@ describe('WebhookForm', () => {
   it('disables Send test while the form differs from the saved config', async () => {
     stub();
     render(<WebhookForm onChanged={() => {}} />);
-    await screen.findByDisplayValue('https://ntfy.sh/kypulse');
+    await loaded();
     expect((screen.getByRole('button', { name: 'Send test' }) as HTMLButtonElement).disabled).toBe(false);
-    fireEvent.change(screen.getByLabelText('URL'), { target: { value: 'https://ntfy.sh/other' } });
+    typeURL('https://ntfy.sh/other');
     expect((screen.getByRole('button', { name: 'Send test' }) as HTMLButtonElement).disabled).toBe(true);
   });
 
@@ -78,17 +87,19 @@ describe('WebhookForm', () => {
     stub([], { configured: false });
     render(<WebhookForm onChanged={() => {}} />);
     expect(await screen.findByText(/No webhook configured/)).toBeTruthy();
+    expect((screen.getByLabelText('URL') as HTMLInputElement).placeholder).toBe('https://');
     expect(screen.queryByRole('button', { name: 'Remove webhook' })).toBeNull();
   });
 
   it('explains the required Gotify app token and surfaces server validation', async () => {
     stub([[/^PUT \/api\/alerts\/webhook$/, { error: 'notify: Gotify app token is required' }, 400]]);
     render(<WebhookForm onChanged={() => {}} />);
-    await screen.findByDisplayValue('https://ntfy.sh/kypulse');
+    await loaded();
     fireEvent.change(screen.getByLabelText('Preset'), { target: { value: 'gotify' } });
     expect(screen.getByText(/An app token is required/)).toBeTruthy();
     expect(screen.getByText(/only when the preset, URL scheme and host are unchanged/)).toBeTruthy();
     expect(screen.queryByLabelText(/Remove the saved token/)).toBeNull();
+    typeURL('https://gotify.lan');
     fireEvent.click(screen.getByRole('button', { name: 'Save webhook' }));
     expect(await screen.findByRole('alert')).toHaveProperty('textContent', 'notify: Gotify app token is required');
   });
@@ -97,7 +108,7 @@ describe('WebhookForm', () => {
     stub([[/^DELETE \/api\/alerts\/webhook$/, null, 204]]);
     vi.stubGlobal('confirm', vi.fn(() => true));
     render(<WebhookForm onChanged={() => {}} />);
-    await screen.findByDisplayValue('https://ntfy.sh/kypulse');
+    await loaded();
     fireEvent.click(screen.getByRole('button', { name: 'Remove webhook' }));
     expect(await screen.findByText(/No webhook configured/)).toBeTruthy();
     expect((screen.getByLabelText('URL') as HTMLInputElement).value).toBe('');

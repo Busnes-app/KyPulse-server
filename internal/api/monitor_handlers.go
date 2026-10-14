@@ -340,7 +340,8 @@ func (s *Server) handleGetWebhook(w http.ResponseWriter, r *http.Request) {
 		s.writeJSON(w, http.StatusOK, map[string]any{"configured": false})
 		return
 	}
-	out := map[string]any{"configured": true, "preset": cfg.Preset, "url": cfg.URL, "has_token": cfg.Token != "", "last": nil}
+	out := webhookView(cfg)
+	out["last"] = nil
 	if last, ok, err := s.monitor.Webhooks.Status(r.Context()); err == nil && ok {
 		out["last"] = last
 	}
@@ -391,7 +392,17 @@ func (s *Server) handleSetWebhook(w http.ResponseWriter, r *http.Request) {
 	actor := s.actorID(r)
 	s.audit(r.Context(), actor, r, "admin.webhook_set", "",
 		fmt.Sprintf("preset=%s scheme=%s host=%s allow_http=%v", auditValue(req.Preset), auditValue(u.Scheme), auditValue(u.Host), s.config.Alerts.AllowHTTP))
-	s.writeJSON(w, http.StatusOK, map[string]any{"configured": true, "preset": cfg.Preset, "url": cfg.URL, "has_token": cfg.Token != ""})
+	s.writeJSON(w, http.StatusOK, webhookView(cfg))
+}
+
+// webhookView describes a saved webhook without its credentials: for Discord and ntfy the
+// URL path is the secret, so only its scheme and host leave the server.
+func webhookView(cfg notify.Config) map[string]any {
+	origin := ""
+	if u, err := url.Parse(cfg.URL); err == nil {
+		origin = u.Scheme + "://" + u.Host
+	}
+	return map[string]any{"configured": true, "preset": cfg.Preset, "url_origin": origin, "has_url": cfg.URL != "", "has_token": cfg.Token != ""}
 }
 
 func (s *Server) handleDeleteWebhook(w http.ResponseWriter, r *http.Request) {
