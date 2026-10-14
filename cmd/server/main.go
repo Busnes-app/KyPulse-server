@@ -83,6 +83,9 @@ func runServer(lg *logging.Logger) {
 	if err != nil {
 		fatal("Failed to load configuration: %v", err)
 	}
+	if err := backup.SweepSnapshots(cfg.Database.DataDir); err != nil {
+		fatal("Failed to remove leftover backup snapshots: %v", err)
+	}
 	if cfg.Backup.AllowPrivateRecovery {
 		log.Printf("[BACKUP] KYPULSE_BACKUP_ALLOW_PRIVATE_RECOVERY is on: RFC1918 and CGNAT destinations admitted; loopback, link-local and other reserved addresses remain refused (HTTPS still required)")
 	}

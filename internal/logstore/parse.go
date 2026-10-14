@@ -3,8 +3,10 @@ package logstore
 
 import (
 	"encoding/json"
+	"regexp"
 	"strings"
 	"time"
+	"unicode"
 	"unicode/utf8"
 
 	"github.com/Busnes-app/kypulse-server/internal/store"
@@ -98,11 +100,25 @@ func Parse(raw, sourceID, source, targetID string, transportTime, receivedAt tim
 	if outcome == "" {
 		outcome = get("result")
 	}
-	a := &store.Activity{Time: line.Time, ReceivedAt: receivedAt, SourceID: sourceID, TargetID: targetID, App: line.App, Actor: get("user_id"), Action: get("action"), Target: get("resource"), Outcome: outcome, IP: get("ip_address")}
+	a := &store.Activity{Time: line.Time, ReceivedAt: receivedAt, SourceID: sourceID, TargetID: targetID, App: claimedApp(line.App), Actor: get("user_id"), Action: get("action"), Target: get("resource"), Outcome: outcome, IP: get("ip_address")}
 	return line, a
 }
 
-// Display removes terminal controls while preserving ordinary text for HTML escaping by React.
+// ImportedApp is reserved for KyYard's own imported audit feed.
+const ImportedApp = "kyyard"
+
+var plainApp = regexp.MustCompile(`^[A-Za-z0-9][A-Za-z0-9_.-]{0,63}$`)
+
+// claimedApp keeps a line's self-declared app only when it is a plain ASCII name that
+// cannot render as the reserved KyYard identity; anything else is unspecified.
+func claimedApp(app string) string {
+	if !plainApp.MatchString(app) || strings.EqualFold(app, ImportedApp) {
+		return ""
+	}
+	return app
+}
+
+// Display removes terminal controls and format characters while preserving ordinary text for HTML escaping by React.
 func Display(s string) string {
 	var b strings.Builder
 	b.Grow(len(s))
@@ -170,7 +186,8 @@ func Display(s string) string {
 			}
 			continue
 		}
-		if r < 0x20 || r == 0x7f || (r >= 0x80 && r <= 0x9f) {
+		// Cf covers bidi overrides/isolates and zero-width characters.
+		if r < 0x20 || r == 0x7f || (r >= 0x80 && r <= 0x9f) || unicode.Is(unicode.Cf, r) {
 			i += n
 			continue
 		}

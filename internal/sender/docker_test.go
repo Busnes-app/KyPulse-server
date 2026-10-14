@@ -155,6 +155,40 @@ func TestDockerMissingCheckpointTimestampMarksGap(t *testing.T) {
 	}
 }
 
+func TestDockerGapMarkerKeepsCheckpoint(t *testing.T) {
+	var mu sync.Mutex
+	var queries []string
+	socket := fakeDocker(t, func(w http.ResponseWriter, r *http.Request) {
+		mu.Lock()
+		queries = append(queries, r.URL.RawQuery)
+		mu.Unlock()
+		_, _ = w.Write(frame(1, dockerTime+" first\nno-timestamp\n"))
+		_, _ = w.Write(frame(2, "bad-time line\n"))
+	})
+	out := make(chan Item, 4)
+	if err := ReadDocker(context.Background(), socket, "a", nil, out); err != nil {
+		t.Fatal(err)
+	}
+	first, marker, fresh := <-out, <-out, <-out
+	if first.Record.Line != "first" || !strings.Contains(marker.Record.Line, "gap") || marker.Position.Timestamp != dockerTime || marker.Position.Ordinal != 1 {
+		t.Fatalf("marker lost the stream position: %+v %+v", first, marker)
+	}
+	if !strings.Contains(fresh.Record.Line, "gap") || fresh.Position.Timestamp != "" {
+		t.Fatalf("stream without history: %+v", fresh)
+	}
+	// A restart from the marker's acknowledged checkpoint must not replay from zero.
+	stderr := Position{Kind: "docker", Input: dockerID, Stream: "stderr", Timestamp: dockerTime}
+	start := map[string]Position{PositionKey(marker.Position): marker.Position, PositionKey(stderr): stderr}
+	if err := ReadDocker(context.Background(), socket, "a", start, make(chan Item, 4)); err != nil {
+		t.Fatal(err)
+	}
+	mu.Lock()
+	defer mu.Unlock()
+	if len(queries) != 2 || strings.Contains(queries[1], "since=0") {
+		t.Fatalf("queries: %v", queries)
+	}
+}
+
 func TestDockerOversizeAndMalformed(t *testing.T) {
 	socket := fakeDocker(t, func(w http.ResponseWriter, r *http.Request) {
 		_, _ = w.Write(frame(1, ""))

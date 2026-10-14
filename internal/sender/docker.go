@@ -202,7 +202,7 @@ func ReadDocker(ctx context.Context, socket, container string, start map[string]
 				if _, err = io.CopyN(io.Discard, resp.Body, int64(length)); err != nil {
 					break
 				}
-				err = emit(stream, ingest.Record{Line: "gap: Docker log frame exceeded 1 MiB; payload skipped"}, "", 0)
+				err = readers[stream].gap(ingest.Record{Line: "gap: Docker log frame exceeded 1 MiB; payload skipped"})
 				if err != nil {
 					break
 				}
@@ -238,6 +238,16 @@ type dockerLines struct {
 	ordinal      int
 	boundarySeen bool
 	gapReported  bool
+	goodTS       string // last emitted line; markers carry it so the checkpoint never regresses
+	goodOrdinal  int
+}
+
+func (l *dockerLines) gap(row ingest.Record) error {
+	ts, ordinal := l.saved.Timestamp, l.saved.Ordinal
+	if l.goodTS != "" {
+		ts, ordinal = l.goodTS, l.goodOrdinal
+	}
+	return l.emit(l.stream, row, ts, ordinal)
 }
 
 func (l *dockerLines) Write(p []byte) (int, error) {
@@ -281,11 +291,11 @@ func (l *dockerLines) flushLine(complete bool) error {
 	l.truncated = false
 	split := bytes.IndexByte(raw, ' ')
 	if split < 0 {
-		return l.emit(l.stream, ingest.Record{Line: "gap: Docker log line lacks timestamp", Truncated: truncated}, "", 0)
+		return l.gap(ingest.Record{Line: "gap: Docker log line lacks timestamp", Truncated: truncated})
 	}
 	t, err := time.Parse(time.RFC3339Nano, string(raw[:split]))
 	if err != nil {
-		return l.emit(l.stream, ingest.Record{Line: "gap: Docker log line has invalid timestamp", Truncated: truncated}, "", 0)
+		return l.gap(ingest.Record{Line: "gap: Docker log line has invalid timestamp", Truncated: truncated})
 	}
 	ts := t.UTC().Format(time.RFC3339Nano)
 	if ts != l.last {
@@ -303,12 +313,13 @@ func (l *dockerLines) flushLine(complete bool) error {
 				l.boundarySeen = true
 			} else if !l.boundarySeen && !l.gapReported {
 				l.gapReported = true
-				if err := l.emit(l.stream, ingest.Record{Line: "gap: Docker checkpoint timestamp is absent from available history"}, l.saved.Timestamp, l.saved.Ordinal); err != nil {
+				if err := l.gap(ingest.Record{Line: "gap: Docker checkpoint timestamp is absent from available history"}); err != nil {
 					return err
 				}
 			}
 		}
 	}
 	row := clip(Item{Record: ingest.Record{Line: string(bytes.ToValidUTF8(raw[split+1:], []byte("\ufffd"))), Time: t, Truncated: truncated}}).Record
+	l.goodTS, l.goodOrdinal = ts, l.ordinal
 	return l.emit(l.stream, row, ts, l.ordinal)
 }

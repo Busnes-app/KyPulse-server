@@ -58,6 +58,11 @@ func (s *Server) handleKyYardPair(w http.ResponseWriter, r *http.Request) {
 		s.writeError(w, http.StatusBadRequest, "KyYard URL: "+err.Error())
 		return
 	}
+	// Request paths are appended to this base, so it must be a bare origin.
+	if u, _ := url.Parse(base); u.Path != "" || strings.ContainsAny(base, "?#") {
+		s.writeError(w, http.StatusBadRequest, "KyYard URL must be a server origin")
+		return
+	}
 	ctx, cancel := context.WithTimeout(context.WithoutCancel(r.Context()), pairBudget)
 	defer cancel()
 	actor := s.actorID(r)

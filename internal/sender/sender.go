@@ -294,10 +294,20 @@ func recordDrop(positions map[string]Position, count *uint64, p Position) error 
 	return nil
 }
 
+// RequestTimeout allows 10 s plus 8 s per started 64 KiB (about 64 kbit/s uplink).
+func RequestTimeout(size int) time.Duration {
+	return 10*time.Second + time.Duration((size+64<<10-1)/(64<<10))*8*time.Second
+}
+
+// MaxRequestTimeout bounds the production client; each attempt sets its own deadline.
+var MaxRequestTimeout = RequestTimeout(ingest.MaxRequestBytes)
+
 func (s *Sender) deliver(ctx context.Context, body []byte) error {
 	backoff := time.Second
 	for {
-		resp, err := s.HTTP.Post(ctx, strings.TrimRight(s.State.URL, "/")+"/api/ingest/logs", "application/x-ndjson", body, map[string]string{"Authorization": "Bearer " + hex.EncodeToString(s.Token)})
+		attempt, cancel := context.WithTimeout(ctx, RequestTimeout(len(body)))
+		resp, err := s.HTTP.Post(attempt, strings.TrimRight(s.State.URL, "/")+"/api/ingest/logs", "application/x-ndjson", body, map[string]string{"Authorization": "Bearer " + hex.EncodeToString(s.Token)})
+		cancel()
 		if err == nil && resp.StatusCode >= 200 && resp.StatusCode < 300 {
 			return nil
 		}
