@@ -9,10 +9,12 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
+	"regexp"
 	"strings"
 
 	"github.com/Busnes-app/ky-primitives/recoveryclient"
 	"github.com/Busnes-app/kypulse-server/internal/config"
+	"golang.org/x/sys/unix"
 	_ "modernc.org/sqlite"
 )
 
@@ -106,6 +108,11 @@ func snapshotSQLite(ctx context.Context, dsn, dataDir string) ([]byte, recoveryc
 		return nil, recoveryclient.File{}, err
 	}
 	defer db.Close()
+	lock, err := lockSnapshots(dataDir)
+	if err != nil {
+		return nil, recoveryclient.File{}, err
+	}
+	defer lock.Close()
 	dir, err := os.MkdirTemp(dataDir, "snapshot-*")
 	if err != nil {
 		return nil, recoveryclient.File{}, err
@@ -124,6 +131,62 @@ func snapshotSQLite(ctx context.Context, dsn, dataDir string) ([]byte, recoveryc
 	}
 	raw, err := os.ReadFile(path)
 	return raw, credentials, err
+}
+
+// snapshotName matches only the names os.MkdirTemp(dataDir, "snapshot-*") creates.
+var snapshotName = regexp.MustCompile(`^snapshot-[0-9]+$`)
+
+// lockSnapshots returns <dataDir>/snapshot.lock held shared for one snapshot. A caller that
+// first wins it exclusively knows no process is snapshotting, so it removes a crashed run's
+// leftover: an unsanitized copy of the whole database. Keep the lock file in place.
+func lockSnapshots(dataDir string) (*os.File, error) {
+	lock, err := os.OpenFile(filepath.Join(dataDir, "snapshot.lock"), os.O_CREATE|os.O_RDWR|unix.O_NOFOLLOW, 0600)
+	if err != nil {
+		return nil, err
+	}
+	fd := int(lock.Fd())
+	err = unix.Flock(fd, unix.LOCK_EX|unix.LOCK_NB)
+	if err == nil {
+		err = sweepSnapshots(dataDir)
+	} else if errors.Is(err, unix.EWOULDBLOCK) {
+		err = nil // another snapshot is running; it owns its directory
+	}
+	if err == nil {
+		err = unix.Flock(fd, unix.LOCK_SH)
+	}
+	if err != nil {
+		lock.Close()
+		return nil, err
+	}
+	return lock, nil
+}
+
+func sweepSnapshots(dataDir string) error {
+	entries, err := os.ReadDir(dataDir)
+	if err != nil {
+		return err
+	}
+	for _, e := range entries {
+		if e.Type().IsDir() && snapshotName.MatchString(e.Name()) {
+			if err := os.RemoveAll(filepath.Join(dataDir, e.Name())); err != nil {
+				return fmt.Errorf("backup: remove leftover snapshot: %w", err)
+			}
+		}
+	}
+	return nil
+}
+
+// SweepSnapshots removes snapshot directories a crashed backup left behind, unless a
+// snapshot is running. Call it at startup; a missing data directory holds none.
+func SweepSnapshots(dataDir string) error {
+	lock, err := lockSnapshots(dataDir)
+	if errors.Is(err, os.ErrNotExist) {
+		return nil
+	}
+	if err != nil {
+		return err
+	}
+	return lock.Close()
 }
 
 func sanitizeSnapshot(ctx context.Context, path string) (err error) {

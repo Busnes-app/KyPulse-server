@@ -8,7 +8,8 @@ Normalize untrusted application lines into bounded storage rows, remove terminal
 - `Bounded` exposes the same field normalization to KyYard audit-feed imports.
 - `Parse` replaces NUL with U+FFFD before applying byte caps, for storage compatibility across SQLite and PostgreSQL.
 - A positive `seq`, non-empty `hash`, valid `fields` array and non-empty `action` identify an audit-shaped record for the imported Activity table. This is indexing, not chain verification.
-- `Display` removes CSI/OSC terminal escapes and controls while preserving angle brackets. API handlers apply it to every visible field; React renders the result as text.
+- `ImportedApp` (`kyyard`) is reserved for KyYard's imported audit feed (rows with an external key). A line's self-declared app becomes the Activity app only when it is a plain ASCII name (`[A-Za-z0-9][A-Za-z0-9_.-]{0,63}`) other than `kyyard` in any case; otherwise it is unspecified. KyYard collection then overrides it with `container:<link>`. Sender rows keep the claimed app (the kyoffboard relay depends on it); their authenticated identity is `source_id`/`target_id`.
+- `Display` removes CSI/OSC terminal escapes, controls and Unicode format (Cf) characters, including bidi overrides/isolates and zero-width characters, while preserving angle brackets. API handlers apply it to every visible field; React renders the result as text.
 
 
 - `activity.go` defines the failed-sign-in policy: exact `auth.login` or `sign-in` action,

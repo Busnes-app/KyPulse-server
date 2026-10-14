@@ -151,7 +151,7 @@ func TestKyYardStatusUnpairedAndPairRefusals(t *testing.T) {
 	if w := doJSON(t, srv, "POST", "/api/kyyard/pair", viewer, map[string]any{"url": "https://yard.lan", "pairing_code": "123456"}); w.Code != http.StatusForbidden {
 		t.Fatalf("pair is admin-only: %d", w.Code)
 	}
-	for _, u := range []string{"http://127.0.0.1:8080", "http://169.254.169.254", "https://localhost", "ftp://yard.lan", ""} {
+	for _, u := range []string{"http://127.0.0.1:8080", "http://169.254.169.254", "https://localhost", "ftp://yard.lan", "", "https://yard.lan?x=1", "https://yard.lan/#frag", "https://yard.lan/sub", "https://yard.lan/?"} {
 		if w := doJSON(t, srv, "POST", "/api/kyyard/pair", admin, map[string]any{"url": u, "pairing_code": "123456"}); w.Code != http.StatusBadRequest {
 			t.Fatalf("%q must be refused with 400, got %d %s", u, w.Code, w.Body)
 		}

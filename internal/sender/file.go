@@ -40,15 +40,26 @@ func fingerprintAt(f *os.File, offset int64) (string, error) {
 	return hex.EncodeToString(sum[:]), nil
 }
 
+var errNotRegular = errors.New("sender: file input is not a regular file")
+
+// sameOwner keeps a rotation in an app-writable directory from swapping in another user's file.
+func sameOwner(a, b os.FileInfo) bool {
+	return a.Sys().(*syscall.Stat_t).Uid == b.Sys().(*syscall.Stat_t).Uid
+}
+
+// openRegular never follows a symlink at the final component.
 func openRegular(path string) (*os.File, os.FileInfo, error) {
-	before, err := os.Stat(path)
+	before, err := os.Lstat(path)
 	if err != nil {
 		return nil, nil, err
 	}
 	if !before.Mode().IsRegular() {
-		return nil, nil, fmt.Errorf("sender: file input is not regular: %s", path)
+		return nil, nil, fmt.Errorf("%w: %s", errNotRegular, path)
 	}
-	fd, err := syscall.Open(path, syscall.O_RDONLY|syscall.O_CLOEXEC|syscall.O_NONBLOCK, 0)
+	fd, err := syscall.Open(path, syscall.O_RDONLY|syscall.O_CLOEXEC|syscall.O_NONBLOCK|syscall.O_NOFOLLOW, 0)
+	if errors.Is(err, syscall.ELOOP) {
+		return nil, nil, fmt.Errorf("%w: %s", errNotRegular, path)
+	}
 	if err != nil {
 		return nil, nil, err
 	}
@@ -60,7 +71,7 @@ func openRegular(path string) (*os.File, os.FileInfo, error) {
 	}
 	if !fi.Mode().IsRegular() {
 		f.Close()
-		return nil, nil, fmt.Errorf("sender: file input is not regular: %s", path)
+		return nil, nil, fmt.Errorf("%w: %s", errNotRegular, path)
 	}
 	if !os.SameFile(before, fi) {
 		f.Close()
@@ -108,18 +119,27 @@ func ReadFile(ctx context.Context, path string, start Position, out chan<- Item)
 	var f *os.File
 	var lines *lineReader
 	var base int64
-	var identity Position
+	var identity, last Position
+	var baseline os.FileInfo // first opened file; replacements must share its owner
+	refusing := false
 	pending := start.Inode != 0 || start.Device != 0
-	emit := func(row ingest.Record, offset int64) error {
-		p := identity
-		p.Offset = offset
-		p.Fingerprint, _ = fingerprintAt(f, offset)
+	send := func(item Item) error {
 		select {
-		case out <- Item{Record: row, Position: p}:
+		case out <- item:
+			last = item.Position
 			return nil
 		case <-ctx.Done():
 			return ctx.Err()
 		}
+	}
+	position := func(offset int64) Position {
+		p := identity
+		p.Offset = offset
+		p.Fingerprint, _ = fingerprintAt(f, offset)
+		return p
+	}
+	emit := func(row ingest.Record, offset int64) error {
+		return send(Item{Record: row, Position: position(offset)})
 	}
 	closeCurrent := func() {
 		if f != nil {
@@ -152,7 +172,7 @@ func ReadFile(ctx context.Context, path string, start Position, out chan<- Item)
 			return ctx.Err()
 		}
 		if f == nil {
-			configured, err := os.Stat(path)
+			configured, err := os.Lstat(path)
 			if err != nil && !errors.Is(err, os.ErrNotExist) {
 				return err
 			}
@@ -172,6 +192,22 @@ func ReadFile(ctx context.Context, path string, start Position, out chan<- Item)
 				continue
 			}
 			opened, fi, e := openRegular(candidate)
+			if baseline != nil && (errors.Is(e, errNotRegular) || e == nil && !sameOwner(baseline, fi)) {
+				if opened != nil {
+					opened.Close()
+				}
+				// Keep the last acknowledged position; report once per refused streak.
+				if !refusing {
+					if e := send(Item{Record: ingest.Record{Line: "gap: refused replacement file (not a regular file or different owner)"}, Position: last}); e != nil {
+						return e
+					}
+				}
+				refusing = true
+				if e := poll(); e != nil {
+					return e
+				}
+				continue
+			}
 			if errors.Is(e, os.ErrNotExist) {
 				if e := poll(); e != nil {
 					return e
@@ -192,6 +228,11 @@ func ReadFile(ctx context.Context, path string, start Position, out chan<- Item)
 			}
 			f = opened
 			identity = Position{Kind: "file", Input: path, Device: device(fi), Inode: inode(fi)}
+			last = position(offset)
+			refusing = false
+			if baseline == nil {
+				baseline = fi
+			}
 			if gap {
 				if e := emit(ingest.Record{Line: "gap: previous file history unavailable"}, 0); e != nil {
 					return e
@@ -214,7 +255,7 @@ func ReadFile(ctx context.Context, path string, start Position, out chan<- Item)
 			}
 			continue
 		}
-		current, statErr := os.Stat(path)
+		current, statErr := os.Lstat(path)
 		if statErr != nil && !errors.Is(statErr, os.ErrNotExist) {
 			return statErr
 		}

@@ -20,11 +20,17 @@ Pairs a source and delivers bounded NDJSON batches with acknowledged input posit
   siblings for a matching renamed file; missing or mismatched history replays from zero
   with a gap marker. Truncation resets to zero. Identical suffixes and a truncate and
   regrow wholly between polls remain indistinguishable to this observer.
+- The file reader never follows a symlink at the final component (`Lstat` + `O_NOFOLLOW`);
+  a symlink or non-regular file at start is an error. After the first open, a replacement
+  that is not a regular file or has a different owner is skipped with one gap marker at
+  the last position until a valid file appears. A restart takes the first opened file's
+  owner as the new baseline; parent directory components are trusted.
 - Docker resolves each configured name to an immutable container ID. Checkpoints key by
   ID and stdout/stderr stream, with an inclusive timestamp and recorded equal-time ordinal
   for each stream. Boundary lines replay even when acknowledged, because Docker cannot
   verify the historical prefix after rotation. A missing checkpoint timestamp emits a
-  gap marker once a newer line appears. TTY logs are a single raw stdout stream. A clean
+  gap marker once a newer line appears. Gap markers carry the stream's last good timestamp
+  and ordinal (or its saved checkpoint), never an empty one. TTY logs are a single raw stdout stream. A clean
   follow EOF completes that reader; the sender exits after all configured readers finish.
 - Stdin and the outage queue live in memory and cannot survive a crash. File and Docker
   checkpoints replay only while upstream history exists. Overflow deliberately drops
@@ -35,7 +41,8 @@ Pairs a source and delivers bounded NDJSON batches with acknowledged input posit
 - The queue and in-flight batch share a 16 MiB budget. Overflow drops oldest queued
   records and sends a marker with the latest position of each discarded stream.
 - Production HTTP uses `egress.Client` with HTTPS, guarded destinations, no redirects and
-  an explicit request timeout. The `HTTP` interface exists for deterministic transport tests.
+  a per-attempt deadline of 10 s plus 8 s per started 64 KiB of body (`RequestTimeout`,
+  138 s for a full 1 MiB batch). The `HTTP` interface exists for deterministic transport tests.
 - Each sender process owns one 0700 state directory and its Linux flock. `token` is a
   keyfile-managed 0600 hex secret; `positions.json` is a separate 0600 atomic checkpoint.
 

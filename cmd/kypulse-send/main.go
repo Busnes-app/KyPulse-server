@@ -115,7 +115,7 @@ func runInput(kind, path, containers, socket, dir string, stdin io.ReadCloser, h
 		return err
 	}
 	if http == nil {
-		http = egress.New(egress.Options{Timeout: 10 * time.Second})
+		http = egress.New(egress.Options{Timeout: sender.MaxRequestTimeout})
 	}
 	signalCtx, stop := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM)
 	defer stop()
