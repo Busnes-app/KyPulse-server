@@ -209,7 +209,9 @@ func TestInactiveAccountInvalidatesSession(t *testing.T) {
 	}
 	body, _ := json.Marshal(map[string]string{"username": user.Username, "password": "SuperSecretPass123!"})
 	w := httptest.NewRecorder()
-	srv.ServeHTTP(w, httptest.NewRequest(http.MethodPost, "/api/auth/login", bytes.NewReader(body)))
+	loginReq := httptest.NewRequest(http.MethodPost, "/api/auth/login", bytes.NewReader(body))
+	loginReq.Header.Set("Content-Type", "application/json")
+	srv.ServeHTTP(w, loginReq)
 	var session *http.Cookie
 	for _, cookie := range w.Result().Cookies() {
 		if cookie.Name == auth.SessionCookieName {

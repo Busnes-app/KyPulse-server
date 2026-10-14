@@ -84,7 +84,9 @@ test('status, alerts, detail page and the alert bar in every state', async ({ pa
   await expect(page.getByLabel('Token (write-only)')).toHaveValue('');
   await expect(page.getByLabel('Remove the saved token')).toHaveCount(0);
   expect((await (await page.request.get('/api/alerts/webhook')).json()).has_token).toBe(true);
-  // A blank field keeps the saved Gotify token on the same receiver.
+  // The saved URL is never echoed back; a blank token keeps the saved one on the same receiver.
+  await expect(page.getByLabel('URL', { exact: true })).toHaveValue('');
+  await page.getByLabel('URL', { exact: true }).fill(base);
   await page.getByRole('button', { name: 'Save webhook' }).click();
   await expect(page.getByRole('status').filter({ hasText: 'Webhook saved' })).toBeVisible();
   await page.getByLabel('Preset').selectOption('generic');

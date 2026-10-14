@@ -73,6 +73,7 @@ func TestRecoveryCodes(t *testing.T) {
 
 func TestProofOfWorkChallenge(t *testing.T) {
 	const secret = "test-signing-secret"
+	guard := auth.NewPoWGuard()
 	challenge, err := auth.GeneratePoWChallenge(1000, secret)
 	if err != nil {
 		t.Fatalf("failed to generate PoW challenge: %v", err)
@@ -80,6 +81,7 @@ func TestProofOfWorkChallenge(t *testing.T) {
 
 	// Solve challenge client-side
 	var winningNumber int = -1
+	var winning string
 	for i := 1; i <= challenge.MaxNumber; i++ {
 		sol := auth.PoWSolution{
 			Algorithm: challenge.Algorithm,
@@ -92,8 +94,9 @@ func TestProofOfWorkChallenge(t *testing.T) {
 		}
 		solBytes, _ := json.Marshal(sol)
 		solB64 := base64.StdEncoding.EncodeToString(solBytes)
-		if auth.VerifyPoWSolution(solB64, secret) {
+		if guard.Verify(solB64, secret) {
 			winningNumber = i
+			winning = solB64
 			break
 		}
 	}
@@ -101,9 +104,15 @@ func TestProofOfWorkChallenge(t *testing.T) {
 	if winningNumber == -1 {
 		t.Errorf("failed to solve PoW within max iterations")
 	}
+	if guard.Verify(winning, secret) {
+		t.Fatal("accepted a replayed solution")
+	}
+	if !auth.NewPoWGuard().Verify(winning, secret) {
+		t.Fatal("a fresh guard must accept the unused solution")
+	}
 	forged := auth.PoWSolution{Algorithm: "SHA-256", Salt: "mine", Challenge: "fake", Number: 1, MaxNumber: 1, ExpiresAt: challenge.ExpiresAt, Signature: challenge.Signature}
 	forgedJSON, _ := json.Marshal(forged)
-	if auth.VerifyPoWSolution(base64.StdEncoding.EncodeToString(forgedJSON), secret) {
+	if guard.Verify(base64.StdEncoding.EncodeToString(forgedJSON), secret) {
 		t.Fatal("accepted forged challenge metadata")
 	}
 }

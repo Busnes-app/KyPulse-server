@@ -80,7 +80,8 @@ export interface StatusSummary {
 export interface WebhookInfo {
   configured: boolean;
   preset?: string;
-  url?: string;
+  url_origin?: string; // scheme and host only: the full URL can be the credential
+  has_url?: boolean;
   has_token?: boolean;
   last?: DeliveryStatus | null;
 }

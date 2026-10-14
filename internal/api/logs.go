@@ -55,8 +55,15 @@ func (s *Server) allowIngest(sourceID string) bool {
 
 func (s *Server) authenticateLogSource(w http.ResponseWriter, r *http.Request) (store.LogSource, bool) {
 	fail := func(status int, reason, message string) {
-		s.audit(r.Context(), "", r, "log.ingest", "", "outcome=refused reason="+reason)
+		s.auditRefusal(r.Context(), "", r, "log.ingest", "outcome=refused reason="+reason)
 		s.writeError(w, status, message)
+	}
+	// Before the token lookup, so unauthenticated callers cannot drive the store at will.
+	// Ten sources at their full quota fit behind one address.
+	if !s.allowAttempt("ingest:"+s.limitIP(r), 600, time.Minute) {
+		w.Header().Set("Retry-After", "60")
+		fail(http.StatusTooManyRequests, "ip_rate_limit", "Too many requests")
+		return store.LogSource{}, false
 	}
 	authorization := r.Header.Get("Authorization")
 	if len(r.Header.Values("Authorization")) != 1 || len(authorization) > 135 || !strings.HasPrefix(authorization, "Bearer ") || len(authorization) <= 7 || strings.IndexFunc(authorization[7:], func(r rune) bool { return r <= 32 || r >= 127 }) >= 0 {
@@ -99,7 +106,7 @@ func (s *Server) handleIngestLogs(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	fail := func(status int, reason, message string) {
-		s.audit(r.Context(), "", r, "log.ingest", "", "outcome=refused reason="+reason)
+		s.auditRefusal(r.Context(), "", r, "log.ingest", "outcome=refused reason="+reason)
 		s.writeError(w, status, message)
 	}
 	media, _, err := mime.ParseMediaType(r.Header.Get("Content-Type"))

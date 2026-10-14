@@ -13,7 +13,9 @@ import (
 
 	"github.com/Busnes-app/kypulse-server/internal/api"
 	"github.com/Busnes-app/kypulse-server/internal/auth"
+	"github.com/Busnes-app/kypulse-server/internal/config"
 	"github.com/Busnes-app/kypulse-server/internal/egress"
+	"github.com/Busnes-app/kypulse-server/internal/monitor"
 	"github.com/Busnes-app/kypulse-server/internal/store"
 )
 
@@ -156,8 +158,22 @@ func TestStatusUnreadableWebhookIsConfigured(t *testing.T) {
 	}
 }
 
+// storedWebhookURL reads the saved URL behind the API, which only ever reports its origin.
+func storedWebhookURL(t *testing.T, cfg *config.Config, st store.Store) string {
+	t.Helper()
+	hooks, err := monitor.NewWebhooks(cfg, st.Settings())
+	if err != nil {
+		t.Fatal(err)
+	}
+	saved, _, err := hooks.Load(context.Background())
+	if err != nil {
+		t.Fatal(err)
+	}
+	return saved.URL
+}
+
 func TestWebhookTokenIsWriteOnly(t *testing.T) {
-	srv, st, _ := setupTestServer(t)
+	srv, st, cfg := setupTestServer(t)
 	admin := loginAs(t, srv, st, "alice", "admin")
 	w := doJSON(t, srv, "PUT", "/api/alerts/webhook", admin, map[string]string{"preset": "gotify", "url": "https://gotify.lan", "token": "gk-secret"})
 	if w.Code != http.StatusOK {
@@ -170,7 +186,7 @@ func TestWebhookTokenIsWriteOnly(t *testing.T) {
 		}
 	}
 	got := decodeMap(t, do(t, srv, "GET", "/api/alerts/webhook", admin))
-	if got["configured"] != true || got["has_token"] != true || got["preset"] != "gotify" || got["url"] != "https://gotify.lan" {
+	if got["configured"] != true || got["has_token"] != true || got["preset"] != "gotify" || got["url_origin"] != "https://gotify.lan" || got["has_url"] != true {
 		t.Fatalf("get: %v", got)
 	}
 	put := func(body map[string]any) map[string]any {
@@ -188,7 +204,7 @@ func TestWebhookTokenIsWriteOnly(t *testing.T) {
 	if w := doJSON(t, srv, "PUT", "/api/alerts/webhook", admin, map[string]any{"preset": "gotify", "url": "https://gotify2.lan", "token": ""}); w.Code != http.StatusBadRequest {
 		t.Fatalf("changed host without Gotify token: %d %s", w.Code, w.Body.String())
 	}
-	if got := decodeMap(t, do(t, srv, "GET", "/api/alerts/webhook", admin)); got["url"] != "https://gotify.lan/other" || got["has_token"] != true {
+	if got := decodeMap(t, do(t, srv, "GET", "/api/alerts/webhook", admin)); storedWebhookURL(t, cfg, st) != "https://gotify.lan/other" || got["has_token"] != true {
 		t.Fatalf("invalid save must preserve the working webhook: %v", got)
 	}
 	put(map[string]any{"preset": "gotify", "url": "https://gotify2.lan", "token": "gk-2"})
@@ -243,7 +259,7 @@ func TestWebhookSchemeChangeDoesNotCarrySavedToken(t *testing.T) {
 		if w.Code != http.StatusOK {
 			t.Fatalf("changed scheme: %d %s", w.Code, w.Body.String())
 		}
-		if got := decodeMap(t, do(t, srv, "GET", "/api/alerts/webhook", admin)); got["has_token"] != false || got["url"] != newURL {
+		if got := decodeMap(t, do(t, srv, "GET", "/api/alerts/webhook", admin)); got["has_token"] != false || storedWebhookURL(t, cfg, st) != newURL {
 			t.Fatalf("changed scheme must not carry a saved token: %v", got)
 		}
 	}
@@ -289,6 +305,31 @@ func TestWebhookTestFailureNeverEchoesTheURL(t *testing.T) {
 	for _, path := range []string{"/api/status", "/api/alerts"} {
 		if body := do(t, srv, "GET", path, admin).Body.String(); strings.Contains(body, "t0ken") {
 			t.Errorf("%s carries the webhook URL: %s", path, body)
+		}
+	}
+}
+
+// For Discord and ntfy the URL path is the credential: the API reports its origin only, and
+// no API response may be cached.
+func TestWebhookReadsNeverCarryTheURLPath(t *testing.T) {
+	srv, st, _ := setupTestServer(t)
+	admin := loginAs(t, srv, st, "alice", "admin")
+	put := doJSON(t, srv, "PUT", "/api/alerts/webhook", admin, map[string]string{"preset": "discord", "url": "https://discord.example:8443/api/webhooks/1/s3cret?wait=true"})
+	get := do(t, srv, "GET", "/api/alerts/webhook", admin)
+	for _, w := range []*httptest.ResponseRecorder{put, get} {
+		if w.Code != http.StatusOK || strings.Contains(w.Body.String(), "s3cret") || strings.Contains(w.Body.String(), "wait=") {
+			t.Fatalf("webhook response carries the URL path: %d %s", w.Code, w.Body.String())
+		}
+		if got := decodeMap(t, w); got["url_origin"] != "https://discord.example:8443" || got["has_url"] != true {
+			t.Fatalf("webhook view: %v", got)
+		}
+		if w.Header().Get("Cache-Control") != "no-store" {
+			t.Fatalf("webhook response cacheable: %q", w.Header().Get("Cache-Control"))
+		}
+	}
+	for _, path := range []string{"/api/status", "/api/settings", "/api/auth/me"} {
+		if got := do(t, srv, "GET", path, admin).Header().Get("Cache-Control"); got != "no-store" {
+			t.Errorf("%s Cache-Control %q", path, got)
 		}
 	}
 }
