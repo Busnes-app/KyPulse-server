@@ -109,6 +109,17 @@ func TestLoginPerAccountWindow(t *testing.T) {
 	}
 }
 
+// The account window counts failures only: a user signing in often is never locked out.
+func TestLoginAccountWindowIgnoresSuccess(t *testing.T) {
+	srv, st, _ := setupTestServer(t)
+	createLocalUser(t, st, "usr_busy", "busy", "active")
+	for i := 1; i <= 12; i++ {
+		if w := loginFrom(t, srv, fmt.Sprintf("203.0.113.%d:1", i), "busy", "SuperSecretPass123!"); w.Code != http.StatusOK {
+			t.Fatalf("sign-in %d: %d %s", i, w.Code, w.Body.String())
+		}
+	}
+}
+
 // One IPv6 host holds a whole /64; rotating addresses inside it must not buy fresh windows.
 func TestLoginLimiterKeysIPv6ByPrefix(t *testing.T) {
 	srv, _, _ := setupTestServer(t)

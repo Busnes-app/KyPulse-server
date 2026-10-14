@@ -289,6 +289,14 @@ func (s *Server) allowAccount(key string, limit int, window time.Duration) bool 
 	return entry.count <= limit
 }
 
+// accountOpen reports whether key has attempts left in its window, without spending one.
+func (s *Server) accountOpen(key string, limit int) bool {
+	s.attemptsMu.Lock()
+	defer s.attemptsMu.Unlock()
+	w, ok := s.accounts[key]
+	return !ok || time.Now().After(w.reset) || w.count < limit
+}
+
 // makeRoom frees a slot for a new key: it drops every expired window, and if the map is still
 // full it drops one live entry chosen at random, never the one nearest expiry. Caller holds
 // attemptsMu. The scan is O(attemptsCap) and only runs for a new key while the map is full;

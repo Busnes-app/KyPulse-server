@@ -92,14 +92,17 @@ func (s *Server) handleLogin(w http.ResponseWriter, r *http.Request) {
 		s.writeError(w, http.StatusInternalServerError, "Authentication error")
 		return
 	}
-	// Per account, so a botnet spread across many IPs cannot outrun the per-IP window.
-	if !s.allowAccount("login-user:"+user.ID, 10, 15*time.Minute) {
+	// Per account, so a botnet spread across many IPs cannot outrun the per-IP window. Only
+	// wrong passwords spend it, so signing in often never locks an account.
+	accountKey := "login-user:" + user.ID
+	if !s.accountOpen(accountKey, 10) {
 		password.DummyVerify()
 		fail(user.ID, "account_rate_limit", http.StatusUnauthorized, loginFailed)
 		return
 	}
 	ok, err := password.Verify(req.Password, user.PasswordHash)
 	if err != nil || !ok {
+		s.allowAccount(accountKey, 10, 15*time.Minute)
 		fail(user.ID, "password", http.StatusUnauthorized, loginFailed)
 		return
 	}
