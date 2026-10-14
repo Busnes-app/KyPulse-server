@@ -244,3 +244,26 @@ func TestUserRoleIsAdminOrViewer(t *testing.T) {
 		t.Errorf("UpdateUser to admin: %v", err)
 	}
 }
+
+// Replicas starting together on one Postgres database must not race each other's migrations.
+func TestConcurrentOpenMigratesOnce(t *testing.T) {
+	cfg := testdb.Config(t)
+	if cfg.Driver != "postgres" {
+		t.Skip("the migration lock is Postgres-only")
+	}
+	errs := make(chan error, 4)
+	for range 4 {
+		go func() {
+			st, err := store.Open(context.Background(), cfg)
+			if err == nil {
+				_ = st.Close()
+			}
+			errs <- err
+		}()
+	}
+	for range 4 {
+		if err := <-errs; err != nil {
+			t.Fatal(err)
+		}
+	}
+}

@@ -92,25 +92,115 @@ func TestTargetEvents(t *testing.T) {
 			t.Fatalf("record %d: id=%d %v", i, e.ID, err)
 		}
 	}
-	all, total, err := st.Targets().ListEvents(ctx, "", 0, 10)
+	all, err := st.Targets().ListEvents(ctx, "", 0, 10)
+	total := len(all)
 	if err != nil || total != 3 || len(all) != 3 || !all[0].At.Equal(base.Add(2*time.Minute)) {
 		t.Fatalf("all: %d %v %+v", total, err, all)
 	}
-	onlyA, total, _ := st.Targets().ListEvents(ctx, "a", 0, 1)
-	if total != 2 || len(onlyA) != 1 || onlyA[0].TargetID != "a" {
-		t.Fatalf("a: %d %+v", total, onlyA)
+	onlyA, _ := st.Targets().ListEvents(ctx, "a", 0, 1)
+	olderA, _ := st.Targets().ListEvents(ctx, "a", onlyA[0].ID, 10)
+	if len(onlyA) != 1 || onlyA[0].TargetID != "a" || len(olderA) != 1 || olderA[0].ID >= onlyA[0].ID || olderA[0].TargetID != "a" {
+		t.Fatalf("a: %+v %+v", onlyA, olderA)
 	}
 	if err := st.Targets().SetEventNotified(ctx, all[0].ID, false, "receiver answered 503"); err != nil {
 		t.Fatal(err)
 	}
-	after, _, _ := st.Targets().ListEvents(ctx, "", 0, 1)
+	after, _ := st.Targets().ListEvents(ctx, "", 0, 1)
 	if after[0].Notified || after[0].NotifyError != "receiver answered 503" {
 		t.Fatalf("notified: %+v", after[0])
 	}
 	if err := st.Targets().DeleteTarget(ctx, "a"); err != nil {
 		t.Fatal(err)
 	}
-	if _, total, _ = st.Targets().ListEvents(ctx, "", 0, 10); total != 1 {
-		t.Fatalf("events must cascade on delete: %d left", total)
+	if left, _ := st.Targets().ListEvents(ctx, "", 0, 10); len(left) != 1 {
+		t.Fatalf("events must cascade on delete: %d left", len(left))
+	}
+}
+
+func TestPruneEventsKeepsRecentAndPending(t *testing.T) {
+	ctx := context.Background()
+	st := newTestStore(t)
+	if err := st.Targets().CreateTarget(ctx, &store.Target{ID: "a", Name: "a", URL: "https://a/", Enabled: true}); err != nil {
+		t.Fatal(err)
+	}
+	now := time.Now().UTC()
+	old := now.Add(-100 * 24 * time.Hour)
+	for _, e := range []*store.TargetEvent{
+		{TargetID: "a", At: old, FromState: "ok", ToState: "down"},
+		{TargetID: "a", At: old, FromState: "ok", ToState: "down", Cause: "offboarding_failed", NotifyError: "pending"},
+		{TargetID: "a", At: now, FromState: "down", ToState: "ok"},
+	} {
+		if err := st.Targets().RecordEvent(ctx, e); err != nil {
+			t.Fatal(err)
+		}
+	}
+	if err := st.Targets().PruneEvents(ctx, now.Add(-90*24*time.Hour)); err != nil {
+		t.Fatal(err)
+	}
+	left, err := st.Targets().ListEvents(ctx, "", 0, 10)
+	if err != nil || len(left) != 2 || left[0].ToState != "ok" || left[1].Cause != "offboarding_failed" {
+		t.Fatalf("after prune: %+v %v", left, err)
+	}
+}
+
+// A recovery clears "until fixed" only: a timed silence set meanwhile must survive it.
+func TestClearUntilFixedKeepsATimedSilence(t *testing.T) {
+	ctx := context.Background()
+	st := newTestStore(t)
+	if err := st.Targets().CreateTarget(ctx, &store.Target{ID: "a", Name: "a", URL: "https://a/", Enabled: true}); err != nil {
+		t.Fatal(err)
+	}
+	until := time.Now().UTC().Add(time.Hour).Truncate(time.Microsecond)
+	if err := st.Targets().SetSilence(ctx, "a", &until, false); err != nil {
+		t.Fatal(err)
+	}
+	if err := st.Targets().ClearUntilFixed(ctx, "a"); err != nil {
+		t.Fatal(err)
+	}
+	if tg, _ := st.Targets().GetTarget(ctx, "a"); tg.SilencedUntil == nil || !tg.SilencedUntil.Equal(until) {
+		t.Fatalf("timed silence lost: %+v", tg)
+	}
+	if err := st.Targets().SetSilence(ctx, "a", nil, true); err != nil {
+		t.Fatal(err)
+	}
+	if err := st.Targets().ClearUntilFixed(ctx, "a"); err != nil {
+		t.Fatal(err)
+	}
+	if tg, _ := st.Targets().GetTarget(ctx, "a"); tg.UntilFixed || tg.SilencedUntil != nil {
+		t.Fatalf("until fixed not cleared: %+v", tg)
+	}
+	if err := st.Targets().ClearUntilFixed(ctx, "missing"); err != nil {
+		t.Fatalf("nothing to clear is not an error: %v", err)
+	}
+}
+
+func TestUpdateTargetResetsHealthOnNewURL(t *testing.T) {
+	ctx := context.Background()
+	st := newTestStore(t)
+	tg := &store.Target{ID: "a", Name: "a", URL: "https://a/", IntervalSec: 30, Enabled: true}
+	if err := st.Targets().CreateTarget(ctx, tg); err != nil {
+		t.Fatal(err)
+	}
+	polled := time.Now().UTC().Add(-time.Hour).Truncate(time.Microsecond)
+	if err := st.Targets().RecordPoll(ctx, "a", store.PollUpdate{PolledAt: polled, LatencyMS: 5, LastResult: `{"state":"down"}`,
+		TrackJSON: `{"state":"down","down_streak":5}`, State: "down", StateSince: polled, Cause: "refused"}); err != nil {
+		t.Fatal(err)
+	}
+	tg.Name = "renamed"
+	if err := st.Targets().UpdateTarget(ctx, tg); err != nil {
+		t.Fatal(err)
+	}
+	same, _ := st.Targets().GetTarget(ctx, "a")
+	if same.State != "down" || same.TrackJSON == "" || same.Cause != "refused" || same.LastPolledAt == nil || same.Name != "renamed" {
+		t.Fatalf("same URL must keep health: %+v", same)
+	}
+	tg.URL = "https://b/"
+	if err := st.Targets().UpdateTarget(ctx, tg); err != nil {
+		t.Fatal(err)
+	}
+	moved, _ := st.Targets().GetTarget(ctx, "a")
+	if moved.URL != "https://b/" || moved.State != "pending" || moved.TrackJSON != "" || moved.Cause != "" || moved.LastResult != "" ||
+		moved.LastPolledAt != nil || moved.LastLatencyMS != 0 || !moved.StateSince.After(polled) {
+		t.Fatalf("new URL must reset health: %+v", moved)
 	}
 }

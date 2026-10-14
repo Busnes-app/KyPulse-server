@@ -15,6 +15,9 @@ var (
 	logRetentionAbandoned = logging.DeclareEvent("log_retention_abandoned", "log retention still running at shutdown deadline", slog.LevelError)
 )
 
+// eventRetention is how long the Alerts history keeps a state change or reminder.
+const eventRetention = 90 * 24 * time.Hour
+
 func logRetentionLoop(ctx context.Context, st store.Store, maxBytes int64, lg *logging.Logger, done chan<- struct{}) {
 	defer close(done)
 	cleanup := func() {
@@ -23,6 +26,9 @@ func logRetentionLoop(ctx context.Context, st store.Store, maxBytes int64, lg *l
 		}
 		if err := st.Sources().ExpireCodes(ctx, time.Now().UTC()); err != nil && ctx.Err() == nil {
 			lg.Log(ctx, logRetentionFailed, logRetentionReason("expire_codes"))
+		}
+		if err := st.Targets().PruneEvents(ctx, time.Now().UTC().Add(-eventRetention)); err != nil && ctx.Err() == nil {
+			lg.Log(ctx, logRetentionFailed, logRetentionReason("prune_events"))
 		}
 	}
 	cleanup()

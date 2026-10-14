@@ -144,7 +144,8 @@ func TestObserveRecordsStateTransitionsAndSends(t *testing.T) {
 	if tg.State != "down" || tg.Cause != "refused" {
 		t.Fatalf("after three downs: %+v", tg)
 	}
-	events, total, _ := st.Targets().ListEvents(ctx, "a", 0, 10)
+	events, _ := st.Targets().ListEvents(ctx, "a", 0, 10)
+	total := len(events)
 	if total != 2 || events[0].ToState != "down" || !events[0].Notified || events[0].NotifyError != "" {
 		t.Fatalf("events: %d %+v", total, events)
 	}
@@ -158,7 +159,8 @@ func TestObserveRecordsStateTransitionsAndSends(t *testing.T) {
 
 	// An hour later, still down: one reminder, recorded as an event.
 	observe(svc, "a", poller.Down, now.Add(2*time.Hour))
-	events, total, _ = st.Targets().ListEvents(ctx, "a", 0, 10)
+	events, _ = st.Targets().ListEvents(ctx, "a", 0, 10)
+	total = len(events)
 	if total != 3 || !events[0].Reminder || poster.calls != 2 || !poster.sent[1].Reminder {
 		t.Fatalf("reminder: %d %+v calls=%d", total, events[0], poster.calls)
 	}
@@ -172,7 +174,7 @@ func TestObserveRecordsAFailedSend(t *testing.T) {
 	for i := 0; i < 3; i++ {
 		observe(svc, "a", poller.Down, now.Add(time.Duration(i)*30*time.Second))
 	}
-	events, _, _ := st.Targets().ListEvents(ctx, "a", 0, 1)
+	events, _ := st.Targets().ListEvents(ctx, "a", 0, 1)
 	if events[0].Notified || events[0].NotifyError == "" {
 		t.Fatalf("failed send not recorded: %+v", events[0])
 	}
@@ -198,7 +200,7 @@ func TestObserveRecordsAnUnreadableWebhook(t *testing.T) {
 	for i := 0; i < 3; i++ {
 		observe(svc, "a", poller.Down, now.Add(time.Duration(i)*30*time.Second))
 	}
-	events, _, _ := st.Targets().ListEvents(ctx, "a", 0, 1)
+	events, _ := st.Targets().ListEvents(ctx, "a", 0, 1)
 	if events[0].Notified || events[0].NotifyError != "unreadable" {
 		t.Fatalf("unreadable webhook not recorded: %+v", events[0])
 	}
@@ -223,7 +225,7 @@ func TestSendErrorsNeverCarryTheURL(t *testing.T) {
 	for i := 0; i < 3; i++ {
 		observe(svc, "a", poller.Down, now.Add(time.Duration(i)*30*time.Second))
 	}
-	events, _, _ := st.Targets().ListEvents(ctx, "a", 0, 1)
+	events, _ := st.Targets().ListEvents(ctx, "a", 0, 1)
 	if events[0].NotifyError != "refused" {
 		t.Fatalf("notify_error = %q, want refused", events[0].NotifyError)
 	}
@@ -277,24 +279,73 @@ func TestSlowDeliveryDoesNotBlockObserve(t *testing.T) {
 	}
 }
 
-func TestQueueOverflowDropsAndRecords(t *testing.T) {
+// A full queue drops reminders, never a transition: c's down is held, then superseded by
+// c's recovery, which is delivered once the sender has room.
+func TestQueueOverflowDropsRemindersAndHoldsTransitions(t *testing.T) {
 	svc, st, poster, now := newServiceSized(t, 1)
 	release := blockPoster(t, poster, 3)
+	ctx := context.Background()
 	for _, id := range []string{"a", "b", "c"} {
 		oneDownFromDown(t, st, id, *now)
+	}
+	stale := fmt.Sprintf(`{"state":"down","since":%q,"down_streak":5,"announced":true,"last_notified":%q}`,
+		now.Add(-3*time.Hour).Format(time.RFC3339), now.Add(-2*time.Hour).Format(time.RFC3339))
+	if err := st.Targets().CreateTarget(ctx, &store.Target{ID: "r", Name: "r", URL: "https://r/", IntervalSec: 30, Enabled: true, State: "down", TrackJSON: stale}); err != nil {
+		t.Fatal(err)
 	}
 	observeAsync(svc, "a", poller.Down, *now)
 	<-poster.entered                          // the sender holds a
 	observeAsync(svc, "b", poller.Down, *now) // fills the queue
-	observeAsync(svc, "c", poller.Down, *now) // dropped
+	observeAsync(svc, "c", poller.Down, *now) // held
+	observeAsync(svc, "r", poller.Down, *now) // a reminder: dropped
+	observeAsync(svc, "c", poller.OK, now.Add(30*time.Second))
+	observeAsync(svc, "c", poller.OK, now.Add(time.Minute)) // recovery supersedes the held down
 	release()
 	monitor.Flush(svc)
-	ev, _, _ := st.Targets().ListEvents(context.Background(), "c", 0, 1)
-	if len(ev) != 1 || ev[0].Notified || ev[0].NotifyError != "queue_full" {
-		t.Fatalf("dropped event: %+v", ev)
+	if ev, _ := st.Targets().ListEvents(ctx, "r", 0, 1); len(ev) != 1 || !ev[0].Reminder || ev[0].Notified || ev[0].NotifyError != "queue_full" {
+		t.Fatalf("reminder: %+v", ev)
 	}
-	if poster.calls != 2 {
-		t.Fatalf("calls = %d, want a and b only", poster.calls)
+	ev, _ := st.Targets().ListEvents(ctx, "c", 0, 10)
+	if len(ev) != 2 || ev[0].ToState != "ok" || !ev[0].Notified || ev[1].ToState != "down" || ev[1].NotifyError != "queue_full" {
+		t.Fatalf("c: %+v %+v", ev[0], ev[1])
+	}
+	if poster.calls != 3 || poster.sent[2].State != "ok" {
+		t.Fatalf("calls = %d %+v, want a, b and c's recovery", poster.calls, poster.sent)
+	}
+}
+
+// A flapping target is recorded transition by transition, but the webhook hears about the
+// flapping once, as its own event.
+func TestFlappingIsOneWebhook(t *testing.T) {
+	svc, st, poster, now := newService(t)
+	ctx := context.Background()
+	_ = st.Targets().CreateTarget(ctx, &store.Target{ID: "a", Name: "KyVault", URL: "https://a/", IntervalSec: 10, Enabled: true})
+	at := *now
+	feed := func(s poller.State) {
+		observe(svc, "a", s, at)
+		at = at.Add(10 * time.Second)
+	}
+	feed(poller.OK)
+	for range 5 {
+		for _, s := range []poller.State{poller.Down, poller.Down, poller.Down, poller.OK, poller.OK} {
+			feed(s)
+		}
+	}
+	if poster.calls != 6 || poster.sent[5].State != "flapping" || poster.sent[5].Previous != "down" {
+		t.Fatalf("calls = %d %+v", poster.calls, poster.sent)
+	}
+	events, _ := st.Targets().ListEvents(ctx, "a", 0, 100)
+	var flapping int
+	for _, e := range events {
+		if e.ToState == "flapping" {
+			flapping++
+			if !e.Notified {
+				t.Fatalf("flapping event not marked sent: %+v", e)
+			}
+		}
+	}
+	if flapping != 1 || len(events) != 1+10+1 { // first ok, ten transitions, one notice
+		t.Fatalf("flapping=%d events=%d", flapping, len(events))
 	}
 }
 
@@ -313,7 +364,7 @@ func TestShutdownCancelsQueuedDeliveries(t *testing.T) {
 	if poster.calls != 1 {
 		t.Fatalf("calls = %d, want a only", poster.calls)
 	}
-	ev, _, _ := st.Targets().ListEvents(context.Background(), "b", 0, 1)
+	ev, _ := st.Targets().ListEvents(context.Background(), "b", 0, 1)
 	if len(ev) != 1 || ev[0].Notified || ev[0].NotifyError != "cancelled" {
 		t.Fatalf("queued event: %+v", ev)
 	}
@@ -353,7 +404,7 @@ func TestShutdownCutsInFlightSendAfterGrace(t *testing.T) {
 	case <-time.After(10 * time.Second):
 		t.Fatal("Drain waited past the shutdown grace")
 	}
-	ev, _, _ := st.Targets().ListEvents(context.Background(), "a", 0, 1)
+	ev, _ := st.Targets().ListEvents(context.Background(), "a", 0, 1)
 	if len(ev) != 1 || ev[0].Notified || ev[0].NotifyError != "cancelled" {
 		t.Fatalf("in-flight event: %+v", ev)
 	}

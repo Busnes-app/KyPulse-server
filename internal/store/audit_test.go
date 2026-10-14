@@ -422,6 +422,20 @@ func TestAuditChainRefusesFillerRowAboveAnchor(t *testing.T) {
 	}
 }
 
+// A row appended past the anchor without moving it must fail verification, not be skipped.
+func TestVerifyChainRefusesRowPastAnchor(t *testing.T) {
+	st := openAudit(t, testdb.Config(t))
+	logN(t, st, 3)
+	ctx := context.Background()
+	now := time.Now().UTC().Truncate(time.Microsecond)
+	if _, err := st.db.ExecContext(ctx, st.rebind(`INSERT INTO audit_records (user_id, action, resource, details, ip_address, created_at, seq, prev_hash, hash) VALUES (?, ?, ?, ?, ?, ?, ?, '', '')`), "u1", "auth.login", "", "", "", now, 4); err != nil {
+		t.Fatal(err)
+	}
+	if _, err := st.Audit().VerifyChain(ctx); !errors.Is(err, ErrAuditUnplaceable) {
+		t.Fatalf("a row past the anchor must fail verification: %v", err)
+	}
+}
+
 // Two processes appending at once must not lose a record to a sequence collision.
 func TestConcurrentAppendsAcrossStores(t *testing.T) {
 	cfg := testdb.Config(t)

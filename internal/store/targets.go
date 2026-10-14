@@ -106,8 +106,20 @@ func (t *targetStore) ListTargets(ctx context.Context) ([]*Target, error) {
 
 func (t *targetStore) UpdateTarget(ctx context.Context, tg *Target) error {
 	tg.UpdatedAt = time.Now().UTC()
-	q := t.store.rebind(`UPDATE targets SET name = ?, url = ?, interval_sec = ?, enabled = ?, container = ?, updated_at = ? WHERE id = ?`)
-	res, err := t.store.db.ExecContext(ctx, q, tg.Name, tg.URL, tg.IntervalSec, tg.Enabled, tg.Container, tg.UpdatedAt, tg.ID)
+	// A new URL is a new endpoint: its health starts over instead of inheriting streaks.
+	// SET expressions read the old row, so "url <> ?" compares against the stored URL.
+	q := t.store.rebind(`UPDATE targets SET
+    track_json = CASE WHEN url <> ? THEN '' ELSE track_json END,
+    last_result = CASE WHEN url <> ? THEN '' ELSE last_result END,
+    last_polled_at = CASE WHEN url <> ? THEN NULL ELSE last_polled_at END,
+    last_latency_ms = CASE WHEN url <> ? THEN 0 ELSE last_latency_ms END,
+    state = CASE WHEN url <> ? THEN 'pending' ELSE state END,
+    state_since = CASE WHEN url <> ? THEN ? ELSE state_since END,
+    cause = CASE WHEN url <> ? THEN '' ELSE cause END,
+    name = ?, url = ?, interval_sec = ?, enabled = ?, container = ?, updated_at = ? WHERE id = ?`)
+	u := tg.URL
+	res, err := t.store.db.ExecContext(ctx, q, u, u, u, u, u, u, tg.UpdatedAt, u,
+		tg.Name, tg.URL, tg.IntervalSec, tg.Enabled, tg.Container, tg.UpdatedAt, tg.ID)
 	if err != nil {
 		if strings.Contains(err.Error(), "UNIQUE") || strings.Contains(err.Error(), "duplicate key") {
 			return ErrAlreadyExists
@@ -193,6 +205,14 @@ func (t *targetStore) SetSilence(ctx context.Context, id string, until *time.Tim
 	return nil
 }
 
+// ClearUntilFixed ends an "until fixed" silence, and only that: a silence the admin replaced
+// with a timed one meanwhile stays. A target with nothing to clear is not an error.
+func (t *targetStore) ClearUntilFixed(ctx context.Context, id string) error {
+	_, err := t.store.db.ExecContext(ctx, t.store.rebind(`UPDATE targets SET until_fixed = FALSE, updated_at = ?
+WHERE id = ? AND until_fixed = TRUE AND silenced_until IS NULL`), time.Now().UTC(), id)
+	return err
+}
+
 func (t *targetStore) RecordEvent(ctx context.Context, e *TargetEvent) error {
 	if e.At.IsZero() {
 		e.At = time.Now().UTC()
@@ -249,36 +269,25 @@ FROM target_events WHERE cause='offboarding_failed' AND notify_error='pending' A
 	return &e, nil
 }
 
-func (t *targetStore) ListEvents(ctx context.Context, targetID string, offset, limit int) ([]*TargetEvent, int, error) {
+// ListEvents pages by id, newest first: beforeID > 0 returns only older events. Keyset
+// paging needs no COUNT over the whole table.
+func (t *targetStore) ListEvents(ctx context.Context, targetID string, beforeID int64, limit int) ([]*TargetEvent, error) {
 	if limit <= 0 {
 		limit = 50
 	}
-	if offset < 0 {
-		offset = 0
-	}
-
-	where := ""
-	var whereArgs []any
+	var where []string
+	var args []any
 	if targetID != "" {
-		where = " WHERE target_id = ?"
-		whereArgs = []any{targetID}
+		where, args = append(where, "target_id = ?"), append(args, targetID)
 	}
-
-	var total int
-	countQ := t.store.rebind("SELECT COUNT(1) FROM target_events" + where)
-	if err := t.store.db.QueryRowContext(ctx, countQ, whereArgs...).Scan(&total); err != nil {
-		return nil, 0, err
+	if beforeID > 0 {
+		where, args = append(where, "id < ?"), append(args, beforeID)
 	}
-
-	listQ := t.store.rebind(`
-SELECT id, target_id, at, from_state, to_state, cause, reminder, notified, notify_error
-FROM target_events` + where + `
-ORDER BY at DESC, id DESC LIMIT ? OFFSET ?`)
-	listArgs := append(append([]any{}, whereArgs...), limit, offset)
-
-	rows, err := t.store.db.QueryContext(ctx, listQ, listArgs...)
+	q := t.store.rebind(`SELECT id, target_id, at, from_state, to_state, cause, reminder, notified, notify_error
+FROM target_events` + whereSQL(where) + ` ORDER BY id DESC LIMIT ?`)
+	rows, err := t.store.db.QueryContext(ctx, q, append(args, limit)...)
 	if err != nil {
-		return nil, 0, err
+		return nil, err
 	}
 	defer rows.Close()
 
@@ -286,9 +295,17 @@ ORDER BY at DESC, id DESC LIMIT ? OFFSET ?`)
 	for rows.Next() {
 		var e TargetEvent
 		if err := rows.Scan(&e.ID, &e.TargetID, &e.At, &e.FromState, &e.ToState, &e.Cause, &e.Reminder, &e.Notified, &e.NotifyError); err != nil {
-			return nil, 0, err
+			return nil, err
 		}
 		events = append(events, &e)
 	}
-	return events, total, rows.Err()
+	return events, rows.Err()
+}
+
+// PruneEvents deletes events older than before. Offboarding alerts still awaiting delivery
+// are kept: they are owed to the operator, not history.
+func (t *targetStore) PruneEvents(ctx context.Context, before time.Time) error {
+	_, err := t.store.db.ExecContext(ctx, t.store.rebind(`DELETE FROM target_events WHERE at < ?
+AND NOT (cause = 'offboarding_failed' AND notify_error = 'pending' AND notified = FALSE)`), before)
+	return err
 }
