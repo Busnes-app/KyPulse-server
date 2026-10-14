@@ -20,7 +20,7 @@ describe('Alerts', () => {
   it('lists events newest first with app names, transitions and delivery results', async () => {
     vi.stubGlobal('fetch', vi.fn(async (input: RequestInfo | URL) => {
       const url = String(input);
-      if (url.startsWith('/api/alerts')) return new Response(JSON.stringify({ events, total: 3 }));
+      if (url.startsWith('/api/alerts')) return new Response(JSON.stringify({ events, next_before_id: 0 }));
       if (url === '/api/targets') return new Response(JSON.stringify({ targets }));
       throw new Error(url);
     }));
@@ -43,7 +43,7 @@ describe('Alerts', () => {
   it('says so when there are no alerts', async () => {
     vi.stubGlobal('fetch', vi.fn(async (input: RequestInfo | URL) => {
       const url = String(input);
-      if (url.startsWith('/api/alerts')) return new Response(JSON.stringify({ events: null, total: 0 }));
+      if (url.startsWith('/api/alerts')) return new Response(JSON.stringify({ events: null, next_before_id: 0 }));
       return new Response(JSON.stringify({ targets: [] }));
     }));
     render(<Alerts user={{ role: 'viewer' }} />);

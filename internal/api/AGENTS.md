@@ -61,7 +61,7 @@ Owns HTTP routing, request parsing, session cookie validation, CORS headers, and
 | PUT | `/api/targets/{id}` | admin | `{target}`; an omitted `interval_sec` keeps the stored one |
 | DELETE | `/api/targets/{id}` | admin | 204 |
 | POST | `/api/targets/{id}/silence` | admin | body `{"for":"1h"\|"8h"\|"until_fixed"\|"off"}`; `{silenced_until, until_fixed}` |
-| GET | `/api/alerts` | session | `{events, total}`, `?target=&offset=&limit=` (limit ≤ 200, default 50) |
+| GET | `/api/alerts` | session | `{events, next_before_id}` newest id first, `?target=&before_id=&limit=` (limit ≤ 200, default 50; `before_id` exclusive, `next_before_id` 0 on the last page) |
 | GET | `/api/alerts/webhook` | admin | `{configured, preset, url, has_token, last}`; never the token |
 | PUT | `/api/alerts/webhook` | admin | body `{preset,url,token,clear_token}`; an empty `token` keeps the stored one only when preset, URL scheme and host (including port) are unchanged; `clear_token` removes it only for presets where a token is optional. Gotify requires a nonblank app token; invalid edits return 400 and preserve the stored webhook |
 | DELETE | `/api/alerts/webhook` | admin | 204 |

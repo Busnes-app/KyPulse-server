@@ -106,7 +106,7 @@ func (s *Server) handleGetTarget(w http.ResponseWriter, r *http.Request) {
 			lastResult = res
 		}
 	}
-	events, _, err := s.store.Targets().ListEvents(r.Context(), id, 0, 20)
+	events, err := s.store.Targets().ListEvents(r.Context(), id, 0, 20)
 	if err != nil {
 		s.writeError(w, http.StatusInternalServerError, "Failed to list events")
 		return
@@ -245,10 +245,7 @@ func (s *Server) handleSilence(w http.ResponseWriter, r *http.Request) {
 func (s *Server) handleListAlerts(w http.ResponseWriter, r *http.Request) {
 	q := r.URL.Query()
 	target := q.Get("target")
-	offset, _ := strconv.Atoi(q.Get("offset"))
-	if offset < 0 {
-		offset = 0
-	}
+	before, _ := strconv.ParseInt(q.Get("before_id"), 10, 64)
 	limit := 50
 	if raw := q.Get("limit"); raw != "" {
 		if n, err := strconv.Atoi(raw); err == nil {
@@ -261,12 +258,18 @@ func (s *Server) handleListAlerts(w http.ResponseWriter, r *http.Request) {
 	if limit > 200 {
 		limit = 200
 	}
-	events, total, err := s.store.Targets().ListEvents(r.Context(), target, offset, limit)
+	// One extra row says whether an older page exists, without counting the table.
+	events, err := s.store.Targets().ListEvents(r.Context(), target, before, limit+1)
 	if err != nil {
 		s.writeError(w, http.StatusInternalServerError, "Failed to list alerts")
 		return
 	}
-	s.writeJSON(w, http.StatusOK, map[string]any{"events": events, "total": total})
+	var next int64
+	if len(events) > limit {
+		events = events[:limit]
+		next = events[limit-1].ID
+	}
+	s.writeJSON(w, http.StatusOK, map[string]any{"events": events, "next_before_id": next})
 }
 
 func (s *Server) handleStatus(w http.ResponseWriter, r *http.Request) {

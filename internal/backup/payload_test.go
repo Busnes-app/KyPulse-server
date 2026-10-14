@@ -130,8 +130,8 @@ func TestCollectExcludesCollectedDataAndPreservesState(t *testing.T) {
 	if event, err := copyStore.Targets().NextOffboardingAlert(ctx); err != nil || event.TargetID != "backup_target" || event.NotifyError != "pending" {
 		t.Fatalf("snapshot pending alert lost: %+v %v", event, err)
 	}
-	if _, total, err := copyStore.Targets().ListEvents(ctx, "", 0, 10); err != nil || total != 1 {
-		t.Fatalf("snapshot replay duplicated alert: %d %v", total, err)
+	if events, err := copyStore.Targets().ListEvents(ctx, "", 0, 10); err != nil || len(events) != 1 {
+		t.Fatalf("snapshot replay duplicated alert: %d %v", len(events), err)
 	}
 	if chain, err := copyStore.Audit().VerifyChain(ctx); err != nil || chain.Count != 1 {
 		t.Fatalf("snapshot audit chain = %+v, %v", chain, err)

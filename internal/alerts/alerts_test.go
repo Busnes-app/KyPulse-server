@@ -206,3 +206,103 @@ func TestRecoveryIsNotSentForAnUnannouncedProblem(t *testing.T) {
 		t.Fatalf("track: %+v", tr)
 	}
 }
+
+// A target cycling down and up every 50 s used to send two webhooks a cycle. Flapping
+// replaces them with one notice, an hourly reminder and one notice once it settles.
+func TestFlappingSendsOneNoticeThenSettles(t *testing.T) {
+	tr := Track{}
+	now := t0
+	var sent []Decision
+	feed := func(s poller.State) {
+		var trans *Transition
+		var d Decision
+		tr, trans = Next(tr, poller.Result{State: s, Cause: "refused"}, now)
+		d, tr = Decide(tr, trans, now)
+		if d.Send {
+			sent = append(sent, d)
+		}
+		now = now.Add(10 * time.Second)
+	}
+	feed(OK)
+	cycle := func() {
+		for _, s := range []poller.State{Down, Down, Down, OK, OK} {
+			feed(s)
+		}
+	}
+	for range 3 {
+		cycle()
+	}
+	if len(sent) != 6 || !tr.Flapping {
+		t.Fatalf("after three outages: %d sends, flapping=%v", len(sent), tr.Flapping)
+	}
+	if n := sent[5].Notice; n == nil || n.From != Down || n.To != Flapping || sent[5].Reminder {
+		t.Fatalf("the sixth send must be the flapping notice: %+v", sent[5])
+	}
+	for _, d := range sent[:5] {
+		if d.Notice != nil {
+			t.Fatalf("ordinary transitions carry no notice: %+v", d)
+		}
+	}
+	for now.Before(t0.Add(ReminderEvery + 5*time.Minute)) {
+		cycle()
+	}
+	if len(sent) != 7 || !sent[6].Reminder || sent[6].Notice == nil || sent[6].Notice.To != Flapping {
+		t.Fatalf("an hour of flapping must send one reminder only: %d sends, last %+v", len(sent), sent[len(sent)-1])
+	}
+	// It settles down: no notice until StableAfter without a transition.
+	for range 3 {
+		feed(Down)
+	}
+	settleAt := now.Add(-10 * time.Second).Add(StableAfter) // the third down was the transition
+	for now.Before(settleAt) {
+		feed(Down)
+	}
+	if len(sent) != 7 {
+		t.Fatalf("still settling: %d sends", len(sent))
+	}
+	feed(Down)
+	if len(sent) != 8 || tr.Flapping || sent[7].Notice == nil || sent[7].Notice.From != Flapping || sent[7].Notice.To != Down {
+		t.Fatalf("settled down must be announced once: %d sends %+v", len(sent), tr)
+	}
+	feed(OK)
+	feed(OK)
+	if len(sent) != 9 || sent[8].Notice != nil || tr.State != OK || tr.Announced {
+		t.Fatalf("recovery after settling: %d sends %+v", len(sent), tr)
+	}
+}
+
+func TestFlappingSettlingOKSendsRecoveryOnlyIfAnnounced(t *testing.T) {
+	tr := Track{State: OK, Flapping: true, Announced: true, Changes: []time.Time{t0}}
+	d, tr := Decide(tr, nil, t0.Add(StableAfter))
+	if !d.Send || d.Notice == nil || d.Notice.From != Flapping || d.Notice.To != OK || tr.Flapping || tr.Announced || len(tr.Changes) != 0 {
+		t.Fatalf("settled ok: %+v %+v", d, tr)
+	}
+	silent := Track{State: OK, Flapping: true, Changes: []time.Time{t0}, SilencedUntil: t0.Add(time.Hour)}
+	if d, _ := Decide(silent, nil, t0.Add(StableAfter)); d.Send || d.Notice == nil {
+		t.Fatalf("a flap never announced settles unsent but recorded: %+v", d)
+	}
+}
+
+func TestFlapEntryUnderSilenceIsRecordedNotSent(t *testing.T) {
+	tr, _ := run(Track{SilencedUntil: t0.Add(8 * time.Hour)}, OK)
+	var notices int
+	now := t0
+	for range 3 {
+		for _, s := range []poller.State{Down, Down, Down, OK, OK} {
+			var trans *Transition
+			var d Decision
+			tr, trans = Next(tr, poller.Result{State: s}, now)
+			d, tr = Decide(tr, trans, now)
+			if d.Send {
+				t.Fatalf("sent under silence: %+v", d)
+			}
+			if d.Notice != nil {
+				notices++
+			}
+			now = now.Add(10 * time.Second)
+		}
+	}
+	if notices != 1 || !tr.Flapping || tr.Announced {
+		t.Fatalf("notices=%d track=%+v", notices, tr)
+	}
+}

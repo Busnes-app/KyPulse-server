@@ -43,7 +43,7 @@ func waitOffboarding(t *testing.T, st store.Store, reason string) *store.TargetE
 	t.Helper()
 	deadline := time.Now().Add(5 * time.Second)
 	for time.Now().Before(deadline) {
-		events, _, err := st.Targets().ListEvents(context.Background(), "bridge", 0, 1)
+		events, err := st.Targets().ListEvents(context.Background(), "bridge", 0, 1)
 		if err != nil {
 			t.Fatal(err)
 		}

@@ -177,7 +177,7 @@ export const getTarget = (id: string) =>
   fetch(`/api/targets/${encodeURIComponent(id)}`).then((r) =>
     readJSON<{ target: Target; last_result: LastResult | null; events: TargetEvent[] | null; kyyard: ContainerFacts | null }>(r));
 export const listAlerts = (limit = 100) =>
-  fetch(`/api/alerts?limit=${limit}`).then((r) => readJSON<{ events: TargetEvent[] | null; total: number }>(r));
+  fetch(`/api/alerts?limit=${limit}`).then((r) => readJSON<{ events: TargetEvent[] | null; next_before_id: number }>(r));
 export const createTarget = (input: TargetInput) =>
   secureFetch('/api/targets', { method: 'POST', ...json(input) }).then((r) => readJSON<{ target: Target }>(r)).then((b) => b.target);
 export const updateTarget = (id: string, input: TargetInput) =>

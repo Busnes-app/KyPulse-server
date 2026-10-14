@@ -84,7 +84,8 @@ func TestOffboardFailureRelayNative(t *testing.T) {
 	if output, err := command.CombinedOutput(); err != nil {
 		t.Fatalf("native failure relay: %v\n%s", err, output)
 	}
-	events, total, err := st.Targets().ListEvents(ctx, "bridge", 0, 10)
+	events, err := st.Targets().ListEvents(ctx, "bridge", 0, 10)
+	total := len(events)
 	if err != nil || total != 1 || events[0].Cause != "offboarding_failed" || events[0].NotifyError != "pending" {
 		t.Fatalf("native durable failure: %+v total=%d %v", events, total, err)
 	}
@@ -112,7 +113,7 @@ func TestOffboardFailureRelayNative(t *testing.T) {
 	}
 	deadline := time.Now().Add(5 * time.Second)
 	for {
-		events, _, err = st.Targets().ListEvents(ctx, "bridge", 0, 1)
+		events, err = st.Targets().ListEvents(ctx, "bridge", 0, 1)
 		if err != nil {
 			t.Fatal(err)
 		}
@@ -157,7 +158,7 @@ func TestOffboardFailureRelayNative(t *testing.T) {
 			t.Fatalf("native failure scope: %+v", a)
 		}
 	}
-	if events, total, err := st.Targets().ListEvents(ctx, "bridge", 0, 10); err != nil || total != 1 || !events[0].Notified {
-		t.Fatalf("native replay changed alert: %+v %d %v", events, total, err)
+	if events, err := st.Targets().ListEvents(ctx, "bridge", 0, 10); err != nil || len(events) != 1 || !events[0].Notified {
+		t.Fatalf("native replay changed alert: %+v %v", events, err)
 	}
 }

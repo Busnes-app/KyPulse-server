@@ -100,12 +100,14 @@ type TargetStore interface {
 	CreateTarget(ctx context.Context, t *Target) error // ErrAlreadyExists on a duplicate name
 	GetTarget(ctx context.Context, id string) (*Target, error)
 	ListTargets(ctx context.Context) ([]*Target, error) // ordered by name
-	UpdateTarget(ctx context.Context, t *Target) error  // name, url, interval, enabled, container only
+	UpdateTarget(ctx context.Context, t *Target) error  // name, url, interval, enabled, container; a new url resets health
 	DeleteTarget(ctx context.Context, id string) error  // cascades events
 	RecordPoll(ctx context.Context, id string, u PollUpdate) error
 	SetSilence(ctx context.Context, id string, until *time.Time, untilFixed bool) error // nil until and false clear it
+	ClearUntilFixed(ctx context.Context, id string) error                               // only while until_fixed and no timed silence
 	RecordEvent(ctx context.Context, e *TargetEvent) error                              // sets e.ID
 	SetEventNotified(ctx context.Context, id int64, notified bool, notifyError string) error
-	NextOffboardingAlert(ctx context.Context) (*TargetEvent, error)                                  // oldest pending; ErrNotFound when empty
-	ListEvents(ctx context.Context, targetID string, offset, limit int) ([]*TargetEvent, int, error) // targetID "" = all; newest first
+	NextOffboardingAlert(ctx context.Context) (*TargetEvent, error)                                     // oldest pending; ErrNotFound when empty
+	ListEvents(ctx context.Context, targetID string, beforeID int64, limit int) ([]*TargetEvent, error) // targetID "" = all; newest id first; beforeID 0 = from the newest
+	PruneEvents(ctx context.Context, before time.Time) error                                            // keeps pending offboarding alerts
 }

@@ -7,6 +7,10 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"math/rand/v2"
+	"net/http"
+	"net/url"
+	"strconv"
 	"strings"
 	"time"
 
@@ -110,8 +114,12 @@ func Build(c Config, m Message) (Request, error) {
 		if m.State == "down" {
 			prio = 8
 		}
+		u, err := url.Parse(c.URL)
+		if err != nil {
+			return Request{}, err
+		}
 		body, _ := json.Marshal(map[string]any{"title": m.Title(), "message": m.text(), "priority": prio})
-		return Request{URL: strings.TrimRight(c.URL, "/") + "/message", ContentType: "application/json", Headers: h, Body: body}, nil
+		return Request{URL: u.JoinPath("message").String(), ContentType: "application/json", Headers: h, Body: body}, nil
 	case Discord:
 		// Discord's webhook URL already carries its secret; c.Token is unused here.
 		body, _ := json.Marshal(map[string]string{"content": m.text()})
@@ -206,10 +214,42 @@ func (n *Notifier) Send(ctx context.Context, c Config, m Message) error {
 		if attempt >= len(n.Backoff) {
 			return last
 		}
+		wait := jitter(n.Backoff[attempt])
+		if resp != nil {
+			if ra, ok := retryAfter(resp.Header.Get("Retry-After"), time.Now()); ok {
+				if ra > maxRetryAfter {
+					return last // the receiver asks for longer than a delivery may wait
+				}
+				wait = max(wait, ra)
+			}
+		}
 		select {
 		case <-ctx.Done():
 			return ctx.Err()
-		case <-time.After(n.Backoff[attempt]):
+		case <-time.After(wait):
 		}
 	}
+}
+
+// jitter returns a wait in [d/2, d], so senders retrying after one outage do not hit the
+// receiver in step.
+func jitter(d time.Duration) time.Duration {
+	return d/2 + rand.N(d-d/2+1)
+}
+
+// maxRetryAfter is the longest Retry-After a delivery honours; a longer one ends the retries.
+const maxRetryAfter = 30 * time.Second
+
+// retryAfter parses a Retry-After header: delay seconds or an HTTP date.
+func retryAfter(v string, now time.Time) (time.Duration, bool) {
+	if v == "" {
+		return 0, false
+	}
+	if s, err := strconv.Atoi(v); err == nil {
+		return time.Duration(min(max(s, 0), 86400)) * time.Second, true
+	}
+	if t, err := http.ParseTime(v); err == nil {
+		return max(t.Sub(now), 0), true
+	}
+	return 0, false
 }

@@ -83,7 +83,8 @@ CREATE TRIGGER reject_offboarding_alert BEFORE INSERT ON target_events FOR EACH 
 			t.Fatal(err)
 		}
 	}
-	events, total, err := s.Targets().ListEvents(ctx, "", 0, 10)
+	events, err := s.Targets().ListEvents(ctx, "", 0, 10)
+	total := len(events)
 	if err != nil || total != 1 || events[0].TargetID != target.ID || events[0].Cause != "offboarding_failed" || events[0].Notified || events[0].NotifyError != "pending" {
 		t.Fatalf("alerts: %+v total=%d %v", events, total, err)
 	}
@@ -102,8 +103,8 @@ CREATE TRIGGER reject_offboarding_alert BEFORE INSERT ON target_events FOR EACH 
 			t.Fatal(err)
 		}
 	}
-	if _, total, err := s.Targets().ListEvents(ctx, "", 0, 10); err != nil || total != 1 {
-		t.Fatalf("duplicate/nonfailure alert: %d %v", total, err)
+	if events, err := s.Targets().ListEvents(ctx, "", 0, 10); err != nil || len(events) != 1 {
+		t.Fatalf("duplicate/nonfailure alert: %d %v", len(events), err)
 	}
 	// Ordinary paired senders cannot opt themselves into privileged alert production.
 	if err := s.Sources().CreateCode(ctx, "ordinary", target.ID, time.Now().Add(time.Minute)); err != nil {
@@ -116,7 +117,7 @@ CREATE TRIGGER reject_offboarding_alert BEFORE INSERT ON target_events FOR EACH 
 	if err := s.Logs().AppendSequenced(ctx, ordinary.ID, batch("failed"), r, 1<<20); err != nil {
 		t.Fatal(err)
 	}
-	if _, total, err := s.Targets().ListEvents(ctx, "", 0, 10); err != nil || total != 1 {
+	if events, err := s.Targets().ListEvents(ctx, "", 0, 10); err != nil || len(events) != 1 {
 		t.Fatal("ordinary source created alert", err)
 	}
 	if err := s.Targets().DeleteTarget(ctx, target.ID); err != nil {
