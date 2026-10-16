@@ -152,7 +152,7 @@ const MinDepositInterval = 15 * time.Minute
 const DefaultAppName = "kyPulse"
 
 // AppVersion is recorded in every capsule manifest.
-const AppVersion = "0.4.0"
+const AppVersion = "0.4.2"
 
 // LoadFromEnv initializes a Config struct populated from environment variables with sensible defaults.
 func LoadFromEnv() (*Config, error) {
