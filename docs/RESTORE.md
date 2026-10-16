@@ -111,6 +111,26 @@ d=$(docker buildx imagetools inspect ghcr.io/busnes-app/kypulse-server:$sha --fo
   && grep -qxF "KYPULSE_IMAGE=ghcr.io/busnes-app/kypulse-server@$d" .env
 ```
 
+To pin a release instead, name its version. Verify the version tag, not `:stable`: `:stable`
+moves, so resolve the version it should be and verify that
+(`gh release view --repo Busnes-app/KyPulse-server --json tagName --jq .tagName` prints the newest).
+The attestation must come from `release-image.yml` at that tag and record the commit the tag
+points to.
+
+```bash
+v=<release version you intend to run, e.g. 0.4.2>
+sha=$(gh api repos/Busnes-app/KyPulse-server/commits/refs/tags/v$v --jq .sha) \
+  && d=$(docker buildx imagetools inspect ghcr.io/busnes-app/kypulse-server:$v --format '{{.Manifest.Digest}}') \
+  && gh attestation verify "oci://ghcr.io/busnes-app/kypulse-server@$d" --repo Busnes-app/KyPulse-server \
+       --cert-identity https://github.com/Busnes-app/KyPulse-server/.github/workflows/release-image.yml@refs/tags/v$v \
+  && [ "$(gh attestation verify "oci://ghcr.io/busnes-app/kypulse-server@$d" --repo Busnes-app/KyPulse-server \
+       --cert-identity https://github.com/Busnes-app/KyPulse-server/.github/workflows/release-image.yml@refs/tags/v$v \
+       --format json --jq '.[0].verificationResult.statement.predicate.buildDefinition.resolvedDependencies[0].digest.gitCommit')" = "$sha" ] \
+  && (umask 077; t=$(mktemp ./.env.XXXXXX) && touch .env && { grep -v '^KYPULSE_IMAGE=' .env || [ $? -eq 1 ]; } > "$t" \
+      && echo "KYPULSE_IMAGE=ghcr.io/busnes-app/kypulse-server@$d" >> "$t" && mv "$t" .env) \
+  && grep -qxF "KYPULSE_IMAGE=ghcr.io/busnes-app/kypulse-server@$d" .env
+```
+
 Then, in the same shell (the check compares against `$d`), refuse to go on unless the image in
 effect is exactly that digest. A source install passes on its `kypulse:local` build instead,
 since `docker-compose.build.yml` wins over the pin, which is what a source install wants. The
