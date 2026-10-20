@@ -48,6 +48,7 @@ Owns user interface components, service worker caching, PWA installation manifes
   an app as lacking retained audit events. All coverage statements name 7-day retention.
 
 ## Verification
+- Status uses a responsive failure-first list; retain the status, cause, state age, last check, latency, silence label and detail link for each target.
 - Browser setup: build the frontend, run `go build -o .browser/server ./cmd/server` at the repo root, then `cd web && npx playwright install chromium && npm run test:browser`. CI also installs browser OS dependencies.
 - `browser/monitor.spec.mjs` covers Status, Alerts, app detail and the webhook form against a fake app the spec runs itself; it needs a private IPv4 interface on the runner (the egress guard refuses loopback) and skips without one.
 - `make test-web` or `cd web && npm ci && npm test`, then `npm run build` (vitest with jsdom; `src/pages/Backup.test.tsx` renders the recovery screen against a stubbed status route). Commit `web/dist` after a build; CI diffs it.

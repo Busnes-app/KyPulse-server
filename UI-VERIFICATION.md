@@ -43,3 +43,8 @@ existing committed screenshots below cover the monitoring screens.
 Build the frontend, run `go build -o .browser/server ./cmd/server` at the repo root, then
 `cd web && npx playwright install chromium && npm run test:browser`. The monitor spec skips on
 a machine with no private IPv4 interface.
+
+
+## Approved interface polish — 2026-10-19
+
+See [UI-POLISH.md](UI-POLISH.md) for the implemented changes, preservation scope, checks, actual before/after screenshots and disposable capture conditions. Earlier captures above remain historical evidence.
