@@ -8,6 +8,7 @@ Owns data models, store interfaces (`UserStore`, `SessionStore`, `AuditStore`, `
 
 ## Local Contracts
 - `ApplyInstaller` creates missing configuration and issuer/subject-owned administrator/viewer accounts atomically with one keyed audit-chain event; check/resume adds no rows. Foreign names/subjects, different setup ownership, inactive identities and role drift refuse without reactivation or credential changes. Configuration records retain only target-held file references.
+- `ApplyInstallerDirectory` changes only an installer-owned identity's status, fenced by `installer.directory.<user id>` (revision + body digest: older or same-revision-different-body refuses, same is a no-op). Unavailable deletes its sessions and MFA challenges in the same transaction with one audit row; it never changes a role.
 - Monitoring enrollment shares that transaction and audit. Deterministic setup/key UUIDs
   and `installer.target.*`/`installer.source.*` definitions prove ownership. Refuse foreign
   names/token hashes, changed definitions, revoked sources and missing or drifted owned

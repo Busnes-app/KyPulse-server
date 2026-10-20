@@ -28,17 +28,20 @@ configuration is preserved and conflicts require operator resolution.
 Only absent identities are created, with administrator and viewer roles respectively,
 without local passwords. Existing names/subjects cannot be adopted. Configuration,
 accounts and ownership commit together with one keyed audit-chain event. Inactive or
-role-drifted identities require explicit resolution; rerun never reactivates them.
+role-drifted identities require explicit resolution; rerun never reactivates them (an assigned
+directory revision does, below).
 
-**Offboarding does not reach kyPulse from KyIdentity today.** `directorySecretFile` keys the
-legacy KySignOn webhook at `POST /api/sso/kysignon/sync`, which accepts only
-`hex(HMAC-SHA256(body))` in `X-KySignOn-Signature` over a JSON body with `event`, `id`,
-`status`, `role` and Unix `timestamp`; `user.deactivated` and role/status changes revoke that
-user's sessions. KyIdentity's `suiteWebhook` connector signs with ky-primitives `syncauth` v1
-(`v1=`-prefixed MAC over a canonical string, SCIM body), so kyPulse answers 401
-`invalid webhook signature` and the connector stays pending. Disabling a user in KyIdentity
-can only stop new SSO sign-ins; existing kyPulse sessions last until they expire, up to 7
-days after sign-in, and kyPulse has no user-management API to end them sooner.
+KyIdentity's `suiteWebhook` connector delivers offboarding to `POST /api/installer/directory`
+(`/api/sso/kysignon/sync` also accepts it). Deliveries must carry a ky-primitives `syncauth` v1
+signature under the `directorySecretFile` key and a SCIM user whose `meta.version` is the
+sender's revision. Only installer-owned identities are touched, and each one's last applied
+revision is fenced, so a stale or conflicting delivery is refused (422) and a retry of the
+applied one is a no-op; `user.mfa_reset` is acknowledged without change. An identity that is unassigned (`active:false`), deactivated, deleted,
+or an administrator no longer holding `kypulse.admin` (or the global `admin` role) becomes
+inactive, and its sessions and pending MFA challenges end in the same transaction. A later
+assigned revision restores sign-in. Roles never change through the directory, so a viewer is
+never promoted. The legacy KySignOn format (`hex(HMAC-SHA256(body))` in
+`X-KySignOn-Signature`) is still accepted at `/api/sso/kysignon/sync`.
 
 The application is a monitoring/control product; administrator access does not grant
 ordinary mail, notes, drive or vault content access in other products.
@@ -94,4 +97,4 @@ for the edge verifier; cached suite `/healthz` remains unchanged.
 Verify with `go test -race ./internal/store ./internal/config ./internal/api ./internal/auth ./cmd/server`
 in the explicit development Go workspace. Tests cover ownership/conflict rollback, the
 keyed audit chain, atomic monitoring ownership/source enrollment, actual private IPC activation, real administrator/viewer authorization
-and legacy-format signed directory revocation. Source implementation is not a published or deployed suite.
+and signed directory revocation (syncauth v1 and legacy). Source implementation is not a published or deployed suite.

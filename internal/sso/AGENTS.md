@@ -8,6 +8,7 @@ Owns the application adapters around OAuth/OIDC login, KySignOn HMAC-SHA256 sign
 
 ## Local Contracts
 - `KySignOnClient.HandleSyncWebhook` verifies HMAC-SHA256 signatures before modifying local user state.
+- A `v1=` signature on `/api/sso/kysignon/sync` is a KyIdentity syncauth delivery and is handled by the API's installer directory route, not this client.
 - PKCE with `S256` is enforced on all OAuth/OIDC authorization requests.
 - ID tokens require provider signature, issuer, audience, expiry, and one-time nonce verification before claims are trusted.
 - OAuth discovery, authorization URLs, PKCE parameters, code exchange, and token verification are delegated to `golang.org/x/oauth2` and `coreos/go-oidc`; application code only maps verified claims.
