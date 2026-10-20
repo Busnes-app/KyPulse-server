@@ -53,8 +53,10 @@ services:
     cap_drop: [ALL]
     security_opt:
       - no-new-privileges:true
+    # Loopback only by default; a TLS proxy on this host reaches it. KYPULSE_BIND=0.0.0.0 in
+    # .env publishes it on every interface (the behaviour before this default).
     ports:
-      - "8080:8080"
+      - "${KYPULSE_BIND:-127.0.0.1}:8080:8080"
     environment:
       - KYPULSE_ENV=production
       - KYPULSE_PORT=8080
@@ -81,11 +83,20 @@ services:
       - KYPULSE_ALERT_ALLOW_HTTP=${KYPULSE_ALERT_ALLOW_HTTP:-false}
       # Concurrent health polls (1..32).
       - KYPULSE_POLL_WORKERS=${KYPULSE_POLL_WORKERS:-4}
-      # Set to the reverse proxy container's own address when one fronts this service, e.g.
-      # its address on the Docker network below (never a whole bridge range like 172.16.0.0/12,
-      # which trusts every other container). 0.0.0.0/0 and ::/0 are refused at startup.
-      # - KYPULSE_TRUSTED_PROXIES=172.18.0.2/32
+      # Set in .env to the reverse proxy's own address when one fronts this service, e.g.
+      # 172.18.0.2/32 (never a whole bridge range like 172.16.0.0/12, which trusts every other
+      # container). 0.0.0.0/0 and ::/0 are refused at startup. Empty trusts no proxy.
+      - KYPULSE_TRUSTED_PROXIES=${KYPULSE_TRUSTED_PROXIES:-}
+      # First-start admin password; empty generates one and logs it. Read only while the
+      # database has no users; remove it from .env afterwards.
+      - KYPULSE_ADMIN_PASSWORD=${KYPULSE_ADMIN_PASSWORD:-}
       - KYPULSE_SSO_ENABLED=true
+      # KyIdentity SSO by environment. Installer setup (docs/INSTALLER_SETUP.md) reads these
+      # from files instead and refuses values that differ from its bundle.
+      - KYPULSE_KYSIGNON_ISSUER=${KYPULSE_KYSIGNON_ISSUER:-}
+      - KYPULSE_KYSIGNON_CLIENT_ID=${KYPULSE_KYSIGNON_CLIENT_ID:-}
+      - KYPULSE_KYSIGNON_SECRET=${KYPULSE_KYSIGNON_SECRET:-}
+      - KYPULSE_KYSIGNON_HMAC_SECRET=${KYPULSE_KYSIGNON_HMAC_SECRET:-}
     volumes:
       - ./data:/app/data
       - ./backups:/app/backups
