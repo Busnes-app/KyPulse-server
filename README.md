@@ -29,13 +29,49 @@ docker compose logs app | grep 'Initial bootstrap'   # the generated admin passw
 
 The container runs as uid 10001 on a read-only root filesystem with every capability
 dropped, so the three directories must belong to that uid; Docker would otherwise create them
-owned by root and the server refuses to start with `permission denied`.
+owned by root and the server refuses to start with `permission denied`. Without root, use
+named volumes instead (below).
 
 Open <http://localhost:8080>, sign in as `admin` with that password, and replace it when
-asked. Set `KYPULSE_ADMIN_PASSWORD` before the first start to choose it instead. Compose runs
-in `KYPULSE_ENV=production`, so session cookies are `Secure`: a browser on the same machine
-can use `http://localhost`, anyone else needs kyPulse behind a TLS proxy with
-`KYPULSE_APP_URL=https://...` in `.env` (see `KYPULSE_TRUSTED_PROXIES`).
+asked. Set `KYPULSE_ADMIN_PASSWORD` in `.env` before the first start to choose it instead; it
+is read only while the database has no users and stays visible in `docker inspect`, so remove
+it afterwards. Compose runs in `KYPULSE_ENV=production`, so session cookies are `Secure`: a
+browser on the same machine can use `http://localhost`, anyone else needs kyPulse behind a TLS
+proxy with `KYPULSE_APP_URL=https://...` and `KYPULSE_TRUSTED_PROXIES` (the proxy's own
+address) in `.env`.
+
+Compose publishes port 8080 on `127.0.0.1` only. A proxy on the same host reaches it there;
+set `KYPULSE_BIND` in `.env` to publish on another address (`0.0.0.0` for every interface).
+
+### Without root: named volumes
+
+Compose reads `docker-compose.override.yml` beside it automatically (unless `COMPOSE_FILE` is
+set in `.env`; then add it to that chain). This one replaces the three bind mounts:
+
+```yaml
+services:
+  app:
+    volumes:
+      - kypulse-data:/app/data
+      - kypulse-backups:/app/backups
+      - kypulse-secrets:/app/secrets
+volumes:
+  kypulse-data:
+  kypulse-backups:
+  kypulse-secrets:
+```
+
+A new named volume takes its owner (uid 10001, mode 700) from the image, so skip the
+`mkdir`/`chown` line and run `docker compose up -d`. Back up the volumes, not `./data`;
+[docs/RESTORE.md](docs/RESTORE.md) is written for the bind mount, so adapt its host-path steps
+to the volume.
+
+### Upgrading: port 8080 now on loopback
+
+Compose used to publish `8080` on every interface. It now binds `127.0.0.1` unless
+`KYPULSE_BIND` is set. If a proxy on another host, or clients on the LAN, reached kyPulse
+directly on `:8080`, set `KYPULSE_BIND=0.0.0.0` in `.env` to restore the old behaviour, or
+better, put a TLS proxy in front.
 
 ### Upgrading to a non-root container
 
@@ -313,6 +349,7 @@ there is no log file.
 | `KYPULSE_AUDIT_KEY` | read from `KYPULSE_AUDIT_KEY_FILE` | 32-byte key of the audit hash chain; must differ from the encryption key |
 | `KYPULSE_AUDIT_KEY_FILE` | `<data dir>/audit.key` (`/app/secrets/audit.key` in Compose) | audit keyfile, minted on first start; an existing `<data dir>/audit.key` wins while this file does not exist |
 | `KYPULSE_ADMIN_PASSWORD` | generated and printed | first admin's password on an empty database |
+| `KYPULSE_BIND` | `127.0.0.1` | Compose only: host address the `8080` port is published on |
 | `KYPULSE_DATA_DIR` | `./data` (`/app/data` in Compose) | database, keyfiles |
 | `KYPULSE_DB_DRIVER` | `sqlite` | `sqlite` or `postgres` |
 | `KYPULSE_DB_DSN` | SQLite file in the data dir; required for `postgres` | connection string |

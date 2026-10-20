@@ -385,6 +385,7 @@ func (s *Server) routes() {
 	s.mux.HandleFunc("/api/sso/kysignon/login", s.handleKySignOnLogin)
 	s.mux.HandleFunc("/api/sso/kysignon/callback", s.handleKySignOnCallback)
 	s.mux.HandleFunc("/api/sso/kysignon/sync", s.handleKySignOnSyncWebhook)
+	s.mux.HandleFunc("/api/installer/directory", s.handleInstallerDirectory)
 	s.mux.HandleFunc("/saml/metadata", s.handleSAMLMetadata)
 
 	// Feature 0 KyBackup & Restore Drills. Capsules carry site data and keys: admins only.
@@ -536,7 +537,7 @@ func hasSessionCookie(r *http.Request) bool {
 }
 
 func csrfExempt(path string) bool {
-	return path == "/api/auth/login" || strings.HasPrefix(path, "/api/auth/mfa/") || path == "/api/sso/kysignon/sync" || path == "/api/ingest/logs"
+	return path == "/api/auth/login" || strings.HasPrefix(path, "/api/auth/mfa/") || path == "/api/sso/kysignon/sync" || path == "/api/installer/directory" || path == "/api/ingest/logs"
 }
 
 // isJSON reports a JSON request body. Cross-site HTML forms can only send simple content

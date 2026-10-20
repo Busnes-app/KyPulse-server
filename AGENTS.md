@@ -11,6 +11,7 @@ Design authority: `docs/superpowers/specs/2026-09-26-kypulse-design.md`. Plans l
 
 ## Ownership
 
+- `docker-compose.yml`: publishes on `${KYPULSE_BIND:-127.0.0.1}`; settings an operator sets in `.env` are forwarded with empty meaning the server default (`cmd/server/deploy_test.go` holds both).
 - `cmd/server/`: process entry, CLI subcommands (`init-admin`, `backup-drill`,
   `export-capsule`, `deposit`, `restore`, `audit-verify`, `version`, `apply-setup`), the log bridge, the
   backup scheduler, KyYard inventory loop and separately joined log/audit collection worker.
@@ -24,7 +25,7 @@ Design authority: `docs/superpowers/specs/2026-09-26-kypulse-design.md`. Plans l
 
 ## Local Contracts
 
-- Container-local installer setup uses the shared `ky.product-setup/1` envelope and private runtime-owned Unix socket, never a public setup route. Discover capabilities before using it; read [installer setup](docs/INSTALLER_SETUP.md). New identities and monitoring targets/sources are explicitly owned; foreign objects are not adopted. Saved runtime configuration activates at graceful restart; monitoring rows activate live. Read-only inspection verifies ownership and current state. The adapter supports local backup configuration; recovery pairing and KyYard enrollment remain explicit follow-on gates.
+- Container-local installer setup uses the shared `ky.product-setup/1` envelope and private runtime-owned Unix socket, never a public setup route. Discover capabilities before using it; read [installer setup](docs/INSTALLER_SETUP.md). New identities and monitoring targets/sources are explicitly owned; foreign objects are not adopted. Saved runtime configuration activates at graceful restart; monitoring rows activate live. Read-only inspection verifies ownership and current state. KyIdentity offboarding arrives as a syncauth v1 signed directory delivery that only sets owned identities' availability and ends their sessions. The adapter supports local backup configuration; recovery pairing and KyYard enrollment remain explicit follow-on gates.
 
 - Module `github.com/Busnes-app/kypulse-server`; binary `kypulse`; image
   `ghcr.io/busnes-app/kypulse-server`; every setting is `KYPULSE_*` except the suite-wide

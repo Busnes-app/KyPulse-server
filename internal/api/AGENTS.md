@@ -8,6 +8,7 @@ Owns HTTP routing, request parsing, session cookie validation, CORS headers, and
 
 ## Local Contracts
 - `ApplyInstaller` serves only private local IPC. It validates the candidate runtime configuration before store writes, preserves the immutable live snapshot and reports restart activation pending until the saved configuration is actually loaded. Public `GET /api/installer/network` returns only this request client address, peer trust and scheme, with no-store; it reuses authentication address resolution and trusts only the nearest configured proxy. Installer ownership rows are omitted from settings responses.
+- `POST /api/installer/directory` (and a `v1=` signature on `/api/sso/kysignon/sync`) verifies KyIdentity suite-directory deliveries with `syncauth.Verify` under the installer directory secret (64 KiB body cap), parses the SCIM user and its `meta.version` revision, and hands availability to `store.ApplyInstallerDirectory` (`user.mfa_reset` is acknowledged without change): 401 bad signature, 400 malformed, 422 refused, 204 applied. Admin is `kypulse.admin` or global `admin`.
 - The private bundle additionally accepts `monitoring` targets/sources. Validate source
   references, keys and the runtime self origin before reading credentials; prepare separate
   target-file token hashes before the combined store transaction. Native monitoring activates

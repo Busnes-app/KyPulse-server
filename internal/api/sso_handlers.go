@@ -6,6 +6,7 @@ import (
 	"io"
 	"log/slog"
 	"net/http"
+	"strings"
 
 	"github.com/Busnes-app/ky-primitives/logging"
 	"github.com/Busnes-app/kypulse-server/internal/crypto"
@@ -124,6 +125,11 @@ func (s *Server) handleKySignOnSyncWebhook(w http.ResponseWriter, r *http.Reques
 	}
 
 	sig := r.Header.Get("X-KySignOn-Signature")
+	if strings.HasPrefix(sig, "v1=") {
+		// KyIdentity's suite webhook (syncauth v1) may be pointed at this legacy path.
+		s.handleInstallerDirectory(w, r)
+		return
+	}
 	if sig == "" {
 		sig = r.Header.Get("X-Signature-SHA256")
 	}

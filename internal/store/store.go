@@ -32,6 +32,7 @@ func validRole(role string) bool { return role == RoleAdmin || role == RoleViewe
 // Store defines the unified storage contract implemented across SQLite, PostgreSQL, and MySQL.
 type Store interface {
 	ApplyInstaller(context.Context, config.InstallerBundle, bool) (applysetup.Report, error)
+	ApplyInstallerDirectory(context.Context, DirectoryUpdate) error
 	Users() UserStore
 	Sessions() SessionStore
 	Audit() AuditStore
