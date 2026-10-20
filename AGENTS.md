@@ -100,3 +100,8 @@ Design authority: `docs/superpowers/specs/2026-09-26-kypulse-design.md`. Plans l
 ## Operator documentation
 
 `INSTALL.md` is the root-owned standalone entry point. When installation prerequisites, bootstrap, persistence or verification change, update it together with `README.md` and the linked operator guides.
+
+
+## README and topic guides
+
+Keep `README.md` as the concise product overview and navigation. Detailed procedures live in `docs/RUNNING.md`, `docs/LOG-COLLECTION.md`, `docs/MONITORING.md`, `docs/CONFIGURATION.md`, `docs/OPERATIONS.md`, `docs/DEVELOPMENT.md`. Update the owning topic guide and preserve README links when a procedure changes. Commands in these guides run from the repository root.
