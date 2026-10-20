@@ -40,11 +40,29 @@ async function signIn(page) {
   await expect(page.getByRole('navigation', { name: 'Primary' })).toBeVisible();
 }
 
+test('empty alert bar remains visible while watched apps load', async ({ page }) => {
+  // Delay the real list request so its loading status overlaps the independent alert bar.
+  let releaseTargets;
+  const targetsReady = new Promise(resolve => { releaseTargets = resolve; });
+  await page.route('**/api/targets', async route => {
+    await targetsReady;
+    await route.continue();
+  });
+  try {
+    await signIn(page);
+    await expect(page.getByText('Loading watched apps…', { exact: true })).toBeVisible();
+    await expect(page.locator('.alert-bar')).toContainText('No apps watched yet');
+  } finally {
+    releaseTargets();
+  }
+  await expect(page.getByText('Loading watched apps…', { exact: true })).toBeHidden();
+});
+
 test('status, alerts, detail page and the alert bar in every state', async ({ page }, testInfo) => {
   test.setTimeout(240_000);
   await signIn(page);
   // Empty install.
-  await expect(page.getByRole('status')).toContainText('No apps watched yet');
+  await expect(page.locator('.alert-bar')).toContainText('No apps watched yet');
   // Add the fake app (interval at the 10 s floor so the state machine settles quickly).
   await page.getByRole('button', { name: 'Add app' }).click();
   await page.getByLabel('Name').fill('Fake app');
@@ -112,6 +130,6 @@ test('status, alerts, detail page and the alert bar in every state', async ({ pa
   page.once('dialog', (d) => d.accept());
   await page.getByRole('button', { name: 'Delete' }).click();
   await expect(page).toHaveURL(/#\/status$/);
-  await expect(page.getByRole('status')).toContainText('No apps watched yet');
+  await expect(page.locator('.alert-bar')).toContainText('No apps watched yet');
   expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
 });
