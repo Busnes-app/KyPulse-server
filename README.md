@@ -29,13 +29,47 @@ docker compose logs app | grep 'Initial bootstrap'   # the generated admin passw
 
 The container runs as uid 10001 on a read-only root filesystem with every capability
 dropped, so the three directories must belong to that uid; Docker would otherwise create them
-owned by root and the server refuses to start with `permission denied`.
+owned by root and the server refuses to start with `permission denied`. Without root, use
+named volumes instead (next section).
 
 Open <http://localhost:8080>, sign in as `admin` with that password, and replace it when
-asked. Set `KYPULSE_ADMIN_PASSWORD` before the first start to choose it instead. Compose runs
-in `KYPULSE_ENV=production`, so session cookies are `Secure`: a browser on the same machine
-can use `http://localhost`, anyone else needs kyPulse behind a TLS proxy with
-`KYPULSE_APP_URL=https://...` in `.env` (see `KYPULSE_TRUSTED_PROXIES`).
+asked. Compose runs in `KYPULSE_ENV=production`, so session cookies are `Secure`: a browser
+on the same machine can use `http://localhost`, anyone else needs kyPulse behind a TLS proxy
+with `KYPULSE_APP_URL=https://...` in `.env` and `KYPULSE_TRUSTED_PROXIES` set to that proxy.
+
+### Compose override: no root, proxy, chosen admin password
+
+`docker-compose.yml` passes only the variables in its `environment:` list. Anything else in
+`.env`, including `KYPULSE_ADMIN_PASSWORD`, `KYPULSE_TRUSTED_PROXIES` and
+`KYPULSE_KYSIGNON_*`, never reaches the container. It also publishes `8080` on every
+interface. Compose reads `docker-compose.override.yml` beside it automatically (unless
+`COMPOSE_FILE` is set in `.env`; then add it to that chain):
+
+```yaml
+services:
+  app:
+    ports: !override
+      - "127.0.0.1:8080:8080"     # or `ports: !reset []` when the proxy reaches it over a Docker network
+    environment:
+      - KYPULSE_TRUSTED_PROXIES=${KYPULSE_TRUSTED_PROXIES:-}   # the proxy's own address, e.g. 172.18.0.2/32
+      - KYPULSE_ADMIN_PASSWORD=${KYPULSE_ADMIN_PASSWORD:-}     # empty = generated and logged
+    volumes:                       # replace the ./data, ./backups, ./secrets bind mounts
+      - kypulse-data:/app/data
+      - kypulse-backups:/app/backups
+      - kypulse-secrets:/app/secrets
+volumes:
+  kypulse-data:
+  kypulse-backups:
+  kypulse-secrets:
+```
+
+A new named volume takes its owner (uid 10001, mode 700) from the image, so no `chown` is
+needed: skip the `mkdir`/`chown` line and run `docker compose up -d`. Back up the volumes, not
+`./data`; [docs/RESTORE.md](docs/RESTORE.md) is written for the bind mount, so adapt its
+host-path steps to the volume. `KYPULSE_ADMIN_PASSWORD` is read only when the database has no
+users and stays visible in `docker inspect`; remove it from `.env` after the first start.
+For KyIdentity SSO, prefer [installer setup](docs/INSTALLER_SETUP.md), which reads secrets from
+files, over forwarding `KYPULSE_KYSIGNON_*`.
 
 ### Upgrading to a non-root container
 
