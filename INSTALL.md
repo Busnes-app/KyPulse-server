@@ -41,7 +41,7 @@ docker compose up -d
 ```
 
 The image runs as UID 10001 with a read-only root filesystem. Without permission to assign
-these bind directories, use the [named-volume override](README.md#without-root-named-volumes).
+these bind directories, use the [named-volume override](docs/RUNNING.md#without-root-named-volumes).
 Read `docker compose logs app` privately for the initial bootstrap password, sign in as
 `admin` at `http://localhost:8080`, replace it and enroll MFA. Logs containing the generated
 password are sensitive. Alternatively provide a unique `KYPULSE_ADMIN_PASSWORD` in the
