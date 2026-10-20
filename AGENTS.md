@@ -96,3 +96,7 @@ Design authority: `docs/superpowers/specs/2026-09-26-kypulse-design.md`. Plans l
 - `internal/monitor/AGENTS.md`: glues polling, alerts and delivery to the store.
 - `internal/kyyard/AGENTS.md`: KyYard pairing, inventory/sample snapshots, durable log/audit collection.
 - `web/AGENTS.md`: PWA, themes, ky-ui vendoring, browser regressions.
+
+## Operator documentation
+
+`INSTALL.md` is the root-owned standalone entry point. When installation prerequisites, bootstrap, persistence or verification change, update it together with `README.md` and the linked operator guides.

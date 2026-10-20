@@ -1,5 +1,7 @@
 # kyPulse
 
+**Start here:** [Standalone installation](INSTALL.md). Local operator sign-in works without KyIdentity. Add health endpoints to monitor any compatible service; KyYard integration is optional for container information and log collection. Alerts require a configured, reachable webhook.
+
 Unified health and logging for the Busnes.app Ky suite. kyPulse polls every Ky app's
 `/healthz`, reads container state from KyYard, shows what is broken first, and sends an
 outbound webhook when an app goes down or degrades. It is read-only towards the apps it
