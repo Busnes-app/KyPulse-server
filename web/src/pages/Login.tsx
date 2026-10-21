@@ -6,13 +6,14 @@ import { ThemeSwitcher } from '../components/ThemeSwitcher';
 interface LoginProps {
   onSuccess: (user: any) => void;
   appName: string;
+  ssoEnabled?: boolean;
 }
 
 interface MFAChallenge {
   mfa_token: string;
 }
 
-export const Login: React.FC<LoginProps> = ({ onSuccess, appName }) => {
+export const Login: React.FC<LoginProps> = ({ onSuccess, appName, ssoEnabled = false }) => {
   const [username, setUsername] = useState<string>('');
   const [password, setPassword] = useState<string>('');
   const [captchaToken, setCaptchaToken] = useState<string>('');
@@ -125,7 +126,7 @@ export const Login: React.FC<LoginProps> = ({ onSuccess, appName }) => {
             <img src="/app-icon.png" width={56} height={56} alt="" />
           </div>
           <h1 style={{ fontSize: '24px', fontWeight: 'bold' }}>{appName || 'kyPulse'}</h1>
-          <p style={{ color: 'var(--ink)', fontSize: '14px', marginTop: '4px' }}>Cloud Mobile First Base Platform</p>
+          <p style={{ color: 'var(--ink)', fontSize: '14px', marginTop: '4px' }}>Health and alerts for your Ky apps</p>
         </div>
 
         <div className="panel">
@@ -218,19 +219,21 @@ export const Login: React.FC<LoginProps> = ({ onSuccess, appName }) => {
                 <span>{loading ? 'Signing in...' : 'Sign In'}</span>
               </button>
 
-              <div style={{ marginTop: '20px', borderTop: '1px solid var(--line)', paddingTop: '16px' }}>
-                <div style={{ fontSize: '12px', color: 'var(--ink)', textAlign: 'center', marginBottom: '12px' }}>
-                  Or continue with Single Sign-On
+              {ssoEnabled && (
+                <div style={{ marginTop: '20px', borderTop: '1px solid var(--line)', paddingTop: '16px' }}>
+                  <div style={{ fontSize: '12px', color: 'var(--ink)', textAlign: 'center', marginBottom: '12px' }}>
+                    Or continue with Single Sign-On
+                  </div>
+                  <a
+                    href="/api/sso/kysignon/login"
+                    className="btn btn-secondary"
+                    style={{ width: '100%', justifyContent: 'center', textDecoration: 'none' }}
+                  >
+                    <Key size={16} style={{ color: 'var(--accent)' }} />
+                    <span>KySignOn</span>
+                  </a>
                 </div>
-                <a
-                  href="/api/sso/kysignon/login"
-                  className="btn btn-secondary"
-                  style={{ width: '100%', justifyContent: 'center', textDecoration: 'none' }}
-                >
-                  <Key size={16} style={{ color: 'var(--accent)' }} />
-                  <span>KySignOn Identity</span>
-                </a>
-              </div>
+              )}
             </form>
           )}
         </div>

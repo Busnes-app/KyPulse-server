@@ -18,7 +18,10 @@ owned by root and the server refuses to start with `permission denied`. Without 
 named volumes instead (below).
 
 Open <http://localhost:8080>, sign in as `admin` with that password, and replace it when
-asked. Set `KYPULSE_ADMIN_PASSWORD` in `.env` before the first start to choose it instead; it
+asked. The password appears only in the first container's log: recreating the container
+(any `.env` change does) before you read it loses it, because the database already has the
+admin. To set a new one, run
+`docker compose exec app /app/kypulse init-admin -password '<at least 12 characters>'`. Set `KYPULSE_ADMIN_PASSWORD` in `.env` before the first start to choose it instead; it
 is read only while the database has no users and stays visible in `docker inspect`, so remove
 it afterwards. Compose runs in `KYPULSE_ENV=production`, so session cookies are `Secure`: a
 browser on the same machine can use `http://localhost`, anyone else needs kyPulse behind a TLS

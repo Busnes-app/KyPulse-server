@@ -36,3 +36,13 @@ it('solves a fresh CAPTCHA after a rejected login, since each solution is single
   expect(atob(tokens[0])).toContain('"salt":"salt1"');
   expect(atob(tokens[1])).toContain('"salt":"salt2"');
 });
+
+it('offers KySignOn only when the server reports a configured issuer', () => {
+  vi.stubGlobal('fetch', vi.fn(() => new Promise<Response>(() => {})));
+  const { rerender } = render(<Login onSuccess={vi.fn()} appName="kyPulse" />);
+  expect(screen.queryByRole('link', { name: 'KySignOn' })).toBeNull();
+  expect(screen.queryByText('Or continue with Single Sign-On')).toBeNull();
+  expect(screen.getByText('Health and alerts for your Ky apps')).toBeTruthy();
+  rerender(<Login onSuccess={vi.fn()} appName="kyPulse" ssoEnabled />);
+  expect(screen.getByRole('link', { name: 'KySignOn' }).getAttribute('href')).toBe('/api/sso/kysignon/login');
+});
