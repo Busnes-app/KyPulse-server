@@ -55,7 +55,7 @@ test('production CSP, worker, themes, keyboard and responsive shell', async ({ p
   await expect(nav.getByRole('link').nth(1)).toHaveCSS('outline-style', 'solid');
   await nav.getByRole('link', { name: 'Settings & DB' }).click();
   await expect(nav.getByRole('link', { name: 'Settings & DB' })).toHaveAttribute('aria-current', 'page');
-  await expect(page.getByRole('heading', { name: 'System Settings & Architecture' })).toBeVisible();
+  await expect(page.getByRole('heading', { name: 'Settings', exact: true })).toBeVisible();
   await fits(page);
   await page.evaluate(() => fetch('/browser-regression-uncached'));
   const cachedDynamic = await page.evaluate(async () => {

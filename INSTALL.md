@@ -47,6 +47,12 @@ Read `docker compose logs app` privately for the initial bootstrap password, sig
 password are sensitive. Alternatively provide a unique `KYPULSE_ADMIN_PASSWORD` in the
 protected `.env` for first bootstrap, then remove it after replacement.
 
+The generated password is printed once, by the first container, and exists nowhere else.
+Read it before any restart or `.env` change: a recreated container has a new log, and the
+database already holds the admin, so it is not printed again. If it is lost, set a new one
+with `docker compose exec app /app/kypulse init-admin -password '<at least 12 characters>'`;
+sign-in then asks for a replacement.
+
 For HTTPS users, set `KYPULSE_APP_URL=https://pulse.example.com` and
 `KYPULSE_TRUSTED_PROXIES` to the proxy’s exact peer address in `.env`. The default bind is
 loopback (`KYPULSE_BIND=127.0.0.1`). Restart to apply environment changes.

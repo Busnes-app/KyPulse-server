@@ -184,6 +184,34 @@ func TestAuthAndSessionEndpoints(t *testing.T) {
 	}
 }
 
+// Compose enables SSO with an empty issuer, and the login page must not offer a KySignOn
+// button that can only answer "SSO is unavailable".
+func TestSettingsOfferSSOOnlyWithAnIssuer(t *testing.T) {
+	ssoEnabled := func() any {
+		srv, _, _ := setupTestServer(t)
+		w := httptest.NewRecorder()
+		srv.ServeHTTP(w, httptest.NewRequest("GET", "/api/settings", nil))
+		var out map[string]any
+		if err := json.Unmarshal(w.Body.Bytes(), &out); err != nil {
+			t.Fatalf("settings: %d %s", w.Code, w.Body.String())
+		}
+		return out["sso_enabled"]
+	}
+	t.Setenv("KYPULSE_SSO_ENABLED", "true")
+	t.Setenv("KYPULSE_KYSIGNON_ISSUER", "")
+	if got := ssoEnabled(); got != false {
+		t.Errorf("no issuer: sso_enabled = %v, want false", got)
+	}
+	t.Setenv("KYPULSE_KYSIGNON_ISSUER", "https://signon.example.com")
+	if got := ssoEnabled(); got != true {
+		t.Errorf("issuer set: sso_enabled = %v, want true", got)
+	}
+	t.Setenv("KYPULSE_SSO_ENABLED", "false")
+	if got := ssoEnabled(); got != false {
+		t.Errorf("disabled: sso_enabled = %v, want false", got)
+	}
+}
+
 func TestLoginRejectsUnparseableStoredHash(t *testing.T) {
 	srv, st, _ := setupTestServer(t)
 	_ = st.Users().CreateUser(context.Background(), &store.User{
