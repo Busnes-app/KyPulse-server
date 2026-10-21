@@ -1,6 +1,6 @@
 module github.com/Busnes-app/kypulse-server
 
-go 1.27.2
+go 1.27.3
 
 require (
 	github.com/Busnes-app/ky-primitives v0.10.0
