@@ -42,10 +42,13 @@ docker compose up -d
 
 The image runs as UID 10001 with a read-only root filesystem. Without permission to assign
 these bind directories, use the [named-volume override](docs/RUNNING.md#without-root-named-volumes).
-Read `docker compose logs app` privately for the initial bootstrap password, sign in as
-`admin` at `http://localhost:8080`, replace it and enroll MFA. Logs containing the generated
-password are sensitive. Alternatively provide a unique `KYPULSE_ADMIN_PASSWORD` in the
-protected `.env` for first bootstrap, then remove it after replacement.
+Read the generated bootstrap password privately with
+`docker compose exec app cat /app/data/initial-admin-password` (the log names only this
+0600 file, never the password), sign in as `admin` at `http://localhost:8080`, replace it and
+enroll MFA, then delete the file with
+`docker compose exec app rm /app/data/initial-admin-password`. Alternatively provide a
+unique `KYPULSE_ADMIN_PASSWORD` in the protected `.env` for first bootstrap, then remove it
+after replacement.
 
 The generated password is printed once, by the first container, and exists nowhere else.
 Read it before any restart or `.env` change: a recreated container has a new log, and the
