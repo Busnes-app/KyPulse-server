@@ -9,7 +9,7 @@ Commands and unlinked file paths below are relative to the repository root.
 ```sh
 mkdir -p data backups secrets && sudo chown 10001:10001 data backups secrets
 docker compose up -d
-docker compose logs app | grep 'Initial bootstrap'   # the generated admin password
+docker compose exec app cat /app/data/initial-admin-password   # the generated admin password
 ```
 
 The container runs as uid 10001 on a read-only root filesystem with every capability
@@ -17,13 +17,18 @@ dropped, so the three directories must belong to that uid; Docker would otherwis
 owned by root and the server refuses to start with `permission denied`. Without root, use
 named volumes instead (below).
 
-Open <http://localhost:8080>, sign in as `admin` with that password, and replace it when
-asked. The password appears only in the first container's log: recreating the container
-(any `.env` change does) before you read it loses it, because the database already has the
-admin. To set a new one, run
-`docker compose exec app /app/kypulse init-admin -password '<at least 12 characters>'`. Set `KYPULSE_ADMIN_PASSWORD` in `.env` before the first start to choose it instead; it
-is read only while the database has no users and stays visible in `docker inspect`, so remove
-it afterwards. Compose runs in `KYPULSE_ENV=production`, so session cookies are `Secure`: a
+On an empty database the server creates the `admin` account and writes its generated
+password to `/app/data/initial-admin-password` (`data/initial-admin-password` on the host,
+mode 0600, owned by uid 10001). The log names only that file (event
+`initial_admin_password_file`), never the password. If the file cannot be written the server
+refuses to start; a file left by a start that stopped before creating the account is reused.
+Open <http://localhost:8080>, sign in as `admin` with that password, replace it when asked,
+then delete the file (`docker compose exec app rm /app/data/initial-admin-password`). To set a
+new one later, run
+`docker compose exec app /app/kypulse init-admin -password '<at least 12 characters>'`. Set
+`KYPULSE_ADMIN_PASSWORD` in `.env` before the first start to choose it instead; it is read only
+while the database has no users and stays visible in `docker inspect`, so remove it
+afterwards. Compose runs in `KYPULSE_ENV=production`, so session cookies are `Secure`: a
 browser on the same machine can use `http://localhost`, anyone else needs kyPulse behind a TLS
 proxy with `KYPULSE_APP_URL=https://...` and `KYPULSE_TRUSTED_PROXIES` (the proxy's own
 address) in `.env`.

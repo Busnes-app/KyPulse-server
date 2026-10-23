@@ -52,6 +52,9 @@ Design authority: `docs/superpowers/specs/2026-09-26-kypulse-design.md`. Plans l
 - Collected logs and imported activity share seven-day receive-time retention and the
   `KYPULSE_LOG_MAX_BYTES` logical payload budget. SQLite capsules exclude both tables and
   pending pairing codes and collection cursors; source identities and token hashes remain.
+- The bootstrap admin's generated password goes only to `<DataDir>/initial-admin-password`
+  (0600, `cmd/server/bootstrap.go`), never a log line; a file that cannot be written fails
+  startup. `KYPULSE_ADMIN_PASSWORD` still chooses it and writes no file.
 - `GET /healthz` is public and is what an external monitor watches; kyPulse does not monitor
   itself.
 - The audit trail is a keyed hash chain (`internal/store/audit.go`); a log the store cannot

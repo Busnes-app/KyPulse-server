@@ -113,7 +113,7 @@ func runServer(lg *logging.Logger) {
 	placed := st.Audit().Placement()
 	lg.Log(ctx, auditChainPlaced, fChainMode(placed.Mode), logging.Count(int64(placed.Count)), fChainHead(placed.Head))
 
-	if err := ensureBootstrapAdmin(ctx, st); err != nil {
+	if err := ensureBootstrapAdmin(ctx, st, cfg.Database.DataDir, lg); err != nil {
 		fatal("%v", err)
 	}
 
@@ -195,43 +195,6 @@ func runServer(lg *logging.Logger) {
 		lg.Log(context.Background(), logRetentionAbandoned, logRetentionReason("shutdown_timeout"))
 	}
 	log.Println("[KYPULSE] Server stopped")
-}
-
-// ensureBootstrapAdmin creates the first admin on an empty database. A failed count is an
-// error, never zero: guessing "empty" would mint a second admin on a database that has one.
-func ensureBootstrapAdmin(ctx context.Context, st store.Store) error {
-	count, err := st.Users().CountUsers(ctx)
-	if err != nil {
-		return fmt.Errorf("failed to count users: %w", err)
-	}
-	if count > 0 {
-		return nil
-	}
-	adminPass := os.Getenv("KYPULSE_ADMIN_PASSWORD")
-	if adminPass == "" {
-		adminPass = crypto.RandomHex(12)
-		// Deliberately outside the logger: one-time, forced password change, suppressed
-		// when KYPULSE_ADMIN_PASSWORD is set. A JSON line at any level could be gated or
-		// truncated; this operator needs it unconditionally.
-		fmt.Fprintf(os.Stderr, "[SECURITY] Initial bootstrap: Created admin account. Username: admin | Password: %s\n", adminPass)
-	}
-	hash, err := password.Hash(adminPass)
-	if err != nil {
-		return fmt.Errorf("failed to hash bootstrap admin password: %w", err)
-	}
-	if err := st.Users().CreateUser(ctx, &store.User{
-		ID:                 fmt.Sprintf("usr_%s", crypto.RandomHex(12)),
-		Username:           "admin",
-		DisplayName:        "Administrator",
-		PasswordHash:       hash,
-		Role:               "admin",
-		Status:             "active",
-		SSOProvider:        "local",
-		MustChangePassword: true,
-	}); err != nil {
-		return fmt.Errorf("failed to create bootstrap admin: %w", err)
-	}
-	return nil
 }
 
 // waitForBackupWork blocks until the scheduler loop, every detached handler, the poller and

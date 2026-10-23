@@ -21,7 +21,7 @@ there is no log file.
 | `KYPULSE_ENCRYPTION_KEY` | `<data dir>/encryption.key` | 32-byte key sealing the webhook, KyYard token, TOTP secrets and KyRecovery token |
 | `KYPULSE_AUDIT_KEY` | read from `KYPULSE_AUDIT_KEY_FILE` | 32-byte key of the audit hash chain; must differ from the encryption key |
 | `KYPULSE_AUDIT_KEY_FILE` | `<data dir>/audit.key` (`/app/secrets/audit.key` in Compose) | audit keyfile, minted on first start; an existing `<data dir>/audit.key` wins while this file does not exist |
-| `KYPULSE_ADMIN_PASSWORD` | generated and printed | first admin's password on an empty database |
+| `KYPULSE_ADMIN_PASSWORD` | generated into `<data dir>/initial-admin-password` (0600; never logged) | first admin's password on an empty database |
 | `KYPULSE_BIND` | `127.0.0.1` | Compose only: host address the `8080` port is published on |
 | `KYPULSE_DATA_DIR` | `./data` (`/app/data` in Compose) | database, keyfiles |
 | `KYPULSE_DB_DRIVER` | `sqlite` | `sqlite` or `postgres` |
