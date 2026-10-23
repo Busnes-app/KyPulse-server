@@ -18,6 +18,7 @@ import (
 	"github.com/Busnes-app/ky-primitives/password"
 	"github.com/Busnes-app/ky-primitives/recoveryclient"
 	"github.com/Busnes-app/kypulse-server/internal/api"
+	"github.com/Busnes-app/kypulse-server/internal/appversion"
 	"github.com/Busnes-app/kypulse-server/internal/backup"
 	"github.com/Busnes-app/kypulse-server/internal/config"
 	"github.com/Busnes-app/kypulse-server/internal/crypto"
@@ -59,7 +60,7 @@ func main() {
 			runAuditVerify()
 			return
 		case "version":
-			fmt.Println("kypulse v" + config.AppVersion + " (Busnes.app kyPulse)")
+			fmt.Println("kypulse v" + appversion.String() + " (Busnes.app kyPulse)")
 			return
 		}
 	}
@@ -247,13 +248,13 @@ func waitForBackupWork(ctx context.Context, backupDone, monitorDone, kyyardDone 
 // runBackup seals one capsule and delivers it to every configured destination, for the CLI:
 // it builds its own RunConfig because a one-shot failure is reported to the operator and ends.
 func runBackup(ctx context.Context, cfg *config.Config, st store.Store) (recoveryclient.Result, error) {
-	rc, err := backup.RunConfig(cfg, config.AppVersion)
+	rc, err := backup.RunConfig(cfg, appversion.String())
 	if err != nil {
 		return recoveryclient.Result{}, err
 	}
 	client := recoveryclient.NewClient(recoveryclient.Options{AllowPrivate: cfg.Backup.AllowPrivateRecovery})
 	return recoveryclient.Run(ctx, rc, backup.Settings(ctx, st.Settings()),
-		func() (recoveryclient.Payload, error) { return backup.Collect(ctx, cfg, config.AppVersion) }, client)
+		func() (recoveryclient.Payload, error) { return backup.Collect(ctx, cfg, appversion.String()) }, client)
 }
 
 // backupLoop polls the admin's schedule once a minute; a change in the UI needs no restart
@@ -265,7 +266,7 @@ func backupLoop(ctx context.Context, cfg *config.Config, st store.Store, done ch
 	// Built once: a deployment key that cannot seal is a configuration fault, not a run that
 	// might succeed next minute. Run never gets far enough to stamp the attempt, so retrying
 	// would log and audit a failure every tick forever.
-	rc, err := backup.RunConfig(cfg, config.AppVersion)
+	rc, err := backup.RunConfig(cfg, appversion.String())
 	if err != nil {
 		log.Printf("[BACKUP] scheduler disabled: %v", err)
 		return
@@ -289,7 +290,7 @@ func backupLoop(ctx context.Context, cfg *config.Config, st store.Store, done ch
 		}
 		runCtx := context.WithoutCancel(ctx)
 		res, err := recoveryclient.Run(runCtx, rc, backup.Settings(runCtx, st.Settings()),
-			func() (recoveryclient.Payload, error) { return backup.Collect(runCtx, cfg, config.AppVersion) }, client)
+			func() (recoveryclient.Payload, error) { return backup.Collect(runCtx, cfg, appversion.String()) }, client)
 		if errors.Is(err, recoveryclient.ErrNotPaired) || errors.Is(err, recoveryclient.ErrNoDestination) {
 			continue // never configured; nothing to report
 		}
@@ -411,7 +412,7 @@ func runInitAdmin(args []string) {
 
 // collectFiles is what every CLI seal uses; the sealed-only members are safe here and nowhere else.
 func collectFiles(ctx context.Context, cfg *config.Config) recoveryclient.Payload {
-	payload, err := backup.Collect(ctx, cfg, config.AppVersion)
+	payload, err := backup.Collect(ctx, cfg, appversion.String())
 	if err != nil {
 		fatal("Failed to collect backup files: %v", err)
 	}

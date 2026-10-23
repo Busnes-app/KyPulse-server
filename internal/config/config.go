@@ -151,9 +151,6 @@ const MinDepositInterval = 15 * time.Minute
 // under it, so the restore CLI has to agree with it without loading a whole Config.
 const DefaultAppName = "kyPulse"
 
-// AppVersion is recorded in every capsule manifest.
-const AppVersion = "0.4.3"
-
 // LoadFromEnv initializes a Config struct populated from environment variables with sensible defaults.
 func LoadFromEnv() (*Config, error) {
 	var ev envReader

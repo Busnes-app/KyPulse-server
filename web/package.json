@@ -1,7 +1,6 @@
 {
   "name": "kypulse-web",
   "private": true,
-  "version": "0.4.3",
   "type": "module",
   "scripts": {
     "dev": "vite",
