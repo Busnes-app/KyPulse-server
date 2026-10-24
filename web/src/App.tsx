@@ -149,7 +149,7 @@ export const App: React.FC = () => {
         {head === 'logs' && isAdmin && <Logs user={user} />}
         {head === 'activity' && isAdmin && <Activity user={user} />}
         {head === 'backup' && isAdmin && <Backup />}
-        {head === 'settings' && <Settings settings={settings} user={user} onChanged={refreshStatus} />}
+        {head === 'settings' && <Settings settings={settings} user={user} onChanged={refreshStatus} onTOTPChange={(totp_enabled) => setUser((u: any) => (u ? { ...u, totp_enabled } : u))} />}
       </main>
     </div>
   );

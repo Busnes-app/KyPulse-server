@@ -34,7 +34,7 @@ Design: [`docs/superpowers/specs/2026-09-26-kypulse-design.md`](docs/superpowers
   facts, and, for admins, silence (1 h, 8 h, until fixed), edit and delete.
 - **Logs** (admins). Filtered log timeline, raw text, source pairing/revocation and collection status.
 - **Activity** (admins). Imported audit events, filters, failed-sign-in burst hints and collection status.
-- **Settings & DB**. The alert webhook, KyYard pairing/collector ages (admins), theme, database driver.
+- **Settings & DB**. Two-factor authentication for local accounts, the alert webhook, KyYard pairing/collector ages (admins), theme, database driver.
 - **Backup** (admins). KyRecovery pairing, schedule, local copies, restore drill.
 
 Roles are `admin` and `viewer`. A viewer sees Status, Alerts, app detail and a read-only

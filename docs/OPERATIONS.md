@@ -16,6 +16,20 @@ every start logs the chain's count and head (`audit_chain_placed`), which is you
 outside the database. `/healthz` reports `audit` degraded when the chain cannot take the
 next record, and a log that cannot be placed refuses to start with the remedy in the error.
 
+## Two-factor authentication
+
+Local accounts, viewers included, turn on TOTP under **Settings > Two-factor
+authentication**: start setup, add the account to an authenticator app from the setup link
+(`otpauth://`) or the key shown beside it (there is no QR code), and enter the code the app
+shows and the account password. kyPulse then shows ten single-use recovery codes once and signs out the account's
+other sessions. From then on sign-in asks for a code or a recovery code after the password.
+Turning it off needs the password and a current code or an unused recovery code, and also
+signs out the other sessions. Setup cannot be restarted while TOTP is on: turn it off first.
+Accounts that sign in through KyIdentity or another identity provider manage their second
+factor there. `kypulse init-admin` resets the admin's password and also turns TOTP off for that
+account, which is the way back for an admin who lost both the authenticator and the recovery
+codes; the admin sets TOTP up again after signing in.
+
 ## Command line
 
 ```sh
