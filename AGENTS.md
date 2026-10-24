@@ -75,7 +75,7 @@ Design authority: `docs/superpowers/specs/2026-09-26-kypulse-design.md`. Plans l
 ## Verification
 
 - `make ci`: tidy check, gofmt, vet, race tests, frontend tests, smoke test.
-- `.github/workflows/ci.yml` additionally runs Postgres tests, Playwright browser regressions,
+- `.github/workflows/ci.yml` additionally builds the release binary twice from different directories and requires identical bytes (the Dockerfile's `-trimpath` makes that hold), and runs Postgres tests, Playwright browser regressions,
   govulncheck, the Docker image smoke and the image-coordinate check.
 - The version has one source: `internal/appversion/VERSION` (`X.Y.Z`, the release line; `web/package.json` has no version). Go code calls `appversion.String()`; a release image build sets the tag's full version through `-ldflags -X …/internal/appversion.release`, so images report `X.Y.Z` or `X.Y.Z.N` and source builds report the line.
 - Publishing a GitHub release `vX.Y.Z` or `vX.Y.Z.N` runs `release-image.yml` (a dispatch on a published release's tag runs it too). It refuses a malformed tag, a tag whose `X.Y.Z` disagrees with `internal/appversion/VERSION`, and any commit on which a ci.yml job in its `REQUIRED` list (all seven, by their `name:`) did not pass. It then builds `:X.Y.Z[.N]` with provenance and SBOM, attests and verifies it (identity `release-image.yml@refs/tags/<tag>`), and moves `:stable` to that digest only for the highest non-prerelease. It never moves `:latest`; `master` CI owns that. A job added to ci.yml must be added to `REQUIRED` too.
@@ -109,4 +109,4 @@ Design authority: `docs/superpowers/specs/2026-09-26-kypulse-design.md`. Plans l
 
 ## README and topic guides
 
-Keep `README.md` as the concise product overview and navigation. Detailed procedures live in `docs/RUNNING.md`, `docs/LOG-COLLECTION.md`, `docs/MONITORING.md`, `docs/CONFIGURATION.md`, `docs/OPERATIONS.md`, `docs/DEVELOPMENT.md`. Update the owning topic guide and preserve README links when a procedure changes. Commands in these guides run from the repository root.
+Keep `README.md` as the concise product overview and navigation. Detailed procedures live in `docs/RUNNING.md`, `docs/LOG-COLLECTION.md`, `docs/MONITORING.md`, `docs/CONFIGURATION.md`, `docs/OPERATIONS.md`, `docs/DEVELOPMENT.md` (including the coding standard), `docs/VERIFYING-RELEASES.md`. `docs/ASSURANCE-CASE.md` is the security argument: a change that moves a trust boundary or a security requirement updates it in the same change. Update the owning topic guide and preserve README links when a procedure changes. Commands in these guides run from the repository root.

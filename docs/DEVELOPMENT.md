@@ -39,3 +39,25 @@ Browser regressions run with `go build -o .browser/server ./cmd/server`, then
 `cd web && npx playwright install chromium && npm run test:browser`; they need a private IPv4
 interface for the fake watched app. Contributor rules live in [`AGENTS.md`](../AGENTS.md) and the
 `AGENTS.md` beside each package.
+
+## Coding standard
+
+Contributions follow these style guides. CI enforces the parts a tool can check, so a style
+failure is a red build, not a review comment.
+
+| Language | Style guide | Enforced by |
+|---|---|---|
+| Go | [Effective Go](https://go.dev/doc/effective_go) and the [Go Code Review Comments](https://go.dev/wiki/CodeReviewComments) | `gofmt` (must list no file), `go mod tidy` (no diff) and `go vet ./...` in the `Go build, vet & tests (SQLite)` job; `make lint` runs the same locally |
+| TypeScript (`web/`) | The TypeScript compiler in `strict` mode, refusing unused locals and parameters and switch fall-through | `tsc -b` in `npm run build` (`Frontend typecheck & build` job) |
+| Shell (`scripts/`) | [ShellCheck](https://www.shellcheck.net/) clean | `shellcheck scripts/*.sh` in the `End-to-end smoke test` job |
+
+Beyond what the tools check: keep to the comment density and naming of the file you are
+editing, keep each package's `AGENTS.md` true, and never hand-edit the vendored `web/src/ky-ui/`.
+
+## Security and releases
+
+- [Assurance case](ASSURANCE-CASE.md): threat model, trust boundaries, and why the security
+  requirements hold. A change that moves a trust boundary updates it in the same pull request.
+- [Verifying releases](VERIFYING-RELEASES.md): check a release image's signature and source
+  commit, and rebuild its binary to the same bytes. CI's `release binary is repeatable` step
+  builds the release binary twice from different directories and requires identical bytes.

@@ -56,3 +56,5 @@ Container-local installer setup and its current acceptance limits are documented
 - [Configuration](docs/CONFIGURATION.md) — Configuration, Compose overlays. <a id="configuration"></a><a id="compose-overlays"></a>
 - [Operations](docs/OPERATIONS.md) — Backup and restore, Command line. <a id="backup-and-restore"></a><a id="command-line"></a>
 - [Development](docs/DEVELOPMENT.md) — API, Develop. <a id="api"></a><a id="develop"></a>
+- [Verifying releases](docs/VERIFYING-RELEASES.md) — Check a release image's signature and source commit, and rebuild its binary to the same bytes.
+- [Assurance case](docs/ASSURANCE-CASE.md) — Threat model, trust boundaries, and why the security requirements are met.
