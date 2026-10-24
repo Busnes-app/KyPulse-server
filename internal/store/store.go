@@ -60,6 +60,16 @@ type UserStore interface {
 	// SpendTOTPCounter records counter as used. It returns ErrAlreadyExists when counter is
 	// not greater than the stored one, which is how a replayed code inside the skew window fails.
 	SpendTOTPCounter(ctx context.Context, userID string, counter int64) error
+	// SetTOTPSecret stores a sealed pending secret on a local account while TOTP is off,
+	// compare-and-swapped on the previous ciphertext. ErrAlreadyExists when the row moved on
+	// (enabled, a concurrent enrolment, not local), so an enabled secret is never replaced.
+	SetTOTPSecret(ctx context.Context, userID, oldEnc, newEnc string) error
+	// EnableTOTP turns on the pending secretEnc with recoveryHashes, and DisableTOTP clears
+	// secret and recovery codes. Each is one transaction that also deletes every session but
+	// keepSession (a token hash), every MFA challenge, and chains an audit row.
+	// ErrAlreadyExists when the account is not in the expected state.
+	EnableTOTP(ctx context.Context, userID, secretEnc, recoveryHashes, keepSession, ip string) error
+	DisableTOTP(ctx context.Context, userID, keepSession, ip string) error
 	DeleteUser(ctx context.Context, id string) error
 	ListUsers(ctx context.Context, offset, limit int, search string) ([]*User, int, error)
 	CountUsers(ctx context.Context) (int, error)

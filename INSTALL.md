@@ -45,7 +45,7 @@ these bind directories, use the [named-volume override](docs/RUNNING.md#without-
 Read the generated bootstrap password privately with
 `docker compose exec app cat /app/data/initial-admin-password` (the log names only this
 0600 file, never the password), sign in as `admin` at `http://localhost:8080`, replace it and
-enroll MFA, then delete the file with
+enroll MFA under Settings > Two-factor authentication, then delete the file with
 `docker compose exec app rm /app/data/initial-admin-password`. Alternatively provide a
 unique `KYPULSE_ADMIN_PASSWORD` in the protected `.env` for first bootstrap, then remove it
 after replacement.

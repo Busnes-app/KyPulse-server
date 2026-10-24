@@ -3,14 +3,16 @@ import { Settings as SettingsIcon, Database, Palette } from 'lucide-react';
 import { ThemeSwitcher } from '../components/ThemeSwitcher';
 import { WebhookForm } from '../components/WebhookForm';
 import { KyYardCard } from '../components/KyYardCard';
+import { TwoFactorCard } from '../components/TwoFactorCard';
 
 interface SettingsProps {
   settings: any;
-  user: { role: string };
+  user: { id?: string; role: string; sso_provider?: string; totp_enabled?: boolean };
   onChanged: () => void;
+  onTOTPChange?: (enabled: boolean) => void;
 }
 
-export const Settings: React.FC<SettingsProps> = ({ settings, user, onChanged }) => {
+export const Settings: React.FC<SettingsProps> = ({ settings, user, onChanged, onTOTPChange }) => {
   return (
     <div style={{ maxWidth: '1080px', margin: '0 auto', padding: '32px 20px' }}>
       <div style={{ marginBottom: '24px' }}>
@@ -19,11 +21,13 @@ export const Settings: React.FC<SettingsProps> = ({ settings, user, onChanged })
           <span>Settings</span>
         </h1>
         <p style={{ color: 'var(--ink)', fontSize: '14px', marginTop: '4px' }}>
-          Alert webhook, KyYard pairing, storage and appearance.
+          Two-factor sign-in, alert webhook, KyYard pairing, storage and appearance.
         </p>
       </div>
 
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 480px), 1fr))', gap: '20px' }}>
+        {/* Local accounts only: an identity provider owns MFA for SSO accounts. */}
+        {user.sso_provider === 'local' && <TwoFactorCard key={user.id} enabled={!!user.totp_enabled} onEnabledChange={onTOTPChange} />}
         {user.role === 'admin' && <WebhookForm onChanged={onChanged} />}
         {user.role === 'admin' && <KyYardCard onChanged={onChanged} />}
         {/* Storage Card */}

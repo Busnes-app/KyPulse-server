@@ -16,6 +16,8 @@ Owns HTTP routing, request parsing, session cookie validation, CORS headers, and
   authority and optional target-bound offboarding alert grant as administrator pairing;
   public callers cannot reach the setup route or supply prepared token hashes.
 - POST `/api/auth/change-password` accepts a restricted local session, current password and a different policy-valid new password. Browser CSRF and per-IP/account limits apply. Success revokes all sessions and requires sign-in again; flagged sessions get `password_change_required` on protected routes and public-only settings.
+- TOTP management is three `requireSession` POST routes for the signed-in local account (`mfa_handlers.go`); accounts that are not `sso_provider = local` with a password get 409. `/api/auth/mfa/enroll` (409 while enabled) seals a fresh secret with `crypto.EncryptAESGCM` under `Security.EncryptionKey`, the same key `handleMFATOTP` opens with, stores it pending through `SetTOTPSecret` and returns `{secret, otpauth_uri}` once. `/api/auth/mfa/enroll/confirm` (`{code}`, `mfa-enroll-user:` 5/5 min) validates against the pending secret, spends the counter, generates ten recovery codes and calls `EnableTOTP` with the checked ciphertext; it returns `{totp_enabled, recovery_codes}`. `/api/auth/mfa/disable` (`{password, code}`, `mfa-disable-user:` 5/5 min) verifies the password before spending a TOTP or recovery code, then `DisableTOTP`. Enable and disable keep the calling session and revoke the rest. Failed confirm/disable audit `auth.mfa_enroll`/`auth.mfa_disable` refusals; the store writes `auth.mfa_enabled`/`auth.mfa_disabled`.
+- `csrfExempt` lists exact paths, never a prefix: `/api/auth/mfa/totp` and `/api/auth/mfa/recovery-code` are exempt (pre-session, JSON-only) while the TOTP management routes beside them keep CSRF.
 - All JSON API endpoints return structured errors `{"error": "message"}` upon failure.
 - Non-API routes fall back to serving `web.Handler()` for client-side SPA routing.
 - New routes are unauthenticated only by deliberate choice; privileged ones are registered wrapped in `s.requireAdmin` in `routes()`, so the trust level of every route is readable in one place.
@@ -101,7 +103,7 @@ Owns HTTP routing, request parsing, session cookie validation, CORS headers, and
   UI from mislabeling a filtered-empty page as an app with no retained audit events.
 
 ## Verification
-- `go test -v ./internal/api/...` (`authz_test.go` pins the per-role exposure of every privileged route; `backup_test.go` the backup routes, on SQLite only because a run snapshots the database)
+- `go test -v ./internal/api/...` (`authz_test.go` pins the per-role exposure of every privileged route and has one row per session-only route in `TestSessionEndpointsRequireSession`; `mfa_enroll_test.go` the TOTP enrolment attack paths; `backup_test.go` the backup routes, on SQLite only because a run snapshots the database)
 - `scripts/smoke-test.sh` asserts the same boundaries against a running binary
 - Set `KYQ_TEST_INSTALLER_RELAY_ROOT` to the isolated KyQuickStart checkout and run
   `go test -race ./internal/api -run TestOffboardAuditRelayNative -count=1` with the local

@@ -377,6 +377,10 @@ func (s *Server) routes() {
 	s.mux.HandleFunc("/api/auth/login", s.handleLogin)
 	s.mux.HandleFunc("/api/auth/mfa/totp", s.handleMFATOTP)
 	s.mux.HandleFunc("/api/auth/mfa/recovery-code", s.handleMFARecovery)
+	// TOTP management for the signed-in local account: session routes, CSRF-protected.
+	s.mux.HandleFunc("POST /api/auth/mfa/enroll", s.requireSession(s.handleMFAEnroll))
+	s.mux.HandleFunc("POST /api/auth/mfa/enroll/confirm", s.requireSession(s.handleMFAEnrollConfirm))
+	s.mux.HandleFunc("POST /api/auth/mfa/disable", s.requireSession(s.handleMFADisable))
 	s.mux.HandleFunc("/api/auth/logout", s.handleLogout)
 	s.mux.HandleFunc("/api/auth/me", s.handleMe)
 	s.mux.HandleFunc("/api/auth/change-password", s.handleChangePassword)
@@ -536,8 +540,16 @@ func hasSessionCookie(r *http.Request) bool {
 	return err == nil && cookie.Value != ""
 }
 
+// csrfExempt lists exact paths: the pre-session sign-in steps (login and the two MFA answers,
+// which hold no session yet and require a JSON body) and the token- or signature-authenticated
+// machine routes. A prefix here would also exempt the session routes under /api/auth/mfa/.
 func csrfExempt(path string) bool {
-	return path == "/api/auth/login" || strings.HasPrefix(path, "/api/auth/mfa/") || path == "/api/sso/kysignon/sync" || path == "/api/installer/directory" || path == "/api/ingest/logs"
+	switch path {
+	case "/api/auth/login", "/api/auth/mfa/totp", "/api/auth/mfa/recovery-code",
+		"/api/sso/kysignon/sync", "/api/installer/directory", "/api/ingest/logs":
+		return true
+	}
+	return false
 }
 
 // isJSON reports a JSON request body. Cross-site HTML forms can only send simple content

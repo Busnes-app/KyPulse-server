@@ -62,7 +62,8 @@ Design authority: `docs/superpowers/specs/2026-09-26-kypulse-design.md`. Plans l
 - `web/dist` is committed after every frontend change; CI diffs it. `web/src/ky-ui/` is
   vendored and hash-pinned; never hand-edit it.
 - No device pairing, no SCIM. Local login with MFA, SSO (KySignOn, OIDC, SAML metadata) and
-  KyRecovery backup are kept from the scaffold.
+  KyRecovery backup are kept from the scaffold. Local accounts enrol and remove TOTP
+  themselves in Settings (`internal/api/AGENTS.md`); identity providers own SSO accounts' MFA.
 
 ## Work Guidance
 

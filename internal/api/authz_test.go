@@ -177,6 +177,31 @@ func TestPrivilegedEndpointsRequireAdmin(t *testing.T) {
 	}
 }
 
+// Session routes any signed-in role may use: one row per route. Anonymous callers get 401;
+// a viewer gets past authentication (any status but 401/403).
+func TestSessionEndpointsRequireSession(t *testing.T) {
+	cases := []struct {
+		method string
+		path   string
+	}{
+		{"POST", "/api/auth/mfa/enroll"},
+		{"POST", "/api/auth/mfa/enroll/confirm"},
+		{"POST", "/api/auth/mfa/disable"},
+	}
+	for _, tc := range cases {
+		t.Run(tc.method+" "+tc.path, func(t *testing.T) {
+			srv, st, _ := setupTestServer(t)
+			if got := do(t, srv, tc.method, tc.path, nil).Code; got != http.StatusUnauthorized {
+				t.Errorf("anonymous: got %d, want 401", got)
+			}
+			viewer := loginAs(t, srv, st, "bob", "viewer")
+			if got := do(t, srv, tc.method, tc.path, viewer).Code; got == http.StatusUnauthorized || got == http.StatusForbidden {
+				t.Errorf("viewer was blocked: got %d", got)
+			}
+		})
+	}
+}
+
 func TestHealthzIsPublicAndReportsTheDatabase(t *testing.T) {
 	srv, _, _ := setupTestServer(t)
 	w := do(t, srv, "GET", "/healthz", nil)

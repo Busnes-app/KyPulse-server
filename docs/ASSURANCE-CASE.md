@@ -93,15 +93,16 @@ publishes on loopback by default; TLS is the reverse proxy's job.
 |---|---|---|
 | Credential guessing and stuffing | Argon2id (64 MiB, 3 passes, 4 lanes), 12-character minimum, per-IP limits plus 10 wrong passwords per account per 15 minutes; unknown users cost the same password verification and get the same answer | `ky-primitives/password`, `internal/auth/policy.go`, `internal/api/auth_handlers.go` |
 | Session theft or fixation | 32 random bytes per session, only the SHA-256 stored; `HttpOnly`, `SameSite=Lax` and `Secure` cookies; the user's sessions and MFA challenges deleted on password change | `internal/auth/session.go`, `internal/store/sqlstore.go` (`revokePasswordGrants`) |
-| CSRF | Every unsafe request with a session cookie must echo the `ky_csrf` cookie in `X-CSRF-Token` (constant-time compare). The exempt routes are login and MFA, which require a JSON body, and the token- or signature-authenticated ingest and directory routes | `internal/api/server.go` (`csrfExempt`), `auth.ValidateCSRF` |
+| CSRF | Every unsafe request with a session cookie must echo the `ky_csrf` cookie in `X-CSRF-Token` (constant-time compare). The exempt routes, listed by exact path, are login and the two MFA sign-in answers (`/api/auth/mfa/totp`, `/api/auth/mfa/recovery-code`), which require a JSON body, and the token- or signature-authenticated ingest and directory routes; the TOTP enrol, confirm and disable session routes are not exempt | `internal/api/server.go` (`csrfExempt`), `auth.ValidateCSRF`, `internal/api/mfa_enroll_test.go` |
 | Broken access control | Admin routes wrapped in `requireAdmin`; tests pin the per-role answer of every privileged route | `internal/api/server.go`, `internal/api/authz_test.go`, `TestViewerCannotWriteMonitoring` |
+| Second-factor bypass or takeover | A local account enrols TOTP only by confirming a valid current code for the pending secret; the pending write is a compare-and-swap on `totp_enabled = false`, so enrolment cannot replace an enabled secret and is refused (409) while TOTP is on. Turning it off needs the password and a current TOTP or unused recovery code. Enable and disable revoke every other session and all MFA challenges and chain an audit row in one transaction. Each accepted TOTP counter is spent once; confirm and disable have per-account attempt limits | `internal/api/mfa_handlers.go`, `internal/store/sqlstore.go` (`totpTransition`), `internal/api/mfa_enroll_test.go`, `internal/store/totp_test.go` |
 | Token misuse by a sender | Source tokens stored as SHA-256 hashes; exactly one well-formed `Authorization: Bearer` header; source identity and target come from the token, never the request body | `internal/api/sources.go`, `internal/api/logs.go` |
 | SQL injection | `database/sql` with `?` parameters for every value; where a statement is assembled, its table and column names come from fixed lists in the code (`log_lines`/`activity`, `sessions`/`mfa_challenges`, the filter columns) | `internal/store` (`logs.go`, `activity.go`, `targets.go`, `sqlstore.go`) |
 | Cross-site scripting | React escaping, no `dangerouslySetInnerHTML` anywhere in `web/src`; collected text passed through `logstore.Display`; a CSP with `script-src 'self'` and `frame-ancestors 'none'`, plus `X-Frame-Options: DENY` | `web/src`, `internal/logstore/parse.go`, `internal/api/server.go` |
 | Server-side request forgery | One guarded outbound client, destination checked at dial time on every resolved address, no redirects | `internal/egress/egress.go` |
 | Resource exhaustion from untrusted input | Body caps on every JSON route and 1 MiB on ingest, per-client and per-source ingest quotas, seven-day retention and a byte budget for collected logs | `internal/api`, `internal/ingest/batch.go`, `internal/store/logs.go` |
 | Parser bugs on hostile input | Go native fuzz targets for the ingest decoder, health-response normaliser, KyYard log parser and display sanitiser, run in CI | `internal/{ingest,poller,kyyard,logstore}/fuzz_test.go` |
-| Secrets at rest | Webhook, KyYard and KyRecovery tokens sealed with AES-256-GCM under per-purpose keys derived from `encryption.key` by HKDF; passwords Argon2id; session and source tokens hashed | `internal/monitor/webhook.go`, `internal/kyyard/pairing.go`, `internal/backup/settings.go` |
+| Secrets at rest | Webhook, KyYard and KyRecovery tokens sealed with AES-256-GCM under per-purpose keys derived from `encryption.key` by HKDF; TOTP secrets sealed with AES-256-GCM under `encryption.key` itself; passwords Argon2id; session and source tokens hashed | `internal/monitor/webhook.go`, `internal/kyyard/pairing.go`, `internal/backup/settings.go` |
 | Audit tampering | A keyed hash chain over every audit row; a broken chain turns `/healthz` `degraded` with reason `chain_broken` | `internal/store/audit.go`, `ky-primitives/auditchain`, `internal/api/server.go` |
 | Secrets in logs | The generated admin password is written to a `0600` file, never logged; webhook URLs, pairing codes and tokens are kept out of audit rows | `cmd/server/bootstrap.go`, [internal/api/AGENTS.md](../internal/api/AGENTS.md) |
 | Vulnerable dependencies | Dependabot, `govulncheck` and `npm audit --audit-level=high` in CI; a daily dependency release ships the updates | `.github/dependabot.yml`, `.github/workflows/` |
@@ -111,8 +112,13 @@ publishes on loopback by default; TLS is the reverse proxy's job.
 
 - kyPulse has no step-up re-authentication; admin-only access plus the per-route tests stand in
   for it on destructive backup routes ([internal/api/AGENTS.md](../internal/api/AGENTS.md)).
-- Local accounts can verify a TOTP code, but kyPulse has no screen or route that enrols one. For
-  a second factor, sign in through KyIdentity (KySignOn) or another identity provider.
+- TOTP enrolment needs only the signed-in session and a code from the new secret, not the
+  password: someone holding a stolen session of an account without TOTP can turn it on and
+  lock the owner out. Turning it off needs the password and a code. There is no operator reset
+  of a second factor; `kypulse init-admin` resets only the password, so recovery codes are the
+  way back from a lost authenticator.
+- TOTP secrets are sealed under `encryption.key` directly rather than a per-purpose derived
+  key: that is the format the sign-in path opens and restored capsules carry.
 - Rate limits are process-local, which suits the single-instance deployment kyPulse is built for.
 - Health targets may use plain HTTP, and `KYPULSE_ALERT_ALLOW_HTTP` and `KYPULSE_KYYARD_ALLOW_HTTP`
   admit plain HTTP for the webhook and KyYard. The server logs a warning at startup when either is

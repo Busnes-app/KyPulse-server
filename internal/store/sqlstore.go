@@ -283,6 +283,66 @@ func (u *userStore) SpendTOTPCounter(ctx context.Context, userID string, counter
 	return nil
 }
 
+func (u *userStore) SetTOTPSecret(ctx context.Context, userID, oldEnc, newEnc string) error {
+	q := u.store.rebind("UPDATE users SET totp_secret_enc = ?, updated_at = ? WHERE id = ? AND totp_secret_enc = ? AND totp_enabled = ? AND sso_provider = 'local'")
+	res, err := u.store.db.ExecContext(ctx, q, newEnc, time.Now().UTC(), userID, oldEnc, false)
+	if err != nil {
+		return err
+	}
+	rows, err := res.RowsAffected()
+	if err != nil {
+		return err
+	}
+	if rows != 1 {
+		return ErrAlreadyExists
+	}
+	return nil
+}
+
+func (u *userStore) EnableTOTP(ctx context.Context, userID, secretEnc, recoveryHashes, keepSession, ip string) error {
+	return u.totpTransition(ctx, userID, keepSession, ip, "auth.mfa_enabled",
+		"UPDATE users SET totp_enabled = ?, recovery_codes_hash = ?, updated_at = ? WHERE id = ? AND totp_enabled = ? AND totp_secret_enc = ? AND totp_secret_enc <> '' AND sso_provider = 'local'",
+		true, recoveryHashes, time.Now().UTC(), userID, false, secretEnc)
+}
+
+func (u *userStore) DisableTOTP(ctx context.Context, userID, keepSession, ip string) error {
+	return u.totpTransition(ctx, userID, keepSession, ip, "auth.mfa_disabled",
+		"UPDATE users SET totp_enabled = ?, totp_secret_enc = '', recovery_codes_hash = '[]', updated_at = ? WHERE id = ? AND totp_enabled = ?",
+		false, time.Now().UTC(), userID, true)
+}
+
+// totpTransition applies a compare-and-swap on the user row, then revokes every other session
+// and every MFA challenge and chains the audit row, all on one transaction.
+func (u *userStore) totpTransition(ctx context.Context, userID, keepSession, ip, action, update string, args ...any) error {
+	tx, err := u.store.db.BeginTx(ctx, nil)
+	if err != nil {
+		return err
+	}
+	defer tx.Rollback()
+	res, err := tx.ExecContext(ctx, u.store.rebind(update), args...)
+	if err != nil {
+		return err
+	}
+	if rows, err := res.RowsAffected(); err != nil {
+		return err
+	} else if rows != 1 {
+		return ErrAlreadyExists
+	}
+	if _, err := tx.ExecContext(ctx, u.store.rebind("DELETE FROM sessions WHERE user_id = ? AND token_hash <> ?"), userID, keepSession); err != nil {
+		return err
+	}
+	if _, err := tx.ExecContext(ctx, u.store.rebind("DELETE FROM mfa_challenges WHERE user_id = ?"), userID); err != nil {
+		return err
+	}
+	finish, err := u.store.audit.append(ctx, tx, &AuditRecord{UserID: userID, Action: action, Resource: "user", Details: "outcome=success other_sessions=revoked", IPAddress: ip, CreatedAt: time.Now().UTC()})
+	if err != nil {
+		return err
+	}
+	err = tx.Commit()
+	finish(err == nil)
+	return err
+}
+
 func (u *userStore) DeleteUser(ctx context.Context, id string) error {
 	q := u.store.rebind("DELETE FROM users WHERE id = ?")
 	res, err := u.store.db.ExecContext(ctx, q, id)
