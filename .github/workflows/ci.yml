@@ -85,6 +85,12 @@ jobs:
       - name: Tests with race detector and coverage
         run: go test -race -covermode=atomic -coverprofile=coverage.out ./...
 
+      # Bounded fuzz runs over parsers of untrusted input; together about a minute.
+      - run: go test -fuzz=FuzzDecode -fuzztime=100000x ./internal/ingest
+      - run: go test -fuzz=FuzzNormalize -fuzztime=500000x ./internal/poller
+      - run: go test -fuzz=FuzzParseLogs -fuzztime=50000x ./internal/kyyard
+      - run: go test -fuzz=FuzzDisplay -fuzztime=200000x ./internal/logstore
+
       - name: Coverage summary
         run: |
           go tool cover -func=coverage.out | tail -n 1 | tee -a "$GITHUB_STEP_SUMMARY"
