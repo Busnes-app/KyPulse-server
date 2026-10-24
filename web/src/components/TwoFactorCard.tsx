@@ -53,8 +53,9 @@ export function TwoFactorCard({ enabled: initial, onEnabledChange }: TwoFactorCa
   const confirm = (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     void run(async () => {
-      const data = await post('/api/auth/mfa/enroll/confirm', { code: code.trim() });
+      const data = await post('/api/auth/mfa/enroll/confirm', { password, code: code.trim() });
       setPending(null);
+      setPassword('');
       setCode('');
       setEnabled(true);
       onEnabledChange?.(true);
@@ -105,7 +106,7 @@ export function TwoFactorCard({ enabled: initial, onEnabledChange }: TwoFactorCa
 
       {!enabled && pending && (
         <form onSubmit={confirm}>
-          <p style={{ fontSize: '13px' }}>Add this account to your authenticator app with the setup link or the key, then enter the code it shows.</p>
+          <p style={{ fontSize: '13px' }}>Add this account to your authenticator app with the setup link or the key, then enter the code it shows and your password.</p>
           <label htmlFor="totp-uri">Setup link</label>
           <input id="totp-uri" className="font-mono" readOnly value={pending.otpauth_uri} onFocus={(e) => e.currentTarget.select()} />
           <label htmlFor="totp-secret">Key</label>
@@ -113,9 +114,12 @@ export function TwoFactorCard({ enabled: initial, onEnabledChange }: TwoFactorCa
           <label htmlFor="totp-confirm-code">Code from the app</label>
           <input id="totp-confirm-code" inputMode="numeric" autoComplete="one-time-code" required maxLength={10}
             value={code} onChange={(e) => setCode(e.target.value)} />
+          <label htmlFor="totp-confirm-password">Password</label>
+          <input id="totp-confirm-password" type="password" autoComplete="current-password" required maxLength={1024}
+            value={password} onChange={(e) => setPassword(e.target.value)} />
           <div style={{ display: 'flex', flexWrap: 'wrap', gap: 12, marginTop: 16 }}>
             <button type="submit" disabled={busy}>Turn on</button>
-            <button type="button" className="btn-secondary" disabled={busy} onClick={() => { setPending(null); setCode(''); }}>Cancel</button>
+            <button type="button" className="btn-secondary" disabled={busy} onClick={() => { setPending(null); setCode(''); setPassword(''); }}>Cancel</button>
           </div>
         </form>
       )}

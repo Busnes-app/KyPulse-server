@@ -65,7 +65,8 @@ func (s *Server) handleMFAEnroll(w http.ResponseWriter, r *http.Request) {
 	})
 }
 
-// handleMFAEnrollConfirm turns the pending secret on once the user proves their app has it.
+// handleMFAEnrollConfirm turns the pending secret on once the user proves their app has it and
+// re-enters their password, so a stolen session alone cannot put a second factor on the account.
 func (s *Server) handleMFAEnrollConfirm(w http.ResponseWriter, r *http.Request) {
 	const action = "auth.mfa_enroll"
 	user, sess, ok := s.mfaSessionUser(w, r)
@@ -85,14 +86,19 @@ func (s *Server) handleMFAEnrollConfirm(w http.ResponseWriter, r *http.Request) 
 		return
 	}
 	var req struct {
-		Code string `json:"code"`
+		Password string `json:"password"`
+		Code     string `json:"code"`
 	}
-	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+	if err := json.NewDecoder(r.Body).Decode(&req); err != nil || len(req.Password) > 1024 {
 		s.writeError(w, http.StatusBadRequest, "Invalid request body")
 		return
 	}
 	if user.TOTPEnabled || user.TOTPSecretEnc == "" {
 		s.writeError(w, http.StatusConflict, "No enrolment is pending")
+		return
+	}
+	if ok, err := password.Verify(req.Password, user.PasswordHash); err != nil || !ok {
+		fail("password", http.StatusUnauthorized, "Password or code is incorrect")
 		return
 	}
 	secret, err := crypto.DecryptAESGCM(user.TOTPSecretEnc, s.config.Security.EncryptionKey)
@@ -102,7 +108,7 @@ func (s *Server) handleMFAEnrollConfirm(w http.ResponseWriter, r *http.Request) 
 	}
 	counter, ok := auth.ValidateTOTP(string(secret), req.Code)
 	if !ok {
-		fail("code", http.StatusUnauthorized, "Invalid TOTP verification code")
+		fail("code", http.StatusUnauthorized, "Password or code is incorrect")
 		return
 	}
 	if err := s.store.Users().SpendTOTPCounter(r.Context(), user.ID, counter); err != nil {
@@ -114,10 +120,15 @@ func (s *Server) handleMFAEnrollConfirm(w http.ResponseWriter, r *http.Request) 
 		s.writeError(w, http.StatusInternalServerError, "Failed to generate recovery codes")
 		return
 	}
-	// Enables only the secret the code was checked against; a restarted enrolment fails it.
-	err = s.store.Users().EnableTOTP(r.Context(), user.ID, user.TOTPSecretEnc, hashes, sess.TokenHash, s.requestIP(r))
+	// Enables only the secret the code was checked against, under the password just checked;
+	// a restarted enrolment or a password change since fails it.
+	err = s.store.Users().EnableTOTP(r.Context(), user.ID, user.PasswordHash, user.TOTPSecretEnc, hashes, sess.TokenHash, s.requestIP(r))
 	if errors.Is(err, store.ErrAlreadyExists) {
 		s.writeError(w, http.StatusConflict, "Enrolment changed; start again")
+		return
+	}
+	if errors.Is(err, store.ErrNotFound) {
+		s.writeError(w, http.StatusUnauthorized, "Authentication required")
 		return
 	}
 	if err != nil {
@@ -167,9 +178,13 @@ func (s *Server) handleMFADisable(w http.ResponseWriter, r *http.Request) {
 		fail("code", http.StatusUnauthorized, "Password or code is incorrect")
 		return
 	}
-	err := s.store.Users().DisableTOTP(r.Context(), user.ID, sess.TokenHash, s.requestIP(r))
+	err := s.store.Users().DisableTOTP(r.Context(), user.ID, user.PasswordHash, sess.TokenHash, s.requestIP(r))
 	if errors.Is(err, store.ErrAlreadyExists) {
-		s.writeError(w, http.StatusConflict, "Two-factor authentication is off")
+		s.writeError(w, http.StatusConflict, "Account changed; try again")
+		return
+	}
+	if errors.Is(err, store.ErrNotFound) {
+		s.writeError(w, http.StatusUnauthorized, "Authentication required")
 		return
 	}
 	if err != nil {

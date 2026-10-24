@@ -26,6 +26,19 @@ type User struct {
 	LastLoginAt        *time.Time `json:"last_login_at,omitempty"`
 }
 
+// Credentials is what a sign-in checked: a session is granted only while the account still
+// has exactly these.
+type Credentials struct {
+	PasswordHash  string
+	TOTPEnabled   bool
+	TOTPSecretEnc string
+}
+
+// Credentials returns the credential state of this snapshot of u.
+func (u *User) Credentials() Credentials {
+	return Credentials{PasswordHash: u.PasswordHash, TOTPEnabled: u.TOTPEnabled, TOTPSecretEnc: u.TOTPSecretEnc}
+}
+
 // Session represents an active authenticated user session.
 type Session struct {
 	TokenHash string    `json:"token_hash"`

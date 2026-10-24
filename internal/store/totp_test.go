@@ -21,7 +21,11 @@ func TestTOTPTransitionsAreCompareAndSwap(t *testing.T) {
 	}
 	newSession := func(hash string) {
 		t.Helper()
-		if err := st.Sessions().CreateSession(ctx, &store.Session{TokenHash: hash, UserID: u.ID, CreatedAt: time.Now(), ExpiresAt: time.Now().Add(time.Hour)}, "pw"); err != nil {
+		cur, err := st.Users().GetUserByID(ctx, u.ID)
+		if err != nil {
+			t.Fatal(err)
+		}
+		if err := st.Sessions().CreateSession(ctx, &store.Session{TokenHash: hash, UserID: u.ID, CreatedAt: time.Now(), ExpiresAt: time.Now().Add(time.Hour)}, cur.Credentials()); err != nil {
 			t.Fatal(err)
 		}
 	}
@@ -52,7 +56,7 @@ func TestTOTPTransitionsAreCompareAndSwap(t *testing.T) {
 	if err := st.Users().SetTOTPSecret(ctx, u.ID, "a", "b"); err != nil {
 		t.Fatal(err)
 	}
-	if err := st.Users().EnableTOTP(ctx, u.ID, "a", `["h"]`, "keep", ""); !errors.Is(err, store.ErrAlreadyExists) {
+	if err := st.Users().EnableTOTP(ctx, u.ID, "pw", "a", `["h"]`, "keep", ""); !errors.Is(err, store.ErrAlreadyExists) {
 		t.Fatalf("enable a replaced secret: %v", err)
 	}
 
@@ -61,7 +65,7 @@ func TestTOTPTransitionsAreCompareAndSwap(t *testing.T) {
 	if err := st.Sessions().CreateMFAChallenge(ctx, &store.MFAChallenge{TokenHash: "ch", UserID: u.ID, ExpiresAt: time.Now().Add(time.Hour)}, "pw"); err != nil {
 		t.Fatal(err)
 	}
-	if err := st.Users().EnableTOTP(ctx, u.ID, "b", `["h"]`, "keep", "192.0.2.1"); err != nil {
+	if err := st.Users().EnableTOTP(ctx, u.ID, "pw", "b", `["h"]`, "keep", "192.0.2.1"); err != nil {
 		t.Fatal(err)
 	}
 	if !alive("keep") || alive("other") {
@@ -77,7 +81,7 @@ func TestTOTPTransitionsAreCompareAndSwap(t *testing.T) {
 	if err := st.Users().SetTOTPSecret(ctx, u.ID, "b", "c"); !errors.Is(err, store.ErrAlreadyExists) {
 		t.Fatalf("pending write over an enabled secret: %v", err)
 	}
-	if err := st.Users().EnableTOTP(ctx, u.ID, "b", `["x"]`, "keep", ""); !errors.Is(err, store.ErrAlreadyExists) {
+	if err := st.Users().EnableTOTP(ctx, u.ID, "pw", "b", `["x"]`, "keep", ""); !errors.Is(err, store.ErrAlreadyExists) {
 		t.Fatalf("enable twice: %v", err)
 	}
 	got, _ := st.Users().GetUserByID(ctx, u.ID)
@@ -86,13 +90,13 @@ func TestTOTPTransitionsAreCompareAndSwap(t *testing.T) {
 	}
 
 	newSession("other2")
-	if err := st.Users().DisableTOTP(ctx, u.ID, "keep", ""); err != nil {
+	if err := st.Users().DisableTOTP(ctx, u.ID, "pw", "keep", ""); err != nil {
 		t.Fatal(err)
 	}
 	if !alive("keep") || alive("other2") {
 		t.Fatalf("disable: keep=%v other=%v", alive("keep"), alive("other2"))
 	}
-	if err := st.Users().DisableTOTP(ctx, u.ID, "keep", ""); !errors.Is(err, store.ErrAlreadyExists) {
+	if err := st.Users().DisableTOTP(ctx, u.ID, "pw", "keep", ""); !errors.Is(err, store.ErrAlreadyExists) {
 		t.Fatalf("disable twice: %v", err)
 	}
 	got, _ = st.Users().GetUserByID(ctx, u.ID)
@@ -104,5 +108,88 @@ func TestTOTPTransitionsAreCompareAndSwap(t *testing.T) {
 	}
 	if _, err := st.Audit().VerifyChain(ctx); err != nil {
 		t.Fatalf("audit chain after TOTP transitions: %v", err)
+	}
+}
+
+// A session is granted only for the TOTP state its sign-in checked, and a transition only under
+// the password the handler checked and while the acting session still exists.
+func TestTOTPStateBindsGrants(t *testing.T) {
+	ctx := context.Background()
+	st := newTestStore(t)
+	u := &store.User{ID: "bind", Username: "bind", PasswordHash: "pw", Role: "viewer", Status: "active", SSOProvider: "local"}
+	if err := st.Users().CreateUser(ctx, u); err != nil {
+		t.Fatal(err)
+	}
+	session := func(hash string, c store.Credentials) error {
+		return st.Sessions().CreateSession(ctx, &store.Session{TokenHash: hash, UserID: u.ID, CreatedAt: time.Now(), ExpiresAt: time.Now().Add(time.Hour)}, c)
+	}
+	passwordOnly := store.Credentials{PasswordHash: "pw"}
+	if err := session("keep", passwordOnly); err != nil {
+		t.Fatal(err)
+	}
+	if err := st.Users().SetTOTPSecret(ctx, u.ID, "", "s1"); err != nil {
+		t.Fatal(err)
+	}
+	// A pending secret does not change what a password-only sign-in needs.
+	if err := session("pending", passwordOnly); err != nil {
+		t.Fatalf("password sign-in while enrolment is pending: %v", err)
+	}
+	if err := st.Users().EnableTOTP(ctx, u.ID, "changed", "s1", `["h"]`, "keep", ""); !errors.Is(err, store.ErrAlreadyExists) {
+		t.Fatalf("enable under a stale password: %v", err)
+	}
+	if err := st.Users().EnableTOTP(ctx, u.ID, "pw", "s1", `["h"]`, "gone", ""); !errors.Is(err, store.ErrNotFound) {
+		t.Fatalf("enable from a revoked session: %v", err)
+	}
+	if err := st.Users().EnableTOTP(ctx, u.ID, "pw", "s1", `["h"]`, "keep", ""); err != nil {
+		t.Fatal(err)
+	}
+	// A password sign-in that read the account before TOTP came on gets nothing after.
+	if err := session("late", passwordOnly); !errors.Is(err, store.ErrNotFound) {
+		t.Fatalf("password-only session after enable: %v", err)
+	}
+	if err := session("mfa-stale", store.Credentials{PasswordHash: "pw", TOTPEnabled: true, TOTPSecretEnc: "s0"}); !errors.Is(err, store.ErrNotFound) {
+		t.Fatalf("session for another secret: %v", err)
+	}
+	withTOTP := store.Credentials{PasswordHash: "pw", TOTPEnabled: true, TOTPSecretEnc: "s1"}
+	if err := session("mfa", withTOTP); err != nil {
+		t.Fatalf("session after the second factor: %v", err)
+	}
+	if err := st.Users().DisableTOTP(ctx, u.ID, "changed", "keep", ""); !errors.Is(err, store.ErrAlreadyExists) {
+		t.Fatalf("disable under a stale password: %v", err)
+	}
+	if err := st.Users().DisableTOTP(ctx, u.ID, "pw", "keep", ""); err != nil {
+		t.Fatal(err)
+	}
+	if err := session("mfa-late", withTOTP); !errors.Is(err, store.ErrNotFound) {
+		t.Fatalf("second-factor session after disable: %v", err)
+	}
+}
+
+// The operator reset turns TOTP off: a lost or hostile second factor must not outlive it.
+func TestResetAdminPasswordClearsTOTP(t *testing.T) {
+	ctx := context.Background()
+	st := newTestStore(t)
+	u := &store.User{ID: "adm", Username: "adm", PasswordHash: "pw", Role: "admin", Status: "active", SSOProvider: "local"}
+	if err := st.Users().CreateUser(ctx, u); err != nil {
+		t.Fatal(err)
+	}
+	if err := st.Sessions().CreateSession(ctx, &store.Session{TokenHash: "keep", UserID: u.ID, CreatedAt: time.Now(), ExpiresAt: time.Now().Add(time.Hour)}, u.Credentials()); err != nil {
+		t.Fatal(err)
+	}
+	if err := st.Users().SetTOTPSecret(ctx, u.ID, "", "s1"); err != nil {
+		t.Fatal(err)
+	}
+	if err := st.Users().EnableTOTP(ctx, u.ID, "pw", "s1", `["h"]`, "keep", ""); err != nil {
+		t.Fatal(err)
+	}
+	if err := st.Users().ResetAdminPassword(ctx, u.ID, "new"); err != nil {
+		t.Fatal(err)
+	}
+	got, err := st.Users().GetUserByID(ctx, u.ID)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if got.TOTPEnabled || got.TOTPSecretEnc != "" || got.RecoveryCodesHash != "[]" {
+		t.Fatalf("TOTP survived the operator reset: %+v", got)
 	}
 }

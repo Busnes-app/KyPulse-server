@@ -91,7 +91,7 @@ func startEnrol(t *testing.T, srv *api.Server, session *http.Cookie) string {
 func enrol(t *testing.T, srv *api.Server, session *http.Cookie) (secret string, recovery []string) {
 	t.Helper()
 	secret = startEnrol(t, srv, session)
-	w := mfaPost(t, srv, session, "/api/auth/mfa/enroll/confirm", `{"code":"`+totpCode(t, secret, time.Now())+`"}`, false)
+	w := mfaPost(t, srv, session, "/api/auth/mfa/enroll/confirm", `{"password":"`+mfaTestPassword+`","code":"`+totpCode(t, secret, time.Now())+`"}`, false)
 	if w.Code != http.StatusOK {
 		t.Fatalf("confirm: %d %s", w.Code, w.Body.String())
 	}
@@ -126,7 +126,10 @@ func TestMFAEnrolmentNeedsAValidCodeThenGuardsSignIn(t *testing.T) {
 		t.Fatalf("pending enrolment blocked sign-in: %d %s", w.Code, w.Body.String())
 	}
 
-	for _, bad := range []string{`{"code":"not-a-code"}`, `{"code":""}`, `{}`} {
+	// A stolen session alone cannot enrol: the right code still needs the password.
+	withoutPassword := `{"code":"` + totpCode(t, secret, time.Now()) + `"}`
+	wrongPassword := `{"password":"WrongPassword123!","code":"` + totpCode(t, secret, time.Now()) + `"}`
+	for _, bad := range []string{`{"password":"` + mfaTestPassword + `","code":"not-a-code"}`, `{}`, withoutPassword, wrongPassword} {
 		if w := mfaPost(t, srv, session, "/api/auth/mfa/enroll/confirm", bad, false); w.Code != http.StatusUnauthorized {
 			t.Fatalf("confirm %s: got %d, want 401", bad, w.Code)
 		}
@@ -135,7 +138,7 @@ func TestMFAEnrolmentNeedsAValidCodeThenGuardsSignIn(t *testing.T) {
 		t.Fatal("a wrong code enrolled TOTP")
 	}
 
-	w := mfaPost(t, srv, session, "/api/auth/mfa/enroll/confirm", `{"code":"`+totpCode(t, secret, time.Now())+`"}`, false)
+	w := mfaPost(t, srv, session, "/api/auth/mfa/enroll/confirm", `{"password":"`+mfaTestPassword+`","code":"`+totpCode(t, secret, time.Now())+`"}`, false)
 	if w.Code != http.StatusOK {
 		t.Fatalf("confirm: %d %s", w.Code, w.Body.String())
 	}
@@ -283,7 +286,7 @@ func TestMFAManagementRefusesSSOAccounts(t *testing.T) {
 	raw := crypto.RandomHex(32)
 	if err := st.Sessions().CreateSession(ctx, &store.Session{
 		TokenHash: crypto.SHA256Hex([]byte(raw)), UserID: "usr_sso", CreatedAt: time.Now().UTC(), ExpiresAt: time.Now().UTC().Add(time.Hour),
-	}, ""); err != nil {
+	}, store.Credentials{}); err != nil {
 		t.Fatal(err)
 	}
 	session := &http.Cookie{Name: auth.SessionCookieName, Value: raw}
@@ -309,7 +312,7 @@ func TestMFAConfirmAfterRestartedEnrolmentUsesTheNewSecret(t *testing.T) {
 	if first == second {
 		t.Fatal("restart reused the secret")
 	}
-	if w := mfaPost(t, srv, session, "/api/auth/mfa/enroll/confirm", `{"code":"`+totpCode(t, first, time.Now())+`"}`, false); w.Code != http.StatusUnauthorized {
+	if w := mfaPost(t, srv, session, "/api/auth/mfa/enroll/confirm", `{"password":"`+mfaTestPassword+`","code":"`+totpCode(t, first, time.Now())+`"}`, false); w.Code != http.StatusUnauthorized {
 		t.Fatalf("code for the replaced secret: got %d, want 401", w.Code)
 	}
 	if getUser(t, st, "jo").TOTPEnabled {

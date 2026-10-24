@@ -23,7 +23,7 @@ const sent = (fn: ReturnType<typeof stub>, path: string) => {
 afterEach(() => { cleanup(); vi.unstubAllGlobals(); document.cookie = 'ky_csrf=; expires=Thu, 01 Jan 1970 00:00:00 GMT'; });
 
 describe('TwoFactorCard', () => {
-  it('enrols: shows the setup link and key, confirms a code with CSRF, then shows recovery codes once', async () => {
+  it('enrols: shows the setup link and key, confirms a code and the password with CSRF, then shows recovery codes once', async () => {
     document.cookie = 'ky_csrf=tok123';
     const fn = stub({
       'POST /api/auth/mfa/enroll': [{ secret: 'JBSWY3DPEHPK3PXP', otpauth_uri: uri }],
@@ -36,17 +36,18 @@ describe('TwoFactorCard', () => {
     expect(sent(fn, '/api/auth/mfa/enroll').headers.get('X-CSRF-Token')).toBe('tok123');
 
     fireEvent.change(screen.getByLabelText('Code from the app'), { target: { value: ' 123456 ' } });
+    fireEvent.change(screen.getByLabelText('Password'), { target: { value: 'SuperSecretPass123!' } });
     fireEvent.click(screen.getByRole('button', { name: 'Turn on' }));
     const list = await screen.findByRole('list', { name: 'Recovery codes' });
     expect(list.textContent).toContain('aaaa-bbbb');
     const confirm = sent(fn, '/api/auth/mfa/enroll/confirm');
-    expect(confirm.body).toEqual({ code: '123456' });
+    expect(confirm.body).toEqual({ password: 'SuperSecretPass123!', code: '123456' });
     expect(confirm.headers.get('X-CSRF-Token')).toBe('tok123');
     expect(screen.getByText('On')).toBeTruthy();
 
     fireEvent.click(screen.getByRole('button', { name: 'I have saved them' }));
     expect(screen.queryByRole('list', { name: 'Recovery codes' })).toBeNull();
-    expect(screen.getByLabelText('Password')).toBeTruthy();
+    expect((screen.getByLabelText('Password') as HTMLInputElement).value).toBe('');
   });
 
   it('keeps enrolment pending and shows the server error on a wrong code', async () => {
@@ -57,6 +58,7 @@ describe('TwoFactorCard', () => {
     render(<TwoFactorCard enabled={false} />);
     fireEvent.click(screen.getByRole('button', { name: 'Set up two-factor authentication' }));
     fireEvent.change(await screen.findByLabelText('Code from the app'), { target: { value: '000000' } });
+    fireEvent.change(screen.getByLabelText('Password'), { target: { value: 'SuperSecretPass123!' } });
     fireEvent.click(screen.getByRole('button', { name: 'Turn on' }));
     expect((await screen.findByRole('alert')).textContent).toBe('Invalid TOTP verification code');
     expect(screen.getByText('Off')).toBeTruthy();

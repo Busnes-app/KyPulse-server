@@ -67,9 +67,10 @@ type UserStore interface {
 	// EnableTOTP turns on the pending secretEnc with recoveryHashes, and DisableTOTP clears
 	// secret and recovery codes. Each is one transaction that also deletes every session but
 	// keepSession (a token hash), every MFA challenge, and chains an audit row.
-	// ErrAlreadyExists when the account is not in the expected state.
-	EnableTOTP(ctx context.Context, userID, secretEnc, recoveryHashes, keepSession, ip string) error
-	DisableTOTP(ctx context.Context, userID, keepSession, ip string) error
+	// ErrAlreadyExists when the account is not in the expected state, including a passwordHash
+	// that has since changed; ErrNotFound when keepSession has been revoked meanwhile.
+	EnableTOTP(ctx context.Context, userID, passwordHash, secretEnc, recoveryHashes, keepSession, ip string) error
+	DisableTOTP(ctx context.Context, userID, passwordHash, keepSession, ip string) error
 	DeleteUser(ctx context.Context, id string) error
 	ListUsers(ctx context.Context, offset, limit int, search string) ([]*User, int, error)
 	CountUsers(ctx context.Context) (int, error)
@@ -77,7 +78,9 @@ type UserStore interface {
 
 // SessionStore defines repository operations for active login sessions.
 type SessionStore interface {
-	CreateSession(ctx context.Context, s *Session, expectedPasswordHash string) error
+	// CreateSession inserts s only while the account still has exactly the expected credentials
+	// (password hash, active, and the TOTP state the sign-in checked); ErrNotFound otherwise.
+	CreateSession(ctx context.Context, s *Session, expected Credentials) error
 	GetSession(ctx context.Context, tokenHash string) (*Session, error)
 	DeleteSession(ctx context.Context, tokenHash string) error
 	DeleteUserSessions(ctx context.Context, userID string) error
