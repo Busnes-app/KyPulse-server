@@ -193,3 +193,46 @@ func TestResetAdminPasswordClearsTOTP(t *testing.T) {
 		t.Fatalf("TOTP survived the operator reset: %+v", got)
 	}
 }
+
+// An operator reset between a confirm's authentication and its write wins: the confirm, holding
+// the old password hash and a revoked session, fails and TOTP stays off. An expired acting
+// session cannot carry a transition either.
+func TestTOTPTransitionLosesToOperatorReset(t *testing.T) {
+	ctx := context.Background()
+	st := newTestStore(t)
+	u := &store.User{ID: "race", Username: "race", PasswordHash: "pw", Role: "admin", Status: "active", SSOProvider: "local"}
+	if err := st.Users().CreateUser(ctx, u); err != nil {
+		t.Fatal(err)
+	}
+	if err := st.Sessions().CreateSession(ctx, &store.Session{TokenHash: "stolen", UserID: u.ID, CreatedAt: time.Now(), ExpiresAt: time.Now().Add(time.Hour)}, u.Credentials()); err != nil {
+		t.Fatal(err)
+	}
+	if err := st.Users().SetTOTPSecret(ctx, u.ID, "", "attacker"); err != nil {
+		t.Fatal(err)
+	}
+	if err := st.Users().ResetAdminPassword(ctx, u.ID, "new"); err != nil {
+		t.Fatal(err)
+	}
+	if err := st.Users().EnableTOTP(ctx, u.ID, "pw", "attacker", `["h"]`, "stolen", ""); err == nil {
+		t.Fatal("confirm committed after the operator reset")
+	}
+	got, err := st.Users().GetUserByID(ctx, u.ID)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if got.TOTPEnabled || got.TOTPSecretEnc != "" {
+		t.Fatalf("TOTP state after reset and late confirm: %+v", got)
+	}
+
+	// The reset password, with a pending secret again, but the acting session has expired.
+	got.PasswordHash = "new"
+	if err := st.Sessions().CreateSession(ctx, &store.Session{TokenHash: "old", UserID: u.ID, CreatedAt: time.Now().Add(-2 * time.Hour), ExpiresAt: time.Now().Add(-time.Hour)}, got.Credentials()); err != nil {
+		t.Fatal(err)
+	}
+	if err := st.Users().SetTOTPSecret(ctx, u.ID, "", "s1"); err != nil {
+		t.Fatal(err)
+	}
+	if err := st.Users().EnableTOTP(ctx, u.ID, "new", "s1", `["h"]`, "old", ""); !errors.Is(err, store.ErrNotFound) {
+		t.Fatalf("enable from an expired session: %v", err)
+	}
+}

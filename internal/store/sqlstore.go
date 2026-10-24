@@ -311,8 +311,8 @@ func (u *userStore) DisableTOTP(ctx context.Context, userID, passwordHash, keepS
 		false, time.Now().UTC(), userID, passwordHash, true)
 }
 
-// totpTransition applies a compare-and-swap on the user row, checks keepSession still exists
-// (an operator reset may have revoked it since the request was authenticated), then revokes
+// totpTransition applies a compare-and-swap on the user row, checks keepSession still exists and
+// has not expired (an operator reset may have revoked it since the request was authenticated), then revokes
 // every other session and every MFA challenge and chains the audit row, all on one transaction.
 func (u *userStore) totpTransition(ctx context.Context, userID, keepSession, ip, action, update string, args ...any) error {
 	tx, err := u.store.db.BeginTx(ctx, nil)
@@ -329,10 +329,13 @@ func (u *userStore) totpTransition(ctx context.Context, userID, keepSession, ip,
 	} else if rows != 1 {
 		return ErrAlreadyExists
 	}
-	var kept int
-	if err := tx.QueryRowContext(ctx, u.store.rebind("SELECT COUNT(*) FROM sessions WHERE token_hash = ? AND user_id = ?"), keepSession, userID).Scan(&kept); err != nil {
+	var expires time.Time
+	if err := tx.QueryRowContext(ctx, u.store.rebind("SELECT expires_at FROM sessions WHERE token_hash = ? AND user_id = ?"), keepSession, userID).Scan(&expires); errorsIs(err, sql.ErrNoRows) {
+		return ErrNotFound
+	} else if err != nil {
 		return err
-	} else if kept != 1 {
+	}
+	if !time.Now().UTC().Before(expires) {
 		return ErrNotFound
 	}
 	if _, err := tx.ExecContext(ctx, u.store.rebind("DELETE FROM sessions WHERE user_id = ? AND token_hash <> ?"), userID, keepSession); err != nil {
