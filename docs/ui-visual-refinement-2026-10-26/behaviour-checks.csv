@@ -1,0 +1,13 @@
+product,stage,phase,check,result,detail,source_commit,uncommitted_source_sha256,captured_at
+kyPulse-server,00,before,sky: the Status link is not a browser-default link colour,fail,"link colour rgb(0, 0, 238)",8aefea2de1bfa274e4985147d6f9e452506d3b5d,,2026-10-26T16:25:32.597Z
+kyPulse-server,00,before,forest: the Status link is not a browser-default link colour,pass,"link colour rgb(158, 158, 255)",8aefea2de1bfa274e4985147d6f9e452506d3b5d,,2026-10-26T16:25:32.597Z
+kyPulse-server,00,before,busnes: the Status link is not a browser-default link colour,fail,"link colour rgb(0, 0, 238)",8aefea2de1bfa274e4985147d6f9e452506d3b5d,,2026-10-26T16:25:32.597Z
+kyPulse-server,00,before,the page header holds no filled destructive control,fail,1 .btn-danger in the page header,8aefea2de1bfa274e4985147d6f9e452506d3b5d,,2026-10-26T16:25:32.597Z
+kyPulse-server,00,before,"setting labels are sentence case, not uppercase",fail,text-transform uppercase,8aefea2de1bfa274e4985147d6f9e452506d3b5d,,2026-10-26T16:25:32.597Z
+kyPulse-server,00,before,no console errors or CSP violations,pass,none,8aefea2de1bfa274e4985147d6f9e452506d3b5d,,2026-10-26T16:25:32.597Z
+kyPulse-server,01,after,sky: the Status link is not a browser-default link colour,pass,"link colour rgb(24, 49, 66)",535a91ad3bb44b574ca0f3d0ca17bfecff11cfdd,,2026-10-26T16:43:20.482Z
+kyPulse-server,01,after,forest: the Status link is not a browser-default link colour,pass,"link colour rgb(227, 240, 223)",535a91ad3bb44b574ca0f3d0ca17bfecff11cfdd,,2026-10-26T16:43:20.482Z
+kyPulse-server,01,after,busnes: the Status link is not a browser-default link colour,pass,"link colour rgb(24, 35, 38)",535a91ad3bb44b574ca0f3d0ca17bfecff11cfdd,,2026-10-26T16:43:20.482Z
+kyPulse-server,01,after,the page header holds no filled destructive control,pass,"Delete keeps class ""btn-danger"" outside the header",535a91ad3bb44b574ca0f3d0ca17bfecff11cfdd,,2026-10-26T16:43:20.482Z
+kyPulse-server,01,after,"setting labels are sentence case, not uppercase",pass,text-transform none,535a91ad3bb44b574ca0f3d0ca17bfecff11cfdd,,2026-10-26T16:43:20.482Z
+kyPulse-server,01,after,no console errors or CSP violations,pass,none,535a91ad3bb44b574ca0f3d0ca17bfecff11cfdd,,2026-10-26T16:43:20.482Z

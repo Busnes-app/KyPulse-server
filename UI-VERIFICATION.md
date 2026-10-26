@@ -63,3 +63,7 @@ All six newly available light palettes now tint error/success toward their own i
 ### Review F7: filled danger button label
 
 The F1 tint darkened the filled danger fill on light suite palettes, whose dark `--button-text` label then read at 1.18–1.69:1. For the 15 suite palettes only (the F1 qualifier), `.btn-danger` now labels with `--bg`. `browser/danger-button.spec.mjs` measures screenshot pixels of the real Delete button on a disabled synthetic app, never clicked, in OS light and dark at 1280px. It covers rest, hover (opacity 0.9) and keyboard focus across all 15 palettes, and asserts that Busnes and the five base palettes keep `--button-text`. Before the fix it failed (Polished Ky 1.23 at rest, 1.18 on hover); after, the minimum is 5.89 at rest and 5.03 on hover (Dark Matter). Captures are stages 05 and 06 in [docs/ui-fleet-2026-10-26](docs/ui-fleet-2026-10-26/README.md). Disabled buttons (opacity 0.5) are not measured; WCAG exempts inactive controls.
+
+## Fleet visual refinement (2026-10-26)
+
+App detail: the Status back link uses page ink, settings facts are flat label/value rows, and Delete moves from the page header to a closing Stop watching section, still the filled `.btn-danger` measured by `browser/danger-button.spec.mjs`. Before/after captures (light/dark × 1280×900/390×844, synthetic fixture, clean commits), manifests with hashes, behaviour checks and CSVs are in [docs/ui-visual-refinement-2026-10-26](docs/ui-visual-refinement-2026-10-26/README.md). No score is self-assigned.

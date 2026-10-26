@@ -1,0 +1,191 @@
+{
+  "product": "kyPulse-server",
+  "stage": "01",
+  "phase": "after",
+  "captured_at": "2026-10-26T16:43:20.482Z",
+  "source_commit": "535a91ad3bb44b574ca0f3d0ca17bfecff11cfdd",
+  "uncommitted_source_sha256": null,
+  "os": "Linux 7.2.10-1-cachyos",
+  "driver": "Playwright 1.63.0 Chromium 153.0.8010.12, device scale 1, service workers blocked",
+  "fonts": "self-hosted Space Grotesk bundled in web/dist; Space Grotesk loaded: true",
+  "server": "disposable .browser/server (built from this tree, embedding the committed or rebuilt web/dist) on loopback with temporary SQLite data, removed after capture",
+  "fixture": "synthetic: admin account; three watched apps (Billing API ok, Mail relay degraded, Backup agent down) served by a capture-owned fake health endpoint on a private bridge address. Durations and timestamps are live and differ between runs",
+  "shots": [
+    {
+      "file": "kypulse-01-after-app-detail-desktop-light.png",
+      "sha256": "7484f4d03d46ea3b9e12830857b081f388a4b49d1399658146a51183f1f0a8e2",
+      "surface": "app-detail",
+      "url": "#/apps/tgt_14ac9e82cdada633",
+      "device": "desktop",
+      "viewport": {
+        "width": 1280,
+        "height": 900
+      },
+      "theme_source": "OS light (prefers-color-scheme), no saved choice"
+    },
+    {
+      "file": "kypulse-01-after-app-delete-sky-desktop-light.png",
+      "sha256": "88a5fb327c81ed0d980a47d63a434469d145c4944d1d68c02d289a1d1d80a3f8",
+      "surface": "app-delete-sky",
+      "url": "#/apps/tgt_14ac9e82cdada633",
+      "device": "desktop",
+      "viewport": {
+        "width": 1280,
+        "height": 900
+      },
+      "theme_source": "saved choice sky; OS light (prefers-color-scheme)"
+    },
+    {
+      "file": "kypulse-01-after-app-delete-forest-desktop-light.png",
+      "sha256": "e340c9b302b5145882a8ffb693808942adf4e36dbf5ebe0d48ffa1de46884628",
+      "surface": "app-delete-forest",
+      "url": "#/apps/tgt_14ac9e82cdada633",
+      "device": "desktop",
+      "viewport": {
+        "width": 1280,
+        "height": 900
+      },
+      "theme_source": "saved choice forest; OS light (prefers-color-scheme)"
+    },
+    {
+      "file": "kypulse-01-after-app-detail-mobile-light.png",
+      "sha256": "1e0320a824285b0dd633b24ba6fdbab77528a58fea4e5267eb1ce45ae8d15034",
+      "surface": "app-detail",
+      "url": "#/apps/tgt_14ac9e82cdada633",
+      "device": "mobile",
+      "viewport": {
+        "width": 390,
+        "height": 844
+      },
+      "theme_source": "OS light (prefers-color-scheme), no saved choice"
+    },
+    {
+      "file": "kypulse-01-after-app-delete-sky-mobile-light.png",
+      "sha256": "14bbe772167835ef89af552d5ecae1451114c71fef022c41dabe3bcd666efdfd",
+      "surface": "app-delete-sky",
+      "url": "#/apps/tgt_14ac9e82cdada633",
+      "device": "mobile",
+      "viewport": {
+        "width": 390,
+        "height": 844
+      },
+      "theme_source": "saved choice sky; OS light (prefers-color-scheme)"
+    },
+    {
+      "file": "kypulse-01-after-app-delete-forest-mobile-light.png",
+      "sha256": "89ded926f7e551e64fda9ae9138ce8ea605796b8a94deb6eca11e9b9fe733d04",
+      "surface": "app-delete-forest",
+      "url": "#/apps/tgt_14ac9e82cdada633",
+      "device": "mobile",
+      "viewport": {
+        "width": 390,
+        "height": 844
+      },
+      "theme_source": "saved choice forest; OS light (prefers-color-scheme)"
+    },
+    {
+      "file": "kypulse-01-after-app-detail-desktop-dark.png",
+      "sha256": "15951dfd1f13b8b5e2cb83ea86513952e7bca08ae5efc61dc51eb7aa0d4f7903",
+      "surface": "app-detail",
+      "url": "#/apps/tgt_14ac9e82cdada633",
+      "device": "desktop",
+      "viewport": {
+        "width": 1280,
+        "height": 900
+      },
+      "theme_source": "OS dark (prefers-color-scheme), no saved choice"
+    },
+    {
+      "file": "kypulse-01-after-app-delete-sky-desktop-dark.png",
+      "sha256": "f89555b41e2f3d7400c0bc336b9e14237babafa2c17abe0e2c83f987c3095aa4",
+      "surface": "app-delete-sky",
+      "url": "#/apps/tgt_14ac9e82cdada633",
+      "device": "desktop",
+      "viewport": {
+        "width": 1280,
+        "height": 900
+      },
+      "theme_source": "saved choice sky; OS dark (prefers-color-scheme)"
+    },
+    {
+      "file": "kypulse-01-after-app-delete-forest-desktop-dark.png",
+      "sha256": "a4e7a0c6d4b1196ed089a82afc71bcf2a767e59fc2d1a50ba3053c42e4c98c19",
+      "surface": "app-delete-forest",
+      "url": "#/apps/tgt_14ac9e82cdada633",
+      "device": "desktop",
+      "viewport": {
+        "width": 1280,
+        "height": 900
+      },
+      "theme_source": "saved choice forest; OS dark (prefers-color-scheme)"
+    },
+    {
+      "file": "kypulse-01-after-app-detail-mobile-dark.png",
+      "sha256": "59c02ba9f22e105d20422f195826437645f33e73a39e5b85f3df50958a174a5d",
+      "surface": "app-detail",
+      "url": "#/apps/tgt_14ac9e82cdada633",
+      "device": "mobile",
+      "viewport": {
+        "width": 390,
+        "height": 844
+      },
+      "theme_source": "OS dark (prefers-color-scheme), no saved choice"
+    },
+    {
+      "file": "kypulse-01-after-app-delete-sky-mobile-dark.png",
+      "sha256": "df26ee976aaa95277ed265127c17692890790b868cda8a056a47749524abea0c",
+      "surface": "app-delete-sky",
+      "url": "#/apps/tgt_14ac9e82cdada633",
+      "device": "mobile",
+      "viewport": {
+        "width": 390,
+        "height": 844
+      },
+      "theme_source": "saved choice sky; OS dark (prefers-color-scheme)"
+    },
+    {
+      "file": "kypulse-01-after-app-delete-forest-mobile-dark.png",
+      "sha256": "6b0d50b6000516ff8eaed3bfcad1a0ca9911c6f73bc107d5f311043eba349dcf",
+      "surface": "app-delete-forest",
+      "url": "#/apps/tgt_14ac9e82cdada633",
+      "device": "mobile",
+      "viewport": {
+        "width": 390,
+        "height": 844
+      },
+      "theme_source": "saved choice forest; OS dark (prefers-color-scheme)"
+    }
+  ],
+  "checks": [
+    {
+      "name": "sky: the Status link is not a browser-default link colour",
+      "pass": true,
+      "detail": "link colour rgb(24, 49, 66)"
+    },
+    {
+      "name": "forest: the Status link is not a browser-default link colour",
+      "pass": true,
+      "detail": "link colour rgb(227, 240, 223)"
+    },
+    {
+      "name": "busnes: the Status link is not a browser-default link colour",
+      "pass": true,
+      "detail": "link colour rgb(24, 35, 38)"
+    },
+    {
+      "name": "the page header holds no filled destructive control",
+      "pass": true,
+      "detail": "Delete keeps class \"btn-danger\" outside the header"
+    },
+    {
+      "name": "setting labels are sentence case, not uppercase",
+      "pass": true,
+      "detail": "text-transform none"
+    },
+    {
+      "name": "no console errors or CSP violations",
+      "pass": true,
+      "detail": "none"
+    }
+  ]
+}
