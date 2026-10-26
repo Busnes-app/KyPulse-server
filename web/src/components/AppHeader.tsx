@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect, useRef } from 'react';
 import { LogOut, Settings as SettingsIcon, Activity, Bell, Archive, Palette } from 'lucide-react';
 import { hrefFor } from '../router';
 
@@ -21,6 +21,11 @@ export const navItems = [
 
 export const AppHeader: React.FC<AppHeaderProps> = ({ appName, activePath, user, onLogout }) => {
   const items = navItems.filter((item) => !item.admin || user?.role === 'admin');
+  const navRef = useRef<HTMLElement>(null);
+  // Phones scroll the navigation sideways: keep the current page's row in view, also on deep links.
+  useEffect(() => {
+    navRef.current?.querySelector('[aria-current="page"]')?.scrollIntoView?.({ block: 'nearest', inline: 'nearest' });
+  }, [activePath]);
   return (
     <header className="app-header">
       <div className="app-brand">
@@ -28,7 +33,7 @@ export const AppHeader: React.FC<AppHeaderProps> = ({ appName, activePath, user,
         <span>{appName || 'kyPulse'}</span>
       </div>
 
-      <nav className="app-nav" aria-label="Primary">
+      <nav ref={navRef} className="app-nav" aria-label="Primary">
         {items.map((item) => {
           const Icon = item.icon;
           // An app detail page belongs to Status.
