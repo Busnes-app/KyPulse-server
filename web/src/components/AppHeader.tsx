@@ -1,6 +1,5 @@
 import React from 'react';
-import { LogOut, Settings as SettingsIcon, Activity, Bell, Archive } from 'lucide-react';
-import { ThemeSwitcher } from './ThemeSwitcher';
+import { LogOut, Settings as SettingsIcon, Activity, Bell, Archive, Palette } from 'lucide-react';
 import { hrefFor } from '../router';
 
 interface AppHeaderProps {
@@ -17,6 +16,7 @@ export const navItems = [
   { path: '/logs', label: 'Logs', icon: Archive, admin: true },
   { path: '/backup', label: 'Backup', icon: Archive, admin: true },
   { path: '/settings', label: 'Settings & DB', icon: SettingsIcon, admin: false },
+  { path: '/appearance', label: 'Appearance', icon: Palette, admin: false },
 ];
 
 export const AppHeader: React.FC<AppHeaderProps> = ({ appName, activePath, user, onLogout }) => {
@@ -47,7 +47,6 @@ export const AppHeader: React.FC<AppHeaderProps> = ({ appName, activePath, user,
         })}
       </nav>
       <div className="app-header-actions">
-        <ThemeSwitcher />
 
         {user && (
           <div className="app-user">

@@ -1,6 +1,5 @@
 import React from 'react';
-import { Settings as SettingsIcon, Database, Palette } from 'lucide-react';
-import { ThemeSwitcher } from '../components/ThemeSwitcher';
+import { Database } from 'lucide-react';
 import { WebhookForm } from '../components/WebhookForm';
 import { KyYardCard } from '../components/KyYardCard';
 import { TwoFactorCard } from '../components/TwoFactorCard';
@@ -14,16 +13,9 @@ interface SettingsProps {
 
 export const Settings: React.FC<SettingsProps> = ({ settings, user, onChanged, onTOTPChange }) => {
   return (
-    <div style={{ maxWidth: '1080px', margin: '0 auto', padding: '32px 20px' }}>
-      <div style={{ marginBottom: '24px' }}>
-        <h1 style={{ fontSize: '24px', fontWeight: 'bold', display: 'flex', alignItems: 'center', gap: '10px' }}>
-          <SettingsIcon size={24} style={{ color: 'var(--accent)' }} />
-          <span>Settings</span>
-        </h1>
-        <p style={{ color: 'var(--ink)', fontSize: '14px', marginTop: '4px' }}>
-          Two-factor sign-in, alert webhook, KyYard pairing, storage and appearance.
-        </p>
-      </div>
+    <div className="dr-page">
+      <div className="dr-header"><h1>Settings</h1></div>
+      <p className="status-intro">Two-factor sign-in, alert webhook, KyYard pairing and storage. Themes are under <a href="#/appearance">Appearance</a>.</p>
 
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 480px), 1fr))', gap: '20px' }}>
         {/* Local accounts only: an identity provider owns MFA for SSO accounts. */}
@@ -48,21 +40,6 @@ export const Settings: React.FC<SettingsProps> = ({ settings, user, onChanged, o
           </div>
         </div>
 
-        {/* Appearance Card */}
-        <div className="panel">
-          <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '12px' }}>
-            <Palette size={20} style={{ color: 'var(--accent)' }} />
-            <h3 style={{ fontSize: '16px' }}>Appearance</h3>
-          </div>
-          <p style={{ color: 'var(--ink)', fontSize: '13px', marginBottom: '16px' }}>
-            The theme follows your system until you pick one. The choice is saved in this browser only.
-          </p>
-
-          <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-            <span style={{ fontSize: '13px', color: 'var(--ink)' }}>Theme:</span>
-            <ThemeSwitcher />
-          </div>
-        </div>
       </div>
     </div>
   );

@@ -10,9 +10,12 @@ import { Login } from './pages/Login';
 import { ChangePassword } from './pages/ChangePassword';
 import { Backup } from './pages/Backup';
 import { Settings } from './pages/Settings';
+import { Appearance } from './pages/Appearance';
 import './styles/theme.css';
 import './ky-ui/tokens.css';
 import './ky-ui/navigation.css';
+import './ky-ui/appearance.css';
+import './ky-ui/appearance-themes.css';
 import { secureFetch } from './api';
 import { navigate, useHashRoute } from './router';
 import { ApiError, getStatus, type StatusSummary } from './monitor';
@@ -81,7 +84,7 @@ export const App: React.FC = () => {
   const isAdmin = user?.role === 'admin';
   useEffect(() => {
     if (!signedIn) return;
-    const known = ['status', 'alerts', 'apps', 'settings', 'backup', 'logs', 'activity'];
+    const known = ['status', 'alerts', 'apps', 'settings', 'appearance', 'backup', 'logs', 'activity'];
     const head = route.parts[0] ?? 'status';
     if (!known.includes(head) || (['backup', 'logs', 'activity'].includes(head) && !isAdmin) || (head === 'apps' && route.parts.length !== 2)) navigate('/status');
   }, [signedIn, isAdmin, route]);
@@ -149,6 +152,7 @@ export const App: React.FC = () => {
         {head === 'logs' && isAdmin && <Logs user={user} />}
         {head === 'activity' && isAdmin && <Activity user={user} />}
         {head === 'backup' && isAdmin && <Backup />}
+        {head === 'appearance' && <Appearance />}
         {head === 'settings' && <Settings settings={settings} user={user} onChanged={refreshStatus} onTOTPChange={(totp_enabled) => setUser((u: any) => (u ? { ...u, totp_enabled } : u))} />}
       </main>
     </div>
