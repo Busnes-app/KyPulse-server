@@ -1,0 +1,149 @@
+{
+  "product": "kyPulse-server",
+  "stage": "01",
+  "phase": "after",
+  "captured_at": "2026-10-26T18:00:03.586Z",
+  "source_commit": "b5383234e36c8af84c1ca86758469c7442531c4c",
+  "uncommitted_source_sha256": null,
+  "server_binary_sha256": "fecb1eaf7cd2bc9c91a4352ae577ab3ec1e6fca591378b7bb617a75ccec1c0da",
+  "os": "Linux 7.2.10-1-cachyos",
+  "driver": "Playwright 1.63.0 Chromium 153.0.8010.12, device scale 1, service workers blocked",
+  "fonts": "self-hosted Space Grotesk bundled in web/dist; Space Grotesk loaded: true",
+  "server": ".browser/server built from this tree (embedding the committed web/dist) on 127.0.0.1:5391; temporary SQLite and KYPULSE_BACKUP_DIR, removed after capture",
+  "fixture": "synthetic: admin account; one watched app \"Backup agent\" whose capture-owned fake health endpoint (private bridge address) answers 503; Backup has no pinned key, no KyRecovery pairing, an empty local backup directory and the default daily schedule. The local directory path, durations and next-run time are live and differ between runs",
+  "shots": [
+    {
+      "file": "kypulse-01-after-backup-desktop-light.png",
+      "sha256": "0f64453d3f34c5790d4c5daf52bbe944fdaed5ed39c656b037653d6e858a2cd7",
+      "surface": "backup",
+      "url": "#/backup",
+      "device": "desktop",
+      "viewport": {
+        "width": 1280,
+        "height": 900
+      },
+      "theme_source": "OS light (prefers-color-scheme), no saved choice"
+    },
+    {
+      "file": "kypulse-01-after-app-detail-desktop-light.png",
+      "sha256": "0c74cfec7f3257ba660a084d8b6c8187dd9f408f25b0625dc9d873a3e2a29990",
+      "surface": "app-detail",
+      "url": "#/apps/tgt_50739651076e8c15",
+      "device": "desktop",
+      "viewport": {
+        "width": 1280,
+        "height": 900
+      },
+      "theme_source": "OS light (prefers-color-scheme), no saved choice"
+    },
+    {
+      "file": "kypulse-01-after-backup-mobile-light.png",
+      "sha256": "1d9139e1fb59a19fae62aa5fcd22e8d97245405193fd7317e07547844327a092",
+      "surface": "backup",
+      "url": "#/backup",
+      "device": "mobile",
+      "viewport": {
+        "width": 390,
+        "height": 844
+      },
+      "theme_source": "OS light (prefers-color-scheme), no saved choice"
+    },
+    {
+      "file": "kypulse-01-after-app-detail-mobile-light.png",
+      "sha256": "a7df097cb9955b7cdf11df4de4da8d405799960442fe5422380f3b6743336c45",
+      "surface": "app-detail",
+      "url": "#/apps/tgt_50739651076e8c15",
+      "device": "mobile",
+      "viewport": {
+        "width": 390,
+        "height": 844
+      },
+      "theme_source": "OS light (prefers-color-scheme), no saved choice"
+    },
+    {
+      "file": "kypulse-01-after-backup-desktop-dark.png",
+      "sha256": "e82ad0d5b69d4e361bd3eaabde6fa1220bb4e0175bf95ebe1d6c64a0b7e01e7d",
+      "surface": "backup",
+      "url": "#/backup",
+      "device": "desktop",
+      "viewport": {
+        "width": 1280,
+        "height": 900
+      },
+      "theme_source": "OS dark (prefers-color-scheme), no saved choice"
+    },
+    {
+      "file": "kypulse-01-after-app-detail-desktop-dark.png",
+      "sha256": "3976b5a7a9cbc2d6e408eb2f1594bfe8463a2b6d06b4951529bd3281e3fae85d",
+      "surface": "app-detail",
+      "url": "#/apps/tgt_50739651076e8c15",
+      "device": "desktop",
+      "viewport": {
+        "width": 1280,
+        "height": 900
+      },
+      "theme_source": "OS dark (prefers-color-scheme), no saved choice"
+    },
+    {
+      "file": "kypulse-01-after-backup-mobile-dark.png",
+      "sha256": "54e449ffcb36179a691c62014a1817d516b47616d410ef1e79d96909b58534b7",
+      "surface": "backup",
+      "url": "#/backup",
+      "device": "mobile",
+      "viewport": {
+        "width": 390,
+        "height": 844
+      },
+      "theme_source": "OS dark (prefers-color-scheme), no saved choice"
+    },
+    {
+      "file": "kypulse-01-after-app-detail-mobile-dark.png",
+      "sha256": "d024d1468275d0b5b84bc68a74ae415c6fe18f34654c09b0168423a68764a00c",
+      "surface": "app-detail",
+      "url": "#/apps/tgt_50739651076e8c15",
+      "device": "mobile",
+      "viewport": {
+        "width": 390,
+        "height": 844
+      },
+      "theme_source": "OS dark (prefers-color-scheme), no saved choice"
+    }
+  ],
+  "checks": [
+    {
+      "name": "desktop backup: every status badge sits on its label's line",
+      "pass": true,
+      "detail": "Recovery key None; KyRecovery Not paired; Local copies 0 of 7; Schedule Daily"
+    },
+    {
+      "name": "desktop backup: values share one left edge; label column width",
+      "pass": true,
+      "detail": "value left 451px; label widths [163]px"
+    },
+    {
+      "name": "desktop app-detail: values share one left edge; label column width",
+      "pass": true,
+      "detail": "value left 914px; label widths [128]px"
+    },
+    {
+      "name": "mobile backup: every status badge sits on its label's line",
+      "pass": true,
+      "detail": "Recovery key None; KyRecovery Not paired; Local copies 0 of 7; Schedule Daily"
+    },
+    {
+      "name": "mobile backup: values share one left edge; label column width",
+      "pass": true,
+      "detail": "value left 16px; label widths [358]px"
+    },
+    {
+      "name": "mobile app-detail: values share one left edge; label column width",
+      "pass": true,
+      "detail": "value left 16px; label widths [358]px"
+    },
+    {
+      "name": "no console errors or CSP violations",
+      "pass": true,
+      "detail": "none"
+    }
+  ]
+}

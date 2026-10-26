@@ -1,0 +1,15 @@
+product,stage,phase,check,result,detail,source_commit,uncommitted_source_sha256,captured_at
+kyPulse-server,00,before,desktop backup: every status badge sits on its label's line,fail,"wrapped: Recovery key None, KyRecovery Not paired, Local copies 0 of 7",c306af5ee9288bd48e9785094378fd7f894508d3,,2026-10-26T17:58:51.671Z
+kyPulse-server,00,before,desktop backup: values share one left edge; label column width,pass,value left 416px; label widths [128]px,c306af5ee9288bd48e9785094378fd7f894508d3,,2026-10-26T17:58:51.671Z
+kyPulse-server,00,before,desktop app-detail: values share one left edge; label column width,pass,value left 914px; label widths [128]px,c306af5ee9288bd48e9785094378fd7f894508d3,,2026-10-26T17:58:51.671Z
+kyPulse-server,00,before,mobile backup: every status badge sits on its label's line,pass,Recovery key None; KyRecovery Not paired; Local copies 0 of 7; Schedule Daily,c306af5ee9288bd48e9785094378fd7f894508d3,,2026-10-26T17:58:51.671Z
+kyPulse-server,00,before,mobile backup: values share one left edge; label column width,pass,value left 16px; label widths [358]px,c306af5ee9288bd48e9785094378fd7f894508d3,,2026-10-26T17:58:51.671Z
+kyPulse-server,00,before,mobile app-detail: values share one left edge; label column width,pass,value left 16px; label widths [358]px,c306af5ee9288bd48e9785094378fd7f894508d3,,2026-10-26T17:58:51.671Z
+kyPulse-server,00,before,no console errors or CSP violations,pass,none,c306af5ee9288bd48e9785094378fd7f894508d3,,2026-10-26T17:58:51.671Z
+kyPulse-server,01,after,desktop backup: every status badge sits on its label's line,pass,Recovery key None; KyRecovery Not paired; Local copies 0 of 7; Schedule Daily,b5383234e36c8af84c1ca86758469c7442531c4c,,2026-10-26T18:00:03.586Z
+kyPulse-server,01,after,desktop backup: values share one left edge; label column width,pass,value left 451px; label widths [163]px,b5383234e36c8af84c1ca86758469c7442531c4c,,2026-10-26T18:00:03.586Z
+kyPulse-server,01,after,desktop app-detail: values share one left edge; label column width,pass,value left 914px; label widths [128]px,b5383234e36c8af84c1ca86758469c7442531c4c,,2026-10-26T18:00:03.586Z
+kyPulse-server,01,after,mobile backup: every status badge sits on its label's line,pass,Recovery key None; KyRecovery Not paired; Local copies 0 of 7; Schedule Daily,b5383234e36c8af84c1ca86758469c7442531c4c,,2026-10-26T18:00:03.586Z
+kyPulse-server,01,after,mobile backup: values share one left edge; label column width,pass,value left 16px; label widths [358]px,b5383234e36c8af84c1ca86758469c7442531c4c,,2026-10-26T18:00:03.586Z
+kyPulse-server,01,after,mobile app-detail: values share one left edge; label column width,pass,value left 16px; label widths [358]px,b5383234e36c8af84c1ca86758469c7442531c4c,,2026-10-26T18:00:03.586Z
+kyPulse-server,01,after,no console errors or CSP violations,pass,none,b5383234e36c8af84c1ca86758469c7442531c4c,,2026-10-26T18:00:03.586Z

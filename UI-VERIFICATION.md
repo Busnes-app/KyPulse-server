@@ -67,3 +67,7 @@ The F1 tint darkened the filled danger fill on light suite palettes, whose dark 
 ## Fleet visual refinement (2026-10-26)
 
 App detail: the Status back link uses page ink, settings facts are flat label/value rows, and Delete moves from the page header to a closing Stop watching section, still the filled `.btn-danger` measured by `browser/danger-button.spec.mjs`. Before/after captures (light/dark × 1280×900/390×844, synthetic fixture, clean commits), manifests with hashes, behaviour checks and CSVs are in [docs/ui-visual-refinement-2026-10-26](docs/ui-visual-refinement-2026-10-26/README.md). No score is self-assigned.
+
+## Review follow-up R2 (2026-10-26)
+
+The flat `.dr-facts` rows had moved Backup's status badges (None, Not paired, 0 of 7) under their labels at 1280px. The rows now share one label column, at least 8rem and as wide as the widest label with its badge, so every badge sits beside its label while app detail keeps its 8rem column and value edge. Before/after captures of Backup and app detail (light/dark × 1280×900/390×844), manifests and the reviewer's harness rerun (failing before, passing after) are in [docs/ui-review-followups-2026-10-26](docs/ui-review-followups-2026-10-26/README.md).

@@ -1,0 +1,266 @@
+{
+ "checks": [
+  {
+   "name": "head desktop: admin header has only Edit; Delete is the filled danger in Stop watching",
+   "pass": true,
+   "detail": {
+    "header": [
+     "Edit"
+    ],
+    "remove": [
+     {
+      "text": "Delete",
+      "cls": "btn-danger"
+     }
+    ],
+    "backLinkColor": "rgb(24, 35, 38)",
+    "ink": "#182326"
+   }
+  },
+  {
+   "name": "head desktop: Delete confirms; dismiss sends no DELETE",
+   "pass": true,
+   "detail": {
+    "msg": "Stop watching Paused fixture app? Its alert history is deleted too.",
+    "deletes": []
+   }
+  },
+  {
+   "name": "head phone: admin header has only Edit; Delete is the filled danger in Stop watching",
+   "pass": true,
+   "detail": {
+    "header": [
+     "Edit"
+    ],
+    "remove": [
+     {
+      "text": "Delete",
+      "cls": "btn-danger"
+     }
+    ],
+    "backLinkColor": "rgb(24, 35, 38)",
+    "ink": "#182326"
+   }
+  },
+  {
+   "name": "head phone: Delete confirms; dismiss sends no DELETE",
+   "pass": true,
+   "detail": {
+    "msg": "Stop watching Paused fixture app? Its alert history is deleted too.",
+    "deletes": []
+   }
+  },
+  {
+   "name": "head: non-admin (mocked role) sees no Edit, no Stop watching, no danger button",
+   "pass": true,
+   "detail": {
+    "edit": 0,
+    "remove": 0,
+    "danger": 0
+   }
+  }
+ ],
+ "runs": {
+  "base-desktop": [
+   {
+    "label": "Recovery key",
+    "badge": "None",
+    "labelBox": [
+     128,
+     44
+    ],
+    "badgeSameLineAsLabel": false,
+    "badgeRightAligned": 81,
+    "valueLeftOfLabelRight": 16,
+    "valueBelowLabel": false
+   },
+   {
+    "label": "KyRecovery",
+    "badge": "Not paired",
+    "labelBox": [
+     128,
+     44
+    ],
+    "badgeSameLineAsLabel": false,
+    "badgeRightAligned": 49,
+    "valueLeftOfLabelRight": 16,
+    "valueBelowLabel": false
+   },
+   {
+    "label": "Local copies",
+    "badge": "0 of 7",
+    "labelBox": [
+     128,
+     44
+    ],
+    "badgeSameLineAsLabel": false,
+    "badgeRightAligned": 77,
+    "valueLeftOfLabelRight": 16,
+    "valueBelowLabel": false
+   },
+   {
+    "label": "Schedule",
+    "badge": "Daily",
+    "labelBox": [
+     128,
+     24
+    ],
+    "badgeSameLineAsLabel": true,
+    "badgeRightAligned": 23,
+    "valueLeftOfLabelRight": 16,
+    "valueBelowLabel": false
+   }
+  ],
+  "base-phone": [
+   {
+    "label": "Recovery key",
+    "badge": "None",
+    "labelBox": [
+     358,
+     24
+    ],
+    "badgeSameLineAsLabel": true,
+    "badgeRightAligned": 225,
+    "valueLeftOfLabelRight": -358,
+    "valueBelowLabel": true
+   },
+   {
+    "label": "KyRecovery",
+    "badge": "Not paired",
+    "labelBox": [
+     358,
+     24
+    ],
+    "badgeSameLineAsLabel": true,
+    "badgeRightAligned": 203,
+    "valueLeftOfLabelRight": -358,
+    "valueBelowLabel": true
+   },
+   {
+    "label": "Local copies",
+    "badge": "0 of 7",
+    "labelBox": [
+     358,
+     24
+    ],
+    "badgeSameLineAsLabel": true,
+    "badgeRightAligned": 229,
+    "valueLeftOfLabelRight": -358,
+    "valueBelowLabel": true
+   },
+   {
+    "label": "Schedule",
+    "badge": "Daily",
+    "labelBox": [
+     358,
+     24
+    ],
+    "badgeSameLineAsLabel": true,
+    "badgeRightAligned": 253,
+    "valueLeftOfLabelRight": -358,
+    "valueBelowLabel": true
+   }
+  ],
+  "head-desktop": [
+   {
+    "label": "Recovery key",
+    "badge": "None",
+    "labelBox": [
+     163,
+     24
+    ],
+    "badgeSameLineAsLabel": true,
+    "badgeRightAligned": 22,
+    "valueLeftOfLabelRight": 16,
+    "valueBelowLabel": false
+   },
+   {
+    "label": "KyRecovery",
+    "badge": "Not paired",
+    "labelBox": [
+     163,
+     24
+    ],
+    "badgeSameLineAsLabel": true,
+    "badgeRightAligned": 0,
+    "valueLeftOfLabelRight": 16,
+    "valueBelowLabel": false
+   },
+   {
+    "label": "Local copies",
+    "badge": "0 of 7",
+    "labelBox": [
+     163,
+     24
+    ],
+    "badgeSameLineAsLabel": true,
+    "badgeRightAligned": 26,
+    "valueLeftOfLabelRight": 16,
+    "valueBelowLabel": false
+   },
+   {
+    "label": "Schedule",
+    "badge": "Daily",
+    "labelBox": [
+     163,
+     24
+    ],
+    "badgeSameLineAsLabel": true,
+    "badgeRightAligned": 50,
+    "valueLeftOfLabelRight": 16,
+    "valueBelowLabel": false
+   }
+  ],
+  "head-phone": [
+   {
+    "label": "Recovery key",
+    "badge": "None",
+    "labelBox": [
+     358,
+     24
+    ],
+    "badgeSameLineAsLabel": true,
+    "badgeRightAligned": 217,
+    "valueLeftOfLabelRight": -358,
+    "valueBelowLabel": true
+   },
+   {
+    "label": "KyRecovery",
+    "badge": "Not paired",
+    "labelBox": [
+     358,
+     24
+    ],
+    "badgeSameLineAsLabel": true,
+    "badgeRightAligned": 195,
+    "valueLeftOfLabelRight": -358,
+    "valueBelowLabel": true
+   },
+   {
+    "label": "Local copies",
+    "badge": "0 of 7",
+    "labelBox": [
+     358,
+     24
+    ],
+    "badgeSameLineAsLabel": true,
+    "badgeRightAligned": 221,
+    "valueLeftOfLabelRight": -358,
+    "valueBelowLabel": true
+   },
+   {
+    "label": "Schedule",
+    "badge": "Daily",
+    "labelBox": [
+     358,
+     24
+    ],
+    "badgeSameLineAsLabel": true,
+    "badgeRightAligned": 245,
+    "valueLeftOfLabelRight": -358,
+    "valueBelowLabel": true
+   }
+  ]
+ },
+ "browser": "chromium 153.0.8010.12"
+}
