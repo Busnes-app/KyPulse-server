@@ -1,0 +1,505 @@
+diff --git a/UI-VERIFICATION.md b/UI-VERIFICATION.md
+index e7ce5bd..46f8ff8 100644
+--- a/UI-VERIFICATION.md
++++ b/UI-VERIFICATION.md
+@@ -50,3 +50,7 @@ a machine with no private IPv4 interface.
+ ## Approved interface polish — 2026-10-19
+ 
+ See [UI-POLISH.md](UI-POLISH.md) for the implemented changes, preservation scope, checks, actual before/after screenshots and disposable capture conditions. Earlier captures above remain historical evidence.
++
++## 2026-10-26 fleet Appearance
++
++ky-ui 0.4.0 (shared source `4f83f34`): the Appearance theme-card picker over the shared catalog, plus shell geometry from shared tokens. Before/after screenshots, capture conditions, hashes, real-browser behaviour checks and the results spreadsheet are in [docs/ui-fleet-2026-10-26](docs/ui-fleet-2026-10-26/README.md). Ratings are set by the independent council, not this record.
+diff --git a/web/AGENTS.md b/web/AGENTS.md
+index 7b3b0bf..4393937 100644
+--- a/web/AGENTS.md
++++ b/web/AGENTS.md
+@@ -1,7 +1,7 @@
+ # Web
+ 
+ ## Purpose
+-React 19 + TypeScript + Vite PWA frontend embedding KySecurity color tokens (Busnes light/dark defaults plus `Patina Ky`, `Cyber`, `Nord`, `Paper`, `OLED`) and client-side WebCrypto PoW CAPTCHA.
++React 19 + TypeScript + Vite PWA frontend using the shared ky-ui theme catalog (Busnes light/dark defaults, the suite palettes and the base-family `patina`, `cyber`, `nord`, `paper`, `oled`) and client-side WebCrypto PoW CAPTCHA.
+ 
+ ## Ownership
+ Owns user interface components, service worker caching, PWA installation manifests, and frontend theme switching.
+@@ -11,8 +11,9 @@ Owns user interface components, service worker caching, PWA installation manifes
+ - A signed-in user with `must_change_password` sees only password replacement and sign-out. Replacement uses `secureFetch`, returns to login after session revocation, and never exposes the normal navigation before completion.
+ - Strict TypeScript type safety without unused imports.
+ - The authenticated shell uses a persistent sidebar of `<a>` links; the selected page is marked by a quiet surface, slim accent rail and `aria-current="page"`, with a horizontal overflow navigation on small screens.
+-- Navigation is hash-routed (`#/status`, `#/alerts`, `#/apps/<id>`, `#/backup`, `#/settings`, `#/logs`, `#/activity`) by `src/router.ts`; there is no other navigation state. `App` polls `/api/status` every 15 s for the `AlertBar` shown above every page; pages fetch their own data through `src/monitor.ts` or `src/logs.ts` and call `onChanged` after a write. Admin-only controls render only for `role === 'admin'`; the server enforces it.
+-- Dynamic theme selection applies `data-theme` attribute to the root HTML document and persists to `localStorage`.
++- Navigation is hash-routed (`#/status`, `#/alerts`, `#/apps/<id>`, `#/backup`, `#/settings`, `#/appearance`, `#/logs`, `#/activity`) by `src/router.ts`; there is no other navigation state. `App` polls `/api/status` every 15 s for the `AlertBar` shown above every page; pages fetch their own data through `src/monitor.ts` or `src/logs.ts` and call `onChanged` after a write. Admin-only controls render only for `role === 'admin'`; the server enforces it.
++- `src/theme.ts` adapts the shared catalog (`ky-ui/themes.js`): `Match system` plus every catalog theme, saved by catalog ID under `ky_theme`; older saved IDs (including base `patina`, distinct from suite `patina-ky`) resolve unchanged. It sets `data-theme` and, for named palettes, the colours inline through `applyThemeVariables`; Busnes clears them so the token aliases apply. Every theme control reads the one `useTheme()` store.
++- The Appearance page (`src/pages/Appearance.tsx`) is the theme picker for every signed-in role: shared native radio cards (`ky-ui/appearance.css`, previews from `appearance-themes.css`, imported after product CSS). The signed-in shell has no other theme selector; only the sign-in page keeps `ThemeSwitcher`, over the same store. The page uses the shared `ky-appearance-description` copy.
+ - Authenticated state-changing requests use `secureFetch` so the `ky_csrf` cookie is mirrored into `X-CSRF-Token`.
+ - Register the service worker from the production JS bundle; keep `script-src 'self'` intact.
+ - Worker caching is limited to the same-origin public shell, manifest and assets. HTML is network-first with offline fallback so deployments refresh; dynamic/auth routes stay uncached.
+@@ -57,8 +58,9 @@ Owns user interface components, service worker caching, PWA installation manifes
+ ## Shared browser UI
+ 
+ - `src/ky-ui/` is generated from Busnes-app/ky-ui, pinned by `VERSION` file hashes. Change shared colors, navigation states and storage helpers upstream, then run its consumer sync with an explicit worktree map; do not hand-edit vendored files.
+-- Products own layout, routes, saved choice keys and named palettes. Busnes aliases consume shared tokens; mark primary navigation with `ky-nav-item` while preserving current-page semantics.
+-- Verify vendored files with `node src/ky-ui/check-vendor.mjs` from this document's directory. Builds/CI run that check. Rendered evidence and capture limitations are recorded in the repository-root `UI-VERIFICATION.md`.
++- Shell geometry (sidebar width, 40px navigation and control rows, 8px radius, title/body type) reads ky-ui tokens in the suite-shell block at the end of `src/styles/theme.css`.
++- Shared files include `appearance.css`, `appearance-themes.css` and `themes.js`; the catalog and palette values come only from there. Products own layout, routes and saved choice keys. Busnes aliases consume shared tokens; mark primary navigation with `ky-nav-item` while preserving current-page semantics.
++- Verify vendored files with `node src/ky-ui/check-vendor.mjs` from this document's directory. Builds/CI run that check. Rendered evidence and capture limitations are recorded in the repository-root `UI-VERIFICATION.md`; the fleet Appearance stages (screenshots, manifests with hashes and behaviour checks, results CSV, reproducible `capture.mjs`) live in `docs/ui-fleet-2026-10-26/`.
+ 
+ ## Child DOX Index
+ - [browser/AGENTS.md](./browser/AGENTS.md): Production-server browser regression harness and disposable test data.
+diff --git a/web/browser/ui.spec.mjs b/web/browser/ui.spec.mjs
+index 8fe8e65..4cdbac2 100644
+--- a/web/browser/ui.spec.mjs
++++ b/web/browser/ui.spec.mjs
+@@ -1,4 +1,12 @@
+ import { test, expect } from '@playwright/test';
++import { THEME_CATALOG } from '../src/ky-ui/themes.js';
++
++// Relative luminance of a computed colour: rgb() channels are 0-255, color(srgb …) 0-1.
++const luminance = color => {
++  const scale = color.startsWith('color(') ? 1 : 255;
++  const [r, g, b] = color.match(/[\d.]+/g).slice(0, 3).map(v => Number(v) / scale).map(c => c <= 0.03928 ? c / 12.92 : ((c + 0.055) / 1.055) ** 2.4);
++  return 0.2126 * r + 0.7152 * g + 0.0722 * b;
++};
+ 
+ async function fits(page) {
+   expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
+@@ -32,18 +40,27 @@ test('production CSP, worker, themes, keyboard and responsive shell', async ({ p
+   await expect(nav).toBeVisible();
+   await expect(page.getByRole('heading', { name: 'Status' })).toBeVisible();
+   await fits(page);
+-  const theme = page.getByLabel('Color theme');
+-  await theme.selectOption('paper');
++  // The Appearance page is the only theme control in the signed-in shell.
++  await expect(page.locator('select[aria-label="Color theme"]')).toHaveCount(0);
++  const openAppearance = async p => {
++    await p.getByRole('navigation', { name: 'Primary' }).getByRole('link', { name: 'Appearance' }).click();
++    await p.getByRole('group', { name: 'Theme' }).waitFor();
++  };
++  const theme = (p, id) => p.getByRole('group', { name: 'Theme' }).locator(`input[value="${id}"]`);
++  await openAppearance(page);
++  await theme(page, 'paper').check();
+   await expect(page.locator('body')).toHaveCSS('background-color', 'rgb(248, 250, 252)');
+-  await theme.selectOption('busnes-dark');
++  await theme(page, 'busnes-dark').check();
+   await page.reload();
+   await expect(page.locator('body')).toHaveCSS('background-color', 'rgb(24, 35, 38)');
+   const other = await context.newPage();
+   await other.goto('/');
+-  await other.getByLabel('Color theme').selectOption('busnes-light');
++  await openAppearance(other);
++  await theme(other, 'busnes-light').check();
+   await expect(page.locator('body')).toHaveCSS('background-color', 'rgb(248, 246, 240)');
+   await other.close();
+-  await theme.selectOption('system');
++  await openAppearance(page);
++  await theme(page, 'system').check();
+   await page.emulateMedia({ colorScheme: 'dark' });
+   await expect(page.locator('body')).toHaveCSS('background-color', 'rgb(24, 35, 38)');
+   await page.emulateMedia({ colorScheme: 'light' });
+@@ -57,6 +74,40 @@ test('production CSP, worker, themes, keyboard and responsive shell', async ({ p
+   await expect(nav.getByRole('link', { name: 'Settings & DB' })).toHaveAttribute('aria-current', 'page');
+   await expect(page.getByRole('heading', { name: 'Settings', exact: true })).toBeVisible();
+   await fits(page);
++  // Appearance: native radio cards for every catalog theme, chosen by keyboard.
++  await nav.getByRole('link', { name: 'Appearance' }).click();
++  const picker = page.getByRole('group', { name: 'Theme' });
++  await expect(picker.getByRole('radio')).toHaveCount(THEME_CATALOG.length + 1);
++  await expect(picker.getByRole('radio', { name: /Match system/ })).toBeChecked();
++  await picker.getByRole('radio', { name: /Coffee/ }).check();
++  await page.keyboard.press('ArrowLeft');
++  await expect(picker.getByRole('radio', { name: /Ocean/ })).toBeChecked();
++  await expect(picker.getByRole('radio', { name: /Ocean/ })).toBeFocused();
++  await expect(page.locator('body')).toHaveCSS('background-color', 'rgb(15, 27, 36)');
++  await fits(page);
++  await page.reload();
++  await expect(page.getByRole('group', { name: 'Theme' }).getByRole('radio', { name: /Ocean/ })).toBeChecked();
++  // A new light named theme has no product CSS block: hover, selection and focus must
++  // come from its own palette, not the dark base :root values.
++  await page.getByRole('group', { name: 'Theme' }).getByRole('radio', { name: /^Sky Light$/ }).check();
++  const idle = nav.getByRole('link').first();
++  await idle.hover();
++  const hovered = await idle.evaluate(el => [getComputedStyle(el).backgroundColor, getComputedStyle(el).color]);
++  expect(luminance(hovered[0])).toBeGreaterThan(0.6);
++  expect(luminance(hovered[1])).toBeLessThan(0.2);
++  const current = nav.locator('[aria-current="page"]');
++  expect(luminance(await current.evaluate(el => getComputedStyle(el).backgroundColor))).toBeGreaterThan(0.5);
++  // Keyboard round trip so the radio has :focus-visible, ending back on Sky.
++  await page.getByRole('group', { name: 'Theme' }).getByRole('radio', { name: /^Sky Light$/ }).focus();
++  await page.keyboard.press('ArrowRight');
++  await page.keyboard.press('ArrowLeft');
++  await expect(page.getByRole('group', { name: 'Theme' }).getByRole('radio', { name: /^Sky Light$/ })).toBeChecked();
++  await expect(page.getByRole('group', { name: 'Theme' }).locator('label', { hasText: 'Sky' })).toHaveCSS('outline-style', 'solid');
++  await page.getByRole('group', { name: 'Theme' }).getByRole('radio', { name: /^Busnes Light Light$/ }).check();
++  await expect(page.locator('body')).toHaveCSS('background-color', 'rgb(248, 246, 240)');
++  expect(await page.evaluate(() => document.documentElement.style.getPropertyValue('--panel-hover'))).toBe('');
++  await page.getByRole('radio', { name: /Match system/ }).check();
++  await expect(page.locator('body')).toHaveCSS('background-color', testInfo.project.use.colorScheme === 'dark' ? 'rgb(24, 35, 38)' : 'rgb(248, 246, 240)');
+   await page.evaluate(() => fetch('/browser-regression-uncached'));
+   const cachedDynamic = await page.evaluate(async () => {
+     const keys = await caches.keys();
+diff --git a/web/src/App.tsx b/web/src/App.tsx
+index a666ad6..d1a3c42 100644
+--- a/web/src/App.tsx
++++ b/web/src/App.tsx
+@@ -10,9 +10,12 @@ import { Login } from './pages/Login';
+ import { ChangePassword } from './pages/ChangePassword';
+ import { Backup } from './pages/Backup';
+ import { Settings } from './pages/Settings';
++import { Appearance } from './pages/Appearance';
+ import './styles/theme.css';
+ import './ky-ui/tokens.css';
+ import './ky-ui/navigation.css';
++import './ky-ui/appearance.css';
++import './ky-ui/appearance-themes.css';
+ import { secureFetch } from './api';
+ import { navigate, useHashRoute } from './router';
+ import { ApiError, getStatus, type StatusSummary } from './monitor';
+@@ -81,7 +84,7 @@ export const App: React.FC = () => {
+   const isAdmin = user?.role === 'admin';
+   useEffect(() => {
+     if (!signedIn) return;
+-    const known = ['status', 'alerts', 'apps', 'settings', 'backup', 'logs', 'activity'];
++    const known = ['status', 'alerts', 'apps', 'settings', 'appearance', 'backup', 'logs', 'activity'];
+     const head = route.parts[0] ?? 'status';
+     if (!known.includes(head) || (['backup', 'logs', 'activity'].includes(head) && !isAdmin) || (head === 'apps' && route.parts.length !== 2)) navigate('/status');
+   }, [signedIn, isAdmin, route]);
+@@ -149,6 +152,7 @@ export const App: React.FC = () => {
+         {head === 'logs' && isAdmin && <Logs user={user} />}
+         {head === 'activity' && isAdmin && <Activity user={user} />}
+         {head === 'backup' && isAdmin && <Backup />}
++        {head === 'appearance' && <Appearance />}
+         {head === 'settings' && <Settings settings={settings} user={user} onChanged={refreshStatus} onTOTPChange={(totp_enabled) => setUser((u: any) => (u ? { ...u, totp_enabled } : u))} />}
+       </main>
+     </div>
+diff --git a/web/src/components/AppHeader.tsx b/web/src/components/AppHeader.tsx
+index 45406e7..6d6f9e6 100644
+--- a/web/src/components/AppHeader.tsx
++++ b/web/src/components/AppHeader.tsx
+@@ -1,6 +1,5 @@
+ import React from 'react';
+-import { LogOut, Settings as SettingsIcon, Activity, Bell, Archive } from 'lucide-react';
+-import { ThemeSwitcher } from './ThemeSwitcher';
++import { LogOut, Settings as SettingsIcon, Activity, Bell, Archive, Palette } from 'lucide-react';
+ import { hrefFor } from '../router';
+ 
+ interface AppHeaderProps {
+@@ -17,6 +16,7 @@ export const navItems = [
+   { path: '/logs', label: 'Logs', icon: Archive, admin: true },
+   { path: '/backup', label: 'Backup', icon: Archive, admin: true },
+   { path: '/settings', label: 'Settings & DB', icon: SettingsIcon, admin: false },
++  { path: '/appearance', label: 'Appearance', icon: Palette, admin: false },
+ ];
+ 
+ export const AppHeader: React.FC<AppHeaderProps> = ({ appName, activePath, user, onLogout }) => {
+@@ -47,7 +47,6 @@ export const AppHeader: React.FC<AppHeaderProps> = ({ appName, activePath, user,
+         })}
+       </nav>
+       <div className="app-header-actions">
+-        <ThemeSwitcher />
+ 
+         {user && (
+           <div className="app-user">
+diff --git a/web/src/components/ThemeSwitcher.tsx b/web/src/components/ThemeSwitcher.tsx
+index 2832c3e..b2d2ddf 100644
+--- a/web/src/components/ThemeSwitcher.tsx
++++ b/web/src/components/ThemeSwitcher.tsx
+@@ -1,15 +1,8 @@
+-import { useEffect, useState } from 'react';
+-import { THEME_OPTIONS, applyTheme, storedTheme } from '../theme';
++import { THEME_OPTIONS, applyTheme, useTheme } from '../theme';
+ 
+ export function ThemeSwitcher() {
+-  const [theme, setTheme] = useState(storedTheme);
+-  useEffect(() => {
+-    const sync = () => setTheme(storedTheme());
+-    window.addEventListener('storage', sync);
+-    return () => window.removeEventListener('storage', sync);
+-  }, []);
+-  return <select className="theme-selector" aria-label="Color theme" value={theme} onChange={event => {
+-    setTheme(event.target.value);
+-    applyTheme(event.target.value, true);
+-  }}>{THEME_OPTIONS.map(option => <option key={option.id} value={option.id}>{option.label}</option>)}</select>;
++  const theme = useTheme();
++  return <select className="theme-selector" aria-label="Color theme" value={theme} onChange={event => applyTheme(event.target.value, true)}>
++    {THEME_OPTIONS.map(option => <option key={option.id} value={option.id}>{option.name}</option>)}
++  </select>;
+ }
+diff --git a/web/src/pages/Alerts.tsx b/web/src/pages/Alerts.tsx
+index f35ddb0..03d95ed 100644
+--- a/web/src/pages/Alerts.tsx
++++ b/web/src/pages/Alerts.tsx
+@@ -1,5 +1,5 @@
+ import React, { useEffect, useState } from 'react';
+-import { Bell, BellOff } from 'lucide-react';
++import { BellOff } from 'lucide-react';
+ import { hrefFor } from '../router';
+ import { ApiError, isSilenced, listAlerts, listTargets, timeLabel, type Target, type TargetEvent } from '../monitor';
+ import type { PageUser } from './Status';
+@@ -40,7 +40,7 @@ export const Alerts: React.FC<AlertsProps> = () => {
+   return (
+     <div className="dr-page">
+       <div className="dr-header">
+-        <h1 style={{ display: 'flex', alignItems: 'center', gap: 10 }}><Bell size={24} style={{ color: 'var(--accent)' }} />Alerts</h1>
++        <h1>Alerts</h1>
+       </div>
+       {error && <p className="form-error" role="alert">{error}</p>}
+       {silenced.length > 0 && (
+diff --git a/web/src/pages/Appearance.test.tsx b/web/src/pages/Appearance.test.tsx
+new file mode 100644
+index 0000000..93d61ec
+--- /dev/null
++++ b/web/src/pages/Appearance.test.tsx
+@@ -0,0 +1,56 @@
++import { afterEach, describe, expect, it } from 'vitest';
++import { cleanup, fireEvent, render, screen } from '@testing-library/react';
++import { Appearance } from './Appearance';
++import { ThemeSwitcher } from '../components/ThemeSwitcher';
++import { THEME_CATALOG } from '../ky-ui/themes';
++
++const root = document.documentElement;
++
++describe('Appearance', () => {
++  afterEach(() => {
++    cleanup();
++    localStorage.clear();
++    window.dispatchEvent(new StorageEvent('storage', { key: 'ky_theme' }));
++  });
++
++  it('lists every suite theme as a native radio card, keeping a saved legacy choice', () => {
++    localStorage.setItem('ky_theme', 'paper');
++    window.dispatchEvent(new StorageEvent('storage', { key: 'ky_theme' }));
++    render(<Appearance />);
++    const radios = screen.getAllByRole('radio');
++    expect(radios).toHaveLength(THEME_CATALOG.length + 1);
++    expect(screen.getByRole('group', { name: 'Theme' })).toBeTruthy();
++    expect(screen.getByRole('radio', { name: /Paper Clean/ })).toHaveProperty('checked', true);
++    expect(screen.getByRole('radio', { name: /Match system/ })).toHaveProperty('checked', false);
++    expect(document.querySelector('[data-ky-preview="ocean"]')).not.toBeNull();
++  });
++
++  it('keeps the base Patina palette for a saved patina choice, distinct from suite Patina Ky', () => {
++    localStorage.setItem('ky_theme', 'patina');
++    window.dispatchEvent(new StorageEvent('storage', { key: 'ky_theme' }));
++    render(<Appearance />);
++    expect(screen.getByRole('radio', { name: /Patina Ky \(base\)/ })).toHaveProperty('checked', true);
++    expect(root.style.getPropertyValue('--ink-strong')).toBe('#f1f5f9');
++    expect(root.style.getPropertyValue('--panel-hover')).toBe('#1c222c');
++    fireEvent.click(document.querySelector('input[value="patina-ky"]')!);
++    expect(localStorage.getItem('ky_theme')).toBe('patina-ky');
++    expect(root.style.getPropertyValue('--ink-strong')).toBe('#e2e8f0');
++  });
++
++  it('applies a named palette inline and clears it again for Busnes', () => {
++    render(<><ThemeSwitcher /><Appearance /></>);
++    expect(screen.getByRole('radio', { name: /Match system/ })).toHaveProperty('checked', true);
++    fireEvent.click(screen.getByRole('radio', { name: /Ocean/ }));
++    expect(screen.getByLabelText('Color theme')).toHaveProperty('value', 'ocean');
++    expect(localStorage.getItem('ky_theme')).toBe('ocean');
++    expect(root.dataset.theme).toBe('ocean');
++    expect(root.style.getPropertyValue('--bg')).toBe('#0f1b24');
++    expect(root.style.colorScheme).toBe('dark');
++    fireEvent.change(screen.getByLabelText('Color theme'), { target: { value: 'busnes-light' } });
++    expect(screen.getByRole('radio', { name: /Busnes Light/ })).toHaveProperty('checked', true);
++    expect(localStorage.getItem('ky_theme')).toBe('busnes-light');
++    expect(root.dataset.theme).toBe('busnes-light');
++    expect(root.style.getPropertyValue('--bg')).toBe('');
++    expect(root.style.colorScheme).toBe('light');
++  });
++});
+diff --git a/web/src/pages/Appearance.tsx b/web/src/pages/Appearance.tsx
+new file mode 100644
+index 0000000..ccd4972
+--- /dev/null
++++ b/web/src/pages/Appearance.tsx
+@@ -0,0 +1,24 @@
++import { THEME_OPTIONS, applyTheme, themeMode, useTheme } from '../theme';
++
++export function Appearance() {
++  const theme = useTheme();
++  return (
++    <div className="dr-page">
++      <div className="dr-header"><h1>Appearance</h1></div>
++      <p className="ky-appearance-description">Pick a theme. It applies straight away and is saved in this browser only. Match system follows your device’s light or dark setting.</p>
++      <fieldset className="ky-appearance">
++        <legend className="ky-appearance-legend">Theme</legend>
++        <div className="ky-appearance-grid">
++          {THEME_OPTIONS.map(option => (
++            <label key={option.id} className="ky-appearance-option">
++              <input className="ky-appearance-radio" type="radio" name="kypulse-theme" value={option.id} checked={theme === option.id} onChange={() => applyTheme(option.id, true)} />
++              <span className="ky-appearance-preview" aria-hidden="true" data-ky-preview={option.id} />
++              <span className="ky-appearance-name">{option.name}</span>
++              <small className="ky-appearance-mode">{themeMode(option.id)}</small>
++            </label>
++          ))}
++        </div>
++      </fieldset>
++    </div>
++  );
++}
+diff --git a/web/src/pages/Settings.tsx b/web/src/pages/Settings.tsx
+index 3210c8e..5d56a6c 100644
+--- a/web/src/pages/Settings.tsx
++++ b/web/src/pages/Settings.tsx
+@@ -1,6 +1,5 @@
+ import React from 'react';
+-import { Settings as SettingsIcon, Database, Palette } from 'lucide-react';
+-import { ThemeSwitcher } from '../components/ThemeSwitcher';
++import { Database } from 'lucide-react';
+ import { WebhookForm } from '../components/WebhookForm';
+ import { KyYardCard } from '../components/KyYardCard';
+ import { TwoFactorCard } from '../components/TwoFactorCard';
+@@ -14,16 +13,9 @@ interface SettingsProps {
+ 
+ export const Settings: React.FC<SettingsProps> = ({ settings, user, onChanged, onTOTPChange }) => {
+   return (
+-    <div style={{ maxWidth: '1080px', margin: '0 auto', padding: '32px 20px' }}>
+-      <div style={{ marginBottom: '24px' }}>
+-        <h1 style={{ fontSize: '24px', fontWeight: 'bold', display: 'flex', alignItems: 'center', gap: '10px' }}>
+-          <SettingsIcon size={24} style={{ color: 'var(--accent)' }} />
+-          <span>Settings</span>
+-        </h1>
+-        <p style={{ color: 'var(--ink)', fontSize: '14px', marginTop: '4px' }}>
+-          Two-factor sign-in, alert webhook, KyYard pairing, storage and appearance.
+-        </p>
+-      </div>
++    <div className="dr-page">
++      <div className="dr-header"><h1>Settings</h1></div>
++      <p className="status-intro">Two-factor sign-in, alert webhook, KyYard pairing and storage. Themes are under <a href="#/appearance">Appearance</a>.</p>
+ 
+       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 480px), 1fr))', gap: '20px' }}>
+         {/* Local accounts only: an identity provider owns MFA for SSO accounts. */}
+@@ -48,21 +40,6 @@ export const Settings: React.FC<SettingsProps> = ({ settings, user, onChanged, o
+           </div>
+         </div>
+ 
+-        {/* Appearance Card */}
+-        <div className="panel">
+-          <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '12px' }}>
+-            <Palette size={20} style={{ color: 'var(--accent)' }} />
+-            <h3 style={{ fontSize: '16px' }}>Appearance</h3>
+-          </div>
+-          <p style={{ color: 'var(--ink)', fontSize: '13px', marginBottom: '16px' }}>
+-            The theme follows your system until you pick one. The choice is saved in this browser only.
+-          </p>
+-
+-          <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+-            <span style={{ fontSize: '13px', color: 'var(--ink)' }}>Theme:</span>
+-            <ThemeSwitcher />
+-          </div>
+-        </div>
+       </div>
+     </div>
+   );
+diff --git a/web/src/pages/Status.tsx b/web/src/pages/Status.tsx
+index fc34fb8..28a3554 100644
+--- a/web/src/pages/Status.tsx
++++ b/web/src/pages/Status.tsx
+@@ -1,5 +1,5 @@
+ import React, { useCallback, useEffect, useState } from 'react';
+-import { Activity, Plus, BellOff } from 'lucide-react';
++import { Plus, BellOff } from 'lucide-react';
+ import { TargetForm } from '../components/TargetForm';
+ import { hrefFor } from '../router';
+ import {
+@@ -52,7 +52,7 @@ export const Status: React.FC<StatusProps> = ({ user, onChanged }) => {
+   return (
+     <div className="dr-page">
+       <div className="dr-header">
+-        <h1 style={{ display: 'flex', alignItems: 'center', gap: 10 }}><Activity size={24} style={{ color: 'var(--accent)' }} />Status</h1>
++        <h1>Status</h1>
+         {isAdmin && !adding && (
+           <button type="button" onClick={() => setAdding(true)}><Plus size={14} />Add app</button>
+         )}
+diff --git a/web/src/styles/theme.css b/web/src/styles/theme.css
+index 6670762..58e1d79 100644
+--- a/web/src/styles/theme.css
++++ b/web/src/styles/theme.css
+@@ -287,9 +287,9 @@ dialog.modal-window::backdrop {
+ }
+ .animate-spin { animation: dr-spin 1s linear infinite; }
+ 
+-.dr-page { max-width: 1080px; margin: 0 auto; padding: 32px 20px; }
++.dr-page { max-width: 1080px; padding: 32px; }
+ .dr-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
+-.dr-header h1 { font-size: 24px; font-weight: 700; }
++.dr-header h1 { font-size: var(--ky-type-title); font-weight: 600; line-height: 1.25; }
+ .dr-section { margin-bottom: 20px; }
+ .dr-section h3 { font-size: 16px; display: inline-flex; align-items: center; gap: 8px; }
+ .dr-mono { font-family: var(--font-mono); }
+@@ -500,3 +500,27 @@ dialog.modal-window::backdrop {
+ .log-lines li { border-bottom: 1px solid var(--line); padding: 12px 0; overflow-wrap: anywhere; }
+ .log-lines pre, .log-command { white-space: pre-wrap; overflow-wrap: anywhere; font-size: 13px; }
+ .log-lines summary { cursor: pointer; }
++
++/* ---------- Suite shell: ky-ui type, control and sidebar geometry ---------- */
++
++body { font-size: var(--ky-type-body); line-height: 1.5; }
++.app-shell { grid-template-columns: var(--ky-sidebar-size) minmax(0, 1fr); }
++.app-header { gap: 16px; padding: 16px; }
++.app-brand { gap: 8px; padding: 4px 8px 8px; font-size: var(--ky-type-section); font-weight: 600; }
++.app-nav { gap: 4px; }
++.app-nav a, .app-nav button { min-height: var(--ky-control-size); padding: 0 12px; border-left: 0; border-radius: var(--ky-control-radius); font-size: var(--ky-type-nav); font-weight: 500; gap: 8px; }
++button, .btn, select, input:not([type="checkbox"]):not([type="radio"]) { min-height: var(--ky-control-size); border-radius: var(--ky-control-radius); }
++input, select, textarea { border-color: var(--ky-field-border); }
++textarea { border-radius: var(--ky-control-radius); }
++.btn-secondary { background: transparent; border-color: var(--ky-field-border); }
++.theme-selector { min-height: var(--ky-control-size); border-color: var(--ky-field-border); border-radius: var(--ky-control-radius); }
++:is(a, button, input, select, textarea):focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
++.app-logout { justify-content: center; width: var(--ky-control-size); padding: 0; }
++@media (max-width: 720px) {
++  /* Brand and account actions share the top row; navigation scrolls below them. */
++  .app-header { display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: center; gap: 12px; }
++  .app-nav { grid-column: 1 / -1; grid-row: 2; }
++  .app-header-actions > .app-user:first-child { border-left: 0; padding-left: 0; }
++  .dr-page { padding: 24px 16px; }
++  .app-nav a, .app-nav button { padding: 0 12px; }
++}
+diff --git a/web/src/theme.ts b/web/src/theme.ts
+index 8016924..da06e2a 100644
+--- a/web/src/theme.ts
++++ b/web/src/theme.ts
+@@ -1,19 +1,34 @@
++import { useSyncExternalStore } from 'react';
+ import { readChoice, saveChoice, watchChoice } from './ky-ui/theme';
+-// Busnes.app defaults; explicit choices are local to this browser.
+-export const THEME_OPTIONS = [{"id": "system", "label": "System (Busnes)"}, {"id": "busnes-light", "label": "Busnes Light"}, {"id": "busnes-dark", "label": "Busnes Dark"}, {"id": "patina", "label": "Patina Ky"}, {"id": "cyber", "label": "Cyber Dark"}, {"id": "nord", "label": "Nord Slate"}, {"id": "paper", "label": "Paper Clean"}, {"id": "oled", "label": "OLED Black"}];
++import { SYSTEM_THEME, THEME_CATALOG, applyThemeVariables, findTheme } from './ky-ui/themes';
++// The shared suite catalog; explicit choices are local to this browser under the same key.
++export const THEME_OPTIONS = [SYSTEM_THEME, ...THEME_CATALOG];
++export function themeMode(theme: string): string {
++  const scheme = findTheme(theme)?.scheme;
++  return scheme === 'light' ? 'Light' : scheme === 'dark' ? 'Dark' : 'Follows device';
++}
+ export function storedTheme(): string {
+-  try { const value = readChoice('ky_theme'); return THEME_OPTIONS.find(t => t.id === value)?.id ?? 'system'; }
+-  catch { return 'system'; }
++  return findTheme(readChoice('ky_theme'))?.id ?? 'system';
+ }
+ let current = storedTheme();
++// Every theme control on the page reads one store, so they never disagree.
++const listeners = new Set<() => void>();
++function subscribe(listener: () => void) {
++  listeners.add(listener);
++  return () => { listeners.delete(listener); };
++}
++export const useTheme = () => useSyncExternalStore(subscribe, () => current);
+ const media = window.matchMedia?.('(prefers-color-scheme: dark)');
+ export function applyTheme(theme: string, persist = false) {
+-  if (!THEME_OPTIONS.some(t => t.id === theme)) return;
+-  current = theme;
+-  const resolved = theme === 'system' ? (media?.matches ? 'busnes-dark' : 'busnes-light') : theme;
++  const id = findTheme(theme)?.id;
++  if (!id) return;
++  current = id;
++  const resolved = id === 'system' ? (media?.matches ? 'busnes-dark' : 'busnes-light') : id;
+   document.documentElement.dataset.theme = resolved;
+-  document.documentElement.style.colorScheme = ['busnes-light', 'paper'].includes(resolved) ? 'light' : 'dark';
+-  if (persist) try { saveChoice('ky_theme', theme); } catch { /* Storage is optional. */ }
++  // Named palettes set their colors inline; Busnes clears them so the token aliases apply.
++  document.documentElement.style.colorScheme = applyThemeVariables(resolved) ?? (resolved === 'busnes-dark' ? 'dark' : 'light');
++  if (persist) saveChoice('ky_theme', id);
++  listeners.forEach(listener => listener());
+ }
+ applyTheme(current);
+ watchChoice('ky_theme', () => applyTheme(storedTheme()), () => current !== 'system');

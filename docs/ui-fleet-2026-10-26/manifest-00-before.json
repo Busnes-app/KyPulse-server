@@ -1,0 +1,110 @@
+{
+  "product": "kyPulse-server",
+  "stage": "00",
+  "phase": "before",
+  "captured_at": "2026-10-26T10:53:46.841Z",
+  "source_commit": "f5c6bd5c5a27199dd35093c5919c042f8b32b26b",
+  "uncommitted_source_sha256": null,
+  "os": "Linux 7.2.10-1-cachyos",
+  "driver": "Playwright 1.63.0 Chromium 153.0.8010.12, device scale 1, service workers blocked",
+  "server": "disposable .browser/server on loopback with temporary SQLite data, removed after capture",
+  "fixture": "synthetic: admin account; three watched apps (Billing API ok, Mail relay degraded, Backup agent down) served by a capture-owned fake health endpoint on a private bridge address",
+  "shots": [
+    {
+      "file": "kypulse-00-before-status-desktop-light.png",
+      "sha256": "264091f3fe43df7d41f075413bf91a651143ac5ba3afaf793dfee84f07a24e42",
+      "surface": "status",
+      "url": "#/status",
+      "device": "desktop",
+      "viewport": {
+        "width": 1280,
+        "height": 900
+      },
+      "theme_source": "OS light (prefers-color-scheme), no saved choice"
+    },
+    {
+      "file": "kypulse-00-before-appearance-desktop-light.png",
+      "sha256": "d42a014fb51aeb419628e43ca847bbbbe2a7f8b786e490162b7d111b604afe9a",
+      "surface": "appearance",
+      "url": "#/settings",
+      "device": "desktop",
+      "viewport": {
+        "width": 1280,
+        "height": 900
+      },
+      "theme_source": "OS light (prefers-color-scheme), no saved choice"
+    },
+    {
+      "file": "kypulse-00-before-status-mobile-light.png",
+      "sha256": "5d40d3279d7b0f3a2959b8e71ed347adc8ccd50044ad97ca4381ede0f4953763",
+      "surface": "status",
+      "url": "#/status",
+      "device": "mobile",
+      "viewport": {
+        "width": 390,
+        "height": 844
+      },
+      "theme_source": "OS light (prefers-color-scheme), no saved choice"
+    },
+    {
+      "file": "kypulse-00-before-appearance-mobile-light.png",
+      "sha256": "fc7a8374f2425472450a45f7505c78d649ff6778de17bb65e6d6919b35df61ef",
+      "surface": "appearance",
+      "url": "#/settings",
+      "device": "mobile",
+      "viewport": {
+        "width": 390,
+        "height": 844
+      },
+      "theme_source": "OS light (prefers-color-scheme), no saved choice"
+    },
+    {
+      "file": "kypulse-00-before-status-desktop-dark.png",
+      "sha256": "83545f4655d27fabe7d9522738fd12d5afcedbe5f640fb3acbcc3d66587f0e13",
+      "surface": "status",
+      "url": "#/status",
+      "device": "desktop",
+      "viewport": {
+        "width": 1280,
+        "height": 900
+      },
+      "theme_source": "OS dark (prefers-color-scheme), no saved choice"
+    },
+    {
+      "file": "kypulse-00-before-appearance-desktop-dark.png",
+      "sha256": "799772011e72e4a4b79217ed03c4eb2fe034cde95900371d1132597b56596042",
+      "surface": "appearance",
+      "url": "#/settings",
+      "device": "desktop",
+      "viewport": {
+        "width": 1280,
+        "height": 900
+      },
+      "theme_source": "OS dark (prefers-color-scheme), no saved choice"
+    },
+    {
+      "file": "kypulse-00-before-status-mobile-dark.png",
+      "sha256": "e257546517baccdfd1baf2d99914c17bd0fd5617e8883c7858b98a284acbf1f7",
+      "surface": "status",
+      "url": "#/status",
+      "device": "mobile",
+      "viewport": {
+        "width": 390,
+        "height": 844
+      },
+      "theme_source": "OS dark (prefers-color-scheme), no saved choice"
+    },
+    {
+      "file": "kypulse-00-before-appearance-mobile-dark.png",
+      "sha256": "7de2a4de1a000411b07121875317330eeb1b8ba23db90093199debc5a9948c0a",
+      "surface": "appearance",
+      "url": "#/settings",
+      "device": "mobile",
+      "viewport": {
+        "width": 390,
+        "height": 844
+      },
+      "theme_source": "OS dark (prefers-color-scheme), no saved choice"
+    }
+  ]
+}
