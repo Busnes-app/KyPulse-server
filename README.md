@@ -1,6 +1,7 @@
 # kyPulse
 
 [![OpenSSF Best Practices](https://www.bestpractices.dev/projects/15931/badge)](https://www.bestpractices.dev/projects/15931)
+[![OpenSSF Scorecard](https://api.scorecard.dev/projects/github.com/Busnes-app/KyPulse-server/badge)](https://scorecard.dev/viewer/?uri=github.com/Busnes-app/KyPulse-server)
 
 **Start here:** [Standalone installation](INSTALL.md). Local operator sign-in works without KyIdentity; the first `admin` password is written to `initial-admin-password` in the data directory, never to the log. Add health endpoints to monitor any compatible service; KyYard integration is optional for container information and log collection. Alerts require a configured, reachable webhook.
 
