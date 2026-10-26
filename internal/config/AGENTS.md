@@ -16,6 +16,10 @@ Owns environment variable parsing, configuration validation, default fallbacks, 
   serialized bundles and reports. The store receives prepared intent and owns atomic writes.
 - `LoadFromEnv() (*Config, error)` must supply safe, valid defaults for all subsystems.
 - Never log plaintext secrets or sensitive tokens.
+- Supplied session and nonempty directory HMAC secrets require at least
+  `crypto.MinHMACKeyBytes` literal bytes before key creation. Installer directory
+  credentials meet the same floor before active configuration changes; preserve
+  original session/encryption/audit keyfiles and credential references on refusal.
 - `KYPULSE_TRUSTED_PROXIES` is a comma-separated list of reverse-proxy IPs or CIDRs, empty by default, parsed once at startup into `[]netip.Prefix`; an unparsable entry fails startup. Only a request whose peer address is in the list may speak for another client through `X-Forwarded-For`. `0.0.0.0/0` and `::/0` are refused at startup; list only the proxy's own address or subnet.
 - `KYPULSE_ENV` is `development` (default) or `production`; anything else fails startup. Development refuses a non-loopback `KYPULSE_HOST` (default `127.0.0.1`) unless `KYPULSE_ALLOW_INSECURE_DEV=true`. `KYPULSE_COOKIE_SECURE` (which also gates HSTS) defaults on in production or with an `https` app URL.
 - Integer and boolean variables go through `envReader`: a set value that does not parse, blank included, fails startup; never fall back to the default.

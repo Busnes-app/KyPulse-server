@@ -131,8 +131,8 @@ func TestProductionSessionSecretPersists(t *testing.T) {
 	if _, err := os.Stat(filepath.Join(dir, "session.key")); err != nil {
 		t.Fatalf("session.key not written: %v", err)
 	}
-	t.Setenv("KYPULSE_SESSION_SECRET", "explicit")
-	if c, err := config.LoadFromEnv(); err != nil || c.Security.SessionSecret != "explicit" {
+	t.Setenv("KYPULSE_SESSION_SECRET", "explicit-session-secret-fixture")
+	if c, err := config.LoadFromEnv(); err != nil || c.Security.SessionSecret != "explicit-session-secret-fixture" {
 		t.Fatalf("explicit secret not used: %v", err)
 	}
 }

@@ -23,6 +23,7 @@ import (
 	"github.com/Busnes-app/kypulse-server/internal/api"
 	"github.com/Busnes-app/kypulse-server/internal/auth"
 	"github.com/Busnes-app/kypulse-server/internal/store"
+	"github.com/coreos/go-oidc/v3/oidc"
 )
 
 func loginFrom(t *testing.T, srv *api.Server, addr, username, pass string) *httptest.ResponseRecorder {
@@ -221,7 +222,7 @@ func newFakeIdP(t *testing.T) *fakeIdP {
 	}
 	idp := &fakeIdP{key: key}
 	b64 := base64.RawURLEncoding.EncodeToString
-	idp.Server = httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+	idp.Server = httptest.NewTLSServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		issuer := idp.URL
 		switch r.URL.Path {
 		case "/.well-known/openid-configuration":
@@ -253,8 +254,9 @@ func newFakeIdP(t *testing.T) *fakeIdP {
 	return idp
 }
 
-func ssoCallback(srv *api.Server) *httptest.ResponseRecorder {
+func ssoCallback(srv *api.Server, client *http.Client) *httptest.ResponseRecorder {
 	req := httptest.NewRequest("GET", "/api/sso/kysignon/callback?code=c&state=s1", nil)
+	req = req.WithContext(oidc.ClientContext(req.Context(), client))
 	req.AddCookie(&http.Cookie{Name: "ky_pkce_s1", Value: "verifier-verifier-verifier-verifier-verifier"})
 	req.AddCookie(&http.Cookie{Name: "ky_nonce_s1", Value: "n1"})
 	w := httptest.NewRecorder()
@@ -291,7 +293,7 @@ func TestKySignOnCallbackHardening(t *testing.T) {
 
 	// The IdP's error body stays in the server log, and the verifier and nonce are spent.
 	idp.fail = "secret-idp-marker"
-	w := ssoCallback(srv)
+	w := ssoCallback(srv, idp.Client())
 	if w.Code != http.StatusUnauthorized || strings.Contains(w.Body.String(), "secret-idp-marker") {
 		t.Fatalf("exchange failure: %d %s", w.Code, w.Body.String())
 	}
@@ -311,14 +313,14 @@ func TestKySignOnCallbackHardening(t *testing.T) {
 		t.Fatal(err)
 	}
 	idp.sub = "sub-off"
-	if w := ssoCallback(srv); w.Code != http.StatusForbidden || hasSession(w) {
+	if w := ssoCallback(srv, idp.Client()); w.Code != http.StatusForbidden || hasSession(w) {
 		t.Fatalf("inactive SSO user: %d session=%v", w.Code, hasSession(w))
 	}
 
 	// A lookup failure is not "unknown": nothing is provisioned.
 	api.SetStoreForTest(srv, ssoBrokenStore{st})
 	idp.sub = "sub-new"
-	if w := ssoCallback(srv); w.Code != http.StatusInternalServerError || hasSession(w) {
+	if w := ssoCallback(srv, idp.Client()); w.Code != http.StatusInternalServerError || hasSession(w) {
 		t.Fatalf("lookup failure: %d", w.Code)
 	}
 	if _, err := st.Users().GetUserBySSO(ctx, "kysignon", "sub-new"); !errors.Is(err, store.ErrNotFound) {
@@ -327,7 +329,7 @@ func TestKySignOnCallbackHardening(t *testing.T) {
 
 	// Only a genuinely unknown subject is provisioned.
 	api.SetStoreForTest(srv, st)
-	if w := ssoCallback(srv); w.Code != http.StatusFound || !hasSession(w) {
+	if w := ssoCallback(srv, idp.Client()); w.Code != http.StatusFound || !hasSession(w) {
 		t.Fatalf("auto-provision: %d %s", w.Code, w.Body.String())
 	}
 }

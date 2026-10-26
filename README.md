@@ -1,5 +1,7 @@
 # kyPulse
 
+Supported cryptographic configuration and upgrades: [Key strength and TLS](docs/STRONG-CRYPTO.md).
+
 [![OpenSSF Best Practices](https://www.bestpractices.dev/projects/15931/badge)](https://www.bestpractices.dev/projects/15931)
 [![OpenSSF Scorecard](https://api.scorecard.dev/projects/github.com/Busnes-app/KyPulse-server/badge)](https://scorecard.dev/viewer/?uri=github.com/Busnes-app/KyPulse-server)
 
