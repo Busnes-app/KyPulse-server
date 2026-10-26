@@ -321,10 +321,11 @@ dialog.modal-window::backdrop {
 .dr-alert-success { color: var(--success); border-color: rgba(16, 185, 129, 0.3); background: rgba(16, 185, 129, 0.08); }
 .dr-badge-muted { background: var(--panel-hover); color: var(--ink); border: 1px solid var(--line); }
 
-/* Facts are label/value rows on the page surface, divided by hairlines. */
-.dr-facts { margin: 8px 0 20px; border-top: 1px solid var(--line); }
-.dr-fact { display: grid; grid-template-columns: 8rem minmax(0, 1fr); align-items: baseline; gap: 2px 16px; padding: 8px 0; border-bottom: 1px solid var(--line); }
-.dr-fact-label { grid-row: span 2; font-size: 13px; color: var(--ink); }
+/* Facts are label/value rows on the page surface, divided by hairlines. The rows share one
+   label column, at least 8rem and wide enough for a label with its status badge (Backup). */
+.dr-facts { display: grid; grid-template-columns: minmax(8rem, max-content) minmax(0, 1fr); column-gap: 16px; margin: 8px 0 20px; border-top: 1px solid var(--line); }
+.dr-fact { grid-column: 1 / -1; display: grid; grid-template-columns: subgrid; align-items: baseline; row-gap: 2px; padding: 8px 0; border-bottom: 1px solid var(--line); }
+.dr-fact-label { grid-row: span 2; display: flex; flex-wrap: wrap; align-items: center; gap: 4px 8px; font-size: 13px; color: var(--ink); }
 .dr-fact-value { font-size: 15px; color: var(--ink-strong); overflow-wrap: anywhere; }
 .dr-fact-note { grid-column: 2; font-size: 13px; color: var(--ink); }
 /* The destructive action closes the page, apart from the everyday ones. */
@@ -540,7 +541,7 @@ textarea { border-radius: var(--ky-control-radius); }
   .app-header-actions > .app-user:first-child { border-left: 0; padding-left: 0; }
   .dr-page { padding: 24px 16px; }
   .app-nav a, .app-nav button { padding: 0 12px; }
-  .dr-fact { grid-template-columns: minmax(0, 1fr); }
+  .dr-facts { grid-template-columns: minmax(0, 1fr); }
   .dr-fact-label { grid-row: auto; }
   .dr-fact-note { grid-column: 1; }
 }
