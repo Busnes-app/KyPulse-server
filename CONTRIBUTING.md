@@ -17,7 +17,9 @@ self-check.
 
 - Access to aggregated health and log data is authenticated and authorized; there is no open status or log endpoint.
 - Logs can contain sensitive operational detail; never widen what is collected or exposed without an explicit decision, and never log secrets.
-- Polling uses the configured endpoints over HTTPS only.
+- Use HTTPS destinations in the supported strong configuration. Legacy HTTP
+  health targets retain their explicit compatibility scope and egress guards;
+  TLS policy does not upgrade a stored HTTP URL.
 - Do not add telemetry, phone-home, analytics, or unconfigured third-party
   services.
 - Do not add silent security fallbacks; fail closed with a readable error and a
@@ -30,6 +32,11 @@ self-check.
 Run the checks that apply to the files you changed, and the repository's
 full required checks before hand-off. Record the exact commands and their
 results in the pull request.
+
+Repeat full race suites with `GODEBUG=fips140=on` on both database backends.
+CI runs the configured suites within its existing jobs. Run the synthetic
+`python3 docs/check-strong-crypto-compose.py` preservation check and follow
+`docs/STRONG-CRYPTO.md` for original-key, sender and custody invariants.
 
 ## AI attribution
 

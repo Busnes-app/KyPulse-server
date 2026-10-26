@@ -18,6 +18,9 @@ and disclosure.
 
 ## Deployment requirements
 
+- Follow [Key strength and TLS](docs/STRONG-CRYPTO.md) for imported key floors,
+  the optional Go TLS profile, the independent HTTPS edge and preservation of
+  original audit/data/sender/recovery authority during migration.
 - Run behind HTTPS; never add a default that downgrades to cleartext.
 - Keep the database and backups private; stop the server before copying the data directory.
 - Set retention limits on stored logs and rate limits on authentication.

@@ -12,6 +12,13 @@ the repository root. Vulnerability reports go through the Busnes-app
 
 ## What kyPulse must protect
 
+The supported [key-strength/TLS configuration](STRONG-CRYPTO.md) records imported
+HMAC/RSA/TOTP floors, verifier-matched JWK parsing and complete verified TLS-chain
+policy. Original audit/data keys, source and sender authority and recovery custody
+remain intact. Monitoring egress limits, library-owned OIDC/recovery transport
+and the local Docker Unix socket have explicit ownership. The independent HTTPS
+edge and live endpoint/restore readiness require operational verification.
+
 kyPulse watches other apps: it polls their health endpoints, reads container state and logs from
 KyYard, accepts logs from paired senders, and sends webhook alerts. It never changes the apps it
 watches. Its security requirements:
