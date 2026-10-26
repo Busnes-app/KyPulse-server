@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { Bell, BellOff } from 'lucide-react';
+import { BellOff } from 'lucide-react';
 import { hrefFor } from '../router';
 import { ApiError, isSilenced, listAlerts, listTargets, timeLabel, type Target, type TargetEvent } from '../monitor';
 import type { PageUser } from './Status';
@@ -40,7 +40,7 @@ export const Alerts: React.FC<AlertsProps> = () => {
   return (
     <div className="dr-page">
       <div className="dr-header">
-        <h1 style={{ display: 'flex', alignItems: 'center', gap: 10 }}><Bell size={24} style={{ color: 'var(--accent)' }} />Alerts</h1>
+        <h1>Alerts</h1>
       </div>
       {error && <p className="form-error" role="alert">{error}</p>}
       {silenced.length > 0 && (

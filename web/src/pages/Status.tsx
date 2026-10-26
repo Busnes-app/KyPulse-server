@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useState } from 'react';
-import { Activity, Plus, BellOff } from 'lucide-react';
+import { Plus, BellOff } from 'lucide-react';
 import { TargetForm } from '../components/TargetForm';
 import { hrefFor } from '../router';
 import {
@@ -52,7 +52,7 @@ export const Status: React.FC<StatusProps> = ({ user, onChanged }) => {
   return (
     <div className="dr-page">
       <div className="dr-header">
-        <h1 style={{ display: 'flex', alignItems: 'center', gap: 10 }}><Activity size={24} style={{ color: 'var(--accent)' }} />Status</h1>
+        <h1>Status</h1>
         {isAdmin && !adding && (
           <button type="button" onClick={() => setAdding(true)}><Plus size={14} />Add app</button>
         )}
