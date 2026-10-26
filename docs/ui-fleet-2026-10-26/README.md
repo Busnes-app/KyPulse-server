@@ -11,6 +11,8 @@ Claude Opus 5.5 council; this record claims no score.
 | `00-before` | clean base `f5c6bd5` | main view and the existing theme control, before any change |
 | `01-after` | uncommitted tree, hash in `manifest-01-after.json` | first implementation pass, before the owner's 2026-10-26 corrections (nav selector removed, shared description copy). Kept as the record of that step |
 | `02-after` | final tree, hash in `manifest-02-after.json` | confirmation batch after the owner corrections and shared `4f83f34` |
+| `03-after` | `fa4a13c` with the new `nav.spec.mjs` untracked | fleet review F6 baseline. The phone Appearance captures load `#/appearance` directly, and its nav row is off-screen |
+| `04-after` | F6 fix, hash in `manifest-04-after.json` | the current row scrolls into view on the phone Appearance captures. Other differences are live fixture data only: alert times and loopback monitor URLs; the nav regions are pixel-identical |
 
 Each batch is light and dark (OS `prefers-color-scheme`, no saved choice) × 1280×900
 and 390×844 CSS px, device scale 1, full-page PNGs named
@@ -36,7 +38,7 @@ directory excluded), OS, driver, fixture, capture time and each PNG's SHA-256.
 
 ## Known limits and open defects
 
-- Mobile horizontal navigation does not scroll the current page into view (existing pattern), so Appearance can sit off-screen at 390px.
+- Fixed at stage 04 (fleet review F6): the phone navigation now scrolls the current row into view on every route change.
 - Full-page captures show the sticky sidebar ending at viewport height; real scrolling keeps it pinned.
 - Settings panels still carry accent-coloured section icons and boxed cards; a forms pass was not done.
 - Stage 01 previews are blank: they were captured before the shared preview stylesheet existed. Stage 02 is the confirmation.

@@ -1,0 +1,110 @@
+{
+  "product": "kyPulse-server",
+  "stage": "04",
+  "phase": "after",
+  "captured_at": "2026-10-26T13:26:03.269Z",
+  "source_commit": "fa4a13c67faa5ed1f17493397e3c1f37816a05bc",
+  "uncommitted_source_sha256": "df7e7ef70ae305f4221d80da63e49a472218d788cffcfac12c914336d6c1f046",
+  "os": "Linux 7.2.10-1-cachyos",
+  "driver": "Playwright 1.63.0 Chromium 153.0.8010.12, device scale 1, service workers blocked",
+  "server": "disposable .browser/server on loopback with temporary SQLite data, removed after capture",
+  "fixture": "synthetic: admin account; three watched apps (Billing API ok, Mail relay degraded, Backup agent down) served by a capture-owned fake health endpoint on a private bridge address",
+  "shots": [
+    {
+      "file": "kypulse-04-after-status-desktop-light.png",
+      "sha256": "5dd3f43c80e44889f6d7135f7d48f77b1317409a3a727cc6d93c9939cc0a3e82",
+      "surface": "status",
+      "url": "#/status",
+      "device": "desktop",
+      "viewport": {
+        "width": 1280,
+        "height": 900
+      },
+      "theme_source": "OS light (prefers-color-scheme), no saved choice"
+    },
+    {
+      "file": "kypulse-04-after-appearance-desktop-light.png",
+      "sha256": "dd0ae5f8b903317cfb3c4e9dcd35dd850ae8b152c3d3384386ecaf39a615e9a5",
+      "surface": "appearance",
+      "url": "#/appearance",
+      "device": "desktop",
+      "viewport": {
+        "width": 1280,
+        "height": 900
+      },
+      "theme_source": "OS light (prefers-color-scheme), no saved choice"
+    },
+    {
+      "file": "kypulse-04-after-status-mobile-light.png",
+      "sha256": "075244c56009c5ae104be6a4ba6733d0918a1b84f7af97651021fedd2b0e5259",
+      "surface": "status",
+      "url": "#/status",
+      "device": "mobile",
+      "viewport": {
+        "width": 390,
+        "height": 844
+      },
+      "theme_source": "OS light (prefers-color-scheme), no saved choice"
+    },
+    {
+      "file": "kypulse-04-after-appearance-mobile-light.png",
+      "sha256": "6a949a0bb18205cca6a026b8590a14a27c2458f16526c591bb95dc56ef4d0c61",
+      "surface": "appearance",
+      "url": "#/appearance",
+      "device": "mobile",
+      "viewport": {
+        "width": 390,
+        "height": 844
+      },
+      "theme_source": "OS light (prefers-color-scheme), no saved choice"
+    },
+    {
+      "file": "kypulse-04-after-status-desktop-dark.png",
+      "sha256": "08e8e5e0a495cb6e9cff40ce5d7477a945542c8178e662266195b0069160c3c9",
+      "surface": "status",
+      "url": "#/status",
+      "device": "desktop",
+      "viewport": {
+        "width": 1280,
+        "height": 900
+      },
+      "theme_source": "OS dark (prefers-color-scheme), no saved choice"
+    },
+    {
+      "file": "kypulse-04-after-appearance-desktop-dark.png",
+      "sha256": "461670c06026b88d7ceccb0a198e3e7ec285dc15de3e248e0cfefc10b9685138",
+      "surface": "appearance",
+      "url": "#/appearance",
+      "device": "desktop",
+      "viewport": {
+        "width": 1280,
+        "height": 900
+      },
+      "theme_source": "OS dark (prefers-color-scheme), no saved choice"
+    },
+    {
+      "file": "kypulse-04-after-status-mobile-dark.png",
+      "sha256": "458a10a52edb087e2649255b39eb0c5b088eb89ee5901854583ad75e49bde9a9",
+      "surface": "status",
+      "url": "#/status",
+      "device": "mobile",
+      "viewport": {
+        "width": 390,
+        "height": 844
+      },
+      "theme_source": "OS dark (prefers-color-scheme), no saved choice"
+    },
+    {
+      "file": "kypulse-04-after-appearance-mobile-dark.png",
+      "sha256": "9f9e6c2b92537f645f26fe4c37e61859a8fa5c9c608c7a759c260f6e998f3a46",
+      "surface": "appearance",
+      "url": "#/appearance",
+      "device": "mobile",
+      "viewport": {
+        "width": 390,
+        "height": 844
+      },
+      "theme_source": "OS dark (prefers-color-scheme), no saved choice"
+    }
+  ]
+}
