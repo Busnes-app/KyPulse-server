@@ -109,13 +109,12 @@ export const AppDetail: React.FC<AppDetailProps> = ({ id, user, onChanged }) => 
   const failing = target.enabled && !!target.last_polled_at && target.state !== 'ok';
   return (
     <div className="dr-page">
-      <p className="dr-hint"><a href={hrefFor('/status')}><ArrowLeft size={14} style={{ verticalAlign: 'middle' }} /> Status</a></p>
+      <p className="dr-hint"><a href={hrefFor('/status')}><ArrowLeft size={14} aria-hidden="true" />Status</a></p>
       <div className="dr-header">
         <h1>{target.name}</h1>
         {isAdmin && !editing && (
           <div className="dr-actions">
             <button type="button" className="btn-secondary" onClick={() => setEditing(true)} disabled={busy}><Pencil size={14} />Edit</button>
-            <button type="button" className="btn-danger" onClick={remove} disabled={busy}><Trash2 size={14} />Delete</button>
           </div>
         )}
       </div>
@@ -210,6 +209,14 @@ export const AppDetail: React.FC<AppDetailProps> = ({ id, user, onChanged }) => 
           </div>
         )}
       </div>
+
+      {isAdmin && !editing && (
+        <div className="dr-section dr-remove">
+          <h3>Stop watching</h3>
+          <p className="dr-hint">Its alert history is deleted too.</p>
+          <button type="button" className="btn-danger" onClick={remove} disabled={busy}><Trash2 size={14} />Delete</button>
+        </div>
+      )}
     </div>
   );
 };
