@@ -6,6 +6,7 @@ import (
 	"path/filepath"
 
 	"github.com/Busnes-app/ky-primitives/applysetup"
+	"github.com/Busnes-app/kypulse-server/internal/crypto"
 )
 
 // InstallerSocket is private IPC; it is never mounted on the public HTTP router.
@@ -37,6 +38,9 @@ func ApplyInstallerConfiguration(cfg *Config, b applysetup.Common) error {
 		directorySecret, err := applysetup.Secret(s.DirectorySecretFile)
 		if err != nil {
 			return err
+		}
+		if len(directorySecret) < crypto.MinHMACKeyBytes {
+			return errors.New("directory signing secret must contain at least 16 bytes")
 		}
 		if cfg.SSO.AutoProvision && (cfg.SSO.KySignOnIssuer != "" || os.Getenv("KYPULSE_SSO_AUTO_PROVISION") != "") || cfg.SSO.GenericOIDCIssuer != "" || cfg.SSO.SAMLMetadataURL != "" {
 			return errors.New("installer refuses conflicting authentication or automatic provisioning")

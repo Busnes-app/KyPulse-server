@@ -22,14 +22,17 @@ Design authority: `docs/superpowers/specs/2026-09-26-kypulse-design.md`. Plans l
 - `web/`: the React PWA, embedded into the binary from `web/dist`.
 - `scripts/`: smoke test.
 - `docs/RESTORE.md`: restore runbook.
+- `docs/STRONG-CRYPTO.md`, `docker-compose.strong-crypto.yml` and
+  `docs/check-strong-crypto-compose.py`: supported key/TLS configuration,
+  migration and synthetic deployment-preservation proof.
 
 ## Local Contracts
 
 - Container-local installer setup uses the shared `ky.product-setup/1` envelope and private runtime-owned Unix socket, never a public setup route. Discover capabilities before using it; read [installer setup](docs/INSTALLER_SETUP.md). New identities and monitoring targets/sources are explicitly owned; foreign objects are not adopted. Saved runtime configuration activates at graceful restart; monitoring rows activate live. Read-only inspection verifies ownership and current state. KyIdentity offboarding arrives as a syncauth v1 signed directory delivery that only sets owned identities' availability and ends their sessions. The adapter supports local backup configuration; recovery pairing and KyYard enrollment remain explicit follow-on gates.
 
 - Module `github.com/Busnes-app/kypulse-server`; binary `kypulse`; image
-  `ghcr.io/busnes-app/kypulse-server`; every setting is `KYPULSE_*` except the suite-wide
-  `KY_LOG_LEVEL`.
+  `ghcr.io/busnes-app/kypulse-server`; application settings are `KYPULSE_*` except
+  suite-wide `KY_LOG_LEVEL`. The documented Go runtime profile uses `GODEBUG`.
 - Two roles, `admin` and `viewer`; the store refuses anything else and identity providers map
   through `sso.RoleFor`. Every admin-only route answers 403 to a viewer. A viewer sees Status,
   Alerts, app detail pages and Settings & DB (read-only, no webhook form); Backup and every
@@ -70,12 +73,20 @@ Design authority: `docs/superpowers/specs/2026-09-26-kypulse-design.md`. Plans l
 - Follow the suite root's engineering principles and the KyRecovery integration contract.
 - Business rules (health normalisation, alert transitions, retention) are pure functions the
   handlers and scheduler call.
-- Outbound HTTP goes through `internal/egress`: private and LAN targets allowed, loopback and
-  link-local refused, no redirects.
+- Monitoring, KyYard, webhook and sender network HTTP goes through `internal/egress`:
+  private/LAN targets allowed, loopback and link-local refused, no redirects.
+  OIDC and recovery retain their maintained libraries' transport integration;
+  SSO and the shared recovery client own their additional policy. Local Docker
+  reads use a Unix socket. The process TLS profile applies across Go HTTPS clients.
+- Preserve original session/encryption/audit keys, source authority, sender state
+  and recovery custody when enabling the profile; follow `docs/STRONG-CRYPTO.md`.
 
 ## Verification
 
 - `make ci`: tidy check, gofmt, vet, race tests, frontend tests, smoke test.
+- Repeat full race suites with `GODEBUG=fips140=on` on SQLite and PostgreSQL;
+  CI covers both within existing required jobs. The synthetic Compose checker
+  verifies base/build/LAN-DNS/static-IP combinations without starting services.
 - `.github/workflows/ci.yml` additionally builds the release binary twice from different directories and requires identical bytes (the Dockerfile's `-trimpath` makes that hold), and runs Postgres tests, Playwright browser regressions,
   govulncheck, the Docker image smoke and the image-coordinate check.
 - The version has one source: `internal/appversion/VERSION` (`X.Y.Z`, the release line; `web/package.json` has no version). Go code calls `appversion.String()`; a release image build sets the tag's full version through `-ldflags -X …/internal/appversion.release`, so images report `X.Y.Z` or `X.Y.Z.N` and source builds report the line.
