@@ -13,6 +13,8 @@ Claude Opus 5.5 council; this record claims no score.
 | `02-after` | final tree, hash in `manifest-02-after.json` | confirmation batch after the owner corrections and shared `4f83f34` |
 | `03-after` | `fa4a13c` with the new `nav.spec.mjs` untracked | fleet review F6 baseline. The phone Appearance captures load `#/appearance` directly, and its nav row is off-screen |
 | `04-after` | F6 fix, hash in `manifest-04-after.json` | the current row scrolls into view on the phone Appearance captures. Other differences are live fixture data only: alert times and loopback monitor URLs; the nav regions are pixel-identical |
+| `05-after` | clean `0c71a33` (master after #48), pre-F7 build | fleet review F7 baseline. Adds `app-delete-sky` and `app-delete-forest`: the real Delete button on the synthetic Backup agent page under a saved Sky or Forest palette. On Sky the label is dark on dark red |
+| `06-after` | F7 fix, hash in `manifest-06-after.json` | the Sky label is light on the same fill; Forest is unchanged to the eye. Every other difference from stage 05 is live fixture data (alert times, loopback addresses) |
 
 Each batch is light and dark (OS `prefers-color-scheme`, no saved choice) × 1280×900
 and 390×844 CSS px, device scale 1, full-page PNGs named

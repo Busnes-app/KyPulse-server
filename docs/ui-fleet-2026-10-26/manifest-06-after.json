@@ -1,0 +1,206 @@
+{
+  "product": "kyPulse-server",
+  "stage": "06",
+  "phase": "after",
+  "captured_at": "2026-10-26T14:41:42.047Z",
+  "source_commit": "0c71a339ccd8c537c2c6d1b9c17d7795f17e5b8b",
+  "uncommitted_source_sha256": "07b3f1f16a53e908e34338189e74a08acc0f6c683d46b78bf7e8ec7fdefe8b45",
+  "os": "Linux 7.2.10-1-cachyos",
+  "driver": "Playwright 1.63.0 Chromium 153.0.8010.12, device scale 1, service workers blocked",
+  "server": "disposable .browser/server on loopback with temporary SQLite data, removed after capture",
+  "fixture": "synthetic: admin account; three watched apps (Billing API ok, Mail relay degraded, Backup agent down) served by a capture-owned fake health endpoint on a private bridge address",
+  "shots": [
+    {
+      "file": "kypulse-06-after-status-desktop-light.png",
+      "sha256": "951d6631a953970da9da59d0feb477cae3ab73c1e6990e3a2ad6e4e513710f1e",
+      "surface": "status",
+      "url": "#/status",
+      "device": "desktop",
+      "viewport": {
+        "width": 1280,
+        "height": 900
+      },
+      "theme_source": "OS light (prefers-color-scheme), no saved choice"
+    },
+    {
+      "file": "kypulse-06-after-appearance-desktop-light.png",
+      "sha256": "c1df7175d634e34a55e20f550f4cc16acf6f4f4e08b84ea5bdd52fc2b5faea4a",
+      "surface": "appearance",
+      "url": "#/appearance",
+      "device": "desktop",
+      "viewport": {
+        "width": 1280,
+        "height": 900
+      },
+      "theme_source": "OS light (prefers-color-scheme), no saved choice"
+    },
+    {
+      "file": "kypulse-06-after-app-delete-sky-desktop-light.png",
+      "sha256": "a9328db07a84036494db1547dcc2d2e7bfb0cd656d30163858f4147db0f12f00",
+      "surface": "app-delete-sky",
+      "url": "#/apps/tgt_6070c04b1c4315dc",
+      "device": "desktop",
+      "viewport": {
+        "width": 1280,
+        "height": 900
+      },
+      "theme_source": "saved choice sky; OS light (prefers-color-scheme)"
+    },
+    {
+      "file": "kypulse-06-after-app-delete-forest-desktop-light.png",
+      "sha256": "6660c895e38cbe1a4d9d4921a836d0d4fe8fd049fbbb6c37ad5fa5c616c7060a",
+      "surface": "app-delete-forest",
+      "url": "#/apps/tgt_6070c04b1c4315dc",
+      "device": "desktop",
+      "viewport": {
+        "width": 1280,
+        "height": 900
+      },
+      "theme_source": "saved choice forest; OS light (prefers-color-scheme)"
+    },
+    {
+      "file": "kypulse-06-after-status-mobile-light.png",
+      "sha256": "2f9cf15e152d4863b242121c7f5d41308adfb95a143a3dc86e5603f403c462fd",
+      "surface": "status",
+      "url": "#/status",
+      "device": "mobile",
+      "viewport": {
+        "width": 390,
+        "height": 844
+      },
+      "theme_source": "OS light (prefers-color-scheme), no saved choice"
+    },
+    {
+      "file": "kypulse-06-after-appearance-mobile-light.png",
+      "sha256": "32933e356ebacaf4ca49b403fc73338028bc62c9de7872a36fbb9e00ec427140",
+      "surface": "appearance",
+      "url": "#/appearance",
+      "device": "mobile",
+      "viewport": {
+        "width": 390,
+        "height": 844
+      },
+      "theme_source": "OS light (prefers-color-scheme), no saved choice"
+    },
+    {
+      "file": "kypulse-06-after-app-delete-sky-mobile-light.png",
+      "sha256": "2c23ceeef37cff4e5cdab9cb7f291414fe4ad5c3b31f301c709af098121b27a2",
+      "surface": "app-delete-sky",
+      "url": "#/apps/tgt_6070c04b1c4315dc",
+      "device": "mobile",
+      "viewport": {
+        "width": 390,
+        "height": 844
+      },
+      "theme_source": "saved choice sky; OS light (prefers-color-scheme)"
+    },
+    {
+      "file": "kypulse-06-after-app-delete-forest-mobile-light.png",
+      "sha256": "cbc0b06850e590017f324dd27a4d722312ce15c65034c3cd44481ccc5e8a6920",
+      "surface": "app-delete-forest",
+      "url": "#/apps/tgt_6070c04b1c4315dc",
+      "device": "mobile",
+      "viewport": {
+        "width": 390,
+        "height": 844
+      },
+      "theme_source": "saved choice forest; OS light (prefers-color-scheme)"
+    },
+    {
+      "file": "kypulse-06-after-status-desktop-dark.png",
+      "sha256": "a864339e36da09bdfdcf30009cfc55c6f7f853428e174625b8a9b8540e6ea7ed",
+      "surface": "status",
+      "url": "#/status",
+      "device": "desktop",
+      "viewport": {
+        "width": 1280,
+        "height": 900
+      },
+      "theme_source": "OS dark (prefers-color-scheme), no saved choice"
+    },
+    {
+      "file": "kypulse-06-after-appearance-desktop-dark.png",
+      "sha256": "3f76a5c0743daafcfd96614212132db6c7359bbec55459fc2a9d465302a71127",
+      "surface": "appearance",
+      "url": "#/appearance",
+      "device": "desktop",
+      "viewport": {
+        "width": 1280,
+        "height": 900
+      },
+      "theme_source": "OS dark (prefers-color-scheme), no saved choice"
+    },
+    {
+      "file": "kypulse-06-after-app-delete-sky-desktop-dark.png",
+      "sha256": "ba794e378b261325193a3e7f034d62c427b4d769a1da2d6053e9f481c72d1c6a",
+      "surface": "app-delete-sky",
+      "url": "#/apps/tgt_6070c04b1c4315dc",
+      "device": "desktop",
+      "viewport": {
+        "width": 1280,
+        "height": 900
+      },
+      "theme_source": "saved choice sky; OS dark (prefers-color-scheme)"
+    },
+    {
+      "file": "kypulse-06-after-app-delete-forest-desktop-dark.png",
+      "sha256": "b1988ca5bc2576de4cf11380000434daef1052ad1c739d334ce385850244c846",
+      "surface": "app-delete-forest",
+      "url": "#/apps/tgt_6070c04b1c4315dc",
+      "device": "desktop",
+      "viewport": {
+        "width": 1280,
+        "height": 900
+      },
+      "theme_source": "saved choice forest; OS dark (prefers-color-scheme)"
+    },
+    {
+      "file": "kypulse-06-after-status-mobile-dark.png",
+      "sha256": "382aacb0e89f57ab93b0c1cf771fe6380bc8c698091e23792dab516317eb3a75",
+      "surface": "status",
+      "url": "#/status",
+      "device": "mobile",
+      "viewport": {
+        "width": 390,
+        "height": 844
+      },
+      "theme_source": "OS dark (prefers-color-scheme), no saved choice"
+    },
+    {
+      "file": "kypulse-06-after-appearance-mobile-dark.png",
+      "sha256": "b504c072722b8efea7752410aa26f1804c26ee8ccacae30d542286087efa5563",
+      "surface": "appearance",
+      "url": "#/appearance",
+      "device": "mobile",
+      "viewport": {
+        "width": 390,
+        "height": 844
+      },
+      "theme_source": "OS dark (prefers-color-scheme), no saved choice"
+    },
+    {
+      "file": "kypulse-06-after-app-delete-sky-mobile-dark.png",
+      "sha256": "799d4926d3fd8c48993cb8140e1e49e60baffddabd091078ac67ec1e84cdcc71",
+      "surface": "app-delete-sky",
+      "url": "#/apps/tgt_6070c04b1c4315dc",
+      "device": "mobile",
+      "viewport": {
+        "width": 390,
+        "height": 844
+      },
+      "theme_source": "saved choice sky; OS dark (prefers-color-scheme)"
+    },
+    {
+      "file": "kypulse-06-after-app-delete-forest-mobile-dark.png",
+      "sha256": "fd2185ff96f1cca60999f0a95ca2f76b386c5080eb7b6489b5cdfc1d8a204a25",
+      "surface": "app-delete-forest",
+      "url": "#/apps/tgt_6070c04b1c4315dc",
+      "device": "mobile",
+      "viewport": {
+        "width": 390,
+        "height": 844
+      },
+      "theme_source": "saved choice forest; OS dark (prefers-color-scheme)"
+    }
+  ]
+}

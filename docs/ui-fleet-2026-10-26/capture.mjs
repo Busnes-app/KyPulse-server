@@ -73,6 +73,10 @@ const surfaces = {
   status: { hash: '#/status', ready: 'Status' },
   appearance: { hash: phase === 'before' ? '#/settings' : '#/appearance', ready: phase === 'before' ? 'Settings' : 'Appearance' },
 };
+// Fleet review F7: the real filled Delete button on an app's page, under a saved light (Sky) and
+// dark (Forest) suite palette. The button is only shown, never clicked.
+const dangerSurfaces = stage >= '05' ? { 'app-delete-sky': 'sky', 'app-delete-forest': 'forest' } : {};
+const targetIds = {};
 
 try {
   const browser = await chromium.launch();
@@ -85,13 +89,14 @@ try {
   await api(setup.request, 'POST', '/api/auth/change-password', { current_password: 'CaptureInitial123!', new_password: password });
   await api(setup.request, 'POST', '/api/auth/login', { username: 'admin', password });
   for (const [name, path] of [['Billing API', '/billing'], ['Mail relay', '/relay'], ['Backup agent', '/backup']]) {
-    await api(setup.request, 'POST', '/api/targets', { name, url: fakeBase + path, interval_sec: 10, enabled: true });
+    targetIds[name] = (await api(setup.request, 'POST', '/api/targets', { name, url: fakeBase + path, interval_sec: 10, enabled: true })).target.id;
   }
   for (let i = 0; i < 90; i++) {
     const s = await api(setup.request, 'GET', '/api/status');
     if (s.pending === 0 && s.down > 0) break;
     await new Promise(r => setTimeout(r, 1000));
   }
+  for (const [surface, saved] of Object.entries(dangerSurfaces)) surfaces[surface] = { hash: `#/apps/${targetIds['Backup agent']}`, ready: 'Backup agent', saved };
   const storage = await setup.storageState();
   await setup.close();
 
@@ -104,13 +109,15 @@ try {
       const page = await ctx.newPage();
       for (const [surface, s] of Object.entries(surfaces)) {
         await page.goto('/' + s.hash);
+        await page.evaluate(v => v ? localStorage.setItem('ky_theme', v) : localStorage.removeItem('ky_theme'), s.saved ?? null);
+        await page.reload();
         await page.getByRole('heading', { name: s.ready, exact: true }).first().waitFor();
         if (surface === 'status') await page.getByText('Backup agent', { exact: true }).first().waitFor();
         await page.evaluate(() => document.fonts.ready);
         await page.waitForTimeout(300);
         const file = `kypulse-${stage}-${phase}-${surface}-${device}-${theme}.png`;
         const bytes = await page.screenshot({ path: join(out, file), fullPage: true });
-        shots.push({ file, sha256: sha(bytes), surface, url: s.hash, device, viewport, theme_source: `OS ${theme} (prefers-color-scheme), no saved choice` });
+        shots.push({ file, sha256: sha(bytes), surface, url: s.hash, device, viewport, theme_source: s.saved ? `saved choice ${s.saved}; OS ${theme} (prefers-color-scheme)` : `OS ${theme} (prefers-color-scheme), no saved choice` });
       }
       await ctx.close();
     }
