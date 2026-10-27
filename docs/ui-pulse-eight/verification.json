@@ -1,7 +1,7 @@
 {
   "product_source": "f4fa42268b06db30bcc584846586f604912b2889",
   "shared_source": "a7e93b7",
-  "status": "Local final browser and PostgreSQL FIPS are still in flight; no full acceptance claim.",
+  "status": "Final browser suite in flight; other required local checks passed. No full acceptance claim.",
   "checks": {
     "make_ci": {
       "evidence": "checks/make_ci.txt",
@@ -80,9 +80,11 @@
       "status": "pass"
     },
     "postgres": {
-      "status": "in flight",
-      "log": "/tmp/kypulse-eight-r2-final-postgres.log",
-      "earlier_normal_and_fips": "pass at0.4.2; repeating after embedded0.4.3 assets changed"
+      "status": "pass",
+      "evidence": "checks/postgres.txt",
+      "raw_sha256": "85f600ece186f7e768febb5e56c01f584386b6da938b1ac7cf759ff1d91b8114",
+      "sha256": "85f600ece186f7e768febb5e56c01f584386b6da938b1ac7cf759ff1d91b8114",
+      "commands": "go test -race -count=1 ./... against PostgreSQL17, repeated with GODEBUG=fips140=on; owned container removed"
     },
     "browser": {
       "status": "in flight",
