@@ -13,5 +13,10 @@
     "repository": "Busnes-app/ky-ui",
     "url": "https://github.com/Busnes-app/ky-ui/pull/26",
     "status": "Merged externally2026-10-27T05:34:43Z at58626b7; merge b4870e5. This agent did not merge."
+  },
+  {
+    "repository": "Busnes-app/KyPulse-server",
+    "url": "https://github.com/Busnes-app/KyPulse-server/pull/54",
+    "status": "Open report-only follow-up: final Gemini advisory and parent audit, null-rating exports. Primary captured visual gate achieved; current-head CI/security pending. No merge/deploy by this agent."
   }
 ]
