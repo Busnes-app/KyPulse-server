@@ -73,6 +73,7 @@ it('clears retained rows and signals shell sign-out on authorization failure', a
 });
 it('distinguishes an unlogged app from an empty filtered activity page', async () => {
  let retained = true;stub(async () => response({ items: [], next_before_id: 0, bursts: [], has_app_events: retained }));
- render(<Activity user={{ role: 'admin' }} />);fireEvent.change(screen.getByLabelText('Activity app'), { target: { value: 'vault' } });fireEvent.click(screen.getByRole('button', { name: 'Apply' }));await screen.findByText(/No audit events match/);expect(screen.queryByText(/no audit events: not on shared logging/)).toBeNull();
+ render(<Activity user={{ role: 'admin' }} />);await screen.findByText('No audit events found in the retained 7-day window.');fireEvent.change(screen.getByLabelText('Activity app'), { target: { value: 'vault' } });expect(screen.getByText('No audit events found in the retained 7-day window.')).toBeTruthy();fireEvent.click(screen.getByRole('button', { name: 'Apply' }));await screen.findByText(/No audit events match/);expect(screen.queryByText(/no audit events: not on shared logging/)).toBeNull();
  retained = false;fireEvent.click(screen.getByRole('button', { name: 'Apply' }));expect(await screen.findByText(/no audit events: not on shared logging/)).toBeTruthy();
+ fireEvent.click(screen.getByRole('button', { name: 'Clear' }));expect(await screen.findByText('No audit events found in the retained 7-day window.')).toBeTruthy();
 });

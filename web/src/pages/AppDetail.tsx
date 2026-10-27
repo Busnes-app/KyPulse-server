@@ -146,7 +146,7 @@ export const AppDetail: React.FC<AppDetailProps> = ({ id, user, onChanged }) => 
         <div className="dr-section">
           <h3>Silence webhook messages</h3>
           <p className="dr-hint">The alert bar and this page keep showing the problem; only webhook messages stop.</p>
-          <div className="dr-actions">
+          <div className="dr-actions silence-actions">
             <button type="button" className="btn-secondary" disabled={busy} onClick={() => silence('1h')}>Silence 1h</button>
             <button type="button" className="btn-secondary" disabled={busy} onClick={() => silence('8h')}>Silence 8h</button>
             <button type="button" className="btn-secondary" disabled={busy} onClick={() => silence('until_fixed')}>Silence until fixed</button>

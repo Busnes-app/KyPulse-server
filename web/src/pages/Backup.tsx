@@ -338,7 +338,6 @@ export const Backup: React.FC = () => {
           <h3>
             <Server size={16} /> KyRecovery
           </h3>
-          <Badge tone={paired ? 'success' : 'muted'}>{paired ? 'Paired' : 'Not paired'}</Badge>
         </div>
         <p className="dr-hint">
           KyRecovery keeps capsules it cannot open, off this host. In its dashboard, generate a pairing code for this service and enter it
@@ -384,7 +383,6 @@ export const Backup: React.FC = () => {
           <h3>
             <KeyRound size={16} /> Recovery key by hand
           </h3>
-          <Badge tone={keyPinned ? 'success' : 'danger'}>{keyPinned ? 'Pinned' : 'None'}</Badge>
         </div>
         {keyPinned ? (
           <p className="dr-hint">
@@ -419,11 +417,6 @@ export const Backup: React.FC = () => {
             </form>
             {pinError && <Alert kind="error">{pinError}</Alert>}
           </>
-        )}
-        {hasLocal && (
-          <p className="dr-hint">
-            Local copies land in {status?.local_dir}; the newest {status?.local_keep} are kept.
-          </p>
         )}
       </div>
     </div>
