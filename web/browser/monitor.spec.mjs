@@ -30,7 +30,12 @@ test.beforeAll(async () => {
   await new Promise((r) => server.listen(0, '0.0.0.0', r));
   base = `http://${ip}:${server.address().port}`;
 });
-test.afterAll(async () => { if (server) await new Promise((r) => server.close(r)); });
+test.afterAll(async () => {
+  if (server) await new Promise(resolve => {
+    server.close(resolve);
+    server.closeAllConnections();
+  });
+});
 
 async function signIn(page) {
   await page.goto('/');

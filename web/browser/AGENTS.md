@@ -33,6 +33,8 @@ This directory owns test setup, disposable server launch and UI assertions. The 
 
 ## Work Guidance
 
+Owned fake HTTP servers close all remaining connections during teardown, after workflow assertions and API cleanup; pooled or incomplete requests must not hold the server-close callback open.
+
 Prefer browser-native behavior and assertions over screenshot-only checks. A passing suite covers these workflows, not every page or a complete accessibility audit.
 
 ## Verification

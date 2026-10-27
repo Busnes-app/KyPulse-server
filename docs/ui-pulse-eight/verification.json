@@ -1,7 +1,7 @@
 {
   "product_source": "f4fa42268b06db30bcc584846586f604912b2889",
   "shared_source": "a7e93b7",
-  "status": "Final browser suite in flight; other required local checks passed. No full acceptance claim.",
+  "status": "Final browser run:19passed,4intentional skips,1afterAll fixture teardown timeout. Owned fake-server connection cleanup fixed; verification rerun pending.",
   "checks": {
     "make_ci": {
       "evidence": "checks/make_ci.txt",
@@ -87,9 +87,12 @@
       "commands": "go test -race -count=1 ./... against PostgreSQL17, repeated with GODEBUG=fips140=on; owned container removed"
     },
     "browser": {
-      "status": "in flight",
-      "log": "/tmp/kypulse-eight-r2-final-browser.log",
-      "earlier": "20passed,4 intentional skips at0.4.2; repeating after0.4.3"
+      "status": "failed in fixture teardown; correction under verification",
+      "evidence": "checks/browser-teardown-failed.txt",
+      "sha256": "b50bd5f0552a84f8605da20a45c932e1841c6de902e0fb3184de2ce30dbb8547",
+      "raw_sha256": "e3e4eeb0bf3eab328948af183020d019d5c54e5b43238f3c9229af40186dd3e2",
+      "failure": "dark-390 logs afterAll:server.close callback timed out45s; UI workflow assertions completed",
+      "reproduction": "Owned local HTTP server with partial request holds close callback; closeAllConnections releases it. No application behavior changed."
     }
   },
   "limitations": [

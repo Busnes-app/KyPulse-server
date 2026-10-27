@@ -23,7 +23,12 @@ test.beforeAll(async () => {
   await new Promise(resolve => yard.listen(0, '0.0.0.0', resolve));
   yardURL = `http://${ip}:${yard.address().port}`;
 });
-test.afterAll(async () => { if (yard) await new Promise(resolve => yard.close(resolve)); });
+test.afterAll(async () => {
+  if (yard) await new Promise(resolve => {
+    yard.close(resolve);
+    yard.closeAllConnections();
+  });
+});
 
 async function signIn(page, username = 'admin') {
   await page.goto('/');
