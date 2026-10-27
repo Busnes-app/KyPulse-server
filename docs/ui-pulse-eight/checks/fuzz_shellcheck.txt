@@ -1,0 +1,22 @@
+fuzz: elapsed: 0s, gathering baseline coverage: 0/51 completed
+fuzz: elapsed: 0s, gathering baseline coverage: 51/51 completed, now fuzzing with 20 workers
+fuzz: elapsed: 3s, execs: 95056 (31683/sec), new interesting: 112 (total: 163)
+fuzz: elapsed: 5s, execs: 100000 (2081/sec), new interesting: 113 (total: 164)
+PASS
+ok  	github.com/Busnes-app/kypulse-server/internal/ingest	5.386s
+fuzz: elapsed: 0s, gathering baseline coverage: 0/305 completed
+fuzz: elapsed: 0s, gathering baseline coverage: 305/305 completed, now fuzzing with 20 workers
+fuzz: elapsed: 3s, execs: 481460 (160469/sec), new interesting: 55 (total: 360)
+fuzz: elapsed: 5s, execs: 500000 (8026/sec), new interesting: 56 (total: 361)
+PASS
+ok  	github.com/Busnes-app/kypulse-server/internal/poller	5.491s
+fuzz: elapsed: 0s, gathering baseline coverage: 0/32 completed
+fuzz: elapsed: 0s, gathering baseline coverage: 32/32 completed, now fuzzing with 20 workers
+fuzz: elapsed: 1s, execs: 50014 (34833/sec), new interesting: 23 (total: 55)
+PASS
+ok  	github.com/Busnes-app/kypulse-server/internal/kyyard	2.278s
+fuzz: elapsed: 0s, gathering baseline coverage: 0/71 completed
+fuzz: elapsed: 0s, gathering baseline coverage: 71/71 completed, now fuzzing with 20 workers
+fuzz: elapsed: 3s, execs: 200000 (77411/sec), new interesting: 32 (total: 103)
+PASS
+ok  	github.com/Busnes-app/kypulse-server/internal/logstore	2.598s

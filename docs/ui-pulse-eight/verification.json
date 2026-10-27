@@ -1,0 +1,90 @@
+{
+  "product_source": "f4fa42268b06db30bcc584846586f604912b2889",
+  "shared_source": "a7e93b7",
+  "status": "Local final browser and PostgreSQL FIPS are still in flight; no full acceptance claim.",
+  "checks": {
+    "make_ci": {
+      "evidence": "checks/make_ci.txt",
+      "sha256": "9246c76ca4adb7e05d92f92126ff539f69fe6b18f12b2a08a903e64204df4dbf",
+      "status": "pass"
+    },
+    "sqlite_fips": {
+      "evidence": "checks/sqlite_fips.txt",
+      "sha256": "d76ef4f88e16e141d522c5e6f9ec780a7c7558c898b2b932e65c763048d1828c",
+      "status": "pass"
+    },
+    "frontend": {
+      "evidence": "checks/frontend.txt",
+      "sha256": "7ae1e319264fd5ed05eb7d4e0fc030d089fc0c75f8c3941f68ba9d86eb55c629",
+      "status": "pass"
+    },
+    "docker_build": {
+      "evidence": "checks/docker_build.txt",
+      "sha256": "cc8ffa8b3716627b8d813a72dbcce19636ec301d3cd8f5fc44e1e001d3c47145",
+      "status": "pass"
+    },
+    "govulncheck": {
+      "evidence": "checks/govulncheck.txt",
+      "sha256": "b5ae54ddcfa4cb39e85f84ad2d9e43556bd817c480eaab2a71bab63bfc29353b",
+      "status": "pass"
+    },
+    "fuzz_shellcheck": {
+      "evidence": "checks/fuzz_shellcheck.txt",
+      "sha256": "4867ac046a4763943ef58774df1a941bb2c5444fda64b99b1b1e0160d8f62064",
+      "status": "pass"
+    },
+    "coordinates": {
+      "evidence": "checks/coordinates.txt",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "status": "pass"
+    },
+    "shared_check": {
+      "evidence": "checks/shared_check.txt",
+      "sha256": "5c4aec9f3160a35f9c4535a2c8a6f09108b6fe336820b7b9dcfb1b07d830ddb3",
+      "status": "pass"
+    },
+    "shared_browser": {
+      "evidence": "checks/shared_browser.txt",
+      "sha256": "e9a54a595dff735f4c2a09c11ba7d0b358b7ce5c0c262b66ccec1863d9d6be4e",
+      "status": "pass"
+    },
+    "shared_regression_red": {
+      "evidence": "checks/shared_regression_red.txt",
+      "sha256": "06ffea6d1ba35f55f9fb4e13a3df584390df5a56940a491c49bcbd5629512ead",
+      "status": "expected regression failure before fix"
+    },
+    "impeccable": {
+      "evidence": "checks/impeccable.txt",
+      "sha256": "6a2d1b9c8d8665e08c7471d8f987e29c784f4edb5a7f28595d84f431fa508429",
+      "status": "reported findings"
+    },
+    "docker_runtime": {
+      "evidence": "checks/docker_runtime.json",
+      "sha256": "b11b230f8905a0423341f9870d6a120d7ed52fe13125de60ff5ac19a7fee42e5",
+      "status": "pass"
+    },
+    "repeatable_build": {
+      "evidence": "checks/repeatable_build.json",
+      "sha256": "3ec05811c6e669bf4eb4b2ab3c264b98eb18d13566afac37fb4e0112fe177052",
+      "status": "pass"
+    },
+    "postgres": {
+      "status": "in flight",
+      "log": "/tmp/kypulse-eight-r2-final-postgres.log",
+      "earlier_normal_and_fips": "pass at0.4.2; repeating after embedded0.4.3 assets changed"
+    },
+    "browser": {
+      "status": "in flight",
+      "log": "/tmp/kypulse-eight-r2-final-browser.log",
+      "earlier": "20passed,4 intentional skips at0.4.2; repeating after0.4.3"
+    }
+  },
+  "limitations": [
+    "Impeccable source scan regex only:2 findings, prescribed Space Grotesk and existing navigation selection border; no rendered contrast certification.",
+    "NO_COLOR/FORCE_COLOR warning is emitted by Playwright tooling, no product compiler warnings.",
+    "govulncheck:0 reachable advisories,1 module-only advisory.",
+    "Normal makeci Go packages with unchanged inputs reused persistent cache; FIPS and PostgreSQL race commands use count1.",
+    "Four fuzz counts and shellcheck passed; source parsers unchanged by UI fixes, result retained.",
+    "Viewer boundary workflow is included in browser tests; screenshot ratings cover admin only."
+  ]
+}

@@ -1,0 +1,41 @@
+{
+  "purpose": "Use the approved KyNotes Busnes visual language for cross-product brand coherence only. Do not re-rate Notes or pool cohorts.",
+  "files": [
+    {
+      "repository": "Busnes-app/KyNotes-server",
+      "commit": "1ab04e64de747f409d88b98f02682e85862defe1",
+      "path": "docs/ui-notes-eight/screenshots/kynotes-13-after-editor-desktop-light.png",
+      "sha256": "ff94b5e57447ea81cb8346ffc28e9bd80002715029499914b3bc9611027c6154",
+      "width": 1280,
+      "height": 900,
+      "role": "Approved Busnes brand reference only; not a KyPulse quality or cohort input"
+    },
+    {
+      "repository": "Busnes-app/KyNotes-server",
+      "commit": "1ab04e64de747f409d88b98f02682e85862defe1",
+      "path": "docs/ui-notes-eight/screenshots/kynotes-13-after-editor-desktop-dark.png",
+      "sha256": "e1585cc65bdba3dcd62c8c4caed04471c64dbf25395a24283025fb3459d6b568",
+      "width": 1280,
+      "height": 900,
+      "role": "Approved Busnes brand reference only; not a KyPulse quality or cohort input"
+    },
+    {
+      "repository": "Busnes-app/KyNotes-server",
+      "commit": "1ab04e64de747f409d88b98f02682e85862defe1",
+      "path": "docs/ui-notes-eight/screenshots/kynotes-13-after-appearance-mobile-light.png",
+      "sha256": "43accf28ed4061ec3747d6df7aca86e11f15813cb78f27d1511f8a979bfb9488",
+      "width": 390,
+      "height": 844,
+      "role": "Approved Busnes brand reference only; not a KyPulse quality or cohort input"
+    },
+    {
+      "repository": "Busnes-app/KyNotes-server",
+      "commit": "1ab04e64de747f409d88b98f02682e85862defe1",
+      "path": "docs/ui-notes-eight/screenshots/kynotes-13-after-appearance-mobile-dark.png",
+      "sha256": "f77379a3fcef8de6ad3a2debef934f700605e9b398ca1d2268bf0bf89dc6c15b",
+      "width": 390,
+      "height": 844,
+      "role": "Approved Busnes brand reference only; not a KyPulse quality or cohort input"
+    }
+  ]
+}

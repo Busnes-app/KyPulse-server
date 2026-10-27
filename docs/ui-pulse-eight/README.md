@@ -1,17 +1,15 @@
 # KyPulse visual8 progression
 
-Round1 is the fresh baseline at clean product source fef7b670a36d48792137f56d839e49a86d44eadc. Product UI has not changed. Historical6.9 has different coverage and is not a controlled baseline for this set.
+Read [COUNCIL.md](COUNCIL.md) for every round’s independent cohort scores and [KyPulse-Council.xlsx](KyPulse-Council.xlsx) for dimensions, evidence, spreads and checks. Rebuild with `python3 docs/ui-pulse-eight/build-report.py` after all reviews in a round are terminal.
 
-| Round | Opus5.5 | GPTSol | Gemini4Argon |
-| --- | --- | --- | --- |
-|1,baseline|Pending|Pending|Deferred|
+Round1 is the fresh baseline at product source fef7b670a36d48792137f56d839e49a86d44eadc. Round2 uses manifest-02-after.json and inventory-v2.json; stage01 is frozen, unscored iteration evidence before the shared warning correction. Original reviewer reports remain unchanged.
 
-Source: manifest-00-before.json and inventory-v1.json;32distinct captures,20admin-console and12settings. Eight surfaces:Status,Alerts,appdetail,Logs,Activity,Settings,Appearance,Backup. Logs/Activity are empty and unpaired,not populated-state proof. Initial viewport only; lower content remains outside captured coverage.
+Each scored set has32 distinct initial-viewport captures:20 admin-console and12 settings. Coverage:Status,Alerts,appdetail,Logs,Activity,Settings,Appearance,Backup. Logs/Activity are empty/unpaired; Settings/Backup use synthetic unconfigured defaults. Other roles, dense content and lower content remain outside visual coverage.
 
-Capture conditions: Chromium153.0.8010.12,scale1,normal service workers,1280x900/390x844,OSlight/dark,no savedthemechoice; synthetic admin and3watched apps (ok,degraded,down) from an owned private-interface fake upstream. The compiled server embeds committed web/dist; npmci and Go build passed. Vendored ky-ui is0.4.1 at baseline. No application behavior/full-browser suite is claimed from capture-only execution.
+Capture conditions: Chromium153.0.8010.12,scale1,normal service workers,1280x900/390x844,OSlight/dark,no saved choice; synthetic admin and3watched apps(ok,degraded,down) from an owned private-interface fake upstream. Live timestamps/ages differ. Baseline vendor0.4.1; stage01 vendor0.4.2; stage02 vendor0.4.3 from ky-ui a7e93b7. See manifest source hashes for each built capture.
 
-The first capture attempt failed on the test selector Backup; the actual heading is Backup & recovery. The corrected second attempt captured32views. This was a capture-driver correction,not a product change. /tmp/kypulse-eight-baseline-capture{-final,}.log records both attempts.
+Capture-only execution establishes provenance,not behavior acceptance. Verification is recorded separately. `native-round2.json` contains Computer Use measurements and the browser-version caveat. Impeccable’s source detector found the prescribed Space Grotesk font and an existing mobile navigation border rule; these are the approved suite typography and navigation selection language,not a reason to replace them. Regex scanning does not establish rendered contrast/accessibility.
 
-KEEP_FIXTURE=1 keeps the capture-owned http://127.0.0.1:18420 server alive for Computer Use until SIGTERM. Disposable admin credentials are admin / CaptureUpdated456!; fixture.json is ignored and contains only synthetic state. Never point the helper at real data or disable CSP/CSRF/service workers. Later implementation changes require the product's full checks.
+The first baseline attempt failed on the test selector Backup; actual heading:Backup & recovery. Corrected capture succeeded without product change. Capture helper refuses overwritten stages. KEEP_FIXTURE=1 keeps owned servers alive until SIGTERM; fixture.json is ignored. Disposable credentials:admin / CaptureUpdated456!. Never use real data or disable CSP/CSRF/service workers.
 
-Read workspace,product,web and browser AGENTS before editing. The parent owns score tables and a spreadsheet after terminal reviews; each delegate owns only its report pair. Both primaries must be satisfied before Gemini; parent-audit its findings and retain raw reports. One left navigation region is mandatory. No merge or deployment is authorized.
+Read workspace,product,web and browser AGENTS before edits. Opus/Sol first; Gemini only after both satisfied,then parent-audited. One left navigation region across every app. No merge or deployment authorized. MySlop returns401 unknown or revoked token; no shared-board handoff has been posted.
