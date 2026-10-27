@@ -1,50 +1,30 @@
 {
-  "product_source": "3b696001b04d79eaad6705756272288d1336397c",
+  "product_source": "68bf09f8d3c417bc578665ec9affb7b0405ce05a",
   "shared_source": "58626b7",
-  "status": "Round11 source3b69600 build/makeci/nav regression pass;40fresh originals/21source pins. Full browser first attempt failed because Delete contrast clip was below viewport; one-line sampling repair passes focused test, full rerun pending. Runtime/capture pins unchanged. Current-head CI/security/primary reviews pending; Gemini deferred.",
+  "status": "Round12 source68bf09f build/typecheck/makeci pass,40fresh originals/21pins/zero overflow/duplicates. Native grouping/gaps pass; full current browser/current-head remote CI/security and primary reviews pending. Round11 gate still unmet for Opus admin; Gemini deferred.",
   "checks": {
     "build": {
       "status": "pass",
-      "evidence": "checks/r11-web.txt"
-    },
-    "resize_regression": {
-      "status": "pass",
-      "before": "checks/r11-resize-before.txt",
-      "after": "checks/r11-nav-after.txt",
-      "result": "New resize test fails on source61 at active-item visibility; after fix6pass6layout-specific skips in nav suite, focus and scroll retained, exit0."
+      "evidence": "checks/r12-web.txt"
     },
     "make_ci": {
       "status": "pass",
-      "evidence": "checks/r11-ci.txt",
-      "result": "Tidy/formatting/vet/race/96frontend/smoke pass; exit0."
+      "evidence": "checks/r12-ci.txt",
+      "result": "Tidy/vet/race/96frontend/real smoke pass;exit0."
     },
     "browser": {
-      "status": "rerunning",
-      "evidence": "/tmp/kypulse-r11-browser-fixed.log",
-      "exit_record": "/tmp/kypulse-r11-browser-fixed.exit"
+      "status": "running",
+      "evidence": "/tmp/kypulse-r12-browser.log",
+      "exit_record": "/tmp/kypulse-r12-browser.exit"
     },
-    "remote_previous": {
-      "status": "all-green",
-      "head": "a8b6e511217493ef7f9622f7719c83d8075b508c",
-      "evidence": "checks/r10-remote.json",
-      "note": "Both CI and authored security clear a8; superseded by new source3b69600."
+    "remote": {
+      "status": "pending-current-head",
+      "note": "a8CI/security are historical, fresh exact-head gates needed."
     },
     "native": {
       "status": "pass-scoped",
-      "evidence": "native-round11.json",
-      "result": "Selected Backup visible after desktop\u2192phone resize;7detail heading gaps16px, centered silence labels, tertiary Refresh40px, one nav/no overflow; OSlight390 only."
-    },
-    "browser_first_attempt": {
-      "status": "fail",
-      "evidence": "checks/r11-browser-failed.txt",
-      "exit_record": "checks/r11-browser-failed.exit.txt",
-      "result": "22passed,2failed,8layout-specific skips,8.5min; both failures in danger-button screenshot sampling below viewport, clean teardown,exit1."
-    },
-    "contrast_sampling_fix": {
-      "status": "pass-scoped",
-      "before": "checks/r11-danger-before.txt",
-      "after": "checks/r11-danger-after.txt",
-      "result": "Reproduced clip failure; scroll actual Delete into view before bounding-box sample.2pass/2layout-specific skips in13.1s, all15suite palette rest/hover/focus contrast assertions preserved; no runtime change."
+      "evidence": "native-round12.json",
+      "result": "KyYard guidance follows empty messages,source heading8px/paragraph16px at390and1280; expanded phone Activity result+guidance end824.5within844,one nav/zero overflow,OSlight/no saved choice."
     }
   },
   "retained_checks": "verification-round7.json/checks/r7-remote.json preserve remote CI success54fc13e (including clean browser completion), local assertions22pass6skips with wrapper143, and stale authored securityc976d40. These predate round8 source.",

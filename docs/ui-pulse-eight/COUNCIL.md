@@ -34,9 +34,12 @@ Independent visual scores; settings and admin-console stay separate. A displayed
 | 10 | Claude Opus5.5 | 7.9 | 8.0 | False |
 | 10 | GPTSol | 8.5 | 8.6 | True |
 | 10 | Gemini4Argon | Deferred | Deferred | — |
-| 11 | Claude Opus5.5 | Pending | Pending | — |
-| 11 | GPTSol | Pending | Pending | — |
+| 11 | Claude Opus5.5 | 7.9 | 8.0 | False |
+| 11 | GPTSol | 8.3 | 8.4 | True |
 | 11 | Gemini4Argon | Deferred | Deferred | — |
+| 12 | Claude Opus5.5 | Pending | Pending | — |
+| 12 | GPTSol | Pending | Pending | — |
+| 12 | Gemini4Argon | Deferred | Deferred | — |
 
 Baseline exact means: Opus6.28/6.95; Sol7.39/8.00. The Sol Status transcription caveat remains in its raw report. Parent reinspection retained independent scores. No provider-level or cross-cohort mean is used.
 

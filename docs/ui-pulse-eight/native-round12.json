@@ -1,0 +1,46 @@
+{
+  "round": 12,
+  "runtime_source": "68bf09f8d3c417bc578665ec9affb7b0405ce05a",
+  "method": "Owned T3 Computer Use tab Chrome154/DPR2, synthetic admin at18434; OSlight/no saved choice. Supplements scored Chromium153/DPR1 originals; no recovery/content/configuration/theme writes.",
+  "activity_phone_expanded": {
+    "viewport": [
+      390,
+      844
+    ],
+    "empty": {
+      "top": 728.5,
+      "bottom": 773.5
+    },
+    "guidance": {
+      "top": 785.5,
+      "bottom": 824.5
+    },
+    "pairLinkFollowsEmpty": true,
+    "disclosureOpen": true,
+    "navCount": 1,
+    "overflow": 0,
+    "theme": null
+  },
+  "logs_phone_collapsed": {
+    "headingGap": 8,
+    "paragraphGap": 16,
+    "pairLinkFollowsEmpty": true,
+    "emptyBottom": 397.5,
+    "guidanceBottom": 448.5,
+    "navCount": 1,
+    "overflow": 0,
+    "theme": null
+  },
+  "logs_desktop_collapsed": {
+    "viewport": [
+      1280,
+      900
+    ],
+    "headingGap": 8,
+    "paragraphGap": 16,
+    "pairLinkFollowsEmpty": true,
+    "navCount": 1,
+    "overflow": 0
+  },
+  "limits": "Scoped geometry/DOM order only. Populated/loading/error acceptance remains pending the full current-source browser suite; empty captures do not establish it. Not full behavior/contrast acceptance."
+}

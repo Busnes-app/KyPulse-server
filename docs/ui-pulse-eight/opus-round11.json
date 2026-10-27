@@ -1,0 +1,2831 @@
+{
+ "schema": "ky-ui-council-scores/2",
+ "round": 11,
+ "stage": "11-after",
+ "membership": "complete40",
+ "reviewer": {
+  "name": "Claude Opus 5.5",
+  "model": "claude-opus-5-5",
+  "options": "harness defaults; no subagents, no Gemini, no workflows",
+  "role": "primary Council reviewer, round 11 (N1 + bounded A1-A3)"
+ },
+ "rubric": {
+  "version": "ky-suite-v2",
+  "sha256": "ad3516620420fbdc30f5273f82b7c72c76e1365d1b6296fcaa56be3cbebf2c41",
+  "design_contract_sha256": "392afb88c51fb3cfad6c94d6b841804b194d107a0431c31f35ff81d3a7a444d3",
+  "weights": {
+   "hierarchy": 0.2,
+   "typography": 0.15,
+   "density_layout": 0.2,
+   "color": 0.15,
+   "visible_affordances": 0.15,
+   "coherence": 0.15
+  },
+  "rounding": "per file Decimal weighted sum quantize(0.1, ROUND_HALF_UP); cohort exact mean of rounded unique-file totals, never rounded into 8",
+  "ky_fit": "separate, five dimensions at 0.20, half-up 0.1, never added to total; competitor N/A",
+  "source": "rubric.md identical at ky-ui 639e5882 and 58626b7; design contract from 639e5882 (58626b7 c191803e differs only by adding themes-browser.js to the generated-copies list)"
+ },
+ "inputs": {
+  "worktree": "/home/yoshi/git/busnes.app/kyPulse-server/.claude/worktrees/ui-pulse-eight",
+  "runtime_source_commit": "3b696001b04d79eaad6705756272288d1336397c",
+  "evidence_commit": "104af243a85650e0c83b40746841afc4cc805bb6",
+  "head_at_write": "b8f8c05dce9bb79d22e1d04b4e165f4abf7040a9 (test/evidence-only: danger-button.spec, browser AGENTS, checks, verification.json; no web/src, web/dist, internal or cmd change from 3b69600)",
+  "manifest": {
+   "file": "manifest-11-after.json",
+   "sha256": "201cacffbda9d64bcae9a05ae750163774e021ef70836cc1a69138a1035b471b",
+   "source_commit": "3b69600",
+   "uncommitted_source_sha256": null,
+   "source_pins": 21,
+   "source_pins_verified_against_git_blobs_at_3b69600": true
+  },
+  "inventory": {
+   "file": "inventory-v11.json",
+   "sha256": "c963a4f3d37791150a69dd950284deea35392bf3626640a5f89e58235ca7ad55",
+   "files": 40,
+   "admin-console": 28,
+   "settings": 12
+  },
+  "duplicate_audit": {
+   "file": "duplicate-audit-v11.json",
+   "sha256": "39e8f0a1dca489dcce4cb1eccd37da0801536e3228c140804aced9195b7993be",
+   "near_duplicates": []
+  },
+  "image_verification": "40/40: on-disk SHA256 == manifest == inventory == git blob at 104af24; bytes and IHDR dimensions match; overflow 0; manifest and inventory sets equal",
+  "vendor": {
+   "version": "0.4.3",
+   "files_verified": 13,
+   "tokens_css_sha256": "636fcf04ce783edd7625b5265f63abb8b3abd9fae78ee653b1a2ea3142f235f4",
+   "VERSION_sha256": "dfdf8f21203cf33b0a1f2cf8ed6128b216b3d9ad56807ffabc0bf87b5e31a5db",
+   "note": "all vendored hashes match brand-references.json; dirty ky-ui root bytes not used"
+  },
+  "brand_references": {
+   "file": "brand-references.json",
+   "sha256": "947645397875278d9f168d2e4bab46d4d40788f3074f30efc8695f69bb8912de",
+   "verified": "4/4 KyNotes PNGs extracted from KyNotes-server 1ab04e64 match pinned SHA256 and were viewed before brand scoring; brand only, Notes not re-rated"
+  },
+  "source_diff_read": "git diff 61e4a0c..3b69600 -- web/src: AppHeader resize listener+cleanup (N1); LogSources Refresh btn-secondary->btn-tertiary (A3); AppDetail app-detail-page root class + scoped h3 rules replacing the inline empty-Checks layout (A2); phone .silence-actions button justify-content:center (A1). Matches the brief."
+ },
+ "capture_conditions": "Playwright 1.63.0 Chromium 153.0.8010.12, device scale 1, normal service workers; 1280x900 and 390x844; OS light/dark via prefers-color-scheme, no saved theme; synthetic admin, three watched apps ok/degraded/down; Logs/Activity empty/unpaired collapsed and expanded; Backup unconfigured; initial viewport only; live timestamps.",
+ "blinding": {
+  "priming_disclosed": "The parent brief named the patch intent (N1, A1-A3), the prior aggregates (my R10 1109/140 and 96/12; Sol R10 17/2 and 257/30) and the taste items. I read the actual source diff before scoring. I opened no per-file prior score, no prior report body, no peer R11 and no contact sheet before freeze. I read the header block (lines 1-30, 56-75) of my own opus-round10.json for the schema shape before scoring; it holds no scores.",
+  "order": "rubric/contract/vendor/brand pins verified -> 4 KyNotes refs viewed -> 40 originals viewed one by one at native resolution -> freeze -> my R10 per-file scores and verdict, round10-audit -> native Computer Use",
+  "peer_report": "sol-round11.json/md appeared in the worktree during this task; not opened."
+ },
+ "freeze": {
+  "timestamp_utc": "2026-10-27T08:41:47Z",
+  "notes_sha256": "e39e2d9bce7f551adefc729804b897dceb7e64d704ce77a5b82e346e2d3c8f5e",
+  "notes_path": "/tmp/opus-r11/frozen-notes.md (scratch, not committed)",
+  "superseded_freeze": "A first freeze at 2026-10-27T08:41:37Z (sha256 47473b9c4ee97f7941d50a054e4a31d883c24cbc60977d325ed486413f333e0a) was missing rows for logs-filters-mobile-dark and activity-filters-mobile-dark, which I had viewed but not written down. I added both 10 seconds later, before opening any history, and refroze.",
+  "pre_freeze_self_correction": "alerts desktop light/dark density_layout 7->8 before any history: the space below three rows is the sparse captured state and the rubric forbids rewarding density for more data.",
+  "frozen_means": {
+   "admin-console": "221.6/28 = 277/35 = 7.9142857",
+   "settings": "96.4/12 = 241/30 = 8.0333333"
+  },
+  "post_freeze_corrections": [
+   {
+    "files": 4,
+    "surface": "app-detail desktop/mobile light/dark",
+    "change": "typography 7->8",
+    "reason": "Factual misreading. The frozen note said the banner \"Down\" renders in a mono/display face. Native computed style is Space Grotesk 700 20px with the font loaded. Not a product change and not a judgement change.",
+    "effect": "admin sum 221.6 -> 222.0; still below 8"
+   }
+  ]
+ },
+ "files": [
+  {
+   "file": "screenshots/kypulse-11-after-status-desktop-light.png",
+   "sha256": "d6c6e12446b11e23265053e84d9c6ec7fbd0fe7c1c2e93fb515beef73d1618dc",
+   "bytes": 69422,
+   "width": 1280,
+   "height": 900,
+   "duplicate_of": null,
+   "filename_matches_content": true,
+   "observed_product": "kyPulse",
+   "observed_surface": "status",
+   "url": "#/status",
+   "cohort": "admin-console",
+   "state": "synthetic sparse/default",
+   "theme": "OS light (prefers-color-scheme), no saved choice",
+   "viewport": "desktop 1280x900 scale1",
+   "filter_disclosure": null,
+   "artifacts": "none; live timestamps/ages",
+   "scores": {
+    "hierarchy": 8,
+    "typography": 8,
+    "density_layout": 8,
+    "color": 8,
+    "visible_affordances": 8,
+    "coherence": 8
+   },
+   "observations": {
+    "hierarchy": "h1 Status with the only filled action (Add app, orange fill with light label) at right; problems listed first",
+    "typography": "24px title, 13px column/meta text, underlined 15px app names; intro wraps leaving a one-word last line",
+    "density_layout": "three rows in a bordered table with Application/Status/Latest check columns; even row padding",
+    "color": "down/degraded/ok carried by red/amber/green text plus dots on cream; incident strip tinted above",
+    "visible_affordances": "Add app reads as the button; app names are underlined links; banner links underlined",
+    "coherence": "one table/card vocabulary; same Ky shell (240px left sidebar, selected row has surface tint and orange rail, account pinned bottom)"
+   },
+   "total": 8.0,
+   "frozen_scores": null,
+   "post_freeze_correction": null,
+   "confidence": "high",
+   "caveat": "Initial viewport only; synthetic admin; state synthetic sparse/default; behaviour and lower content not shown.",
+   "frozen_note": "title+single filled Add app right; bordered rounded table card; red/amber/green text+dot; intro wraps leaving 'controls.' orphan at 560px measure; alert banner two links + Alerts.",
+   "ky_fit": {
+    "scores": {
+     "palette_tokens": 9,
+     "type_geometry": 8,
+     "shell": 9,
+     "accent_discipline": 8,
+     "suite_cohesion": 9
+    },
+    "mean": 8.6,
+    "note": "Separate from total; suite_cohesion judged against four verified KyNotes refs (brand only)."
+   }
+  },
+  {
+   "file": "screenshots/kypulse-11-after-alerts-desktop-light.png",
+   "sha256": "6c06623544e3938b93450ffc9cedd9db240e3bc53bc20f9d84f6684a9b1a9e4a",
+   "bytes": 52048,
+   "width": 1280,
+   "height": 900,
+   "duplicate_of": null,
+   "filename_matches_content": true,
+   "observed_product": "kyPulse",
+   "observed_surface": "alerts",
+   "url": "#/alerts",
+   "cohort": "admin-console",
+   "state": "synthetic sparse/default",
+   "theme": "OS light (prefers-color-scheme), no saved choice",
+   "viewport": "desktop 1280x900 scale1",
+   "filter_disclosure": null,
+   "artifacts": "none; live timestamps/ages",
+   "scores": {
+    "hierarchy": 8,
+    "typography": 8,
+    "density_layout": 8,
+    "color": 8,
+    "visible_affordances": 8,
+    "coherence": 8
+   },
+   "observations": {
+    "hierarchy": "h1 Alerts with no page action (none needed); table is the only content",
+    "typography": "13px rows, mono status_503 for the reason code only",
+    "density_layout": "three sparse 36px table rows; quiet space below is the sparse state, not a rhythm fault",
+    "color": "pending→down/degraded/ok transitions use semantic text colours on cream",
+    "visible_affordances": "app names underlined links; no ambiguous controls",
+    "coherence": "same list/table vocabulary as Status; one shell"
+   },
+   "total": 8.0,
+   "frozen_scores": null,
+   "post_freeze_correction": null,
+   "confidence": "high",
+   "caveat": "Initial viewport only; synthetic admin; state synthetic sparse/default; behaviour and lower content not shown.",
+   "frozen_note": "no intro unlike Status; dense 36px rows in bordered card; semantic transitions; mono reason; large void below sparse 3 rows; no primary (correct none).",
+   "ky_fit": {
+    "scores": {
+     "palette_tokens": 9,
+     "type_geometry": 8,
+     "shell": 9,
+     "accent_discipline": 9,
+     "suite_cohesion": 9
+    },
+    "mean": 8.8,
+    "note": "Separate from total; suite_cohesion judged against four verified KyNotes refs (brand only)."
+   }
+  },
+  {
+   "file": "screenshots/kypulse-11-after-appearance-desktop-light.png",
+   "sha256": "daa035aa115f309e5f065b79046f37a89723e511dee53fef1654c316499a1799",
+   "bytes": 79249,
+   "width": 1280,
+   "height": 900,
+   "duplicate_of": null,
+   "filename_matches_content": true,
+   "observed_product": "kyPulse",
+   "observed_surface": "appearance",
+   "url": "#/appearance",
+   "cohort": "settings",
+   "state": "synthetic sparse/default",
+   "theme": "OS light (prefers-color-scheme), no saved choice",
+   "viewport": "desktop 1280x900 scale1",
+   "filter_disclosure": null,
+   "artifacts": "none; live timestamps/ages",
+   "scores": {
+    "hierarchy": 8,
+    "typography": 8,
+    "density_layout": 8,
+    "color": 8,
+    "visible_affordances": 8,
+    "coherence": 9
+   },
+   "observations": {
+    "hierarchy": "h1 Appearance, one-paragraph guidance, Theme label, then the theme grid",
+    "typography": "24px title, 15px guidance, 13px card meta; card names 15px",
+    "density_layout": "5-column theme cards with uniform previews; last row of three leaves a ragged end",
+    "color": "previews carry user-choice hues as data; chrome stays cream",
+    "visible_affordances": "Match system selected with accent border and filled radio; other radios empty",
+    "coherence": "card and radio vocabulary matches the pinned KyNotes appearance references closely"
+   },
+   "total": 8.2,
+   "frozen_scores": null,
+   "post_freeze_correction": null,
+   "confidence": "high",
+   "caveat": "Initial viewport only; synthetic admin; state synthetic sparse/default; behaviour and lower content not shown.",
+   "frozen_note": "5-col theme grid, Match system orange border+radio; last row 3 cards ragged; matches KyNotes appearance cards; banner above.",
+   "ky_fit": {
+    "scores": {
+     "palette_tokens": 9,
+     "type_geometry": 8,
+     "shell": 9,
+     "accent_discipline": 9,
+     "suite_cohesion": 9
+    },
+    "mean": 8.8,
+    "note": "Separate from total; suite_cohesion judged against four verified KyNotes refs (brand only)."
+   }
+  },
+  {
+   "file": "screenshots/kypulse-11-after-settings-desktop-light.png",
+   "sha256": "4817032a75486a344a5bd2cdaa86108813920cd3552478ba405278d4a10523b2",
+   "bytes": 81871,
+   "width": 1280,
+   "height": 900,
+   "duplicate_of": null,
+   "filename_matches_content": true,
+   "observed_product": "kyPulse",
+   "observed_surface": "settings",
+   "url": "#/settings",
+   "cohort": "settings",
+   "state": "synthetic sparse/default",
+   "theme": "OS light (prefers-color-scheme), no saved choice",
+   "viewport": "desktop 1280x900 scale1",
+   "filter_disclosure": null,
+   "artifacts": "none; live timestamps/ages",
+   "scores": {
+    "hierarchy": 8,
+    "typography": 8,
+    "density_layout": 8,
+    "color": 8,
+    "visible_affordances": 8,
+    "coherence": 7
+   },
+   "observations": {
+    "hierarchy": "h1 Settings, short intro with Appearance link, then section cards; Save webhook is the only filled action",
+    "typography": "section titles 17px/600 with icons, 13px help text, Off status chip",
+    "density_layout": "stacked bordered section cards with 16px internal padding; three-up field row in Alert webhook",
+    "color": "neutral cream panels; accent only on Save webhook and nav selection",
+    "visible_affordances": "outlined Set up two-factor/Pair, filled Save webhook, 40px inputs with visible field borders",
+    "coherence": "every section is a bordered card on the page surface; contract prefers flat content, so the card-per-section pattern is a mild stray from the flat house style"
+   },
+   "total": 7.9,
+   "frozen_scores": null,
+   "post_freeze_correction": null,
+   "confidence": "high",
+   "caveat": "Initial viewport only; synthetic admin; state synthetic sparse/default; behaviour and lower content not shown.",
+   "frozen_note": "three stacked bordered section cards (contract prefers flat); Save webhook only filled; 2FA/Pair outlined; Off grey chip; 40px fields; intro orphan 'Appearance.'",
+   "ky_fit": {
+    "scores": {
+     "palette_tokens": 9,
+     "type_geometry": 8,
+     "shell": 9,
+     "accent_discipline": 9,
+     "suite_cohesion": 8
+    },
+    "mean": 8.6,
+    "note": "Separate from total; suite_cohesion judged against four verified KyNotes refs (brand only)."
+   }
+  },
+  {
+   "file": "screenshots/kypulse-11-after-backup-desktop-light.png",
+   "sha256": "c308cb21ab321541f5bcc0f82c76fd203815555641c078a055baa7b027b0be65",
+   "bytes": 114057,
+   "width": 1280,
+   "height": 900,
+   "duplicate_of": null,
+   "filename_matches_content": true,
+   "observed_product": "kyPulse",
+   "observed_surface": "backup",
+   "url": "#/backup",
+   "cohort": "settings",
+   "state": "synthetic sparse/default",
+   "theme": "OS light (prefers-color-scheme), no saved choice",
+   "viewport": "desktop 1280x900 scale1",
+   "filter_disclosure": null,
+   "artifacts": "none; live timestamps/ages",
+   "scores": {
+    "hierarchy": 8,
+    "typography": 8,
+    "density_layout": 8,
+    "color": 8,
+    "visible_affordances": 8,
+    "coherence": 8
+   },
+   "observations": {
+    "hierarchy": "h1 Backup & recovery with outlined Refresh at right; warning notice first; Pair is the only filled action",
+    "typography": "section headings 17px with icons; 13px guidance; mono only for the path/key placeholder",
+    "density_layout": "two-column setup (KyRecovery | Recovery key by hand) above a divided status list",
+    "color": "warning notice uses the warning token border/tint; None chip uses danger tint; rest neutral cream",
+    "visible_affordances": "Pair filled, Pin key outlined, Back up now/Download capsule disabled grey fill clearly distinct from outlined Run restore drill",
+    "coherence": "one button/field vocabulary; status chips share one shape"
+   },
+   "total": 8.0,
+   "frozen_scores": null,
+   "post_freeze_correction": null,
+   "confidence": "high",
+   "caveat": "Initial viewport only; synthetic admin; state synthetic sparse/default; behaviour and lower content not shown.",
+   "frozen_note": "Refresh outlined header right; warning-tinted notice; 2-col setup Pair filled sole primary, Pin key outlined; status rows w/ chips None(red tint)/Not paired/0 of 7/Daily; disabled Back up now/Download grey fill vs outlined Run restore drill; mono path.",
+   "ky_fit": {
+    "scores": {
+     "palette_tokens": 9,
+     "type_geometry": 8,
+     "shell": 9,
+     "accent_discipline": 9,
+     "suite_cohesion": 9
+    },
+    "mean": 8.8,
+    "note": "Separate from total; suite_cohesion judged against four verified KyNotes refs (brand only)."
+   }
+  },
+  {
+   "file": "screenshots/kypulse-11-after-logs-desktop-light.png",
+   "sha256": "396c2d7566a7946d7736808a2df331a0241dd8cd9a7f8fd60298bcec8414dad0",
+   "bytes": 70269,
+   "width": 1280,
+   "height": 900,
+   "duplicate_of": null,
+   "filename_matches_content": true,
+   "observed_product": "kyPulse",
+   "observed_surface": "logs",
+   "url": "#/logs",
+   "cohort": "admin-console",
+   "state": "empty/unpaired",
+   "theme": "OS light (prefers-color-scheme), no saved choice",
+   "viewport": "desktop 1280x900 scale1",
+   "filter_disclosure": "collapsed",
+   "artifacts": "none; live timestamps/ages",
+   "scores": {
+    "hierarchy": 7,
+    "typography": 8,
+    "density_layout": 8,
+    "color": 8,
+    "visible_affordances": 8,
+    "coherence": 8
+   },
+   "observations": {
+    "hierarchy": "h1 Logs with no filled action; the empty line \"No logs found.\" is the strongest text while the next step (Pair it in Settings) sits in the muted meta line above",
+    "typography": "13px meta, 15px empty line, 17px Log sources heading",
+    "density_layout": "Filters, empty line, divider, Log sources with a three-field row; heading sits tight on its first paragraph",
+    "color": "neutral cream; no accent in content",
+    "visible_affordances": "Filters outlined; Add source outlined above Refresh sources as a strong-ink text button (A3), so they no longer read as twins",
+    "coherence": "one control vocabulary; divider separates the two tasks"
+   },
+   "total": 7.8,
+   "frozen_scores": null,
+   "post_freeze_correction": null,
+   "confidence": "high",
+   "caveat": "Initial viewport only; synthetic admin; state empty/unpaired; behaviour and lower content not shown.",
+   "frozen_note": "no filled primary; Filters outlined disclosure; 'No logs found.' plain line, next-action only via KyYard pair link above; divider then Log sources h2 17px; 3 fields one row; Add source outlined + Refresh sources text tertiary strong ink aligned 40px; 'No paired sources.'",
+   "ky_fit": {
+    "scores": {
+     "palette_tokens": 9,
+     "type_geometry": 8,
+     "shell": 9,
+     "accent_discipline": 9,
+     "suite_cohesion": 9
+    },
+    "mean": 8.8,
+    "note": "Separate from total; suite_cohesion judged against four verified KyNotes refs (brand only)."
+   }
+  },
+  {
+   "file": "screenshots/kypulse-11-after-activity-desktop-light.png",
+   "sha256": "26ad4233c632d02f4c894b6bf8183cf1cc75911eb9718a7b248121426065bdd4",
+   "bytes": 48243,
+   "width": 1280,
+   "height": 900,
+   "duplicate_of": null,
+   "filename_matches_content": true,
+   "observed_product": "kyPulse",
+   "observed_surface": "activity",
+   "url": "#/activity",
+   "cohort": "admin-console",
+   "state": "empty/unpaired",
+   "theme": "OS light (prefers-color-scheme), no saved choice",
+   "viewport": "desktop 1280x900 scale1",
+   "filter_disclosure": "collapsed",
+   "artifacts": "none; live timestamps/ages",
+   "scores": {
+    "hierarchy": 7,
+    "typography": 8,
+    "density_layout": 8,
+    "color": 8,
+    "visible_affordances": 8,
+    "coherence": 8
+   },
+   "observations": {
+    "hierarchy": "h1 Activity with no filled action; the empty line is the strongest text while the next step (Pair it in Settings) sits in the muted meta line above",
+    "typography": "13px meta lines, 15px empty message",
+    "density_layout": "title, two meta lines, Filters, empty message; quiet space below is the empty state",
+    "color": "neutral cream; accent only in navigation",
+    "visible_affordances": "Filters reads as an outlined disclosure button with a caret",
+    "coherence": "same structure as Logs; one shell"
+   },
+   "total": 7.8,
+   "frozen_scores": null,
+   "post_freeze_correction": null,
+   "confidence": "high",
+   "caveat": "Initial viewport only; synthetic admin; state empty/unpaired; behaviour and lower content not shown.",
+   "frozen_note": "empty: one-line 'No audit events found in the retained 7-day window.' + KyYard pair link guidance; Filters outlined; no primary; void below acceptable for empty.",
+   "ky_fit": {
+    "scores": {
+     "palette_tokens": 9,
+     "type_geometry": 8,
+     "shell": 9,
+     "accent_discipline": 9,
+     "suite_cohesion": 9
+    },
+    "mean": 8.8,
+    "note": "Separate from total; suite_cohesion judged against four verified KyNotes refs (brand only)."
+   }
+  },
+  {
+   "file": "screenshots/kypulse-11-after-app-detail-desktop-light.png",
+   "sha256": "8369b8032144fec0b203da1aa1b6067a1b202402fb8e7d3853cbe69201aa0fc8",
+   "bytes": 80283,
+   "width": 1280,
+   "height": 900,
+   "duplicate_of": null,
+   "filename_matches_content": true,
+   "observed_product": "kyPulse",
+   "observed_surface": "app-detail",
+   "url": "#/apps/tgt_fecb6161386457e4",
+   "cohort": "admin-console",
+   "state": "synthetic sparse/default",
+   "theme": "OS light (prefers-color-scheme), no saved choice",
+   "viewport": "desktop 1280x900 scale1",
+   "filter_disclosure": null,
+   "artifacts": "none; live timestamps/ages",
+   "scores": {
+    "hierarchy": 8,
+    "typography": 8,
+    "density_layout": 8,
+    "color": 8,
+    "visible_affordances": 8,
+    "coherence": 8
+   },
+   "observations": {
+    "hierarchy": "back link, h1 Backup agent, outlined Edit at right; state block leads",
+    "typography": "\"Down\" 20px/700 Space Grotesk (native computed style); mono only for the request line and URL; 17px section headings",
+    "density_layout": "section headings sit 16px above their content throughout (A2, measured); facts rows divided",
+    "color": "down state carried by a danger-tinted block plus coral/red text and dot on cream",
+    "visible_affordances": "three content-width outlined Silence buttons; Edit outlined",
+    "coherence": "one heading/hint/facts vocabulary across sections"
+   },
+   "total": 8.0,
+   "frozen_scores": {
+    "hierarchy": 8,
+    "typography": 7,
+    "density_layout": 8,
+    "color": 8,
+    "visible_affordances": 8,
+    "coherence": 8
+   },
+   "post_freeze_correction": "typography 7->8: frozen note said \"Down\" renders in a mono face; native computed style is Space Grotesk 700 20px (font loaded). Misreading corrected; not a product change.",
+   "confidence": "high",
+   "caveat": "Initial viewport only; synthetic admin; state synthetic sparse/default; behaviour and lower content not shown.",
+   "frozen_note": "back link, h1, Edit outlined right; red-tint Down block where 'Down' renders in a mono/display face unlike Space Grotesk; section h3 stack now even (~16px head->content, ~32 between); 3 outlined Silence buttons; facts rows divided, mono URL vs sans values.",
+   "ky_fit": {
+    "scores": {
+     "palette_tokens": 9,
+     "type_geometry": 8,
+     "shell": 9,
+     "accent_discipline": 9,
+     "suite_cohesion": 9
+    },
+    "mean": 8.8,
+    "note": "Separate from total; suite_cohesion judged against four verified KyNotes refs (brand only)."
+   }
+  },
+  {
+   "file": "screenshots/kypulse-11-after-logs-filters-desktop-light.png",
+   "sha256": "dccda87965b7a57ff3efa5b39d1db7df67d290e345af0b8a8b3c88327712171d",
+   "bytes": 77360,
+   "width": 1280,
+   "height": 900,
+   "duplicate_of": null,
+   "filename_matches_content": true,
+   "observed_product": "kyPulse",
+   "observed_surface": "logs-filters",
+   "url": "#/logs",
+   "cohort": "admin-console",
+   "state": "synthetic sparse/default",
+   "theme": "OS light (prefers-color-scheme), no saved choice",
+   "viewport": "desktop 1280x900 scale1",
+   "filter_disclosure": "expanded",
+   "artifacts": "none; live timestamps/ages",
+   "scores": {
+    "hierarchy": 8,
+    "typography": 8,
+    "density_layout": 8,
+    "color": 8,
+    "visible_affordances": 8,
+    "coherence": 8
+   },
+   "observations": {
+    "hierarchy": "expanded Filters: Apply is the only filled action (orange fill with light label), Clear outlined",
+    "typography": "13px field labels, 15px empty line",
+    "density_layout": "3x2 field grid with Apply/Clear in the date row; empty line 16px below",
+    "color": "accent only on Apply and nav selection on cream",
+    "visible_affordances": "40px inputs with visible borders, native datetime controls as captured, outlined Clear",
+    "coherence": "same field vocabulary as Settings; one shell"
+   },
+   "total": 8.0,
+   "frozen_scores": null,
+   "post_freeze_correction": null,
+   "confidence": "high",
+   "caveat": "Initial viewport only; synthetic admin; state synthetic sparse/default; behaviour and lower content not shown.",
+   "frozen_note": "expanded 3x2 grid, Apply sole filled + Clear outlined in date row; native datetime placeholders; 'No logs found.' ~16px below; Log sources below divider with Add source outlined / Refresh sources tertiary text.",
+   "ky_fit": {
+    "scores": {
+     "palette_tokens": 9,
+     "type_geometry": 8,
+     "shell": 9,
+     "accent_discipline": 9,
+     "suite_cohesion": 9
+    },
+    "mean": 8.8,
+    "note": "Separate from total; suite_cohesion judged against four verified KyNotes refs (brand only)."
+   }
+  },
+  {
+   "file": "screenshots/kypulse-11-after-activity-filters-desktop-light.png",
+   "sha256": "c7fa84363abb3373c22c342bd9460e9f7f19e9649eb46b66e3822585cc481271",
+   "bytes": 55434,
+   "width": 1280,
+   "height": 900,
+   "duplicate_of": null,
+   "filename_matches_content": true,
+   "observed_product": "kyPulse",
+   "observed_surface": "activity-filters",
+   "url": "#/activity",
+   "cohort": "admin-console",
+   "state": "synthetic sparse/default",
+   "theme": "OS light (prefers-color-scheme), no saved choice",
+   "viewport": "desktop 1280x900 scale1",
+   "filter_disclosure": "expanded",
+   "artifacts": "none; live timestamps/ages",
+   "scores": {
+    "hierarchy": 8,
+    "typography": 8,
+    "density_layout": 8,
+    "color": 8,
+    "visible_affordances": 8,
+    "coherence": 8
+   },
+   "observations": {
+    "hierarchy": "expanded Filters: Apply is the only filled action (orange fill with light label), Clear outlined",
+    "typography": "13px field labels, 15px empty line",
+    "density_layout": "3x2 field grid with Apply/Clear in the date row; empty line 16px below",
+    "color": "accent only on Apply and nav selection on cream",
+    "visible_affordances": "40px inputs with visible borders, native datetime controls as captured, outlined Clear",
+    "coherence": "same field vocabulary as Settings; one shell"
+   },
+   "total": 8.0,
+   "frozen_scores": null,
+   "post_freeze_correction": null,
+   "confidence": "high",
+   "caveat": "Initial viewport only; synthetic admin; state synthetic sparse/default; behaviour and lower content not shown.",
+   "frozen_note": "same grid App/Actor/Outcome + dates, Apply filled sole, Clear outlined; empty line below; large void (empty state).",
+   "ky_fit": {
+    "scores": {
+     "palette_tokens": 9,
+     "type_geometry": 8,
+     "shell": 9,
+     "accent_discipline": 9,
+     "suite_cohesion": 9
+    },
+    "mean": 8.8,
+    "note": "Separate from total; suite_cohesion judged against four verified KyNotes refs (brand only)."
+   }
+  },
+  {
+   "file": "screenshots/kypulse-11-after-status-mobile-light.png",
+   "sha256": "5676f18f55dc9497e0e99961af2d415d0e19de21c9d290971299967e735c9d90",
+   "bytes": 49649,
+   "width": 390,
+   "height": 844,
+   "duplicate_of": null,
+   "filename_matches_content": true,
+   "observed_product": "kyPulse",
+   "observed_surface": "status",
+   "url": "#/status",
+   "cohort": "admin-console",
+   "state": "synthetic sparse/default",
+   "theme": "OS light (prefers-color-scheme), no saved choice",
+   "viewport": "mobile 390x844 scale1",
+   "filter_disclosure": null,
+   "artifacts": "none; live timestamps/ages",
+   "scores": {
+    "hierarchy": 8,
+    "typography": 8,
+    "density_layout": 8,
+    "color": 8,
+    "visible_affordances": 8,
+    "coherence": 8
+   },
+   "observations": {
+    "hierarchy": "h1 Status with the only filled action (Add app, orange fill with light label) at right; problems listed first",
+    "typography": "title, underlined app names and 13px meta lines step down clearly",
+    "density_layout": "three rows in a stacked card list; even row padding",
+    "color": "down/degraded/ok carried by red/amber/green text plus dots on cream; incident strip tinted above",
+    "visible_affordances": "Add app reads as the button; app names are underlined links; banner links underlined",
+    "coherence": "one table/card vocabulary; same Ky shell (top bar with horizontally scrollable tabs, selected tab has the accent underline)"
+   },
+   "total": 8.0,
+   "frozen_scores": null,
+   "post_freeze_correction": null,
+   "confidence": "high",
+   "caveat": "Initial viewport only; synthetic admin; state synthetic sparse/default; behaviour and lower content not shown.",
+   "frozen_note": "top bar wordmark+logout; horizontal nav Status selected w/ accent underline tab, Logs clipped at edge as scroll cue; banner 2 lines; h1+Add app filled right; card rows stacked, semantic text.",
+   "ky_fit": {
+    "scores": {
+     "palette_tokens": 9,
+     "type_geometry": 8,
+     "shell": 8,
+     "accent_discipline": 9,
+     "suite_cohesion": 9
+    },
+    "mean": 8.6,
+    "note": "Separate from total; suite_cohesion judged against four verified KyNotes refs (brand only)."
+   }
+  },
+  {
+   "file": "screenshots/kypulse-11-after-alerts-mobile-light.png",
+   "sha256": "0e90df5f6ed27e7b453cde3e82c5a0e7be6abb648be1c76d9a552b2324fe1469",
+   "bytes": 41454,
+   "width": 390,
+   "height": 844,
+   "duplicate_of": null,
+   "filename_matches_content": true,
+   "observed_product": "kyPulse",
+   "observed_surface": "alerts",
+   "url": "#/alerts",
+   "cohort": "admin-console",
+   "state": "synthetic sparse/default",
+   "theme": "OS light (prefers-color-scheme), no saved choice",
+   "viewport": "mobile 390x844 scale1",
+   "filter_disclosure": null,
+   "artifacts": "none; live timestamps/ages",
+   "scores": {
+    "hierarchy": 8,
+    "typography": 8,
+    "density_layout": 8,
+    "color": 8,
+    "visible_affordances": 8,
+    "coherence": 8
+   },
+   "observations": {
+    "hierarchy": "h1 Alerts with no page action (none needed); table is the only content",
+    "typography": "13px underlined app names with right-aligned transitions; Time/Reason/Delivery label:value lines",
+    "density_layout": "three sparse stacked alert entries; quiet space below is the sparse state, not a rhythm fault",
+    "color": "pending→down/degraded/ok transitions use semantic text colours on cream",
+    "visible_affordances": "app names underlined links; no ambiguous controls",
+    "coherence": "same list/table vocabulary as Status; one shell"
+   },
+   "total": 8.0,
+   "frozen_scores": null,
+   "post_freeze_correction": null,
+   "confidence": "high",
+   "caveat": "Initial viewport only; synthetic admin; state synthetic sparse/default; behaviour and lower content not shown.",
+   "frozen_note": "stacked alert cards in one bordered list; small underlined app name + right-aligned semantic transition; Time/Reason/Delivery label:value lines; void below sparse 3.",
+   "ky_fit": {
+    "scores": {
+     "palette_tokens": 9,
+     "type_geometry": 8,
+     "shell": 8,
+     "accent_discipline": 9,
+     "suite_cohesion": 9
+    },
+    "mean": 8.6,
+    "note": "Separate from total; suite_cohesion judged against four verified KyNotes refs (brand only)."
+   }
+  },
+  {
+   "file": "screenshots/kypulse-11-after-appearance-mobile-light.png",
+   "sha256": "7944a9f2f6cff416420f5fe6aa9d50fe9daef58602dc8da26d296b8ea0a9090d",
+   "bytes": 41468,
+   "width": 390,
+   "height": 844,
+   "duplicate_of": null,
+   "filename_matches_content": true,
+   "observed_product": "kyPulse",
+   "observed_surface": "appearance",
+   "url": "#/appearance",
+   "cohort": "settings",
+   "state": "synthetic sparse/default",
+   "theme": "OS light (prefers-color-scheme), no saved choice",
+   "viewport": "mobile 390x844 scale1",
+   "filter_disclosure": null,
+   "artifacts": "none; live timestamps/ages",
+   "scores": {
+    "hierarchy": 8,
+    "typography": 8,
+    "density_layout": 8,
+    "color": 8,
+    "visible_affordances": 8,
+    "coherence": 9
+   },
+   "observations": {
+    "hierarchy": "h1 Appearance, one-paragraph guidance, Theme label, then the theme grid",
+    "typography": "24px title, 15px guidance, 13px card meta; card names 15px",
+    "density_layout": "2-column theme cards with uniform previews",
+    "color": "previews carry user-choice hues as data; chrome stays cream",
+    "visible_affordances": "Match system selected with accent border and filled radio; other radios empty",
+    "coherence": "card and radio vocabulary matches the pinned KyNotes appearance references closely"
+   },
+   "total": 8.2,
+   "frozen_scores": null,
+   "post_freeze_correction": null,
+   "confidence": "high",
+   "caveat": "Initial viewport only; synthetic admin; state synthetic sparse/default; behaviour and lower content not shown.",
+   "frozen_note": "nav scrolled to Appearance selected; 2-col theme cards match KyNotes ref near-identically; Match system orange border/radio.",
+   "ky_fit": {
+    "scores": {
+     "palette_tokens": 9,
+     "type_geometry": 8,
+     "shell": 8,
+     "accent_discipline": 9,
+     "suite_cohesion": 9
+    },
+    "mean": 8.6,
+    "note": "Separate from total; suite_cohesion judged against four verified KyNotes refs (brand only)."
+   }
+  },
+  {
+   "file": "screenshots/kypulse-11-after-settings-mobile-light.png",
+   "sha256": "e8feea20f99b6babdc1d065fd8e75b7c94246867277a3e0585b0db9dd0a4e15d",
+   "bytes": 46429,
+   "width": 390,
+   "height": 844,
+   "duplicate_of": null,
+   "filename_matches_content": true,
+   "observed_product": "kyPulse",
+   "observed_surface": "settings",
+   "url": "#/settings",
+   "cohort": "settings",
+   "state": "synthetic sparse/default",
+   "theme": "OS light (prefers-color-scheme), no saved choice",
+   "viewport": "mobile 390x844 scale1",
+   "filter_disclosure": null,
+   "artifacts": "none; live timestamps/ages",
+   "scores": {
+    "hierarchy": 8,
+    "typography": 8,
+    "density_layout": 8,
+    "color": 8,
+    "visible_affordances": 8,
+    "coherence": 7
+   },
+   "observations": {
+    "hierarchy": "h1 Settings, short intro with Appearance link, then section cards; Save webhook is the only filled action",
+    "typography": "section titles 17px/600 with icons, 13px help text, Off status chip",
+    "density_layout": "stacked bordered section cards with 16px internal padding; full-width 40px fields",
+    "color": "neutral cream panels; accent only on Save webhook and nav selection",
+    "visible_affordances": "outlined Set up two-factor/Pair, filled Save webhook, 40px inputs with visible field borders",
+    "coherence": "every section is a bordered card on the page surface; contract prefers flat content, so the card-per-section pattern is a mild stray from the flat house style"
+   },
+   "total": 7.9,
+   "frozen_scores": null,
+   "post_freeze_correction": null,
+   "confidence": "high",
+   "caveat": "Initial viewport only; synthetic admin; state synthetic sparse/default; behaviour and lower content not shown.",
+   "frozen_note": "nav scrolled ('ty' fragment left edge) to Settings & DB selected; stacked bordered section cards; full-width 40px fields; Off chip; outlined 2FA button.",
+   "ky_fit": {
+    "scores": {
+     "palette_tokens": 9,
+     "type_geometry": 8,
+     "shell": 8,
+     "accent_discipline": 9,
+     "suite_cohesion": 8
+    },
+    "mean": 8.4,
+    "note": "Separate from total; suite_cohesion judged against four verified KyNotes refs (brand only)."
+   }
+  },
+  {
+   "file": "screenshots/kypulse-11-after-backup-mobile-light.png",
+   "sha256": "012a3304e0179f72f0dbb4c9cbdb468e00978e8e415549d342b9bafddac1808f",
+   "bytes": 53187,
+   "width": 390,
+   "height": 844,
+   "duplicate_of": null,
+   "filename_matches_content": true,
+   "observed_product": "kyPulse",
+   "observed_surface": "backup",
+   "url": "#/backup",
+   "cohort": "settings",
+   "state": "synthetic sparse/default",
+   "theme": "OS light (prefers-color-scheme), no saved choice",
+   "viewport": "mobile 390x844 scale1",
+   "filter_disclosure": null,
+   "artifacts": "none; live timestamps/ages",
+   "scores": {
+    "hierarchy": 8,
+    "typography": 8,
+    "density_layout": 8,
+    "color": 8,
+    "visible_affordances": 8,
+    "coherence": 8
+   },
+   "observations": {
+    "hierarchy": "h1 Backup & recovery with outlined Refresh at right; warning notice first; Pair is the only filled action",
+    "typography": "section headings 17px with icons; 13px guidance; mono only for the path/key placeholder",
+    "density_layout": "notice, then KyRecovery guidance before its fields, Recovery key by hand begins at the fold",
+    "color": "warning notice uses the warning token border/tint; None chip uses danger tint; rest neutral cream",
+    "visible_affordances": "Pair filled next to the pairing code field; Refresh outlined",
+    "coherence": "one button/field vocabulary; status chips share one shape"
+   },
+   "total": 8.0,
+   "frozen_scores": null,
+   "post_freeze_correction": null,
+   "confidence": "high",
+   "caveat": "Initial viewport only; synthetic admin; state synthetic sparse/default; behaviour and lower content not shown.",
+   "frozen_note": "h1 + Refresh outlined; warning notice 2 lines; ~32px to KyRecovery icon heading; guidance before fields; Pairing code + Pair filled sole primary; Recovery key by hand section begins at fold.",
+   "ky_fit": {
+    "scores": {
+     "palette_tokens": 9,
+     "type_geometry": 8,
+     "shell": 8,
+     "accent_discipline": 9,
+     "suite_cohesion": 9
+    },
+    "mean": 8.6,
+    "note": "Separate from total; suite_cohesion judged against four verified KyNotes refs (brand only)."
+   }
+  },
+  {
+   "file": "screenshots/kypulse-11-after-logs-mobile-light.png",
+   "sha256": "4d8120d214d2ea5182e26f02cce9f7cb30dfe3f0e4836683898c784bb5dff6b8",
+   "bytes": 48772,
+   "width": 390,
+   "height": 844,
+   "duplicate_of": null,
+   "filename_matches_content": true,
+   "observed_product": "kyPulse",
+   "observed_surface": "logs",
+   "url": "#/logs",
+   "cohort": "admin-console",
+   "state": "empty/unpaired",
+   "theme": "OS light (prefers-color-scheme), no saved choice",
+   "viewport": "mobile 390x844 scale1",
+   "filter_disclosure": "collapsed",
+   "artifacts": "none; live timestamps/ages",
+   "scores": {
+    "hierarchy": 7,
+    "typography": 8,
+    "density_layout": 7,
+    "color": 8,
+    "visible_affordances": 8,
+    "coherence": 8
+   },
+   "observations": {
+    "hierarchy": "h1 Logs with no filled action; the empty line \"No logs found.\" is the strongest text while the next step (Pair it in Settings) sits in the muted meta line above",
+    "typography": "13px meta, 15px empty line, 17px Log sources heading",
+    "density_layout": "Filters, empty line, divider, then Log sources; its heading has no gap to its first paragraph while paragraphs are 12px apart (measured natively at 390)",
+    "color": "neutral cream; no accent in content",
+    "visible_affordances": "Filters outlined disclosure; form fields 40px; Add/Refresh below the fold",
+    "coherence": "one control vocabulary; divider separates the two tasks"
+   },
+   "total": 7.6,
+   "frozen_scores": null,
+   "post_freeze_correction": null,
+   "confidence": "high",
+   "caveat": "Initial viewport only; synthetic admin; state empty/unpaired; behaviour and lower content not shown.",
+   "frozen_note": "Filters outlined; 'No logs found.'; divider; Log sources heading sits ~6px above first paragraph while paragraphs are 16px apart; two 4-line help paragraphs push the form to fold; no filled primary.",
+   "ky_fit": {
+    "scores": {
+     "palette_tokens": 9,
+     "type_geometry": 8,
+     "shell": 8,
+     "accent_discipline": 9,
+     "suite_cohesion": 9
+    },
+    "mean": 8.6,
+    "note": "Separate from total; suite_cohesion judged against four verified KyNotes refs (brand only)."
+   }
+  },
+  {
+   "file": "screenshots/kypulse-11-after-activity-mobile-light.png",
+   "sha256": "4bf31f9f60f81607532156543e2a3dcdf1bf6049bc2d95efe74a7f9db659ee97",
+   "bytes": 32601,
+   "width": 390,
+   "height": 844,
+   "duplicate_of": null,
+   "filename_matches_content": true,
+   "observed_product": "kyPulse",
+   "observed_surface": "activity",
+   "url": "#/activity",
+   "cohort": "admin-console",
+   "state": "empty/unpaired",
+   "theme": "OS light (prefers-color-scheme), no saved choice",
+   "viewport": "mobile 390x844 scale1",
+   "filter_disclosure": "collapsed",
+   "artifacts": "none; live timestamps/ages",
+   "scores": {
+    "hierarchy": 7,
+    "typography": 8,
+    "density_layout": 8,
+    "color": 8,
+    "visible_affordances": 8,
+    "coherence": 8
+   },
+   "observations": {
+    "hierarchy": "h1 Activity with no filled action; the empty line is the strongest text while the next step (Pair it in Settings) sits in the muted meta line above",
+    "typography": "13px meta lines, 15px empty message",
+    "density_layout": "title, two meta lines, Filters, empty message; quiet space below is the empty state",
+    "color": "neutral cream; accent only in navigation",
+    "visible_affordances": "Filters reads as an outlined disclosure button with a caret",
+    "coherence": "same structure as Logs; one shell"
+   },
+   "total": 7.8,
+   "frozen_scores": null,
+   "post_freeze_correction": null,
+   "confidence": "high",
+   "caveat": "Initial viewport only; synthetic admin; state empty/unpaired; behaviour and lower content not shown.",
+   "frozen_note": "Activity tab selected; intro + KyYard pair guidance; Filters outlined; wrapped one-line empty message; quiet void below.",
+   "ky_fit": {
+    "scores": {
+     "palette_tokens": 9,
+     "type_geometry": 8,
+     "shell": 8,
+     "accent_discipline": 9,
+     "suite_cohesion": 9
+    },
+    "mean": 8.6,
+    "note": "Separate from total; suite_cohesion judged against four verified KyNotes refs (brand only)."
+   }
+  },
+  {
+   "file": "screenshots/kypulse-11-after-app-detail-mobile-light.png",
+   "sha256": "dd03e7da050d4dbea3175c9720da56b51b24262148992ace8d82abb257ef5a9e",
+   "bytes": 48478,
+   "width": 390,
+   "height": 844,
+   "duplicate_of": null,
+   "filename_matches_content": true,
+   "observed_product": "kyPulse",
+   "observed_surface": "app-detail",
+   "url": "#/apps/tgt_fecb6161386457e4",
+   "cohort": "admin-console",
+   "state": "synthetic sparse/default",
+   "theme": "OS light (prefers-color-scheme), no saved choice",
+   "viewport": "mobile 390x844 scale1",
+   "filter_disclosure": null,
+   "artifacts": "none; live timestamps/ages",
+   "scores": {
+    "hierarchy": 8,
+    "typography": 8,
+    "density_layout": 8,
+    "color": 8,
+    "visible_affordances": 8,
+    "coherence": 8
+   },
+   "observations": {
+    "hierarchy": "back link, h1 Backup agent, outlined Edit at right; state block leads",
+    "typography": "\"Down\" 20px/700 Space Grotesk (native computed style); mono only for the request line and URL; 17px section headings",
+    "density_layout": "section headings sit 16px above their content throughout (A2, measured); Silence buttons in a 2+1 grid",
+    "color": "down state carried by a danger-tinted block plus coral/red text and dot on cream",
+    "visible_affordances": "Silence 1h/8h/until fixed are full-width 40px outlines with centred labels (A1, measured equal side gaps)",
+    "coherence": "one heading/hint/facts vocabulary across sections"
+   },
+   "total": 8.0,
+   "frozen_scores": {
+    "hierarchy": 8,
+    "typography": 7,
+    "density_layout": 8,
+    "color": 8,
+    "visible_affordances": 8,
+    "coherence": 8
+   },
+   "post_freeze_correction": "typography 7->8: frozen note said \"Down\" renders in a mono face; native computed style is Space Grotesk 700 20px (font loaded). Misreading corrected; not a product change.",
+   "confidence": "high",
+   "caveat": "Initial viewport only; synthetic admin; state synthetic sparse/default; behaviour and lower content not shown.",
+   "frozen_note": "back link, h1 + Edit outlined; red-tint Down block with 'Down' in a different (mono/display) face; Silence 1h/8h 2-col + until fixed full-width, labels centered; h3 sections Checks/Settings evenly spaced.",
+   "ky_fit": {
+    "scores": {
+     "palette_tokens": 9,
+     "type_geometry": 8,
+     "shell": 8,
+     "accent_discipline": 9,
+     "suite_cohesion": 9
+    },
+    "mean": 8.6,
+    "note": "Separate from total; suite_cohesion judged against four verified KyNotes refs (brand only)."
+   }
+  },
+  {
+   "file": "screenshots/kypulse-11-after-logs-filters-mobile-light.png",
+   "sha256": "555e5eb03a31274584402154715732f72653fc6ec89e13afeb302689ba29d7f6",
+   "bytes": 38859,
+   "width": 390,
+   "height": 844,
+   "duplicate_of": null,
+   "filename_matches_content": true,
+   "observed_product": "kyPulse",
+   "observed_surface": "logs-filters",
+   "url": "#/logs",
+   "cohort": "admin-console",
+   "state": "synthetic sparse/default",
+   "theme": "OS light (prefers-color-scheme), no saved choice",
+   "viewport": "mobile 390x844 scale1",
+   "filter_disclosure": "expanded",
+   "artifacts": "none; live timestamps/ages",
+   "scores": {
+    "hierarchy": 8,
+    "typography": 8,
+    "density_layout": 8,
+    "color": 8,
+    "visible_affordances": 8,
+    "coherence": 8
+   },
+   "observations": {
+    "hierarchy": "expanded Filters: Apply is the only filled action (orange fill with light label), Clear outlined",
+    "typography": "13px field labels, 15px empty line",
+    "density_layout": "8px field rhythm; app/level or app/actor paired, full-width dates; Apply and Clear above the fold",
+    "color": "accent only on Apply and nav selection on cream",
+    "visible_affordances": "40px inputs with visible borders, native datetime controls as captured, outlined Clear",
+    "coherence": "same field vocabulary as Settings; one shell"
+   },
+   "total": 8.0,
+   "frozen_scores": null,
+   "post_freeze_correction": null,
+   "confidence": "high",
+   "caveat": "Initial viewport only; synthetic admin; state synthetic sparse/default; behaviour and lower content not shown.",
+   "frozen_note": "expanded: app/level 2-col, literal full, full-width native dates, Apply filled + Clear outlined above fold; consistent 8px field rhythm (tight vs 16px intro paragraphs); empty line + divider below.",
+   "ky_fit": {
+    "scores": {
+     "palette_tokens": 9,
+     "type_geometry": 8,
+     "shell": 8,
+     "accent_discipline": 9,
+     "suite_cohesion": 9
+    },
+    "mean": 8.6,
+    "note": "Separate from total; suite_cohesion judged against four verified KyNotes refs (brand only)."
+   }
+  },
+  {
+   "file": "screenshots/kypulse-11-after-activity-filters-mobile-light.png",
+   "sha256": "d3cb6246aefebdf3a0f063d4f29e962e5ea19062f28dc24a3e6bd41a584ee08a",
+   "bytes": 42732,
+   "width": 390,
+   "height": 844,
+   "duplicate_of": null,
+   "filename_matches_content": true,
+   "observed_product": "kyPulse",
+   "observed_surface": "activity-filters",
+   "url": "#/activity",
+   "cohort": "admin-console",
+   "state": "synthetic sparse/default",
+   "theme": "OS light (prefers-color-scheme), no saved choice",
+   "viewport": "mobile 390x844 scale1",
+   "filter_disclosure": "expanded",
+   "artifacts": "none; live timestamps/ages",
+   "scores": {
+    "hierarchy": 8,
+    "typography": 8,
+    "density_layout": 8,
+    "color": 8,
+    "visible_affordances": 8,
+    "coherence": 8
+   },
+   "observations": {
+    "hierarchy": "expanded Filters: Apply is the only filled action (orange fill with light label), Clear outlined",
+    "typography": "13px field labels, 15px empty line",
+    "density_layout": "8px field rhythm; app/level or app/actor paired, full-width dates; Apply and Clear above the fold",
+    "color": "accent only on Apply and nav selection on cream",
+    "visible_affordances": "40px inputs with visible borders, native datetime controls as captured, outlined Clear",
+    "coherence": "same field vocabulary as Settings; one shell"
+   },
+   "total": 8.0,
+   "frozen_scores": null,
+   "post_freeze_correction": null,
+   "confidence": "high",
+   "caveat": "Initial viewport only; synthetic admin; state synthetic sparse/default; behaviour and lower content not shown.",
+   "frozen_note": "same structure App/Actor, Outcome, dates; Apply/Clear visible; empty message wraps 2 lines at fold.",
+   "ky_fit": {
+    "scores": {
+     "palette_tokens": 9,
+     "type_geometry": 8,
+     "shell": 8,
+     "accent_discipline": 9,
+     "suite_cohesion": 9
+    },
+    "mean": 8.6,
+    "note": "Separate from total; suite_cohesion judged against four verified KyNotes refs (brand only)."
+   }
+  },
+  {
+   "file": "screenshots/kypulse-11-after-status-desktop-dark.png",
+   "sha256": "93bc3a76fe14d57dde5e13fd7f9f53622ca692fa3db6a2e51344989b5364bb9c",
+   "bytes": 69225,
+   "width": 1280,
+   "height": 900,
+   "duplicate_of": null,
+   "filename_matches_content": true,
+   "observed_product": "kyPulse",
+   "observed_surface": "status",
+   "url": "#/status",
+   "cohort": "admin-console",
+   "state": "synthetic sparse/default",
+   "theme": "OS dark (prefers-color-scheme), no saved choice",
+   "viewport": "desktop 1280x900 scale1",
+   "filter_disclosure": null,
+   "artifacts": "none; live timestamps/ages",
+   "scores": {
+    "hierarchy": 8,
+    "typography": 8,
+    "density_layout": 8,
+    "color": 8,
+    "visible_affordances": 8,
+    "coherence": 8
+   },
+   "observations": {
+    "hierarchy": "h1 Status with the only filled action (Add app, light-orange fill with dark label) at right; problems listed first",
+    "typography": "24px title, 13px column/meta text, underlined 15px app names; intro wraps leaving a one-word last line",
+    "density_layout": "three rows in a bordered table with Application/Status/Latest check columns; even row padding",
+    "color": "down/degraded/ok carried by red/amber/green text plus dots on charcoal; incident strip tinted above",
+    "visible_affordances": "Add app reads as the button; app names are underlined links; banner links underlined",
+    "coherence": "one table/card vocabulary; same Ky shell (240px left sidebar, selected row has surface tint and orange rail, account pinned bottom)"
+   },
+   "total": 8.0,
+   "frozen_scores": null,
+   "post_freeze_correction": null,
+   "confidence": "high",
+   "caveat": "Initial viewport only; synthetic admin; state synthetic sparse/default; behaviour and lower content not shown.",
+   "frozen_note": "charcoal surfaces; Add app light-orange fill dark text; neutral dark banner with coral/amber links; table card 1px line; coral/amber/mint status text + dots; same 'controls.' orphan.",
+   "ky_fit": {
+    "scores": {
+     "palette_tokens": 9,
+     "type_geometry": 8,
+     "shell": 9,
+     "accent_discipline": 8,
+     "suite_cohesion": 9
+    },
+    "mean": 8.6,
+    "note": "Separate from total; suite_cohesion judged against four verified KyNotes refs (brand only)."
+   }
+  },
+  {
+   "file": "screenshots/kypulse-11-after-alerts-desktop-dark.png",
+   "sha256": "a2e45acc419d9a9823efbfa7615f8ffc980e342c283256dac07ac8ac1e2245d3",
+   "bytes": 52572,
+   "width": 1280,
+   "height": 900,
+   "duplicate_of": null,
+   "filename_matches_content": true,
+   "observed_product": "kyPulse",
+   "observed_surface": "alerts",
+   "url": "#/alerts",
+   "cohort": "admin-console",
+   "state": "synthetic sparse/default",
+   "theme": "OS dark (prefers-color-scheme), no saved choice",
+   "viewport": "desktop 1280x900 scale1",
+   "filter_disclosure": null,
+   "artifacts": "none; live timestamps/ages",
+   "scores": {
+    "hierarchy": 8,
+    "typography": 8,
+    "density_layout": 8,
+    "color": 8,
+    "visible_affordances": 8,
+    "coherence": 8
+   },
+   "observations": {
+    "hierarchy": "h1 Alerts with no page action (none needed); table is the only content",
+    "typography": "13px rows, mono status_503 for the reason code only",
+    "density_layout": "three sparse 36px table rows; quiet space below is the sparse state, not a rhythm fault",
+    "color": "pending→down/degraded/ok transitions use semantic text colours on charcoal",
+    "visible_affordances": "app names underlined links; no ambiguous controls",
+    "coherence": "same list/table vocabulary as Status; one shell"
+   },
+   "total": 8.0,
+   "frozen_scores": null,
+   "post_freeze_correction": null,
+   "confidence": "high",
+   "caveat": "Initial viewport only; synthetic admin; state synthetic sparse/default; behaviour and lower content not shown.",
+   "frozen_note": "same compact table on charcoal; semantic transition colours readable; large void.",
+   "ky_fit": {
+    "scores": {
+     "palette_tokens": 9,
+     "type_geometry": 8,
+     "shell": 9,
+     "accent_discipline": 9,
+     "suite_cohesion": 9
+    },
+    "mean": 8.8,
+    "note": "Separate from total; suite_cohesion judged against four verified KyNotes refs (brand only)."
+   }
+  },
+  {
+   "file": "screenshots/kypulse-11-after-appearance-desktop-dark.png",
+   "sha256": "5da23f9d72494c48980a79fd0374d3a02f340b24793452dce8feb583196550c8",
+   "bytes": 80253,
+   "width": 1280,
+   "height": 900,
+   "duplicate_of": null,
+   "filename_matches_content": true,
+   "observed_product": "kyPulse",
+   "observed_surface": "appearance",
+   "url": "#/appearance",
+   "cohort": "settings",
+   "state": "synthetic sparse/default",
+   "theme": "OS dark (prefers-color-scheme), no saved choice",
+   "viewport": "desktop 1280x900 scale1",
+   "filter_disclosure": null,
+   "artifacts": "none; live timestamps/ages",
+   "scores": {
+    "hierarchy": 8,
+    "typography": 8,
+    "density_layout": 8,
+    "color": 8,
+    "visible_affordances": 8,
+    "coherence": 9
+   },
+   "observations": {
+    "hierarchy": "h1 Appearance, one-paragraph guidance, Theme label, then the theme grid",
+    "typography": "24px title, 15px guidance, 13px card meta; card names 15px",
+    "density_layout": "5-column theme cards with uniform previews; last row of three leaves a ragged end",
+    "color": "previews carry user-choice hues as data; chrome stays charcoal",
+    "visible_affordances": "Match system selected with accent border and filled radio; other radios empty",
+    "coherence": "card and radio vocabulary matches the pinned KyNotes appearance references closely"
+   },
+   "total": 8.2,
+   "frozen_scores": null,
+   "post_freeze_correction": null,
+   "confidence": "high",
+   "caveat": "Initial viewport only; synthetic admin; state synthetic sparse/default; behaviour and lower content not shown.",
+   "frozen_note": "same 5-col grid on charcoal; selected Match system light-orange border+radio; unselected radios dim grey.",
+   "ky_fit": {
+    "scores": {
+     "palette_tokens": 9,
+     "type_geometry": 8,
+     "shell": 9,
+     "accent_discipline": 9,
+     "suite_cohesion": 9
+    },
+    "mean": 8.8,
+    "note": "Separate from total; suite_cohesion judged against four verified KyNotes refs (brand only)."
+   }
+  },
+  {
+   "file": "screenshots/kypulse-11-after-settings-desktop-dark.png",
+   "sha256": "045d196583e130e9d59425abc7f3200d760ba9ea661b776f161e287333e377c8",
+   "bytes": 81863,
+   "width": 1280,
+   "height": 900,
+   "duplicate_of": null,
+   "filename_matches_content": true,
+   "observed_product": "kyPulse",
+   "observed_surface": "settings",
+   "url": "#/settings",
+   "cohort": "settings",
+   "state": "synthetic sparse/default",
+   "theme": "OS dark (prefers-color-scheme), no saved choice",
+   "viewport": "desktop 1280x900 scale1",
+   "filter_disclosure": null,
+   "artifacts": "none; live timestamps/ages",
+   "scores": {
+    "hierarchy": 8,
+    "typography": 8,
+    "density_layout": 8,
+    "color": 8,
+    "visible_affordances": 8,
+    "coherence": 7
+   },
+   "observations": {
+    "hierarchy": "h1 Settings, short intro with Appearance link, then section cards; Save webhook is the only filled action",
+    "typography": "section titles 17px/600 with icons, 13px help text, Off status chip",
+    "density_layout": "stacked bordered section cards with 16px internal padding; three-up field row in Alert webhook",
+    "color": "neutral charcoal panels; accent only on Save webhook and nav selection",
+    "visible_affordances": "outlined Set up two-factor/Pair, filled Save webhook, 40px inputs with visible field borders",
+    "coherence": "every section is a bordered card on the page surface; contract prefers flat content, so the card-per-section pattern is a mild stray from the flat house style"
+   },
+   "total": 7.9,
+   "frozen_scores": null,
+   "post_freeze_correction": null,
+   "confidence": "high",
+   "caveat": "Initial viewport only; synthetic admin; state synthetic sparse/default; behaviour and lower content not shown.",
+   "frozen_note": "stacked raised-panel cards on charcoal; Save webhook light-orange fill sole primary; Off chip; inputs darker than panel.",
+   "ky_fit": {
+    "scores": {
+     "palette_tokens": 9,
+     "type_geometry": 8,
+     "shell": 9,
+     "accent_discipline": 9,
+     "suite_cohesion": 8
+    },
+    "mean": 8.6,
+    "note": "Separate from total; suite_cohesion judged against four verified KyNotes refs (brand only)."
+   }
+  },
+  {
+   "file": "screenshots/kypulse-11-after-backup-desktop-dark.png",
+   "sha256": "099969baf0e190db5ef2e14f7d9b705cfaf7973df2d3b6549ca2beafb480adac",
+   "bytes": 113896,
+   "width": 1280,
+   "height": 900,
+   "duplicate_of": null,
+   "filename_matches_content": true,
+   "observed_product": "kyPulse",
+   "observed_surface": "backup",
+   "url": "#/backup",
+   "cohort": "settings",
+   "state": "synthetic sparse/default",
+   "theme": "OS dark (prefers-color-scheme), no saved choice",
+   "viewport": "desktop 1280x900 scale1",
+   "filter_disclosure": null,
+   "artifacts": "none; live timestamps/ages",
+   "scores": {
+    "hierarchy": 8,
+    "typography": 8,
+    "density_layout": 8,
+    "color": 8,
+    "visible_affordances": 8,
+    "coherence": 8
+   },
+   "observations": {
+    "hierarchy": "h1 Backup & recovery with outlined Refresh at right; warning notice first; Pair is the only filled action",
+    "typography": "section headings 17px with icons; 13px guidance; mono only for the path/key placeholder",
+    "density_layout": "two-column setup (KyRecovery | Recovery key by hand) above a divided status list",
+    "color": "warning notice uses the warning token border/tint; None chip uses danger tint; rest neutral charcoal",
+    "visible_affordances": "Pair filled, Pin key outlined, Back up now/Download capsule disabled grey fill clearly distinct from outlined Run restore drill",
+    "coherence": "one button/field vocabulary; status chips share one shape"
+   },
+   "total": 8.0,
+   "frozen_scores": null,
+   "post_freeze_correction": null,
+   "confidence": "high",
+   "caveat": "Initial viewport only; synthetic admin; state synthetic sparse/default; behaviour and lower content not shown.",
+   "frozen_note": "same structure on charcoal; warning notice amber border/olive tint; Pair light-orange fill; None chip red-tint; disabled pair grey-filled distinct from outlined Run restore drill.",
+   "ky_fit": {
+    "scores": {
+     "palette_tokens": 9,
+     "type_geometry": 8,
+     "shell": 9,
+     "accent_discipline": 9,
+     "suite_cohesion": 9
+    },
+    "mean": 8.8,
+    "note": "Separate from total; suite_cohesion judged against four verified KyNotes refs (brand only)."
+   }
+  },
+  {
+   "file": "screenshots/kypulse-11-after-logs-desktop-dark.png",
+   "sha256": "02624512637ffccce85425cb66827b43378c8f8bb7c23da32dc9292e2f358e07",
+   "bytes": 70264,
+   "width": 1280,
+   "height": 900,
+   "duplicate_of": null,
+   "filename_matches_content": true,
+   "observed_product": "kyPulse",
+   "observed_surface": "logs",
+   "url": "#/logs",
+   "cohort": "admin-console",
+   "state": "empty/unpaired",
+   "theme": "OS dark (prefers-color-scheme), no saved choice",
+   "viewport": "desktop 1280x900 scale1",
+   "filter_disclosure": "collapsed",
+   "artifacts": "none; live timestamps/ages",
+   "scores": {
+    "hierarchy": 7,
+    "typography": 8,
+    "density_layout": 8,
+    "color": 8,
+    "visible_affordances": 8,
+    "coherence": 8
+   },
+   "observations": {
+    "hierarchy": "h1 Logs with no filled action; the empty line \"No logs found.\" is the strongest text while the next step (Pair it in Settings) sits in the muted meta line above",
+    "typography": "13px meta, 15px empty line, 17px Log sources heading",
+    "density_layout": "Filters, empty line, divider, Log sources with a three-field row; heading sits tight on its first paragraph",
+    "color": "neutral charcoal; no accent in content",
+    "visible_affordances": "Filters outlined; Add source outlined above Refresh sources as a strong-ink text button (A3), so they no longer read as twins",
+    "coherence": "one control vocabulary; divider separates the two tasks"
+   },
+   "total": 7.8,
+   "frozen_scores": null,
+   "post_freeze_correction": null,
+   "confidence": "high",
+   "caveat": "Initial viewport only; synthetic admin; state empty/unpaired; behaviour and lower content not shown.",
+   "frozen_note": "same as light; Refresh sources light strong-ink text tertiary; no filled primary; plain empty line.",
+   "ky_fit": {
+    "scores": {
+     "palette_tokens": 9,
+     "type_geometry": 8,
+     "shell": 9,
+     "accent_discipline": 9,
+     "suite_cohesion": 9
+    },
+    "mean": 8.8,
+    "note": "Separate from total; suite_cohesion judged against four verified KyNotes refs (brand only)."
+   }
+  },
+  {
+   "file": "screenshots/kypulse-11-after-activity-desktop-dark.png",
+   "sha256": "930f59c94414063c6287002418eaaa0d6b7d3181f7aec78a56899872e29c16ec",
+   "bytes": 48173,
+   "width": 1280,
+   "height": 900,
+   "duplicate_of": null,
+   "filename_matches_content": true,
+   "observed_product": "kyPulse",
+   "observed_surface": "activity",
+   "url": "#/activity",
+   "cohort": "admin-console",
+   "state": "empty/unpaired",
+   "theme": "OS dark (prefers-color-scheme), no saved choice",
+   "viewport": "desktop 1280x900 scale1",
+   "filter_disclosure": "collapsed",
+   "artifacts": "none; live timestamps/ages",
+   "scores": {
+    "hierarchy": 7,
+    "typography": 8,
+    "density_layout": 8,
+    "color": 8,
+    "visible_affordances": 8,
+    "coherence": 8
+   },
+   "observations": {
+    "hierarchy": "h1 Activity with no filled action; the empty line is the strongest text while the next step (Pair it in Settings) sits in the muted meta line above",
+    "typography": "13px meta lines, 15px empty message",
+    "density_layout": "title, two meta lines, Filters, empty message; quiet space below is the empty state",
+    "color": "neutral charcoal; accent only in navigation",
+    "visible_affordances": "Filters reads as an outlined disclosure button with a caret",
+    "coherence": "same structure as Logs; one shell"
+   },
+   "total": 7.8,
+   "frozen_scores": null,
+   "post_freeze_correction": null,
+   "confidence": "high",
+   "caveat": "Initial viewport only; synthetic admin; state empty/unpaired; behaviour and lower content not shown.",
+   "frozen_note": "same empty structure on charcoal; one-line empty message with pair-link guidance above.",
+   "ky_fit": {
+    "scores": {
+     "palette_tokens": 9,
+     "type_geometry": 8,
+     "shell": 9,
+     "accent_discipline": 9,
+     "suite_cohesion": 9
+    },
+    "mean": 8.8,
+    "note": "Separate from total; suite_cohesion judged against four verified KyNotes refs (brand only)."
+   }
+  },
+  {
+   "file": "screenshots/kypulse-11-after-app-detail-desktop-dark.png",
+   "sha256": "54e35c5b8cb595ba51e2ba7d2eac2656aa6ce6a9388d9e297efd92f4e2048bd7",
+   "bytes": 80255,
+   "width": 1280,
+   "height": 900,
+   "duplicate_of": null,
+   "filename_matches_content": true,
+   "observed_product": "kyPulse",
+   "observed_surface": "app-detail",
+   "url": "#/apps/tgt_fecb6161386457e4",
+   "cohort": "admin-console",
+   "state": "synthetic sparse/default",
+   "theme": "OS dark (prefers-color-scheme), no saved choice",
+   "viewport": "desktop 1280x900 scale1",
+   "filter_disclosure": null,
+   "artifacts": "none; live timestamps/ages",
+   "scores": {
+    "hierarchy": 8,
+    "typography": 8,
+    "density_layout": 8,
+    "color": 8,
+    "visible_affordances": 8,
+    "coherence": 8
+   },
+   "observations": {
+    "hierarchy": "back link, h1 Backup agent, outlined Edit at right; state block leads",
+    "typography": "\"Down\" 20px/700 Space Grotesk (native computed style); mono only for the request line and URL; 17px section headings",
+    "density_layout": "section headings sit 16px above their content throughout (A2, measured); facts rows divided",
+    "color": "down state carried by a danger-tinted block plus coral/red text and dot on charcoal",
+    "visible_affordances": "three content-width outlined Silence buttons; Edit outlined",
+    "coherence": "one heading/hint/facts vocabulary across sections"
+   },
+   "total": 8.0,
+   "frozen_scores": {
+    "hierarchy": 8,
+    "typography": 7,
+    "density_layout": 8,
+    "color": 8,
+    "visible_affordances": 8,
+    "coherence": 8
+   },
+   "post_freeze_correction": "typography 7->8: frozen note said \"Down\" renders in a mono face; native computed style is Space Grotesk 700 20px (font loaded). Misreading corrected; not a product change.",
+   "confidence": "high",
+   "caveat": "Initial viewport only; synthetic admin; state synthetic sparse/default; behaviour and lower content not shown.",
+   "frozen_note": "maroon-tint Down block with coral mono 'Down'; mono request line; even h3 stack; outlined Silence row; divided facts.",
+   "ky_fit": {
+    "scores": {
+     "palette_tokens": 9,
+     "type_geometry": 8,
+     "shell": 9,
+     "accent_discipline": 9,
+     "suite_cohesion": 9
+    },
+    "mean": 8.8,
+    "note": "Separate from total; suite_cohesion judged against four verified KyNotes refs (brand only)."
+   }
+  },
+  {
+   "file": "screenshots/kypulse-11-after-logs-filters-desktop-dark.png",
+   "sha256": "61a8e05749ac18e9e46bfe04a71c04c25ae6404d4e0985783ca09633650eb841",
+   "bytes": 77838,
+   "width": 1280,
+   "height": 900,
+   "duplicate_of": null,
+   "filename_matches_content": true,
+   "observed_product": "kyPulse",
+   "observed_surface": "logs-filters",
+   "url": "#/logs",
+   "cohort": "admin-console",
+   "state": "synthetic sparse/default",
+   "theme": "OS dark (prefers-color-scheme), no saved choice",
+   "viewport": "desktop 1280x900 scale1",
+   "filter_disclosure": "expanded",
+   "artifacts": "none; live timestamps/ages",
+   "scores": {
+    "hierarchy": 8,
+    "typography": 8,
+    "density_layout": 8,
+    "color": 8,
+    "visible_affordances": 8,
+    "coherence": 8
+   },
+   "observations": {
+    "hierarchy": "expanded Filters: Apply is the only filled action (light-orange fill with dark label), Clear outlined",
+    "typography": "13px field labels, 15px empty line",
+    "density_layout": "3x2 field grid with Apply/Clear in the date row; empty line 16px below",
+    "color": "accent only on Apply and nav selection on charcoal",
+    "visible_affordances": "40px inputs with visible borders, native datetime controls as captured, outlined Clear",
+    "coherence": "same field vocabulary as Settings; one shell"
+   },
+   "total": 8.0,
+   "frozen_scores": null,
+   "post_freeze_correction": null,
+   "confidence": "high",
+   "caveat": "Initial viewport only; synthetic admin; state synthetic sparse/default; behaviour and lower content not shown.",
+   "frozen_note": "expanded grid on charcoal; Apply light-orange sole fill; native dark date pickers; tertiary Refresh sources.",
+   "ky_fit": {
+    "scores": {
+     "palette_tokens": 9,
+     "type_geometry": 8,
+     "shell": 9,
+     "accent_discipline": 9,
+     "suite_cohesion": 9
+    },
+    "mean": 8.8,
+    "note": "Separate from total; suite_cohesion judged against four verified KyNotes refs (brand only)."
+   }
+  },
+  {
+   "file": "screenshots/kypulse-11-after-activity-filters-desktop-dark.png",
+   "sha256": "4dc2ecc923cebc82bb630fa9eca992c5ce5bc377be4d817aa1522b3a48e17bbf",
+   "bytes": 55841,
+   "width": 1280,
+   "height": 900,
+   "duplicate_of": null,
+   "filename_matches_content": true,
+   "observed_product": "kyPulse",
+   "observed_surface": "activity-filters",
+   "url": "#/activity",
+   "cohort": "admin-console",
+   "state": "synthetic sparse/default",
+   "theme": "OS dark (prefers-color-scheme), no saved choice",
+   "viewport": "desktop 1280x900 scale1",
+   "filter_disclosure": "expanded",
+   "artifacts": "none; live timestamps/ages",
+   "scores": {
+    "hierarchy": 8,
+    "typography": 8,
+    "density_layout": 8,
+    "color": 8,
+    "visible_affordances": 8,
+    "coherence": 8
+   },
+   "observations": {
+    "hierarchy": "expanded Filters: Apply is the only filled action (light-orange fill with dark label), Clear outlined",
+    "typography": "13px field labels, 15px empty line",
+    "density_layout": "3x2 field grid with Apply/Clear in the date row; empty line 16px below",
+    "color": "accent only on Apply and nav selection on charcoal",
+    "visible_affordances": "40px inputs with visible borders, native datetime controls as captured, outlined Clear",
+    "coherence": "same field vocabulary as Settings; one shell"
+   },
+   "total": 8.0,
+   "frozen_scores": null,
+   "post_freeze_correction": null,
+   "confidence": "high",
+   "caveat": "Initial viewport only; synthetic admin; state synthetic sparse/default; behaviour and lower content not shown.",
+   "frozen_note": "same expanded grid, Apply/Clear; empty line below.",
+   "ky_fit": {
+    "scores": {
+     "palette_tokens": 9,
+     "type_geometry": 8,
+     "shell": 9,
+     "accent_discipline": 9,
+     "suite_cohesion": 9
+    },
+    "mean": 8.8,
+    "note": "Separate from total; suite_cohesion judged against four verified KyNotes refs (brand only)."
+   }
+  },
+  {
+   "file": "screenshots/kypulse-11-after-status-mobile-dark.png",
+   "sha256": "06ecde8f5795fc572b7ff88751d7e9623c02d446ded2dc68dda051e992643670",
+   "bytes": 50121,
+   "width": 390,
+   "height": 844,
+   "duplicate_of": null,
+   "filename_matches_content": true,
+   "observed_product": "kyPulse",
+   "observed_surface": "status",
+   "url": "#/status",
+   "cohort": "admin-console",
+   "state": "synthetic sparse/default",
+   "theme": "OS dark (prefers-color-scheme), no saved choice",
+   "viewport": "mobile 390x844 scale1",
+   "filter_disclosure": null,
+   "artifacts": "none; live timestamps/ages",
+   "scores": {
+    "hierarchy": 8,
+    "typography": 8,
+    "density_layout": 8,
+    "color": 8,
+    "visible_affordances": 8,
+    "coherence": 8
+   },
+   "observations": {
+    "hierarchy": "h1 Status with the only filled action (Add app, light-orange fill with dark label) at right; problems listed first",
+    "typography": "title, underlined app names and 13px meta lines step down clearly",
+    "density_layout": "three rows in a stacked card list; even row padding",
+    "color": "down/degraded/ok carried by red/amber/green text plus dots on charcoal; incident strip tinted above",
+    "visible_affordances": "Add app reads as the button; app names are underlined links; banner links underlined",
+    "coherence": "one table/card vocabulary; same Ky shell (top bar with horizontally scrollable tabs, selected tab has the accent underline)"
+   },
+   "total": 8.0,
+   "frozen_scores": null,
+   "post_freeze_correction": null,
+   "confidence": "high",
+   "caveat": "Initial viewport only; synthetic admin; state synthetic sparse/default; behaviour and lower content not shown.",
+   "frozen_note": "dark phone shell, Status tab selected w/ orange underline; Add app light-orange; stacked rows, mint/amber/coral status text.",
+   "ky_fit": {
+    "scores": {
+     "palette_tokens": 9,
+     "type_geometry": 8,
+     "shell": 8,
+     "accent_discipline": 9,
+     "suite_cohesion": 9
+    },
+    "mean": 8.6,
+    "note": "Separate from total; suite_cohesion judged against four verified KyNotes refs (brand only)."
+   }
+  },
+  {
+   "file": "screenshots/kypulse-11-after-alerts-mobile-dark.png",
+   "sha256": "0ef3fff28854d6d8641208ec5343de3a350a7f95167cd8d73af22beabb5c0fde",
+   "bytes": 42308,
+   "width": 390,
+   "height": 844,
+   "duplicate_of": null,
+   "filename_matches_content": true,
+   "observed_product": "kyPulse",
+   "observed_surface": "alerts",
+   "url": "#/alerts",
+   "cohort": "admin-console",
+   "state": "synthetic sparse/default",
+   "theme": "OS dark (prefers-color-scheme), no saved choice",
+   "viewport": "mobile 390x844 scale1",
+   "filter_disclosure": null,
+   "artifacts": "none; live timestamps/ages",
+   "scores": {
+    "hierarchy": 8,
+    "typography": 8,
+    "density_layout": 8,
+    "color": 8,
+    "visible_affordances": 8,
+    "coherence": 8
+   },
+   "observations": {
+    "hierarchy": "h1 Alerts with no page action (none needed); table is the only content",
+    "typography": "13px underlined app names with right-aligned transitions; Time/Reason/Delivery label:value lines",
+    "density_layout": "three sparse stacked alert entries; quiet space below is the sparse state, not a rhythm fault",
+    "color": "pending→down/degraded/ok transitions use semantic text colours on charcoal",
+    "visible_affordances": "app names underlined links; no ambiguous controls",
+    "coherence": "same list/table vocabulary as Status; one shell"
+   },
+   "total": 8.0,
+   "frozen_scores": null,
+   "post_freeze_correction": null,
+   "confidence": "high",
+   "caveat": "Initial viewport only; synthetic admin; state synthetic sparse/default; behaviour and lower content not shown.",
+   "frozen_note": "stacked alert cards on charcoal; coloured transitions right; label:value lines.",
+   "ky_fit": {
+    "scores": {
+     "palette_tokens": 9,
+     "type_geometry": 8,
+     "shell": 8,
+     "accent_discipline": 9,
+     "suite_cohesion": 9
+    },
+    "mean": 8.6,
+    "note": "Separate from total; suite_cohesion judged against four verified KyNotes refs (brand only)."
+   }
+  },
+  {
+   "file": "screenshots/kypulse-11-after-appearance-mobile-dark.png",
+   "sha256": "7943c89143b282cc9b4482f04ee010d927820c142d234234990cc8d6378dc974",
+   "bytes": 42210,
+   "width": 390,
+   "height": 844,
+   "duplicate_of": null,
+   "filename_matches_content": true,
+   "observed_product": "kyPulse",
+   "observed_surface": "appearance",
+   "url": "#/appearance",
+   "cohort": "settings",
+   "state": "synthetic sparse/default",
+   "theme": "OS dark (prefers-color-scheme), no saved choice",
+   "viewport": "mobile 390x844 scale1",
+   "filter_disclosure": null,
+   "artifacts": "none; live timestamps/ages",
+   "scores": {
+    "hierarchy": 8,
+    "typography": 8,
+    "density_layout": 8,
+    "color": 8,
+    "visible_affordances": 8,
+    "coherence": 9
+   },
+   "observations": {
+    "hierarchy": "h1 Appearance, one-paragraph guidance, Theme label, then the theme grid",
+    "typography": "24px title, 15px guidance, 13px card meta; card names 15px",
+    "density_layout": "2-column theme cards with uniform previews",
+    "color": "previews carry user-choice hues as data; chrome stays charcoal",
+    "visible_affordances": "Match system selected with accent border and filled radio; other radios empty",
+    "coherence": "card and radio vocabulary matches the pinned KyNotes appearance references closely"
+   },
+   "total": 8.2,
+   "frozen_scores": null,
+   "post_freeze_correction": null,
+   "confidence": "high",
+   "caveat": "Initial viewport only; synthetic admin; state synthetic sparse/default; behaviour and lower content not shown.",
+   "frozen_note": "matches KyNotes dark appearance ref closely; selected light-orange border/radio.",
+   "ky_fit": {
+    "scores": {
+     "palette_tokens": 9,
+     "type_geometry": 8,
+     "shell": 8,
+     "accent_discipline": 9,
+     "suite_cohesion": 9
+    },
+    "mean": 8.6,
+    "note": "Separate from total; suite_cohesion judged against four verified KyNotes refs (brand only)."
+   }
+  },
+  {
+   "file": "screenshots/kypulse-11-after-settings-mobile-dark.png",
+   "sha256": "1d008fd35e6da5b8a4a2539e23bd698a970a76b47565a67f5e39c45c7705b962",
+   "bytes": 46757,
+   "width": 390,
+   "height": 844,
+   "duplicate_of": null,
+   "filename_matches_content": true,
+   "observed_product": "kyPulse",
+   "observed_surface": "settings",
+   "url": "#/settings",
+   "cohort": "settings",
+   "state": "synthetic sparse/default",
+   "theme": "OS dark (prefers-color-scheme), no saved choice",
+   "viewport": "mobile 390x844 scale1",
+   "filter_disclosure": null,
+   "artifacts": "none; live timestamps/ages",
+   "scores": {
+    "hierarchy": 8,
+    "typography": 8,
+    "density_layout": 8,
+    "color": 8,
+    "visible_affordances": 8,
+    "coherence": 7
+   },
+   "observations": {
+    "hierarchy": "h1 Settings, short intro with Appearance link, then section cards; Save webhook is the only filled action",
+    "typography": "section titles 17px/600 with icons, 13px help text, Off status chip",
+    "density_layout": "stacked bordered section cards with 16px internal padding; full-width 40px fields",
+    "color": "neutral charcoal panels; accent only on Save webhook and nav selection",
+    "visible_affordances": "outlined Set up two-factor/Pair, filled Save webhook, 40px inputs with visible field borders",
+    "coherence": "every section is a bordered card on the page surface; contract prefers flat content, so the card-per-section pattern is a mild stray from the flat house style"
+   },
+   "total": 7.9,
+   "frozen_scores": null,
+   "post_freeze_correction": null,
+   "confidence": "high",
+   "caveat": "Initial viewport only; synthetic admin; state synthetic sparse/default; behaviour and lower content not shown.",
+   "frozen_note": "stacked raised cards on charcoal; 'ty' nav fragment; full-width fields; Off chip.",
+   "ky_fit": {
+    "scores": {
+     "palette_tokens": 9,
+     "type_geometry": 8,
+     "shell": 8,
+     "accent_discipline": 9,
+     "suite_cohesion": 8
+    },
+    "mean": 8.4,
+    "note": "Separate from total; suite_cohesion judged against four verified KyNotes refs (brand only)."
+   }
+  },
+  {
+   "file": "screenshots/kypulse-11-after-backup-mobile-dark.png",
+   "sha256": "4e687353fc4ec4d7e46ecf785c435d098e5bd05a79649d6d92a4f59d2bc9f6ad",
+   "bytes": 54009,
+   "width": 390,
+   "height": 844,
+   "duplicate_of": null,
+   "filename_matches_content": true,
+   "observed_product": "kyPulse",
+   "observed_surface": "backup",
+   "url": "#/backup",
+   "cohort": "settings",
+   "state": "synthetic sparse/default",
+   "theme": "OS dark (prefers-color-scheme), no saved choice",
+   "viewport": "mobile 390x844 scale1",
+   "filter_disclosure": null,
+   "artifacts": "none; live timestamps/ages",
+   "scores": {
+    "hierarchy": 8,
+    "typography": 8,
+    "density_layout": 8,
+    "color": 8,
+    "visible_affordances": 8,
+    "coherence": 8
+   },
+   "observations": {
+    "hierarchy": "h1 Backup & recovery with outlined Refresh at right; warning notice first; Pair is the only filled action",
+    "typography": "section headings 17px with icons; 13px guidance; mono only for the path/key placeholder",
+    "density_layout": "notice, then KyRecovery guidance before its fields, Recovery key by hand begins at the fold",
+    "color": "warning notice uses the warning token border/tint; None chip uses danger tint; rest neutral charcoal",
+    "visible_affordances": "Pair filled next to the pairing code field; Refresh outlined",
+    "coherence": "one button/field vocabulary; status chips share one shape"
+   },
+   "total": 8.0,
+   "frozen_scores": null,
+   "post_freeze_correction": null,
+   "confidence": "high",
+   "caveat": "Initial viewport only; synthetic admin; state synthetic sparse/default; behaviour and lower content not shown.",
+   "frozen_note": "same as light on charcoal; amber-bordered notice; Pair light-orange sole fill; guidance before fields.",
+   "ky_fit": {
+    "scores": {
+     "palette_tokens": 9,
+     "type_geometry": 8,
+     "shell": 8,
+     "accent_discipline": 9,
+     "suite_cohesion": 9
+    },
+    "mean": 8.6,
+    "note": "Separate from total; suite_cohesion judged against four verified KyNotes refs (brand only)."
+   }
+  },
+  {
+   "file": "screenshots/kypulse-11-after-logs-mobile-dark.png",
+   "sha256": "3a15dfee4665c92d7872aad5513e57b4cb27c416af7e721eaac4a6cfb8dc716d",
+   "bytes": 49488,
+   "width": 390,
+   "height": 844,
+   "duplicate_of": null,
+   "filename_matches_content": true,
+   "observed_product": "kyPulse",
+   "observed_surface": "logs",
+   "url": "#/logs",
+   "cohort": "admin-console",
+   "state": "empty/unpaired",
+   "theme": "OS dark (prefers-color-scheme), no saved choice",
+   "viewport": "mobile 390x844 scale1",
+   "filter_disclosure": "collapsed",
+   "artifacts": "none; live timestamps/ages",
+   "scores": {
+    "hierarchy": 7,
+    "typography": 8,
+    "density_layout": 7,
+    "color": 8,
+    "visible_affordances": 8,
+    "coherence": 8
+   },
+   "observations": {
+    "hierarchy": "h1 Logs with no filled action; the empty line \"No logs found.\" is the strongest text while the next step (Pair it in Settings) sits in the muted meta line above",
+    "typography": "13px meta, 15px empty line, 17px Log sources heading",
+    "density_layout": "Filters, empty line, divider, then Log sources; its heading has no gap to its first paragraph while paragraphs are 12px apart (measured natively at 390)",
+    "color": "neutral charcoal; no accent in content",
+    "visible_affordances": "Filters outlined disclosure; form fields 40px; Add/Refresh below the fold",
+    "coherence": "one control vocabulary; divider separates the two tasks"
+   },
+   "total": 7.6,
+   "frozen_scores": null,
+   "post_freeze_correction": null,
+   "confidence": "high",
+   "caveat": "Initial viewport only; synthetic admin; state empty/unpaired; behaviour and lower content not shown.",
+   "frozen_note": "same tight Log sources heading-to-paragraph gap vs 16px paragraph gap; text-heavy before form; no filled primary.",
+   "ky_fit": {
+    "scores": {
+     "palette_tokens": 9,
+     "type_geometry": 8,
+     "shell": 8,
+     "accent_discipline": 9,
+     "suite_cohesion": 9
+    },
+    "mean": 8.6,
+    "note": "Separate from total; suite_cohesion judged against four verified KyNotes refs (brand only)."
+   }
+  },
+  {
+   "file": "screenshots/kypulse-11-after-activity-mobile-dark.png",
+   "sha256": "82c861b0194ae6de09a1728d653f64ad93f7b820d1bd49482a3be99ea5d0955b",
+   "bytes": 33143,
+   "width": 390,
+   "height": 844,
+   "duplicate_of": null,
+   "filename_matches_content": true,
+   "observed_product": "kyPulse",
+   "observed_surface": "activity",
+   "url": "#/activity",
+   "cohort": "admin-console",
+   "state": "empty/unpaired",
+   "theme": "OS dark (prefers-color-scheme), no saved choice",
+   "viewport": "mobile 390x844 scale1",
+   "filter_disclosure": "collapsed",
+   "artifacts": "none; live timestamps/ages",
+   "scores": {
+    "hierarchy": 7,
+    "typography": 8,
+    "density_layout": 8,
+    "color": 8,
+    "visible_affordances": 8,
+    "coherence": 8
+   },
+   "observations": {
+    "hierarchy": "h1 Activity with no filled action; the empty line is the strongest text while the next step (Pair it in Settings) sits in the muted meta line above",
+    "typography": "13px meta lines, 15px empty message",
+    "density_layout": "title, two meta lines, Filters, empty message; quiet space below is the empty state",
+    "color": "neutral charcoal; accent only in navigation",
+    "visible_affordances": "Filters reads as an outlined disclosure button with a caret",
+    "coherence": "same structure as Logs; one shell"
+   },
+   "total": 7.8,
+   "frozen_scores": null,
+   "post_freeze_correction": null,
+   "confidence": "high",
+   "caveat": "Initial viewport only; synthetic admin; state empty/unpaired; behaviour and lower content not shown.",
+   "frozen_note": "same empty Activity on charcoal; wrapped empty message.",
+   "ky_fit": {
+    "scores": {
+     "palette_tokens": 9,
+     "type_geometry": 8,
+     "shell": 8,
+     "accent_discipline": 9,
+     "suite_cohesion": 9
+    },
+    "mean": 8.6,
+    "note": "Separate from total; suite_cohesion judged against four verified KyNotes refs (brand only)."
+   }
+  },
+  {
+   "file": "screenshots/kypulse-11-after-app-detail-mobile-dark.png",
+   "sha256": "396ac18fed21fe8a40e77e3139df2bcd906a1ed6f294beebd86937fa8f502b4b",
+   "bytes": 48547,
+   "width": 390,
+   "height": 844,
+   "duplicate_of": null,
+   "filename_matches_content": true,
+   "observed_product": "kyPulse",
+   "observed_surface": "app-detail",
+   "url": "#/apps/tgt_fecb6161386457e4",
+   "cohort": "admin-console",
+   "state": "synthetic sparse/default",
+   "theme": "OS dark (prefers-color-scheme), no saved choice",
+   "viewport": "mobile 390x844 scale1",
+   "filter_disclosure": null,
+   "artifacts": "none; live timestamps/ages",
+   "scores": {
+    "hierarchy": 8,
+    "typography": 8,
+    "density_layout": 8,
+    "color": 8,
+    "visible_affordances": 8,
+    "coherence": 8
+   },
+   "observations": {
+    "hierarchy": "back link, h1 Backup agent, outlined Edit at right; state block leads",
+    "typography": "\"Down\" 20px/700 Space Grotesk (native computed style); mono only for the request line and URL; 17px section headings",
+    "density_layout": "section headings sit 16px above their content throughout (A2, measured); Silence buttons in a 2+1 grid",
+    "color": "down state carried by a danger-tinted block plus coral/red text and dot on charcoal",
+    "visible_affordances": "Silence 1h/8h/until fixed are full-width 40px outlines with centred labels (A1, measured equal side gaps)",
+    "coherence": "one heading/hint/facts vocabulary across sections"
+   },
+   "total": 8.0,
+   "frozen_scores": {
+    "hierarchy": 8,
+    "typography": 7,
+    "density_layout": 8,
+    "color": 8,
+    "visible_affordances": 8,
+    "coherence": 8
+   },
+   "post_freeze_correction": "typography 7->8: frozen note said \"Down\" renders in a mono face; native computed style is Space Grotesk 700 20px (font loaded). Misreading corrected; not a product change.",
+   "confidence": "high",
+   "caveat": "Initial viewport only; synthetic admin; state synthetic sparse/default; behaviour and lower content not shown.",
+   "frozen_note": "maroon Down block coral mono 'Down'; centered Silence labels 2+1 grid; even h3 sections.",
+   "ky_fit": {
+    "scores": {
+     "palette_tokens": 9,
+     "type_geometry": 8,
+     "shell": 8,
+     "accent_discipline": 9,
+     "suite_cohesion": 9
+    },
+    "mean": 8.6,
+    "note": "Separate from total; suite_cohesion judged against four verified KyNotes refs (brand only)."
+   }
+  },
+  {
+   "file": "screenshots/kypulse-11-after-logs-filters-mobile-dark.png",
+   "sha256": "9576395b48411e42d74e7bd7964f1a46dcf7bc37877c61fdd0bffc8d2d43b0d0",
+   "bytes": 39176,
+   "width": 390,
+   "height": 844,
+   "duplicate_of": null,
+   "filename_matches_content": true,
+   "observed_product": "kyPulse",
+   "observed_surface": "logs-filters",
+   "url": "#/logs",
+   "cohort": "admin-console",
+   "state": "synthetic sparse/default",
+   "theme": "OS dark (prefers-color-scheme), no saved choice",
+   "viewport": "mobile 390x844 scale1",
+   "filter_disclosure": "expanded",
+   "artifacts": "none; live timestamps/ages",
+   "scores": {
+    "hierarchy": 8,
+    "typography": 8,
+    "density_layout": 8,
+    "color": 8,
+    "visible_affordances": 8,
+    "coherence": 8
+   },
+   "observations": {
+    "hierarchy": "expanded Filters: Apply is the only filled action (light-orange fill with dark label), Clear outlined",
+    "typography": "13px field labels, 15px empty line",
+    "density_layout": "8px field rhythm; app/level or app/actor paired, full-width dates; Apply and Clear above the fold",
+    "color": "accent only on Apply and nav selection on charcoal",
+    "visible_affordances": "40px inputs with visible borders, native datetime controls as captured, outlined Clear",
+    "coherence": "same field vocabulary as Settings; one shell"
+   },
+   "total": 8.0,
+   "frozen_scores": null,
+   "post_freeze_correction": null,
+   "confidence": "high",
+   "caveat": "Initial viewport only; synthetic admin; state synthetic sparse/default; behaviour and lower content not shown.",
+   "frozen_note": "expanded on charcoal; 2-col app/level, full literal, full-width native dark dates, Apply light-orange + Clear outlined above fold; consistent 8px rhythm.",
+   "ky_fit": {
+    "scores": {
+     "palette_tokens": 9,
+     "type_geometry": 8,
+     "shell": 8,
+     "accent_discipline": 9,
+     "suite_cohesion": 9
+    },
+    "mean": 8.6,
+    "note": "Separate from total; suite_cohesion judged against four verified KyNotes refs (brand only)."
+   }
+  },
+  {
+   "file": "screenshots/kypulse-11-after-activity-filters-mobile-dark.png",
+   "sha256": "56d444404ccc40fea380d1b1481b1342316184100dc3fd45bd820b1a3da94009",
+   "bytes": 43143,
+   "width": 390,
+   "height": 844,
+   "duplicate_of": null,
+   "filename_matches_content": true,
+   "observed_product": "kyPulse",
+   "observed_surface": "activity-filters",
+   "url": "#/activity",
+   "cohort": "admin-console",
+   "state": "synthetic sparse/default",
+   "theme": "OS dark (prefers-color-scheme), no saved choice",
+   "viewport": "mobile 390x844 scale1",
+   "filter_disclosure": "expanded",
+   "artifacts": "none; live timestamps/ages",
+   "scores": {
+    "hierarchy": 8,
+    "typography": 8,
+    "density_layout": 8,
+    "color": 8,
+    "visible_affordances": 8,
+    "coherence": 8
+   },
+   "observations": {
+    "hierarchy": "expanded Filters: Apply is the only filled action (light-orange fill with dark label), Clear outlined",
+    "typography": "13px field labels, 15px empty line",
+    "density_layout": "8px field rhythm; app/level or app/actor paired, full-width dates; Apply and Clear above the fold",
+    "color": "accent only on Apply and nav selection on charcoal",
+    "visible_affordances": "40px inputs with visible borders, native datetime controls as captured, outlined Clear",
+    "coherence": "same field vocabulary as Settings; one shell"
+   },
+   "total": 8.0,
+   "frozen_scores": null,
+   "post_freeze_correction": null,
+   "confidence": "high",
+   "caveat": "Initial viewport only; synthetic admin; state synthetic sparse/default; behaviour and lower content not shown.",
+   "frozen_note": "same structure App/Actor, Outcome, dates; Apply/Clear visible; empty message wraps at fold.",
+   "ky_fit": {
+    "scores": {
+     "palette_tokens": 9,
+     "type_geometry": 8,
+     "shell": 8,
+     "accent_discipline": 9,
+     "suite_cohesion": 9
+    },
+    "mean": 8.6,
+    "note": "Separate from total; suite_cohesion judged against four verified KyNotes refs (brand only)."
+   }
+  }
+ ],
+ "cohort_rankings": {
+  "admin-console": {
+   "ky": {
+    "n": 28,
+    "sum": "222.0",
+    "exact_fraction": "111/14",
+    "exact_mean": "7.928571428571428571428571429",
+    "displayed": "7.9",
+    "at_least_8": false
+   },
+   "competitors": "N/A"
+  },
+  "settings": {
+   "ky": {
+    "n": 12,
+    "sum": "96.4",
+    "exact_fraction": "241/30",
+    "exact_mean": "8.033333333333333333333333333",
+    "displayed": "8.0",
+    "at_least_8": true
+   },
+   "competitors": "N/A"
+  },
+  "note": "Ky-only cohorts; no provider-level or cross-cohort mean."
+ },
+ "drift": {
+  "against": "my opus-round10.json (stage10 originals at 61e4a0c). Compared by surface/theme/viewport/disclosure, not by filename.",
+  "per_file": [
+   {
+    "file": "screenshots/kypulse-11-after-status-desktop-light.png",
+    "prior_total": 8.0,
+    "total": 8.0,
+    "delta": 0.0,
+    "dimension_changes": {},
+    "cause": [
+     "no change"
+    ]
+   },
+   {
+    "file": "screenshots/kypulse-11-after-alerts-desktop-light.png",
+    "prior_total": 8.0,
+    "total": 8.0,
+    "delta": 0.0,
+    "dimension_changes": {},
+    "cause": [
+     "no change"
+    ]
+   },
+   {
+    "file": "screenshots/kypulse-11-after-appearance-desktop-light.png",
+    "prior_total": 8.0,
+    "total": 8.2,
+    "delta": 0.2,
+    "dimension_changes": {
+     "coherence": [
+      8,
+      9
+     ]
+    },
+    "cause": [
+     "coherence 8->9: reviewer variation on a retained region; not a product change"
+    ]
+   },
+   {
+    "file": "screenshots/kypulse-11-after-settings-desktop-light.png",
+    "prior_total": 8.0,
+    "total": 7.9,
+    "delta": -0.1,
+    "dimension_changes": {
+     "coherence": [
+      8,
+      7
+     ]
+    },
+    "cause": [
+     "coherence 8->7: reviewer variation on a retained region; not a product change"
+    ]
+   },
+   {
+    "file": "screenshots/kypulse-11-after-backup-desktop-light.png",
+    "prior_total": 8.0,
+    "total": 8.0,
+    "delta": 0.0,
+    "dimension_changes": {},
+    "cause": [
+     "no change"
+    ]
+   },
+   {
+    "file": "screenshots/kypulse-11-after-logs-desktop-light.png",
+    "prior_total": 7.8,
+    "total": 7.8,
+    "delta": 0.0,
+    "dimension_changes": {},
+    "cause": [
+     "hierarchy stays 7: the R10 reason (twin outlined source buttons) is fixed by A3, but I now hold 7 for the subordinate empty-state next step; reviewer variation in the reason, not a product regression"
+    ]
+   },
+   {
+    "file": "screenshots/kypulse-11-after-activity-desktop-light.png",
+    "prior_total": 8.0,
+    "total": 7.8,
+    "delta": -0.2,
+    "dimension_changes": {
+     "hierarchy": [
+      8,
+      7
+     ]
+    },
+    "cause": [
+     "hierarchy 8->7: reviewer variation on a retained region; not a product change"
+    ]
+   },
+   {
+    "file": "screenshots/kypulse-11-after-app-detail-desktop-light.png",
+    "prior_total": 7.8,
+    "total": 8.0,
+    "delta": 0.2,
+    "dimension_changes": {
+     "density_layout": [
+      7,
+      8
+     ]
+    },
+    "cause": [
+     "density_layout 7->8: product change A2 (headings now stack with a measured 16px gap)"
+    ]
+   },
+   {
+    "file": "screenshots/kypulse-11-after-logs-filters-desktop-light.png",
+    "prior_total": 8.0,
+    "total": 8.0,
+    "delta": 0.0,
+    "dimension_changes": {},
+    "cause": [
+     "no change"
+    ]
+   },
+   {
+    "file": "screenshots/kypulse-11-after-activity-filters-desktop-light.png",
+    "prior_total": 8.0,
+    "total": 8.0,
+    "delta": 0.0,
+    "dimension_changes": {},
+    "cause": [
+     "no change"
+    ]
+   },
+   {
+    "file": "screenshots/kypulse-11-after-status-mobile-light.png",
+    "prior_total": 8.0,
+    "total": 8.0,
+    "delta": 0.0,
+    "dimension_changes": {},
+    "cause": [
+     "no change"
+    ]
+   },
+   {
+    "file": "screenshots/kypulse-11-after-alerts-mobile-light.png",
+    "prior_total": 8.0,
+    "total": 8.0,
+    "delta": 0.0,
+    "dimension_changes": {},
+    "cause": [
+     "no change"
+    ]
+   },
+   {
+    "file": "screenshots/kypulse-11-after-appearance-mobile-light.png",
+    "prior_total": 8.0,
+    "total": 8.2,
+    "delta": 0.2,
+    "dimension_changes": {
+     "coherence": [
+      8,
+      9
+     ]
+    },
+    "cause": [
+     "coherence 8->9: reviewer variation on a retained region; not a product change"
+    ]
+   },
+   {
+    "file": "screenshots/kypulse-11-after-settings-mobile-light.png",
+    "prior_total": 8.0,
+    "total": 7.9,
+    "delta": -0.1,
+    "dimension_changes": {
+     "coherence": [
+      8,
+      7
+     ]
+    },
+    "cause": [
+     "coherence 8->7: reviewer variation on a retained region; not a product change"
+    ]
+   },
+   {
+    "file": "screenshots/kypulse-11-after-backup-mobile-light.png",
+    "prior_total": 8.0,
+    "total": 8.0,
+    "delta": 0.0,
+    "dimension_changes": {},
+    "cause": [
+     "no change"
+    ]
+   },
+   {
+    "file": "screenshots/kypulse-11-after-logs-mobile-light.png",
+    "prior_total": 8.0,
+    "total": 7.6,
+    "delta": -0.4,
+    "dimension_changes": {
+     "hierarchy": [
+      8,
+      7
+     ],
+     "density_layout": [
+      8,
+      7
+     ]
+    },
+    "cause": [
+     "hierarchy 8->7: reviewer variation on a retained region; not a product change",
+     "density_layout 8->7: reviewer variation on a retained region; not a product change"
+    ]
+   },
+   {
+    "file": "screenshots/kypulse-11-after-activity-mobile-light.png",
+    "prior_total": 8.0,
+    "total": 7.8,
+    "delta": -0.2,
+    "dimension_changes": {
+     "hierarchy": [
+      8,
+      7
+     ]
+    },
+    "cause": [
+     "hierarchy 8->7: reviewer variation on a retained region; not a product change"
+    ]
+   },
+   {
+    "file": "screenshots/kypulse-11-after-app-detail-mobile-light.png",
+    "prior_total": 7.7,
+    "total": 8.0,
+    "delta": 0.3,
+    "dimension_changes": {
+     "density_layout": [
+      7,
+      8
+     ],
+     "visible_affordances": [
+      7,
+      8
+     ]
+    },
+    "cause": [
+     "density_layout 7->8: product change A2 (headings now stack with a measured 16px gap)",
+     "visible_affordances 7->8: product change A1 (stretched Silence labels now centred, measured)"
+    ]
+   },
+   {
+    "file": "screenshots/kypulse-11-after-logs-filters-mobile-light.png",
+    "prior_total": 7.8,
+    "total": 8.0,
+    "delta": 0.2,
+    "dimension_changes": {
+     "density_layout": [
+      7,
+      8
+     ]
+    },
+    "cause": [
+     "density_layout 7->8: reviewer variation on a retained region; not a product change"
+    ]
+   },
+   {
+    "file": "screenshots/kypulse-11-after-activity-filters-mobile-light.png",
+    "prior_total": 7.8,
+    "total": 8.0,
+    "delta": 0.2,
+    "dimension_changes": {
+     "density_layout": [
+      7,
+      8
+     ]
+    },
+    "cause": [
+     "density_layout 7->8: reviewer variation on a retained region; not a product change"
+    ]
+   },
+   {
+    "file": "screenshots/kypulse-11-after-status-desktop-dark.png",
+    "prior_total": 8.0,
+    "total": 8.0,
+    "delta": 0.0,
+    "dimension_changes": {},
+    "cause": [
+     "no change"
+    ]
+   },
+   {
+    "file": "screenshots/kypulse-11-after-alerts-desktop-dark.png",
+    "prior_total": 8.0,
+    "total": 8.0,
+    "delta": 0.0,
+    "dimension_changes": {},
+    "cause": [
+     "no change"
+    ]
+   },
+   {
+    "file": "screenshots/kypulse-11-after-appearance-desktop-dark.png",
+    "prior_total": 8.0,
+    "total": 8.2,
+    "delta": 0.2,
+    "dimension_changes": {
+     "coherence": [
+      8,
+      9
+     ]
+    },
+    "cause": [
+     "coherence 8->9: reviewer variation on a retained region; not a product change"
+    ]
+   },
+   {
+    "file": "screenshots/kypulse-11-after-settings-desktop-dark.png",
+    "prior_total": 8.0,
+    "total": 7.9,
+    "delta": -0.1,
+    "dimension_changes": {
+     "coherence": [
+      8,
+      7
+     ]
+    },
+    "cause": [
+     "coherence 8->7: reviewer variation on a retained region; not a product change"
+    ]
+   },
+   {
+    "file": "screenshots/kypulse-11-after-backup-desktop-dark.png",
+    "prior_total": 8.0,
+    "total": 8.0,
+    "delta": 0.0,
+    "dimension_changes": {},
+    "cause": [
+     "no change"
+    ]
+   },
+   {
+    "file": "screenshots/kypulse-11-after-logs-desktop-dark.png",
+    "prior_total": 7.8,
+    "total": 7.8,
+    "delta": 0.0,
+    "dimension_changes": {},
+    "cause": [
+     "hierarchy stays 7: the R10 reason (twin outlined source buttons) is fixed by A3, but I now hold 7 for the subordinate empty-state next step; reviewer variation in the reason, not a product regression"
+    ]
+   },
+   {
+    "file": "screenshots/kypulse-11-after-activity-desktop-dark.png",
+    "prior_total": 8.0,
+    "total": 7.8,
+    "delta": -0.2,
+    "dimension_changes": {
+     "hierarchy": [
+      8,
+      7
+     ]
+    },
+    "cause": [
+     "hierarchy 8->7: reviewer variation on a retained region; not a product change"
+    ]
+   },
+   {
+    "file": "screenshots/kypulse-11-after-app-detail-desktop-dark.png",
+    "prior_total": 7.8,
+    "total": 8.0,
+    "delta": 0.2,
+    "dimension_changes": {
+     "density_layout": [
+      7,
+      8
+     ]
+    },
+    "cause": [
+     "density_layout 7->8: product change A2 (headings now stack with a measured 16px gap)"
+    ]
+   },
+   {
+    "file": "screenshots/kypulse-11-after-logs-filters-desktop-dark.png",
+    "prior_total": 8.0,
+    "total": 8.0,
+    "delta": 0.0,
+    "dimension_changes": {},
+    "cause": [
+     "no change"
+    ]
+   },
+   {
+    "file": "screenshots/kypulse-11-after-activity-filters-desktop-dark.png",
+    "prior_total": 8.0,
+    "total": 8.0,
+    "delta": 0.0,
+    "dimension_changes": {},
+    "cause": [
+     "no change"
+    ]
+   },
+   {
+    "file": "screenshots/kypulse-11-after-status-mobile-dark.png",
+    "prior_total": 8.0,
+    "total": 8.0,
+    "delta": 0.0,
+    "dimension_changes": {},
+    "cause": [
+     "no change"
+    ]
+   },
+   {
+    "file": "screenshots/kypulse-11-after-alerts-mobile-dark.png",
+    "prior_total": 8.0,
+    "total": 8.0,
+    "delta": 0.0,
+    "dimension_changes": {},
+    "cause": [
+     "no change"
+    ]
+   },
+   {
+    "file": "screenshots/kypulse-11-after-appearance-mobile-dark.png",
+    "prior_total": 8.0,
+    "total": 8.2,
+    "delta": 0.2,
+    "dimension_changes": {
+     "coherence": [
+      8,
+      9
+     ]
+    },
+    "cause": [
+     "coherence 8->9: reviewer variation on a retained region; not a product change"
+    ]
+   },
+   {
+    "file": "screenshots/kypulse-11-after-settings-mobile-dark.png",
+    "prior_total": 8.0,
+    "total": 7.9,
+    "delta": -0.1,
+    "dimension_changes": {
+     "coherence": [
+      8,
+      7
+     ]
+    },
+    "cause": [
+     "coherence 8->7: reviewer variation on a retained region; not a product change"
+    ]
+   },
+   {
+    "file": "screenshots/kypulse-11-after-backup-mobile-dark.png",
+    "prior_total": 8.0,
+    "total": 8.0,
+    "delta": 0.0,
+    "dimension_changes": {},
+    "cause": [
+     "no change"
+    ]
+   },
+   {
+    "file": "screenshots/kypulse-11-after-logs-mobile-dark.png",
+    "prior_total": 8.0,
+    "total": 7.6,
+    "delta": -0.4,
+    "dimension_changes": {
+     "hierarchy": [
+      8,
+      7
+     ],
+     "density_layout": [
+      8,
+      7
+     ]
+    },
+    "cause": [
+     "hierarchy 8->7: reviewer variation on a retained region; not a product change",
+     "density_layout 8->7: reviewer variation on a retained region; not a product change"
+    ]
+   },
+   {
+    "file": "screenshots/kypulse-11-after-activity-mobile-dark.png",
+    "prior_total": 8.0,
+    "total": 7.8,
+    "delta": -0.2,
+    "dimension_changes": {
+     "hierarchy": [
+      8,
+      7
+     ]
+    },
+    "cause": [
+     "hierarchy 8->7: reviewer variation on a retained region; not a product change"
+    ]
+   },
+   {
+    "file": "screenshots/kypulse-11-after-app-detail-mobile-dark.png",
+    "prior_total": 7.7,
+    "total": 8.0,
+    "delta": 0.3,
+    "dimension_changes": {
+     "density_layout": [
+      7,
+      8
+     ],
+     "visible_affordances": [
+      7,
+      8
+     ]
+    },
+    "cause": [
+     "density_layout 7->8: product change A2 (headings now stack with a measured 16px gap)",
+     "visible_affordances 7->8: product change A1 (stretched Silence labels now centred, measured)"
+    ]
+   },
+   {
+    "file": "screenshots/kypulse-11-after-logs-filters-mobile-dark.png",
+    "prior_total": 7.8,
+    "total": 8.0,
+    "delta": 0.2,
+    "dimension_changes": {
+     "density_layout": [
+      7,
+      8
+     ]
+    },
+    "cause": [
+     "density_layout 7->8: reviewer variation on a retained region; not a product change"
+    ]
+   },
+   {
+    "file": "screenshots/kypulse-11-after-activity-filters-mobile-dark.png",
+    "prior_total": 7.8,
+    "total": 8.0,
+    "delta": 0.2,
+    "dimension_changes": {
+     "density_layout": [
+      7,
+      8
+     ]
+    },
+    "cause": [
+     "density_layout 7->8: reviewer variation on a retained region; not a product change"
+    ]
+   }
+  ],
+  "max_abs_delta": 0.4,
+  "explained_ge_0_5": "none at or above 0.5",
+  "admin_sum": {
+   "r10": "221.8",
+   "r11": "222.0",
+   "product_attributable": "+1.0 (A2 density 7->8 on four app-detail files; A1 affordance 7->8 on two phone app-detail files)",
+   "reviewer_variation_on_retained_regions": "-0.8 (Activity collapsed hierarchy 8->7 x4: -0.8; phone Logs collapsed hierarchy and density 8->7 x2: -0.8; phone expanded filters density 7->8 x4: +0.8)",
+   "note": "Logs desktop: A3 removed the R10 hierarchy reason (twin outlined buttons); I still hold H7 for a different, retained reason."
+  },
+  "settings_sum": {
+   "r10": "96.0",
+   "r11": "96.4",
+   "product_attributable": "0 (no settings-cohort source change)",
+   "reviewer_variation_on_retained_regions": "+0.4 (Appearance coherence 8->9 x4 +0.8; Settings coherence 8->7 x4 -0.4)"
+  },
+  "n1": "Behaviour fix, not a screenshot gain; the originals are captured after direct navigation and do not show the resize path."
+ },
+ "native_supplemental": {
+  "file_reference": "native-round11.json (parent) read after freeze; my own measurements below",
+  "tab": "own Incognito tab via preview_open reuseExistingTab:false at http://127.0.0.1:18433, closed at the end; parent tab untouched",
+  "browser": "Chrome/154.0.0.0, DPR 2 (scored originals are Chromium 153, DPR 1)",
+  "login": "synthetic admin; waited for \"Security check verified.\" then Sign In, then role=navigation[name=Primary] before routes",
+  "writes": "none (no pairing, key pin, silence, config, content or theme writes; localStorage keys after reload: [])",
+  "theme": "OS light only (prefers-color-scheme light); dark not exercised natively",
+  "n1_resize": {
+   "steps": "fresh reload of #/backup at 1280x900 (selected Backup inside sidebar 16..223, scrollLeft 0) -> resize to 390x844",
+   "result": "selected Backup x 275..374 inside nav 16..374, scrollLeft 120, pageY 0, overflow 0"
+  },
+  "n1_focus_scroll": {
+   "steps": "at 390 focus Run restore drill, scrollTo 600, resize 390->414",
+   "result": "pageY 600 retained, focus retained on Run restore drill, selected Backup still inside nav (275..374 of 16..398)",
+   "limit": "desktop max scroll on this page is 290, so pageY 600 was tested only across a phone-width resize"
+  },
+  "a1_phone_silence": "Silence 1h 175x40 side gaps 54/54; 8h 175x40 53/53; until fixed 358x40 119/119",
+  "a2_headings": "every .app-detail-page .dr-section > h3 sits 16px above its next element at 390 and 1280 (Silence, Checks, Settings, KyYard, Recent logs, Alert history, Stop watching)",
+  "a3_refresh_1280": "Refresh sources btn-tertiary 40px, transparent background and border, colour rgb(24,35,38) = --ink-strong #182326, radius 8px; Add source btn-secondary with visible field border; focus shows 2px solid rgb(191,63,24) outline, offset 2px; no filled accent button on collapsed Logs",
+  "a3_states": "hover rule present in served CSS (.btn-tertiary:hover:not(:disabled) background --panel-hover) but not exercised; disabled state not exercised",
+  "logs_phone_rhythm": "Log sources h2 bottom to first paragraph 0px; paragraph to paragraph 12px (390x844)",
+  "banner_font": "app-detail .banner h2 computed Space Grotesk 700 20px; document.fonts.check true",
+  "limits": "Scoped measurements, not full behaviour, contrast or accessibility acceptance."
+ },
+ "gates": {
+  "keyboard": "untested",
+  "focus": "untested (one programmatic focus on Refresh sources showed the 2px accent outline; not every element, not both themes)",
+  "contrast": "untested",
+  "states": "untested (loading/error not captured)",
+  "responsive": "untested as a gate (scoped native evidence: 390/414/1280 overflow 0 on Backup, App detail and Logs; N1 resize visibility pass)",
+  "evidence_revision": "3b69600 runtime served at 127.0.0.1:18433"
+ },
+ "verification_seen_not_rerun": {
+  "claimed_by_parent": "local typecheck/build/make ci and navigation suite (6 pass, 6 layout skips) pass at 3b69600",
+  "full_browser_3b69600": "/tmp/kypulse-r11-browser.log: 22 passed, 2 failed, 8 skipped; checks/r11-browser-failed.exit.txt = 1. Both failures are danger-button.spec page.screenshot \"Clipped area is either empty or outside the resulting image\" (light-1280, dark-1280).",
+  "follow_up": "b8f8c05 changes that spec to scroll targets into view; checks/r11-danger-after.txt shows 2 passed, 2 skipped for that spec only. I saw no full-suite rerun at b8f8c05.",
+  "remote_ci_security": "a8b6e51 results are historical; current-head CI/security pending per brief; not checked by me",
+  "myslop": "no board handoff by me (brief: credential 401)"
+ },
+ "unscored": [],
+ "verdict": {
+  "scope": "visual8 progression gate only; not full-product 8, not 9 Accept; behaviour gates untested; no CI, security or consensus claim",
+  "satisfied": false,
+  "cohorts": {
+   "admin-console": {
+    "satisfied": false,
+    "sum": "222.0",
+    "n": 28,
+    "exact_fraction": "111/14",
+    "exact_mean": "7.928571428571428571428571429",
+    "threshold": ">= 8 exact, no rounding",
+    "points_short_of_8_in_sum": "2.0"
+   },
+   "settings": {
+    "satisfied": true,
+    "sum": "96.4",
+    "n": 12,
+    "exact_fraction": "241/30",
+    "exact_mean": "8.033333333333333333333333333",
+    "threshold": ">= 8 exact, no rounding"
+   }
+  },
+  "honest_satisfaction": "Not satisfied. A1 and A2 are real visible gains, A3 fixed the twin-button reading and N1 behaves correctly natively. Admin stays below 8 because I still see the empty Logs/Activity next step sitting in muted meta text and the Log sources heading/paragraph rhythm off-grid. Part of the shortfall is my own variation on retained pixels (net -0.8 in the admin sum), which I disclose rather than average away. I do not request a score change.",
+  "remaining_concrete_defects": [
+   {
+    "id": "R1",
+    "files": "6 files where Log sources is visible: logs collapsed desktop/phone light/dark and logs expanded desktop light/dark (phone collapsed scored D7; desktop scored D8, an inconsistency I disclose rather than revise post-freeze)",
+    "dimension": "density_layout",
+    "item": "Log sources h2 has 0px gap to its first paragraph while the two paragraphs are 12px apart (measured at 390); neither is on the 8px scale",
+    "fix": "Give the Log sources heading an 8px gap to its text and the paragraphs a 16px gap (or 8px) using --ky-space tokens; no copy change",
+    "completion": "At 390 and 1280 heading-to-text and paragraph gaps are 8 or 16px"
+   },
+   {
+    "id": "R2",
+    "files": "Logs and Activity collapsed, 8 files (hierarchy 7)",
+    "dimension": "hierarchy",
+    "item": "Empty state: \"No logs found.\" / \"No audit events found…\" is the strongest text, while the only next step (Pair it in Settings) sits in the muted 13px meta line above Filters. The contract asks empty states to offer the next action.",
+    "fix": "Place the existing KyYard-not-paired sentence and link directly under the empty message (layout only, existing copy), or ask the owner before any new copy",
+    "completion": "The next action sits next to the empty message in both views and themes",
+    "constraint": "Copy changes need owner approval; this is a layout move of existing copy"
+   }
+  ],
+  "optional_or_taste": [
+   "Settings: one bordered card per section (coherence 7) is a mild stray from the flat contract surface; not nested and consistent, so optional",
+   "Status desktop intro wraps to a one-word last line; Settings intro wraps to \"Appearance.\"; taste",
+   "Appearance desktop last row of three; inherent to 23 themes",
+   "Phone filter 8px rhythm: I now score 8 (R10 7); no change wanted",
+   "Natural Backup heights, Status hierarchy 8 vs 9: unchanged taste"
+  ],
+  "limits": "Initial viewport only; synthetic admin; empty/unpaired Logs/Activity; unconfigured Backup; viewer role, populated, loading and error states not covered; native check in Chrome 154 DPR 2 OS light only."
+ }
+}
