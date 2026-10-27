@@ -323,7 +323,7 @@ dialog.modal-window::backdrop {
 }
 .dr-alert svg { flex-shrink: 0; margin-top: 1px; }
 .dr-alert-error { color: var(--danger); border-color: rgba(239, 68, 68, 0.3); background: rgba(239, 68, 68, 0.08); }
-.dr-alert-warn { color: var(--ink-strong); background: var(--accent-soft); border-color: var(--accent); }
+.dr-alert-warn { color: var(--ink-strong); background: color-mix(in srgb, var(--warning) 14%, var(--panel)); border-color: var(--warning); }
 .dr-alert-success { color: var(--success); border-color: rgba(16, 185, 129, 0.3); background: rgba(16, 185, 129, 0.08); }
 .dr-badge-muted { background: var(--panel-hover); color: var(--ink); border: 1px solid var(--line); }
 
@@ -604,5 +604,9 @@ textarea { border-radius: var(--ky-control-radius); }
 }
 
 .log-filter-panel { margin: 16px 0; }
-.log-filter-panel summary { min-height: var(--ky-control-size); line-height: var(--ky-control-size); font-size: var(--ky-type-nav); font-weight: 500; color: var(--ink-strong); cursor: pointer; }
+.log-filter-panel summary { width: fit-content; min-height: var(--ky-control-size); line-height: calc(var(--ky-control-size) - 2px); padding: 0 12px; border: 1px solid var(--ky-field-border); border-radius: var(--ky-control-radius); list-style-position: inside; font-size: var(--ky-type-nav); font-weight: 500; color: var(--ink-strong); cursor: pointer; }
 .filter-applied { margin-left: 8px; font-size: var(--ky-type-meta); color: var(--ink); }
+
+@media (max-width: 720px) {
+  .log-filter-panel .log-filters { gap: var(--ky-space-2) var(--ky-space-3); margin: var(--ky-space-2) 0; }
+}
