@@ -1,0 +1,57 @@
+{
+  "product_source": "1657c1b68376567eb071048812042e233b74640f",
+  "shared_source": "58626b7",
+  "status": "Round7 frontend96/build/makeci/native pass; local browser assertions22pass6skips with wrapper143 disclosed. Fresh remote CI including clean browser job passes54fc13e; security clearance c976d40 remains stale. Primaries terminal; Opus below8.",
+  "checks": {
+    "frontend": {
+      "status": "pass",
+      "evidence": "checks/r7-frontend.txt",
+      "sha256": "5015dc12f3be18a4c2b83f3f7890bb8b504133687d606ab1732eeb2f66842a1b",
+      "raw_sha256": "5015dc12f3be18a4c2b83f3f7890bb8b504133687d606ab1732eeb2f66842a1b",
+      "normalization": "ANSI escapes and trailing line whitespace removed."
+    },
+    "make_ci": {
+      "status": "pass",
+      "evidence": "checks/r7-make_ci.txt",
+      "sha256": "43f9a383cb80ca01cd627e9b5b798c6c71f8b07b307f96ee6da56a9784123b5f",
+      "raw_sha256": "43f9a383cb80ca01cd627e9b5b798c6c71f8b07b307f96ee6da56a9784123b5f",
+      "normalization": "ANSI escapes and trailing line whitespace removed."
+    },
+    "impeccable": {
+      "status": "reported2pinned-style findings",
+      "evidence": "checks/r7-impeccable.txt",
+      "sha256": "6a2d1b9c8d8665e08c7471d8f987e29c784f4edb5a7f28595d84f431fa508429",
+      "raw_sha256": "6a2d1b9c8d8665e08c7471d8f987e29c784f4edb5a7f28595d84f431fa508429",
+      "normalization": "ANSI escapes and trailing line whitespace removed."
+    },
+    "browser": {
+      "status": "assertions-pass-wrapper-terminated",
+      "evidence": "checks/r7-browser.txt",
+      "sha256": "fb0a70bc6048b14b7514690f3ed2596da5e618dd405dbe029f76e8851f0f098a",
+      "raw_sha256": "fb0a70bc6048b14b7514690f3ed2596da5e618dd405dbe029f76e8851f0f098a",
+      "normalization": "ANSI escapes and trailing line whitespace removed.",
+      "result": "Browser output reports22passed,6layout-specific skips,8.6min and graceful server stop. The parent command wrapper returned143 when collected, so clean local command completion is not claimed. Fresh remote browser CI must verify process success.",
+      "source": "1657c1b68376567eb071048812042e233b74640f",
+      "wrapper_exit_code": 143
+    },
+    "native": {
+      "status": "pass-scoped",
+      "evidence": "native-round7.json",
+      "result": "Closed/expanded disclosure, keyboard focus, draft/applied/Clear hints and retained Actor value;40px summary, zero Backup panel wrappers, one nav/no overflow."
+    },
+    "remote_ci": {
+      "status": "pass",
+      "head": "54fc13e784e21974f244b8e8b476a7495c8c9e99",
+      "evidence": "checks/r7-remote.json"
+    }
+  },
+  "retained_checks": "verification-round6.json/checks/r6-remote.json are historical full browser/remote CI passes atc976d40; authored security marker was stale at1c13c82. Fresh round7 remote gates remain required.",
+  "coverage": "40 distinct initial-viewport originals,28admin-console/12settings. Includes default closed and expanded Logs/Activity filters; changing coverage is not a quality gain. Prior rounds20admin/12settings remain unchanged.",
+  "limitations": [
+    "Synthetic admin; Logs/Activity empty/unpaired; Settings/Backup unconfigured. Other roles/populated states/lower content remain unscored.",
+    "Expanded phone Activity result extends below the initial viewport; both disclosure states are scored and normal vertical scrolling remains.",
+    "Native Chrome154/DPR2 differs from scored Chromium153/DPR1.",
+    "Regex detector reports prescribed Space Grotesk and selected-nav accent border; not accessibility acceptance.",
+    "No merge/deploy; MySlop401 prevents shared-board posting."
+  ]
+}

@@ -1,0 +1,16 @@
+{
+  "round": 7,
+  "raw_reports": {
+    "opus-round7.md": "0634d42c98b49bda1e252bf331b393f475b07ae926de6bc1fbb340f856b105eb",
+    "opus-round7.json": "75df592ffc04c000f0cc06fbe24fbf0801862cb6cb6a57846f92232e96a4e317",
+    "sol-round7.md": "62a63dc1166ceb0174d988fb3c3b3500e792da24f396135d472354337c248b82",
+    "sol-round7.json": "379ffc5db125b26407d47ca86e26c6983085cfcdb522cf9a0fdc23f1080ebf58"
+  },
+  "spreads_at_least2": {},
+  "arithmetic": "Both40-original memberships/pins and fixed Decimal arithmetic validate. Opus220/28=7.857142857;95.2/12=7.933333333. Sol236.4/28=8.442857143;102.2/12=8.516666667. No averaging or rounding into8.",
+  "concrete_finding": "Opus E1 verified: .dr-alert-warn uses accent and accent-soft. It should consume the existing warning alias/tint; this is a retained semantic-color correction, not a new regression.",
+  "bounded_next": "Point warning notice to warning color with derived tint; outline native Filters summary with the existing secondary-control geometry; use shared8px vertical phone filter gaps/margins while retaining full-width native dates. No further Backup layout/feature changes.",
+  "judgment": "A visible filled primary is not required solely because an empty read-only view exists. An outlined disclosure improves its visible affordance without turning it into an orange primary. Unequal independent content heights, repeated incident strip and changed judgments on Alerts/app-detail remain taste/reviewer variation.",
+  "coverage": "Both collapsed and expanded states remain scored:40originals,28admin/12settings. Match current expanded forms to earlier visible forms; new default states have no older prior. Raw mean drift includes coverage change, not isolated patch gain.",
+  "next": "Fresh round8 after one bounded CSS batch; Gemini deferred because Opus not satisfied."
+}

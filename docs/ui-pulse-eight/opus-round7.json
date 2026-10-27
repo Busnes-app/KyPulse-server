@@ -1,0 +1,3385 @@
+{
+ "schema": "ky-ui-council-scores/2",
+ "round": 7,
+ "stage": "07-after",
+ "reviewer": {
+  "name": "Claude Opus 5.5",
+  "model": "claude-opus-5-5",
+  "role": "independent primary reviewer (Opus 5.5 + GPT Sol primaries; Gemini 4 Argon only after both satisfied; not called; no subagents)"
+ },
+ "rubric": {
+  "version": "ky-suite-v2",
+  "sha256": "ad3516620420fbdc30f5273f82b7c72c76e1365d1b6296fcaa56be3cbebf2c41",
+  "design_contract_sha256": "392afb88c51fb3cfad6c94d6b841804b194d107a0431c31f35ff81d3a7a444d3",
+  "weights": {
+   "hierarchy": 0.2,
+   "typography": 0.15,
+   "density_layout": 0.2,
+   "color": 0.15,
+   "visible_affordances": 0.15,
+   "coherence": 0.15
+  },
+  "rounding": "per file: Decimal(str(sum)).quantize(Decimal('0.1'), ROUND_HALF_UP); cohort: exact mean of rounded unique-file totals, never rounded into 8",
+  "ky_fit": "separate, five dimensions at 0.20 each, half-up 0.1; never added to total"
+ },
+ "inputs": {
+  "worktree_head": "54fc13e784e21974f244b8e8b476a7495c8c9e99",
+  "ui_source_commit": "1657c1b68376567eb071048812042e233b74640f",
+  "evidence_commit": "54fc13e784e21974f244b8e8b476a7495c8c9e99",
+  "source_pins": "21 manifest source_files sha256 equal git objects at 1657c1b; 1657c1b..54fc13e changes only docs/ui-pulse-eight",
+  "inventory-v7.json": "81d0e8636a7956e9053e017d3aedbbce3d4c38a8e0cc4a3a91d6c83593f25a91",
+  "manifest-07-after.json": "93fb3b7fde33da52a1ca4eafa36957735675182356617015273c7ab2636fdd83",
+  "duplicate-audit-v7.json": "39e8f0a1dca489dcce4cb1eccd37da0801536e3228c140804aced9195b7993be",
+  "brand-references.json": "947645397875278d9f168d2e4bab46d4d40788f3074f30efc8695f69bb8912de",
+  "palette_authority": "vendored web/src/ky-ui VERSION 0.4.3 pins tokens.css 636fcf04...f235f4 = ky-ui producer 58626b7 src/tokens.css (git object); dirty root ky-ui working bytes not used",
+  "brand_references": "4 KyNotes captures at 1ab04e6, file and committed blob sha256 match brand-references.json; all 4 viewed for brand cohesion only, not rated",
+  "opus-round6.json (read after freeze)": "5dc673e196c8ce4364e92523c530080ee665e7a17b915c170aa38843fd9b312b",
+  "opus-round6.md (read after freeze)": "f3ec9e84c87374048c5a9ddb3eaffb28749605dfec23aaaed76d9c6270f69792",
+  "native-round7.json (read after freeze)": "89e8a0df025d2f99165165121e19c19fc889b8c0eded86522f3ef2329f3cb286",
+  "capture": "Playwright 1.63.0 / Chromium 153.0.8010.12 Linux, DPR 1, normal service workers, 1280x900 and 390x844, OS light/dark, no saved choice; synthetic admin, 3 watched apps ok/degraded/down; Logs/Activity empty/unpaired, collapsed and expanded; Settings/Backup unconfigured; initial viewport only; live chronology and fixture temp path vary"
+ },
+ "inventory": {
+  "files": [
+   {
+    "file": "screenshots/kypulse-07-after-activity-desktop-dark.png",
+    "sha256": "cf1a0e87ddbf13300eb6794696b4b9792aa28115f8e2bfede1b854a651024c4a",
+    "bytes": 47944,
+    "width": 1280,
+    "height": 900,
+    "duplicate_of": null
+   },
+   {
+    "file": "screenshots/kypulse-07-after-activity-desktop-light.png",
+    "sha256": "0f9085ade3a57c3f90392023e824c2a34f795f2f6720be9c7b896f76a01475d2",
+    "bytes": 47993,
+    "width": 1280,
+    "height": 900,
+    "duplicate_of": null
+   },
+   {
+    "file": "screenshots/kypulse-07-after-activity-filters-desktop-dark.png",
+    "sha256": "cdc1b06df4fdbcccb7bcc9aa41e8b21063faef13cfe9f83201188e5ac5883600",
+    "bytes": 55600,
+    "width": 1280,
+    "height": 900,
+    "duplicate_of": null
+   },
+   {
+    "file": "screenshots/kypulse-07-after-activity-filters-desktop-light.png",
+    "sha256": "0c9b4fa90f1b300894c55dead7d24eac3b4631b317ddf743897b9e1cb0a28f47",
+    "bytes": 55186,
+    "width": 1280,
+    "height": 900,
+    "duplicate_of": null
+   },
+   {
+    "file": "screenshots/kypulse-07-after-activity-filters-mobile-dark.png",
+    "sha256": "a7a67ba46897125f00054cf2826f131e296974dc85c460003dde7d211fd68ce6",
+    "bytes": 42246,
+    "width": 390,
+    "height": 844,
+    "duplicate_of": null
+   },
+   {
+    "file": "screenshots/kypulse-07-after-activity-filters-mobile-light.png",
+    "sha256": "0c79fa0b641ad376b2febac9a19ae1a54d09513b1e2179ec4734ba0b90a8f191",
+    "bytes": 41806,
+    "width": 390,
+    "height": 844,
+    "duplicate_of": null
+   },
+   {
+    "file": "screenshots/kypulse-07-after-activity-mobile-dark.png",
+    "sha256": "139755facd7b02ffa910bb2336a6f163c28f5a47a12687ccbfd153774557ab23",
+    "bytes": 32675,
+    "width": 390,
+    "height": 844,
+    "duplicate_of": null
+   },
+   {
+    "file": "screenshots/kypulse-07-after-activity-mobile-light.png",
+    "sha256": "d3ed1cd17aa178e26dea555c6de1d2a4fb2c5beb36158d1a6b5d35bbcbc83c4e",
+    "bytes": 32181,
+    "width": 390,
+    "height": 844,
+    "duplicate_of": null
+   },
+   {
+    "file": "screenshots/kypulse-07-after-alerts-desktop-dark.png",
+    "sha256": "05c55e873414b5291a685aad29bc49efe72eb31a459b72759797b236466ad060",
+    "bytes": 52887,
+    "width": 1280,
+    "height": 900,
+    "duplicate_of": null
+   },
+   {
+    "file": "screenshots/kypulse-07-after-alerts-desktop-light.png",
+    "sha256": "289d1e35573d4aa3a52da2b2b7004ba8f48368f5f574ee6fb2d72f31b4d8916f",
+    "bytes": 52366,
+    "width": 1280,
+    "height": 900,
+    "duplicate_of": null
+   },
+   {
+    "file": "screenshots/kypulse-07-after-alerts-mobile-dark.png",
+    "sha256": "2ee7a82f060e8344baabc6e259f6d0a6b35bf8ef213f92e0a3b689c70fd8d0e1",
+    "bytes": 42455,
+    "width": 390,
+    "height": 844,
+    "duplicate_of": null
+   },
+   {
+    "file": "screenshots/kypulse-07-after-alerts-mobile-light.png",
+    "sha256": "b5b1a63059a0cf12a01bc19b253050e7716a201b5ff4e7bca67b220c96580903",
+    "bytes": 41605,
+    "width": 390,
+    "height": 844,
+    "duplicate_of": null
+   },
+   {
+    "file": "screenshots/kypulse-07-after-app-detail-desktop-dark.png",
+    "sha256": "fc29e20ff7a80c88a1c5f122f69c2bbdc3fd5019ddf0934383ff15d6249ae161",
+    "bytes": 88820,
+    "width": 1280,
+    "height": 900,
+    "duplicate_of": null
+   },
+   {
+    "file": "screenshots/kypulse-07-after-app-detail-desktop-light.png",
+    "sha256": "eee5ce87bbb524e7979911c8835f12ab4ec8f09e120d534c1c5ad10165d9cdd3",
+    "bytes": 88825,
+    "width": 1280,
+    "height": 900,
+    "duplicate_of": null
+   },
+   {
+    "file": "screenshots/kypulse-07-after-app-detail-mobile-dark.png",
+    "sha256": "1577ca319be1af9c05b484e390349dd70e64519de2ecdfe9cba9a7bec57579f9",
+    "bytes": 52735,
+    "width": 390,
+    "height": 844,
+    "duplicate_of": null
+   },
+   {
+    "file": "screenshots/kypulse-07-after-app-detail-mobile-light.png",
+    "sha256": "c03eb7ed70b21c376fb4e585f65079055706eb4389756a0984abce7a66eea4bd",
+    "bytes": 52628,
+    "width": 390,
+    "height": 844,
+    "duplicate_of": null
+   },
+   {
+    "file": "screenshots/kypulse-07-after-appearance-desktop-dark.png",
+    "sha256": "2539b0cee6781188f0a83fe3660f92f5260912ac27e3e741ce17ca639a950e20",
+    "bytes": 80443,
+    "width": 1280,
+    "height": 900,
+    "duplicate_of": null
+   },
+   {
+    "file": "screenshots/kypulse-07-after-appearance-desktop-light.png",
+    "sha256": "746f2fb191bacdfa98597e6a17bb66129f16fc77227f025416e3e61a29663a1b",
+    "bytes": 79439,
+    "width": 1280,
+    "height": 900,
+    "duplicate_of": null
+   },
+   {
+    "file": "screenshots/kypulse-07-after-appearance-mobile-dark.png",
+    "sha256": "7943c89143b282cc9b4482f04ee010d927820c142d234234990cc8d6378dc974",
+    "bytes": 42210,
+    "width": 390,
+    "height": 844,
+    "duplicate_of": null
+   },
+   {
+    "file": "screenshots/kypulse-07-after-appearance-mobile-light.png",
+    "sha256": "7944a9f2f6cff416420f5fe6aa9d50fe9daef58602dc8da26d296b8ea0a9090d",
+    "bytes": 41468,
+    "width": 390,
+    "height": 844,
+    "duplicate_of": null
+   },
+   {
+    "file": "screenshots/kypulse-07-after-backup-desktop-dark.png",
+    "sha256": "a889f0d9848d4ddc814e148e6ce254e139f0f09631eb9994220605eb80d37067",
+    "bytes": 115468,
+    "width": 1280,
+    "height": 900,
+    "duplicate_of": null
+   },
+   {
+    "file": "screenshots/kypulse-07-after-backup-desktop-light.png",
+    "sha256": "aae09db92e29c7aba3ec3728c391404306f1d404ec9738d08574fa9fe2f487de",
+    "bytes": 115404,
+    "width": 1280,
+    "height": 900,
+    "duplicate_of": null
+   },
+   {
+    "file": "screenshots/kypulse-07-after-backup-mobile-dark.png",
+    "sha256": "8780fb5209494805e5fbae3e325f0a4fc1431136fcf67eee754268b7086a8f85",
+    "bytes": 53779,
+    "width": 390,
+    "height": 844,
+    "duplicate_of": null
+   },
+   {
+    "file": "screenshots/kypulse-07-after-backup-mobile-light.png",
+    "sha256": "8f3d376cf0a6eca13719c698c233fb32ebddd0b888b473488736d001261fe5a5",
+    "bytes": 53277,
+    "width": 390,
+    "height": 844,
+    "duplicate_of": null
+   },
+   {
+    "file": "screenshots/kypulse-07-after-logs-desktop-dark.png",
+    "sha256": "cc8ee0d47ec200de79f020eee5acf0dbeaf26cbb88c7aa2d340ca3b71b4044c6",
+    "bytes": 70163,
+    "width": 1280,
+    "height": 900,
+    "duplicate_of": null
+   },
+   {
+    "file": "screenshots/kypulse-07-after-logs-desktop-light.png",
+    "sha256": "0c66d17cfcc0fc8512a1aface19f16a4b529ce0419c915431586300ee8d9af8f",
+    "bytes": 70217,
+    "width": 1280,
+    "height": 900,
+    "duplicate_of": null
+   },
+   {
+    "file": "screenshots/kypulse-07-after-logs-filters-desktop-dark.png",
+    "sha256": "bc66bbb3d1e4e22602d98d963cce0afd40d827799166fa9c4b9850ae5ec9b55d",
+    "bytes": 77802,
+    "width": 1280,
+    "height": 900,
+    "duplicate_of": null
+   },
+   {
+    "file": "screenshots/kypulse-07-after-logs-filters-desktop-light.png",
+    "sha256": "13fc7219c0d73f4ecd41a18f9e5eec5973e1ea0ff6a2bc8a68fd47322c76d8cc",
+    "bytes": 77333,
+    "width": 1280,
+    "height": 900,
+    "duplicate_of": null
+   },
+   {
+    "file": "screenshots/kypulse-07-after-logs-filters-mobile-dark.png",
+    "sha256": "41a6b80a0bec3ed592ed83f38aa37cc1b81f3c741b41996643f4184707683240",
+    "bytes": 38768,
+    "width": 390,
+    "height": 844,
+    "duplicate_of": null
+   },
+   {
+    "file": "screenshots/kypulse-07-after-logs-filters-mobile-light.png",
+    "sha256": "5ab112c7d692f41b211941dd785f5e675a771db5a12d5f9550a4f6ffa0649711",
+    "bytes": 38422,
+    "width": 390,
+    "height": 844,
+    "duplicate_of": null
+   },
+   {
+    "file": "screenshots/kypulse-07-after-logs-mobile-dark.png",
+    "sha256": "0190060487b6090afe828e428bb3c354092a5b73794ec949076fe93f144a59b9",
+    "bytes": 49031,
+    "width": 390,
+    "height": 844,
+    "duplicate_of": null
+   },
+   {
+    "file": "screenshots/kypulse-07-after-logs-mobile-light.png",
+    "sha256": "0330959c1fedd181e29aec7105aa6f6d1574a6b43754cf2ecb94ac772b1ac1ef",
+    "bytes": 48362,
+    "width": 390,
+    "height": 844,
+    "duplicate_of": null
+   },
+   {
+    "file": "screenshots/kypulse-07-after-settings-desktop-dark.png",
+    "sha256": "48deda855b31cab3b2aa525794e8290c9456da2479b25e47adbe6c4665caefc6",
+    "bytes": 82074,
+    "width": 1280,
+    "height": 900,
+    "duplicate_of": null
+   },
+   {
+    "file": "screenshots/kypulse-07-after-settings-desktop-light.png",
+    "sha256": "c13d85a73642a37acb942b4a4f871f06e20733d1d65611a0c4d5af15b1010da0",
+    "bytes": 82055,
+    "width": 1280,
+    "height": 900,
+    "duplicate_of": null
+   },
+   {
+    "file": "screenshots/kypulse-07-after-settings-mobile-dark.png",
+    "sha256": "1d008fd35e6da5b8a4a2539e23bd698a970a76b47565a67f5e39c45c7705b962",
+    "bytes": 46757,
+    "width": 390,
+    "height": 844,
+    "duplicate_of": null
+   },
+   {
+    "file": "screenshots/kypulse-07-after-settings-mobile-light.png",
+    "sha256": "e8feea20f99b6babdc1d065fd8e75b7c94246867277a3e0585b0db9dd0a4e15d",
+    "bytes": 46429,
+    "width": 390,
+    "height": 844,
+    "duplicate_of": null
+   },
+   {
+    "file": "screenshots/kypulse-07-after-status-desktop-dark.png",
+    "sha256": "a7e3e30a288adb2cbb578d12ddf85dd841ce45ca63edbcdd3738a1de5d026607",
+    "bytes": 69886,
+    "width": 1280,
+    "height": 900,
+    "duplicate_of": null
+   },
+   {
+    "file": "screenshots/kypulse-07-after-status-desktop-light.png",
+    "sha256": "bd9418d645af3123fa0216e1f1ed701d81851b5d38a66ee2278978efba9ca3d9",
+    "bytes": 70032,
+    "width": 1280,
+    "height": 900,
+    "duplicate_of": null
+   },
+   {
+    "file": "screenshots/kypulse-07-after-status-mobile-dark.png",
+    "sha256": "62210ebbd661ffd4f8942bddeea3d8d234639ac62a20973cbbb1c42024a12f64",
+    "bytes": 50398,
+    "width": 390,
+    "height": 844,
+    "duplicate_of": null
+   },
+   {
+    "file": "screenshots/kypulse-07-after-status-mobile-light.png",
+    "sha256": "9f49f64085f432ded86b49161c92d15500df03047f6e7a5baa205942bea503dc",
+    "bytes": 49927,
+    "width": 390,
+    "height": 844,
+    "duplicate_of": null
+   }
+  ],
+  "count": 40,
+  "cohorts": {
+   "admin-console": 28,
+   "settings": 12
+  },
+  "checks": "disk/inventory/manifest set equality; sha256, bytes, dimensions match inventory, manifest and committed blobs at 54fc13e (0 mismatches); 0 exact duplicates; pairwise near-duplicate scan: closest pair activity-desktop-light vs activity-filters-desktop-light 1.44% changed px, max delta 248 (not near duplicates)"
+ },
+ "blinding": {
+  "read_before_freeze": [
+   "workspace root, worktree, web, web/browser and docs/ui-pulse-eight AGENTS.md",
+   "council and ky-suite-ui skills, fixed rubric.md and design-contract.md",
+   "inventory-v7, manifest-07-after, duplicate-audit-v7, brand-references.json (no score fields)",
+   "ky-ui 58626b7 tokens.css git object",
+   "all 40 originals one at a time at original resolution",
+   "3x crop of app-detail Down / 4x crop of Status down text",
+   "4 KyNotes brand references"
+  ],
+  "freeze": {
+   "at": "2026-10-27T06:52:42Z",
+   "rows_sha256": "c47c11ef025745b755d187bb336ea410067f1c0ca27ea4d1f805ec4bda4afcb6",
+   "source_sha256": "806f3cb050ffde05195b09fa92d418509e98a70243138975ca3417dfe6893cc6",
+   "location": "/tmp/opus-r7/frozen-scores.json (+ scores_src.py); build.py asserts the hash and recomputes every total"
+  },
+  "read_after_freeze": [
+   "own opus-round6.json/md",
+   "06->07 pixel diffs of the 32 matched originals",
+   "kypulse-06-after-backup-desktop-light.png (cause attribution)",
+   "Backup notice pixel sampling and theme.css/Backup.tsx at 1657c1b",
+   "native-round7.json (parent)",
+   "own native incognito tab"
+  ],
+  "not_opened": [
+   "sol-round*",
+   "COUNCIL.md",
+   "README.md",
+   "KyPulse-Council.xlsx",
+   "scores/rounds/spreads CSVs",
+   "round*-audit.*",
+   "verification*.json",
+   "checks/*",
+   "native-round6 and earlier native JSON",
+   "geometry-round4.json",
+   "my rounds 1-5"
+  ],
+  "exposure": [
+   "The brief supplied prior qualitative objections, the round-7 change description and parent check status before I saw pixels; web/AGENTS.md describes the disclosure and flat-Backup changes. This is priming, not a clean blind.",
+   "Directory listings showed other reports' names; none opened."
+  ],
+  "post_freeze_numeric_changes": "none"
+ },
+ "files": [
+  {
+   "artifacts": "none; live fixture durations/timestamps",
+   "bytes": 47944,
+   "caveat": "default collapsed disclosure; empty/unpaired fixture; no Applied indicator state captured",
+   "cohort": "admin-console",
+   "confidence": "high",
+   "duplicate_of": null,
+   "file": "screenshots/kypulse-07-after-activity-desktop-dark.png",
+   "filename_matches_content": true,
+   "filter_disclosure": "collapsed",
+   "height": 900,
+   "ky_fit": {
+    "scores": {
+     "accent_discipline": 8,
+     "palette_tokens": 8,
+     "shell": 8,
+     "suite_cohesion": 8,
+     "type_geometry": 8
+    },
+    "observations": {
+     "accent_discipline": "no orange in content",
+     "palette_tokens": "cream page/charcoal sidebar ink and orange accent match ky-ui 0.4.3 tokens; status hues stay paired with text",
+     "shell": "240px left sidebar with stamp wordmark, 40px icon rows, accent rail selection, account region pinned bottom",
+     "suite_cohesion": "nav selection tint+rail, Space Grotesk and outline secondaries match the KyNotes reference set; Pulse's persistent alert band is product-specific",
+     "type_geometry": "24px/600 title, 40px controls and 8px radii consistent with contract"
+    },
+    "total": "8.0",
+    "note": "Reported only, never added to total; KyNotes refs used for brand cohesion only."
+   },
+   "observations": {
+    "coherence": "same title/notes/link pattern as the sibling page",
+    "color": "content entirely neutral; only nav row and alert band carry colour",
+    "density_layout": "short stack; large blank remainder is the empty captured state",
+    "hierarchy": "page offers no next action beyond the Settings pairing link; Filters is a small disclosure",
+    "typography": "empty result 'No audit events found in the retained 7-day window.' at 15px strong ink over 13px muted notes",
+    "visible_affordances": "native \u25b8 triangle + 'Filters' text has no control shape, reads as plain text at a glance"
+   },
+   "observed_product": "kyPulse",
+   "observed_surface": "activity (filters collapsed)",
+   "scores": {
+    "coherence": 8,
+    "color": 8,
+    "density_layout": 8,
+    "hierarchy": 7,
+    "typography": 8,
+    "visible_affordances": 7
+   },
+   "sha256": "cf1a0e87ddbf13300eb6794696b4b9792aa28115f8e2bfede1b854a651024c4a",
+   "state": "empty/unpaired",
+   "theme": "dark (OS, no saved choice)",
+   "total": "7.7",
+   "viewport": "desktop 1280x900 DPR1",
+   "width": 1280,
+   "prior_total": null
+  },
+  {
+   "artifacts": "none; live fixture durations/timestamps",
+   "bytes": 47993,
+   "caveat": "default collapsed disclosure; empty/unpaired fixture; no Applied indicator state captured",
+   "cohort": "admin-console",
+   "confidence": "high",
+   "duplicate_of": null,
+   "file": "screenshots/kypulse-07-after-activity-desktop-light.png",
+   "filename_matches_content": true,
+   "filter_disclosure": "collapsed",
+   "height": 900,
+   "ky_fit": {
+    "scores": {
+     "accent_discipline": 8,
+     "palette_tokens": 8,
+     "shell": 8,
+     "suite_cohesion": 8,
+     "type_geometry": 8
+    },
+    "observations": {
+     "accent_discipline": "no orange in content",
+     "palette_tokens": "cream page/charcoal sidebar ink and orange accent match ky-ui 0.4.3 tokens; status hues stay paired with text",
+     "shell": "240px left sidebar with stamp wordmark, 40px icon rows, accent rail selection, account region pinned bottom",
+     "suite_cohesion": "nav selection tint+rail, Space Grotesk and outline secondaries match the KyNotes reference set; Pulse's persistent alert band is product-specific",
+     "type_geometry": "24px/600 title, 40px controls and 8px radii consistent with contract"
+    },
+    "total": "8.0",
+    "note": "Reported only, never added to total; KyNotes refs used for brand cohesion only."
+   },
+   "observations": {
+    "coherence": "same title/notes/link pattern as the sibling page",
+    "color": "content entirely neutral; only nav row and alert band carry colour",
+    "density_layout": "short stack; large blank remainder is the empty captured state",
+    "hierarchy": "page offers no next action beyond the Settings pairing link; Filters is a small disclosure",
+    "typography": "empty result 'No audit events found in the retained 7-day window.' at 15px strong ink over 13px muted notes",
+    "visible_affordances": "native \u25b8 triangle + 'Filters' text has no control shape, reads as plain text at a glance"
+   },
+   "observed_product": "kyPulse",
+   "observed_surface": "activity (filters collapsed)",
+   "scores": {
+    "coherence": 8,
+    "color": 8,
+    "density_layout": 8,
+    "hierarchy": 7,
+    "typography": 8,
+    "visible_affordances": 7
+   },
+   "sha256": "0f9085ade3a57c3f90392023e824c2a34f795f2f6720be9c7b896f76a01475d2",
+   "state": "empty/unpaired",
+   "theme": "light (OS, no saved choice)",
+   "total": "7.7",
+   "viewport": "desktop 1280x900 DPR1",
+   "width": 1280,
+   "prior_total": null
+  },
+  {
+   "artifacts": "none; live fixture durations/timestamps",
+   "bytes": 55600,
+   "caveat": "explicitly expanded; empty result; no applied filter",
+   "cohort": "admin-console",
+   "confidence": "high",
+   "duplicate_of": null,
+   "file": "screenshots/kypulse-07-after-activity-filters-desktop-dark.png",
+   "filename_matches_content": true,
+   "filter_disclosure": "expanded",
+   "height": 900,
+   "ky_fit": {
+    "scores": {
+     "accent_discipline": 8,
+     "palette_tokens": 8,
+     "shell": 8,
+     "suite_cohesion": 8,
+     "type_geometry": 8
+    },
+    "observations": {
+     "accent_discipline": "orange marks Apply and selection only",
+     "palette_tokens": "cream page/charcoal sidebar ink and orange accent match ky-ui 0.4.3 tokens; status hues stay paired with text",
+     "shell": "240px left sidebar with stamp wordmark, 40px icon rows, accent rail selection, account region pinned bottom",
+     "suite_cohesion": "nav selection tint+rail, Space Grotesk and outline secondaries match the KyNotes reference set; Pulse's persistent alert band is product-specific",
+     "type_geometry": "24px/600 title, 40px controls and 8px radii consistent with contract"
+    },
+    "total": "8.0",
+    "note": "Reported only, never added to total; KyNotes refs used for brand cohesion only."
+   },
+   "observations": {
+    "coherence": "fields reuse Settings/Log sources field style",
+    "color": "salmon Apply on charcoal; native date icons light",
+    "density_layout": "3-column grid; Apply/Clear share the date row; result follows at 16px",
+    "hierarchy": "Apply is the only filled button; result line directly below",
+    "typography": "13px field labels, 15px result text",
+    "visible_affordances": "40px inputs, native datetime controls show placeholder and picker icon"
+   },
+   "observed_product": "kyPulse",
+   "observed_surface": "activity-filters (filters expanded)",
+   "scores": {
+    "coherence": 8,
+    "color": 8,
+    "density_layout": 8,
+    "hierarchy": 8,
+    "typography": 8,
+    "visible_affordances": 8
+   },
+   "sha256": "cdc1b06df4fdbcccb7bcc9aa41e8b21063faef13cfe9f83201188e5ac5883600",
+   "state": "synthetic sparse/default",
+   "theme": "dark (OS, no saved choice)",
+   "total": "8.0",
+   "viewport": "desktop 1280x900 DPR1",
+   "width": 1280,
+   "prior_total": "8.0"
+  },
+  {
+   "artifacts": "none; live fixture durations/timestamps",
+   "bytes": 55186,
+   "caveat": "explicitly expanded; empty result; no applied filter",
+   "cohort": "admin-console",
+   "confidence": "high",
+   "duplicate_of": null,
+   "file": "screenshots/kypulse-07-after-activity-filters-desktop-light.png",
+   "filename_matches_content": true,
+   "filter_disclosure": "expanded",
+   "height": 900,
+   "ky_fit": {
+    "scores": {
+     "accent_discipline": 8,
+     "palette_tokens": 8,
+     "shell": 8,
+     "suite_cohesion": 8,
+     "type_geometry": 8
+    },
+    "observations": {
+     "accent_discipline": "orange marks Apply and selection only",
+     "palette_tokens": "cream page/charcoal sidebar ink and orange accent match ky-ui 0.4.3 tokens; status hues stay paired with text",
+     "shell": "240px left sidebar with stamp wordmark, 40px icon rows, accent rail selection, account region pinned bottom",
+     "suite_cohesion": "nav selection tint+rail, Space Grotesk and outline secondaries match the KyNotes reference set; Pulse's persistent alert band is product-specific",
+     "type_geometry": "24px/600 title, 40px controls and 8px radii consistent with contract"
+    },
+    "total": "8.0",
+    "note": "Reported only, never added to total; KyNotes refs used for brand cohesion only."
+   },
+   "observations": {
+    "coherence": "fields reuse Settings/Log sources field style",
+    "color": "orange Apply on cream; fields neutral",
+    "density_layout": "3-column grid; Apply/Clear share the date row; result follows at 16px",
+    "hierarchy": "Apply is the only filled button; result line directly below",
+    "typography": "13px field labels, 15px result text",
+    "visible_affordances": "40px inputs, native datetime controls show placeholder and picker icon"
+   },
+   "observed_product": "kyPulse",
+   "observed_surface": "activity-filters (filters expanded)",
+   "scores": {
+    "coherence": 8,
+    "color": 8,
+    "density_layout": 8,
+    "hierarchy": 8,
+    "typography": 8,
+    "visible_affordances": 8
+   },
+   "sha256": "0c9b4fa90f1b300894c55dead7d24eac3b4631b317ddf743897b9e1cb0a28f47",
+   "state": "synthetic sparse/default",
+   "theme": "light (OS, no saved choice)",
+   "total": "8.0",
+   "viewport": "desktop 1280x900 DPR1",
+   "width": 1280,
+   "prior_total": "8.0"
+  },
+  {
+   "artifacts": "none; live fixture durations/timestamps",
+   "bytes": 42246,
+   "caveat": "result text continues below initial viewport (normal vertical scroll), scored as captured",
+   "cohort": "admin-console",
+   "confidence": "high",
+   "duplicate_of": null,
+   "file": "screenshots/kypulse-07-after-activity-filters-mobile-dark.png",
+   "filename_matches_content": true,
+   "filter_disclosure": "expanded",
+   "height": 844,
+   "ky_fit": {
+    "scores": {
+     "accent_discipline": 8,
+     "palette_tokens": 8,
+     "shell": 8,
+     "suite_cohesion": 8,
+     "type_geometry": 8
+    },
+    "observations": {
+     "accent_discipline": "orange only Apply + current tab",
+     "palette_tokens": "same Busnes token surfaces at 390px; status hues paired with text",
+     "shell": "phone header wordmark + sign-out icon; horizontally scrolling tabs keep current tab fully visible with tint + underline",
+     "suite_cohesion": "nav selection tint+rail, Space Grotesk and outline secondaries match the KyNotes reference set; Pulse's persistent alert band is product-specific",
+     "type_geometry": "40px controls and 8px radii hold at phone width; title 24px"
+    },
+    "total": "8.0",
+    "note": "Reported only, never added to total; KyNotes refs used for brand cohesion only."
+   },
+   "observations": {
+    "coherence": "same field vocabulary as Settings phone",
+    "color": "salmon Apply on charcoal",
+    "density_layout": "two half-width then three full-width fields push the result line below the fold mid-sentence",
+    "hierarchy": "Apply filled primary beside outlined Clear",
+    "typography": "13px labels, 15px result",
+    "visible_affordances": "full-width native date inputs show placeholder and picker icon"
+   },
+   "observed_product": "kyPulse",
+   "observed_surface": "activity-filters (filters expanded)",
+   "scores": {
+    "coherence": 8,
+    "color": 8,
+    "density_layout": 7,
+    "hierarchy": 8,
+    "typography": 8,
+    "visible_affordances": 8
+   },
+   "sha256": "a7a67ba46897125f00054cf2826f131e296974dc85c460003dde7d211fd68ce6",
+   "state": "synthetic sparse/default",
+   "theme": "dark (OS, no saved choice)",
+   "total": "7.8",
+   "viewport": "mobile 390x844 DPR1",
+   "width": 390,
+   "prior_total": "7.8"
+  },
+  {
+   "artifacts": "none; live fixture durations/timestamps",
+   "bytes": 41806,
+   "caveat": "result text continues below initial viewport (normal vertical scroll), scored as captured",
+   "cohort": "admin-console",
+   "confidence": "high",
+   "duplicate_of": null,
+   "file": "screenshots/kypulse-07-after-activity-filters-mobile-light.png",
+   "filename_matches_content": true,
+   "filter_disclosure": "expanded",
+   "height": 844,
+   "ky_fit": {
+    "scores": {
+     "accent_discipline": 8,
+     "palette_tokens": 8,
+     "shell": 8,
+     "suite_cohesion": 8,
+     "type_geometry": 8
+    },
+    "observations": {
+     "accent_discipline": "orange only Apply + current tab",
+     "palette_tokens": "same Busnes token surfaces at 390px; status hues paired with text",
+     "shell": "phone header wordmark + sign-out icon; horizontally scrolling tabs keep current tab fully visible with tint + underline",
+     "suite_cohesion": "nav selection tint+rail, Space Grotesk and outline secondaries match the KyNotes reference set; Pulse's persistent alert band is product-specific",
+     "type_geometry": "40px controls and 8px radii hold at phone width; title 24px"
+    },
+    "total": "8.0",
+    "note": "Reported only, never added to total; KyNotes refs used for brand cohesion only."
+   },
+   "observations": {
+    "coherence": "same field vocabulary as Settings phone",
+    "color": "orange Apply on cream",
+    "density_layout": "two half-width then three full-width fields push the result line below the fold mid-sentence",
+    "hierarchy": "Apply filled primary beside outlined Clear",
+    "typography": "13px labels, 15px result",
+    "visible_affordances": "full-width native date inputs show placeholder and picker icon"
+   },
+   "observed_product": "kyPulse",
+   "observed_surface": "activity-filters (filters expanded)",
+   "scores": {
+    "coherence": 8,
+    "color": 8,
+    "density_layout": 7,
+    "hierarchy": 8,
+    "typography": 8,
+    "visible_affordances": 8
+   },
+   "sha256": "0c79fa0b641ad376b2febac9a19ae1a54d09513b1e2179ec4734ba0b90a8f191",
+   "state": "synthetic sparse/default",
+   "theme": "light (OS, no saved choice)",
+   "total": "7.8",
+   "viewport": "mobile 390x844 DPR1",
+   "width": 390,
+   "prior_total": "7.8"
+  },
+  {
+   "artifacts": "none; live fixture durations/timestamps",
+   "bytes": 32675,
+   "caveat": "default collapsed; empty/unpaired",
+   "cohort": "admin-console",
+   "confidence": "high",
+   "duplicate_of": null,
+   "file": "screenshots/kypulse-07-after-activity-mobile-dark.png",
+   "filename_matches_content": true,
+   "filter_disclosure": "collapsed",
+   "height": 844,
+   "ky_fit": {
+    "scores": {
+     "accent_discipline": 8,
+     "palette_tokens": 8,
+     "shell": 8,
+     "suite_cohesion": 8,
+     "type_geometry": 8
+    },
+    "observations": {
+     "accent_discipline": "no content orange",
+     "palette_tokens": "same Busnes token surfaces at 390px; status hues paired with text",
+     "shell": "phone header wordmark + sign-out icon; horizontally scrolling tabs keep current tab fully visible with tint + underline",
+     "suite_cohesion": "nav selection tint+rail, Space Grotesk and outline secondaries match the KyNotes reference set; Pulse's persistent alert band is product-specific",
+     "type_geometry": "40px controls and 8px radii hold at phone width; title 24px"
+    },
+    "total": "8.0",
+    "note": "Reported only, never added to total; KyNotes refs used for brand cohesion only."
+   },
+   "observations": {
+    "coherence": "matches desktop page pattern",
+    "color": "neutral content; colour only in alert band and current tab",
+    "density_layout": "compact stack, empty result above fold",
+    "hierarchy": "no primary visible; small Filters disclosure precedes empty result",
+    "typography": "15px strong empty message; muted 13px notes wrap cleanly",
+    "visible_affordances": "disclosure triangle tiny, no tap-target shape"
+   },
+   "observed_product": "kyPulse",
+   "observed_surface": "activity (filters collapsed)",
+   "scores": {
+    "coherence": 8,
+    "color": 8,
+    "density_layout": 8,
+    "hierarchy": 7,
+    "typography": 8,
+    "visible_affordances": 7
+   },
+   "sha256": "139755facd7b02ffa910bb2336a6f163c28f5a47a12687ccbfd153774557ab23",
+   "state": "empty/unpaired",
+   "theme": "dark (OS, no saved choice)",
+   "total": "7.7",
+   "viewport": "mobile 390x844 DPR1",
+   "width": 390,
+   "prior_total": null
+  },
+  {
+   "artifacts": "none; live fixture durations/timestamps",
+   "bytes": 32181,
+   "caveat": "default collapsed; empty/unpaired",
+   "cohort": "admin-console",
+   "confidence": "high",
+   "duplicate_of": null,
+   "file": "screenshots/kypulse-07-after-activity-mobile-light.png",
+   "filename_matches_content": true,
+   "filter_disclosure": "collapsed",
+   "height": 844,
+   "ky_fit": {
+    "scores": {
+     "accent_discipline": 8,
+     "palette_tokens": 8,
+     "shell": 8,
+     "suite_cohesion": 8,
+     "type_geometry": 8
+    },
+    "observations": {
+     "accent_discipline": "no content orange",
+     "palette_tokens": "same Busnes token surfaces at 390px; status hues paired with text",
+     "shell": "phone header wordmark + sign-out icon; horizontally scrolling tabs keep current tab fully visible with tint + underline",
+     "suite_cohesion": "nav selection tint+rail, Space Grotesk and outline secondaries match the KyNotes reference set; Pulse's persistent alert band is product-specific",
+     "type_geometry": "40px controls and 8px radii hold at phone width; title 24px"
+    },
+    "total": "8.0",
+    "note": "Reported only, never added to total; KyNotes refs used for brand cohesion only."
+   },
+   "observations": {
+    "coherence": "matches desktop page pattern",
+    "color": "neutral content; colour only in alert band and current tab",
+    "density_layout": "compact stack, empty result above fold",
+    "hierarchy": "no primary visible; small Filters disclosure precedes empty result",
+    "typography": "15px strong empty message; muted 13px notes wrap cleanly",
+    "visible_affordances": "disclosure triangle tiny, no tap-target shape"
+   },
+   "observed_product": "kyPulse",
+   "observed_surface": "activity (filters collapsed)",
+   "scores": {
+    "coherence": 8,
+    "color": 8,
+    "density_layout": 8,
+    "hierarchy": 7,
+    "typography": 8,
+    "visible_affordances": 7
+   },
+   "sha256": "d3ed1cd17aa178e26dea555c6de1d2a4fb2c5beb36158d1a6b5d35bbcbc83c4e",
+   "state": "empty/unpaired",
+   "theme": "light (OS, no saved choice)",
+   "total": "7.7",
+   "viewport": "mobile 390x844 DPR1",
+   "width": 390,
+   "prior_total": null
+  },
+  {
+   "artifacts": "none; live fixture durations/timestamps",
+   "bytes": 52887,
+   "caveat": "3 alerts, all 'not sent'; alert band repeats the newest two incidents (retained)",
+   "cohort": "admin-console",
+   "confidence": "high",
+   "duplicate_of": null,
+   "file": "screenshots/kypulse-07-after-alerts-desktop-dark.png",
+   "filename_matches_content": true,
+   "filter_disclosure": null,
+   "height": 900,
+   "ky_fit": {
+    "scores": {
+     "accent_discipline": 8,
+     "palette_tokens": 8,
+     "shell": 8,
+     "suite_cohesion": 8,
+     "type_geometry": 8
+    },
+    "observations": {
+     "accent_discipline": "no orange in content; nav selection only",
+     "palette_tokens": "cream page/charcoal sidebar ink and orange accent match ky-ui 0.4.3 tokens; status hues stay paired with text",
+     "shell": "240px left sidebar with stamp wordmark, 40px icon rows, accent rail selection, account region pinned bottom",
+     "suite_cohesion": "nav selection tint+rail, Space Grotesk and outline secondaries match the KyNotes reference set; Pulse's persistent alert band is product-specific",
+     "type_geometry": "24px/600 title, 40px controls and 8px radii consistent with contract"
+    },
+    "total": "8.0",
+    "note": "Reported only, never added to total; KyNotes refs used for brand cohesion only."
+   },
+   "observations": {
+    "coherence": "table panel matches Status/app-detail tables",
+    "color": "change column 'pending \u2192 down/degraded/ok' coloured semantically with text",
+    "density_layout": "Time column fits unbroken timestamp; five columns evenly spaced",
+    "hierarchy": "clear Alerts title over one table; read-only history needs no primary",
+    "typography": "proportional timestamps; mono only for reason 'status_503'",
+    "visible_affordances": "app links underlined; header row distinct from body rows"
+   },
+   "observed_product": "kyPulse",
+   "observed_surface": "alerts",
+   "scores": {
+    "coherence": 8,
+    "color": 8,
+    "density_layout": 8,
+    "hierarchy": 8,
+    "typography": 8,
+    "visible_affordances": 8
+   },
+   "sha256": "05c55e873414b5291a685aad29bc49efe72eb31a459b72759797b236466ad060",
+   "state": "synthetic sparse/default",
+   "theme": "dark (OS, no saved choice)",
+   "total": "8.0",
+   "viewport": "desktop 1280x900 DPR1",
+   "width": 1280,
+   "prior_total": "8.0"
+  },
+  {
+   "artifacts": "none; live fixture durations/timestamps",
+   "bytes": 52366,
+   "caveat": "3 alerts, all 'not sent'; alert band repeats the newest two incidents (retained)",
+   "cohort": "admin-console",
+   "confidence": "high",
+   "duplicate_of": null,
+   "file": "screenshots/kypulse-07-after-alerts-desktop-light.png",
+   "filename_matches_content": true,
+   "filter_disclosure": null,
+   "height": 900,
+   "ky_fit": {
+    "scores": {
+     "accent_discipline": 8,
+     "palette_tokens": 8,
+     "shell": 8,
+     "suite_cohesion": 8,
+     "type_geometry": 8
+    },
+    "observations": {
+     "accent_discipline": "no orange in content; nav selection only",
+     "palette_tokens": "cream page/charcoal sidebar ink and orange accent match ky-ui 0.4.3 tokens; status hues stay paired with text",
+     "shell": "240px left sidebar with stamp wordmark, 40px icon rows, accent rail selection, account region pinned bottom",
+     "suite_cohesion": "nav selection tint+rail, Space Grotesk and outline secondaries match the KyNotes reference set; Pulse's persistent alert band is product-specific",
+     "type_geometry": "24px/600 title, 40px controls and 8px radii consistent with contract"
+    },
+    "total": "8.0",
+    "note": "Reported only, never added to total; KyNotes refs used for brand cohesion only."
+   },
+   "observations": {
+    "coherence": "table panel matches Status/app-detail tables",
+    "color": "change column 'pending \u2192 down/degraded/ok' coloured semantically with text",
+    "density_layout": "Time column fits unbroken timestamp; five columns evenly spaced",
+    "hierarchy": "clear Alerts title over one table; read-only history needs no primary",
+    "typography": "proportional timestamps; mono only for reason 'status_503'",
+    "visible_affordances": "app links underlined; header row distinct from body rows"
+   },
+   "observed_product": "kyPulse",
+   "observed_surface": "alerts",
+   "scores": {
+    "coherence": 8,
+    "color": 8,
+    "density_layout": 8,
+    "hierarchy": 8,
+    "typography": 8,
+    "visible_affordances": 8
+   },
+   "sha256": "289d1e35573d4aa3a52da2b2b7004ba8f48368f5f574ee6fb2d72f31b4d8916f",
+   "state": "synthetic sparse/default",
+   "theme": "light (OS, no saved choice)",
+   "total": "8.0",
+   "viewport": "desktop 1280x900 DPR1",
+   "width": 1280,
+   "prior_total": "8.0"
+  },
+  {
+   "artifacts": "none; live fixture durations/timestamps",
+   "bytes": 42455,
+   "caveat": "3 alerts; phone layout uses explicit table roles not visible in image",
+   "cohort": "admin-console",
+   "confidence": "high",
+   "duplicate_of": null,
+   "file": "screenshots/kypulse-07-after-alerts-mobile-dark.png",
+   "filename_matches_content": true,
+   "filter_disclosure": null,
+   "height": 844,
+   "ky_fit": {
+    "scores": {
+     "accent_discipline": 8,
+     "palette_tokens": 8,
+     "shell": 8,
+     "suite_cohesion": 8,
+     "type_geometry": 8
+    },
+    "observations": {
+     "accent_discipline": "no content orange; current tab only",
+     "palette_tokens": "same Busnes token surfaces at 390px; status hues paired with text",
+     "shell": "phone header wordmark + sign-out icon; horizontally scrolling tabs keep current tab fully visible with tint + underline",
+     "suite_cohesion": "nav selection tint+rail, Space Grotesk and outline secondaries match the KyNotes reference set; Pulse's persistent alert band is product-specific",
+     "type_geometry": "40px controls and 8px radii hold at phone width; title 24px"
+    },
+    "total": "8.0",
+    "note": "Reported only, never added to total; KyNotes refs used for brand cohesion only."
+   },
+   "observations": {
+    "coherence": "same table-as-list panel vocabulary as Status phone",
+    "color": "status change right-aligned in semantic colour with arrow text",
+    "density_layout": "label/value rows evenly spaced; 3 cards fit initial viewport",
+    "hierarchy": "per-alert app name is small 13-14px underlined text, same weight band as field labels; status chip carries more emphasis than the row title",
+    "typography": "body-face labels 'Time:/Reason:/Delivery:' with mono reason value",
+    "visible_affordances": "app names underlined links; rows separated by lines"
+   },
+   "observed_product": "kyPulse",
+   "observed_surface": "alerts",
+   "scores": {
+    "coherence": 8,
+    "color": 8,
+    "density_layout": 8,
+    "hierarchy": 7,
+    "typography": 8,
+    "visible_affordances": 8
+   },
+   "sha256": "2ee7a82f060e8344baabc6e259f6d0a6b35bf8ef213f92e0a3b689c70fd8d0e1",
+   "state": "synthetic sparse/default",
+   "theme": "dark (OS, no saved choice)",
+   "total": "7.8",
+   "viewport": "mobile 390x844 DPR1",
+   "width": 390,
+   "prior_total": "8.0"
+  },
+  {
+   "artifacts": "none; live fixture durations/timestamps",
+   "bytes": 41605,
+   "caveat": "3 alerts; phone layout uses explicit table roles not visible in image",
+   "cohort": "admin-console",
+   "confidence": "high",
+   "duplicate_of": null,
+   "file": "screenshots/kypulse-07-after-alerts-mobile-light.png",
+   "filename_matches_content": true,
+   "filter_disclosure": null,
+   "height": 844,
+   "ky_fit": {
+    "scores": {
+     "accent_discipline": 8,
+     "palette_tokens": 8,
+     "shell": 8,
+     "suite_cohesion": 8,
+     "type_geometry": 8
+    },
+    "observations": {
+     "accent_discipline": "no content orange; current tab only",
+     "palette_tokens": "same Busnes token surfaces at 390px; status hues paired with text",
+     "shell": "phone header wordmark + sign-out icon; horizontally scrolling tabs keep current tab fully visible with tint + underline",
+     "suite_cohesion": "nav selection tint+rail, Space Grotesk and outline secondaries match the KyNotes reference set; Pulse's persistent alert band is product-specific",
+     "type_geometry": "40px controls and 8px radii hold at phone width; title 24px"
+    },
+    "total": "8.0",
+    "note": "Reported only, never added to total; KyNotes refs used for brand cohesion only."
+   },
+   "observations": {
+    "coherence": "same table-as-list panel vocabulary as Status phone",
+    "color": "status change right-aligned in semantic colour with arrow text",
+    "density_layout": "label/value rows evenly spaced; 3 cards fit initial viewport",
+    "hierarchy": "per-alert app name is small 13-14px underlined text, same weight band as field labels; status chip carries more emphasis than the row title",
+    "typography": "body-face labels 'Time:/Reason:/Delivery:' with mono reason value",
+    "visible_affordances": "app names underlined links; rows separated by lines"
+   },
+   "observed_product": "kyPulse",
+   "observed_surface": "alerts",
+   "scores": {
+    "coherence": 8,
+    "color": 8,
+    "density_layout": 8,
+    "hierarchy": 7,
+    "typography": 8,
+    "visible_affordances": 8
+   },
+   "sha256": "b5b1a63059a0cf12a01bc19b253050e7716a201b5ff4e7bca67b220c96580903",
+   "state": "synthetic sparse/default",
+   "theme": "light (OS, no saved choice)",
+   "total": "7.8",
+   "viewport": "mobile 390x844 DPR1",
+   "width": 390,
+   "prior_total": "8.0"
+  },
+  {
+   "artifacts": "none; live fixture durations/timestamps",
+   "bytes": 88820,
+   "caveat": "lower Stop watching/Delete section below fold; checks empty",
+   "cohort": "admin-console",
+   "confidence": "high",
+   "duplicate_of": null,
+   "file": "screenshots/kypulse-07-after-app-detail-desktop-dark.png",
+   "filename_matches_content": true,
+   "filter_disclosure": null,
+   "height": 900,
+   "ky_fit": {
+    "scores": {
+     "accent_discipline": 8,
+     "palette_tokens": 8,
+     "shell": 8,
+     "suite_cohesion": 8,
+     "type_geometry": 8
+    },
+    "observations": {
+     "accent_discipline": "orange absent from content; danger hue used only for Down state",
+     "palette_tokens": "cream page/charcoal sidebar ink and orange accent match ky-ui 0.4.3 tokens; status hues stay paired with text",
+     "shell": "240px left sidebar with stamp wordmark, 40px icon rows, accent rail selection, account region pinned bottom",
+     "suite_cohesion": "nav selection tint+rail, Space Grotesk and outline secondaries match the KyNotes reference set; Pulse's persistent alert band is product-specific",
+     "type_geometry": "24px/600 title, 40px controls and 8px radii consistent with contract"
+    },
+    "total": "8.0",
+    "note": "Reported only, never added to total; KyNotes refs used for brand cohesion only."
+   },
+   "observations": {
+    "coherence": "flat fact rows plus one table share the Status/Alerts vocabulary",
+    "color": "dark wine-tinted down banner with salmon Down",
+    "density_layout": "six sections stacked in one viewport with uneven gaps: Checks inline hint tight, Settings facts spacious, Alert history crowded at fold",
+    "hierarchy": "back link, Backup agent title, single Edit header action, Down banner dominant",
+    "typography": "'Down' proportional bold; GET diagnostics line and Health URL fixed-width; section heads 17px",
+    "visible_affordances": "three outlined Silence buttons equal height; Edit has pencil icon"
+   },
+   "observed_product": "kyPulse",
+   "observed_surface": "app-detail",
+   "scores": {
+    "coherence": 8,
+    "color": 8,
+    "density_layout": 7,
+    "hierarchy": 8,
+    "typography": 8,
+    "visible_affordances": 8
+   },
+   "sha256": "fc29e20ff7a80c88a1c5f122f69c2bbdc3fd5019ddf0934383ff15d6249ae161",
+   "state": "synthetic sparse/default",
+   "theme": "dark (OS, no saved choice)",
+   "total": "7.8",
+   "viewport": "desktop 1280x900 DPR1",
+   "width": 1280,
+   "prior_total": "8.0"
+  },
+  {
+   "artifacts": "none; live fixture durations/timestamps",
+   "bytes": 88825,
+   "caveat": "lower Stop watching/Delete section below fold; checks empty",
+   "cohort": "admin-console",
+   "confidence": "high",
+   "duplicate_of": null,
+   "file": "screenshots/kypulse-07-after-app-detail-desktop-light.png",
+   "filename_matches_content": true,
+   "filter_disclosure": null,
+   "height": 900,
+   "ky_fit": {
+    "scores": {
+     "accent_discipline": 8,
+     "palette_tokens": 8,
+     "shell": 8,
+     "suite_cohesion": 8,
+     "type_geometry": 8
+    },
+    "observations": {
+     "accent_discipline": "orange absent from content; danger hue used only for Down state",
+     "palette_tokens": "cream page/charcoal sidebar ink and orange accent match ky-ui 0.4.3 tokens; status hues stay paired with text",
+     "shell": "240px left sidebar with stamp wordmark, 40px icon rows, accent rail selection, account region pinned bottom",
+     "suite_cohesion": "nav selection tint+rail, Space Grotesk and outline secondaries match the KyNotes reference set; Pulse's persistent alert band is product-specific",
+     "type_geometry": "24px/600 title, 40px controls and 8px radii consistent with contract"
+    },
+    "total": "8.0",
+    "note": "Reported only, never added to total; KyNotes refs used for brand cohesion only."
+   },
+   "observations": {
+    "coherence": "flat fact rows plus one table share the Status/Alerts vocabulary",
+    "color": "pink down banner with red Down; rest neutral",
+    "density_layout": "six sections stacked in one viewport with uneven gaps: Checks inline hint tight, Settings facts spacious, Alert history crowded at fold",
+    "hierarchy": "back link, Backup agent title, single Edit header action, Down banner dominant",
+    "typography": "'Down' proportional bold; GET diagnostics line and Health URL fixed-width; section heads 17px",
+    "visible_affordances": "three outlined Silence buttons equal height; Edit has pencil icon"
+   },
+   "observed_product": "kyPulse",
+   "observed_surface": "app-detail",
+   "scores": {
+    "coherence": 8,
+    "color": 8,
+    "density_layout": 7,
+    "hierarchy": 8,
+    "typography": 8,
+    "visible_affordances": 8
+   },
+   "sha256": "eee5ce87bbb524e7979911c8835f12ab4ec8f09e120d534c1c5ad10165d9cdd3",
+   "state": "synthetic sparse/default",
+   "theme": "light (OS, no saved choice)",
+   "total": "7.8",
+   "viewport": "desktop 1280x900 DPR1",
+   "width": 1280,
+   "prior_total": "8.0"
+  },
+  {
+   "artifacts": "none; live fixture durations/timestamps",
+   "bytes": 52735,
+   "caveat": "initial viewport cuts at Interval row",
+   "cohort": "admin-console",
+   "confidence": "high",
+   "duplicate_of": null,
+   "file": "screenshots/kypulse-07-after-app-detail-mobile-dark.png",
+   "filename_matches_content": true,
+   "filter_disclosure": null,
+   "height": 844,
+   "ky_fit": {
+    "scores": {
+     "accent_discipline": 8,
+     "palette_tokens": 8,
+     "shell": 8,
+     "suite_cohesion": 8,
+     "type_geometry": 8
+    },
+    "observations": {
+     "accent_discipline": "no orange beyond current tab",
+     "palette_tokens": "same Busnes token surfaces at 390px; status hues paired with text",
+     "shell": "phone header wordmark + sign-out icon; horizontally scrolling tabs keep current tab fully visible with tint + underline",
+     "suite_cohesion": "nav selection tint+rail, Space Grotesk and outline secondaries match the KyNotes reference set; Pulse's persistent alert band is product-specific",
+     "type_geometry": "40px controls and 8px radii hold at phone width; title 24px"
+    },
+    "total": "8.0",
+    "note": "Reported only, never added to total; KyNotes refs used for brand cohesion only."
+   },
+   "observations": {
+    "coherence": "same flat fact rows as desktop",
+    "color": "salmon Down on dark wine tint",
+    "density_layout": "silence buttons form aligned 2+1 grid; facts start below at even rhythm",
+    "hierarchy": "title with Edit outline at right; Down banner leads content",
+    "typography": "proportional bold Down vs mono diagnostics wrap cleanly in banner",
+    "visible_affordances": "silence buttons 40px outlined, full-width third row"
+   },
+   "observed_product": "kyPulse",
+   "observed_surface": "app-detail",
+   "scores": {
+    "coherence": 8,
+    "color": 8,
+    "density_layout": 8,
+    "hierarchy": 8,
+    "typography": 8,
+    "visible_affordances": 8
+   },
+   "sha256": "1577ca319be1af9c05b484e390349dd70e64519de2ecdfe9cba9a7bec57579f9",
+   "state": "synthetic sparse/default",
+   "theme": "dark (OS, no saved choice)",
+   "total": "8.0",
+   "viewport": "mobile 390x844 DPR1",
+   "width": 390,
+   "prior_total": "8.0"
+  },
+  {
+   "artifacts": "none; live fixture durations/timestamps",
+   "bytes": 52628,
+   "caveat": "initial viewport cuts at Interval row",
+   "cohort": "admin-console",
+   "confidence": "high",
+   "duplicate_of": null,
+   "file": "screenshots/kypulse-07-after-app-detail-mobile-light.png",
+   "filename_matches_content": true,
+   "filter_disclosure": null,
+   "height": 844,
+   "ky_fit": {
+    "scores": {
+     "accent_discipline": 8,
+     "palette_tokens": 8,
+     "shell": 8,
+     "suite_cohesion": 8,
+     "type_geometry": 8
+    },
+    "observations": {
+     "accent_discipline": "no orange beyond current tab",
+     "palette_tokens": "same Busnes token surfaces at 390px; status hues paired with text",
+     "shell": "phone header wordmark + sign-out icon; horizontally scrolling tabs keep current tab fully visible with tint + underline",
+     "suite_cohesion": "nav selection tint+rail, Space Grotesk and outline secondaries match the KyNotes reference set; Pulse's persistent alert band is product-specific",
+     "type_geometry": "40px controls and 8px radii hold at phone width; title 24px"
+    },
+    "total": "8.0",
+    "note": "Reported only, never added to total; KyNotes refs used for brand cohesion only."
+   },
+   "observations": {
+    "coherence": "same flat fact rows as desktop",
+    "color": "red Down on pink tint",
+    "density_layout": "silence buttons form aligned 2+1 grid; facts start below at even rhythm",
+    "hierarchy": "title with Edit outline at right; Down banner leads content",
+    "typography": "proportional bold Down vs mono diagnostics wrap cleanly in banner",
+    "visible_affordances": "silence buttons 40px outlined, full-width third row"
+   },
+   "observed_product": "kyPulse",
+   "observed_surface": "app-detail",
+   "scores": {
+    "coherence": 8,
+    "color": 8,
+    "density_layout": 8,
+    "hierarchy": 8,
+    "typography": 8,
+    "visible_affordances": 8
+   },
+   "sha256": "c03eb7ed70b21c376fb4e585f65079055706eb4389756a0984abce7a66eea4bd",
+   "state": "synthetic sparse/default",
+   "theme": "light (OS, no saved choice)",
+   "total": "8.0",
+   "viewport": "mobile 390x844 DPR1",
+   "width": 390,
+   "prior_total": "8.0"
+  },
+  {
+   "artifacts": "none; live fixture durations/timestamps",
+   "bytes": 80443,
+   "caveat": "no saved choice (Match system); named-theme rendered contrast unverified",
+   "cohort": "settings",
+   "confidence": "high",
+   "duplicate_of": null,
+   "file": "screenshots/kypulse-07-after-appearance-desktop-dark.png",
+   "filename_matches_content": true,
+   "filter_disclosure": null,
+   "height": 900,
+   "ky_fit": {
+    "scores": {
+     "accent_discipline": 9,
+     "palette_tokens": 8,
+     "shell": 8,
+     "suite_cohesion": 9,
+     "type_geometry": 8
+    },
+    "observations": {
+     "accent_discipline": "orange marks only the selected card/radio and nav selection",
+     "palette_tokens": "cream page/charcoal sidebar ink and orange accent match ky-ui 0.4.3 tokens; status hues stay paired with text",
+     "shell": "240px left sidebar with stamp wordmark, 40px icon rows, accent rail selection, account region pinned bottom",
+     "suite_cohesion": "card picker matches KyNotes Appearance reference card-for-card",
+     "type_geometry": "24px/600 title, 40px controls and 8px radii consistent with contract"
+    },
+    "total": "8.4",
+    "note": "Reported only, never added to total; KyNotes refs used for brand cohesion only."
+   },
+   "observations": {
+    "coherence": "every element uses the one shared card component",
+    "color": "theme preview hues are catalogue data; chrome remains neutral",
+    "density_layout": "5-column grid of 23 equal cards with even 12px gutters",
+    "hierarchy": "title, description, one 'Theme' group; Match system selection ringed",
+    "typography": "card name 15px, kind 13px muted, 'Theme' label 13px bold",
+    "visible_affordances": "filled radio and accent ring mark selection; dark unselected radios are dim discs"
+   },
+   "observed_product": "kyPulse",
+   "observed_surface": "appearance",
+   "scores": {
+    "coherence": 9,
+    "color": 8,
+    "density_layout": 8,
+    "hierarchy": 8,
+    "typography": 8,
+    "visible_affordances": 8
+   },
+   "sha256": "2539b0cee6781188f0a83fe3660f92f5260912ac27e3e741ce17ca639a950e20",
+   "state": "synthetic sparse/default",
+   "theme": "dark (OS, no saved choice)",
+   "total": "8.2",
+   "viewport": "desktop 1280x900 DPR1",
+   "width": 1280,
+   "prior_total": "8.0"
+  },
+  {
+   "artifacts": "none; live fixture durations/timestamps",
+   "bytes": 79439,
+   "caveat": "no saved choice (Match system); named-theme rendered contrast unverified",
+   "cohort": "settings",
+   "confidence": "high",
+   "duplicate_of": null,
+   "file": "screenshots/kypulse-07-after-appearance-desktop-light.png",
+   "filename_matches_content": true,
+   "filter_disclosure": null,
+   "height": 900,
+   "ky_fit": {
+    "scores": {
+     "accent_discipline": 9,
+     "palette_tokens": 8,
+     "shell": 8,
+     "suite_cohesion": 9,
+     "type_geometry": 8
+    },
+    "observations": {
+     "accent_discipline": "orange marks only the selected card/radio and nav selection",
+     "palette_tokens": "cream page/charcoal sidebar ink and orange accent match ky-ui 0.4.3 tokens; status hues stay paired with text",
+     "shell": "240px left sidebar with stamp wordmark, 40px icon rows, accent rail selection, account region pinned bottom",
+     "suite_cohesion": "card picker matches KyNotes Appearance reference card-for-card",
+     "type_geometry": "24px/600 title, 40px controls and 8px radii consistent with contract"
+    },
+    "total": "8.4",
+    "note": "Reported only, never added to total; KyNotes refs used for brand cohesion only."
+   },
+   "observations": {
+    "coherence": "every element uses the one shared card component",
+    "color": "theme preview hues are catalogue data; chrome remains neutral",
+    "density_layout": "5-column grid of 23 equal cards with even 12px gutters",
+    "hierarchy": "title, description, one 'Theme' group; Match system selection ringed",
+    "typography": "card name 15px, kind 13px muted, 'Theme' label 13px bold",
+    "visible_affordances": "filled orange radio + ring mark selection; empty radios elsewhere"
+   },
+   "observed_product": "kyPulse",
+   "observed_surface": "appearance",
+   "scores": {
+    "coherence": 9,
+    "color": 8,
+    "density_layout": 8,
+    "hierarchy": 8,
+    "typography": 8,
+    "visible_affordances": 8
+   },
+   "sha256": "746f2fb191bacdfa98597e6a17bb66129f16fc77227f025416e3e61a29663a1b",
+   "state": "synthetic sparse/default",
+   "theme": "light (OS, no saved choice)",
+   "total": "8.2",
+   "viewport": "desktop 1280x900 DPR1",
+   "width": 1280,
+   "prior_total": "8.0"
+  },
+  {
+   "artifacts": "none; live fixture durations/timestamps",
+   "bytes": 42210,
+   "caveat": "no saved choice (Match system); named-theme rendered contrast unverified",
+   "cohort": "settings",
+   "confidence": "high",
+   "duplicate_of": null,
+   "file": "screenshots/kypulse-07-after-appearance-mobile-dark.png",
+   "filename_matches_content": true,
+   "filter_disclosure": null,
+   "height": 844,
+   "ky_fit": {
+    "scores": {
+     "accent_discipline": 9,
+     "palette_tokens": 8,
+     "shell": 8,
+     "suite_cohesion": 9,
+     "type_geometry": 8
+    },
+    "observations": {
+     "accent_discipline": "orange marks only the selected card/radio and nav selection",
+     "palette_tokens": "same Busnes token surfaces at 390px; status hues paired with text",
+     "shell": "phone header wordmark + sign-out icon; horizontally scrolling tabs keep current tab fully visible with tint + underline",
+     "suite_cohesion": "card picker matches KyNotes Appearance reference card-for-card",
+     "type_geometry": "40px controls and 8px radii hold at phone width; title 24px"
+    },
+    "total": "8.4",
+    "note": "Reported only, never added to total; KyNotes refs used for brand cohesion only."
+   },
+   "observations": {
+    "coherence": "every element uses the one shared card component",
+    "color": "theme preview hues are catalogue data; chrome remains neutral",
+    "density_layout": "2-column grid; cards equal height, continues below fold",
+    "hierarchy": "title, description, one 'Theme' group; Match system selection ringed",
+    "typography": "card name 15px, kind 13px muted, 'Theme' label 13px bold",
+    "visible_affordances": "filled radio and accent ring mark selection; dark unselected radios are dim discs"
+   },
+   "observed_product": "kyPulse",
+   "observed_surface": "appearance",
+   "scores": {
+    "coherence": 9,
+    "color": 8,
+    "density_layout": 8,
+    "hierarchy": 8,
+    "typography": 8,
+    "visible_affordances": 8
+   },
+   "sha256": "7943c89143b282cc9b4482f04ee010d927820c142d234234990cc8d6378dc974",
+   "state": "synthetic sparse/default",
+   "theme": "dark (OS, no saved choice)",
+   "total": "8.2",
+   "viewport": "mobile 390x844 DPR1",
+   "width": 390,
+   "prior_total": "8.0"
+  },
+  {
+   "artifacts": "none; live fixture durations/timestamps",
+   "bytes": 41468,
+   "caveat": "no saved choice (Match system); named-theme rendered contrast unverified",
+   "cohort": "settings",
+   "confidence": "high",
+   "duplicate_of": null,
+   "file": "screenshots/kypulse-07-after-appearance-mobile-light.png",
+   "filename_matches_content": true,
+   "filter_disclosure": null,
+   "height": 844,
+   "ky_fit": {
+    "scores": {
+     "accent_discipline": 9,
+     "palette_tokens": 8,
+     "shell": 8,
+     "suite_cohesion": 9,
+     "type_geometry": 8
+    },
+    "observations": {
+     "accent_discipline": "orange marks only the selected card/radio and nav selection",
+     "palette_tokens": "same Busnes token surfaces at 390px; status hues paired with text",
+     "shell": "phone header wordmark + sign-out icon; horizontally scrolling tabs keep current tab fully visible with tint + underline",
+     "suite_cohesion": "card picker matches KyNotes Appearance reference card-for-card",
+     "type_geometry": "40px controls and 8px radii hold at phone width; title 24px"
+    },
+    "total": "8.4",
+    "note": "Reported only, never added to total; KyNotes refs used for brand cohesion only."
+   },
+   "observations": {
+    "coherence": "every element uses the one shared card component",
+    "color": "theme preview hues are catalogue data; chrome remains neutral",
+    "density_layout": "2-column grid; cards equal height, continues below fold",
+    "hierarchy": "title, description, one 'Theme' group; Match system selection ringed",
+    "typography": "card name 15px, kind 13px muted, 'Theme' label 13px bold",
+    "visible_affordances": "filled orange radio + ring mark selection; empty radios elsewhere"
+   },
+   "observed_product": "kyPulse",
+   "observed_surface": "appearance",
+   "scores": {
+    "coherence": 9,
+    "color": 8,
+    "density_layout": 8,
+    "hierarchy": 8,
+    "typography": 8,
+    "visible_affordances": 8
+   },
+   "sha256": "7944a9f2f6cff416420f5fe6aa9d50fe9daef58602dc8da26d296b8ea0a9090d",
+   "state": "synthetic sparse/default",
+   "theme": "light (OS, no saved choice)",
+   "total": "8.2",
+   "viewport": "mobile 390x844 DPR1",
+   "width": 390,
+   "prior_total": "8.0"
+  },
+  {
+   "artifacts": "none; live fixture durations/timestamps; capture temp path on Backup",
+   "bytes": 115468,
+   "caveat": "unconfigured; 'A capsule carries' list below fold; local path is fixture temp dir",
+   "cohort": "settings",
+   "confidence": "high",
+   "duplicate_of": null,
+   "file": "screenshots/kypulse-07-after-backup-desktop-dark.png",
+   "filename_matches_content": true,
+   "filter_disclosure": null,
+   "height": 900,
+   "ky_fit": {
+    "scores": {
+     "accent_discipline": 7,
+     "palette_tokens": 8,
+     "shell": 8,
+     "suite_cohesion": 8,
+     "type_geometry": 8
+    },
+    "observations": {
+     "accent_discipline": "warning banner border reads as accent orange, outside primary/selection",
+     "palette_tokens": "cream page/charcoal sidebar ink and orange accent match ky-ui 0.4.3 tokens; status hues stay paired with text",
+     "shell": "240px left sidebar with stamp wordmark, 40px icon rows, accent rail selection, account region pinned bottom",
+     "suite_cohesion": "nav selection tint+rail, Space Grotesk and outline secondaries match the KyNotes reference set; Pulse's persistent alert band is product-specific",
+     "type_geometry": "24px/600 title, 40px controls and 8px radii consistent with contract"
+    },
+    "total": "7.8",
+    "note": "Reported only, never added to total; KyNotes refs used for brand cohesion only."
+   },
+   "observations": {
+    "coherence": "fact rows match app-detail facts; no card wrappers",
+    "color": "orange-outlined warning banner on brown tint plus red None badge",
+    "density_layout": "flat surface; two setup columns end at different heights leaving dead space under Pair; facts and actions follow",
+    "hierarchy": "Pair is the filled primary, but Refresh, Pin key and a three-button 'Back up now' row with a same-named heading compete",
+    "typography": "17px section heads with icons; fixed-width directory path; 13px fact labels",
+    "visible_affordances": "disabled Back up now/Download capsule are grey-filled, distinct from outlined Run restore drill"
+   },
+   "observed_product": "kyPulse",
+   "observed_surface": "backup",
+   "scores": {
+    "coherence": 8,
+    "color": 7,
+    "density_layout": 7,
+    "hierarchy": 7,
+    "typography": 8,
+    "visible_affordances": 8
+   },
+   "sha256": "a889f0d9848d4ddc814e148e6ce254e139f0f09631eb9994220605eb80d37067",
+   "state": "synthetic sparse/default",
+   "theme": "dark (OS, no saved choice)",
+   "total": "7.5",
+   "viewport": "desktop 1280x900 DPR1",
+   "width": 1280,
+   "prior_total": "7.9"
+  },
+  {
+   "artifacts": "none; live fixture durations/timestamps; capture temp path on Backup",
+   "bytes": 115404,
+   "caveat": "unconfigured; 'A capsule carries' list below fold; local path is fixture temp dir",
+   "cohort": "settings",
+   "confidence": "high",
+   "duplicate_of": null,
+   "file": "screenshots/kypulse-07-after-backup-desktop-light.png",
+   "filename_matches_content": true,
+   "filter_disclosure": null,
+   "height": 900,
+   "ky_fit": {
+    "scores": {
+     "accent_discipline": 7,
+     "palette_tokens": 8,
+     "shell": 8,
+     "suite_cohesion": 8,
+     "type_geometry": 8
+    },
+    "observations": {
+     "accent_discipline": "warning banner border reads as accent orange, outside primary/selection",
+     "palette_tokens": "cream page/charcoal sidebar ink and orange accent match ky-ui 0.4.3 tokens; status hues stay paired with text",
+     "shell": "240px left sidebar with stamp wordmark, 40px icon rows, accent rail selection, account region pinned bottom",
+     "suite_cohesion": "nav selection tint+rail, Space Grotesk and outline secondaries match the KyNotes reference set; Pulse's persistent alert band is product-specific",
+     "type_geometry": "24px/600 title, 40px controls and 8px radii consistent with contract"
+    },
+    "total": "7.8",
+    "note": "Reported only, never added to total; KyNotes refs used for brand cohesion only."
+   },
+   "observations": {
+    "coherence": "fact rows match app-detail facts; no card wrappers",
+    "color": "orange-red outlined warning banner on pink tint plus red None badge",
+    "density_layout": "flat surface; two setup columns end at different heights leaving dead space under Pair; facts and actions follow",
+    "hierarchy": "Pair is the filled primary, but Refresh, Pin key and a three-button 'Back up now' row with a same-named heading compete",
+    "typography": "17px section heads with icons; fixed-width directory path; 13px fact labels",
+    "visible_affordances": "disabled Back up now/Download capsule are grey-filled, distinct from outlined Run restore drill"
+   },
+   "observed_product": "kyPulse",
+   "observed_surface": "backup",
+   "scores": {
+    "coherence": 8,
+    "color": 7,
+    "density_layout": 7,
+    "hierarchy": 7,
+    "typography": 8,
+    "visible_affordances": 8
+   },
+   "sha256": "aae09db92e29c7aba3ec3728c391404306f1d404ec9738d08574fa9fe2f487de",
+   "state": "synthetic sparse/default",
+   "theme": "light (OS, no saved choice)",
+   "total": "7.5",
+   "viewport": "desktop 1280x900 DPR1",
+   "width": 1280,
+   "prior_total": "7.9"
+  },
+  {
+   "artifacts": "none; live fixture durations/timestamps; capture temp path on Backup",
+   "bytes": 53779,
+   "caveat": "initial viewport only",
+   "cohort": "settings",
+   "confidence": "high",
+   "duplicate_of": null,
+   "file": "screenshots/kypulse-07-after-backup-mobile-dark.png",
+   "filename_matches_content": true,
+   "filter_disclosure": null,
+   "height": 844,
+   "ky_fit": {
+    "scores": {
+     "accent_discipline": 7,
+     "palette_tokens": 8,
+     "shell": 8,
+     "suite_cohesion": 8,
+     "type_geometry": 8
+    },
+    "observations": {
+     "accent_discipline": "warning banner outline reads as accent orange",
+     "palette_tokens": "same Busnes token surfaces at 390px; status hues paired with text",
+     "shell": "phone header wordmark + sign-out icon; horizontally scrolling tabs keep current tab fully visible with tint + underline",
+     "suite_cohesion": "nav selection tint+rail, Space Grotesk and outline secondaries match the KyNotes reference set; Pulse's persistent alert band is product-specific",
+     "type_geometry": "40px controls and 8px radii hold at phone width; title 24px"
+    },
+    "total": "7.8",
+    "note": "Reported only, never added to total; KyNotes refs used for brand cohesion only."
+   },
+   "observations": {
+    "coherence": "flat page surface; same field style as Settings",
+    "color": "orange outline banner on brown",
+    "density_layout": "two long setup explanations stack; facts and actions below fold",
+    "hierarchy": "title + Refresh, warning banner, then Pair filled primary in view",
+    "typography": "17px section heads; long body paragraphs at 13-14px",
+    "visible_affordances": "Pair filled beside pairing code input, 40px"
+   },
+   "observed_product": "kyPulse",
+   "observed_surface": "backup",
+   "scores": {
+    "coherence": 8,
+    "color": 7,
+    "density_layout": 7,
+    "hierarchy": 8,
+    "typography": 8,
+    "visible_affordances": 8
+   },
+   "sha256": "8780fb5209494805e5fbae3e325f0a4fc1431136fcf67eee754268b7086a8f85",
+   "state": "synthetic sparse/default",
+   "theme": "dark (OS, no saved choice)",
+   "total": "7.7",
+   "viewport": "mobile 390x844 DPR1",
+   "width": 390,
+   "prior_total": "8.0"
+  },
+  {
+   "artifacts": "none; live fixture durations/timestamps; capture temp path on Backup",
+   "bytes": 53277,
+   "caveat": "initial viewport only",
+   "cohort": "settings",
+   "confidence": "high",
+   "duplicate_of": null,
+   "file": "screenshots/kypulse-07-after-backup-mobile-light.png",
+   "filename_matches_content": true,
+   "filter_disclosure": null,
+   "height": 844,
+   "ky_fit": {
+    "scores": {
+     "accent_discipline": 7,
+     "palette_tokens": 8,
+     "shell": 8,
+     "suite_cohesion": 8,
+     "type_geometry": 8
+    },
+    "observations": {
+     "accent_discipline": "warning banner outline reads as accent orange",
+     "palette_tokens": "same Busnes token surfaces at 390px; status hues paired with text",
+     "shell": "phone header wordmark + sign-out icon; horizontally scrolling tabs keep current tab fully visible with tint + underline",
+     "suite_cohesion": "nav selection tint+rail, Space Grotesk and outline secondaries match the KyNotes reference set; Pulse's persistent alert band is product-specific",
+     "type_geometry": "40px controls and 8px radii hold at phone width; title 24px"
+    },
+    "total": "7.8",
+    "note": "Reported only, never added to total; KyNotes refs used for brand cohesion only."
+   },
+   "observations": {
+    "coherence": "flat page surface; same field style as Settings",
+    "color": "orange-red outline banner on pink",
+    "density_layout": "two long setup explanations stack; facts and actions below fold",
+    "hierarchy": "title + Refresh, warning banner, then Pair filled primary in view",
+    "typography": "17px section heads; long body paragraphs at 13-14px",
+    "visible_affordances": "Pair filled beside pairing code input, 40px"
+   },
+   "observed_product": "kyPulse",
+   "observed_surface": "backup",
+   "scores": {
+    "coherence": 8,
+    "color": 7,
+    "density_layout": 7,
+    "hierarchy": 8,
+    "typography": 8,
+    "visible_affordances": 8
+   },
+   "sha256": "8f3d376cf0a6eca13719c698c233fb32ebddd0b888b473488736d001261fe5a5",
+   "state": "synthetic sparse/default",
+   "theme": "light (OS, no saved choice)",
+   "total": "7.7",
+   "viewport": "mobile 390x844 DPR1",
+   "width": 390,
+   "prior_total": "8.0"
+  },
+  {
+   "artifacts": "none; live fixture durations/timestamps",
+   "bytes": 70163,
+   "caveat": "default collapsed disclosure; empty/unpaired fixture; no Applied indicator state captured",
+   "cohort": "admin-console",
+   "confidence": "high",
+   "duplicate_of": null,
+   "file": "screenshots/kypulse-07-after-logs-desktop-dark.png",
+   "filename_matches_content": true,
+   "filter_disclosure": "collapsed",
+   "height": 900,
+   "ky_fit": {
+    "scores": {
+     "accent_discipline": 8,
+     "palette_tokens": 8,
+     "shell": 8,
+     "suite_cohesion": 8,
+     "type_geometry": 8
+    },
+    "observations": {
+     "accent_discipline": "no orange in content",
+     "palette_tokens": "cream page/charcoal sidebar ink and orange accent match ky-ui 0.4.3 tokens; status hues stay paired with text",
+     "shell": "240px left sidebar with stamp wordmark, 40px icon rows, accent rail selection, account region pinned bottom",
+     "suite_cohesion": "nav selection tint+rail, Space Grotesk and outline secondaries match the KyNotes reference set; Pulse's persistent alert band is product-specific",
+     "type_geometry": "24px/600 title, 40px controls and 8px radii consistent with contract"
+    },
+    "total": "8.0",
+    "note": "Reported only, never added to total; KyNotes refs used for brand cohesion only."
+   },
+   "observations": {
+    "coherence": "same title/notes/link pattern as the sibling page",
+    "color": "content entirely neutral; only nav row and alert band carry colour",
+    "density_layout": "collapsed filters lift Log sources into view; 3-column source form aligned",
+    "hierarchy": "no primary in view: Filters is a small text disclosure and Log sources' Add source is outlined",
+    "typography": "empty result 'No logs found.' at 15px strong ink over 13px muted notes",
+    "visible_affordances": "native \u25b8 triangle + 'Filters' text has no control shape, reads as plain text at a glance"
+   },
+   "observed_product": "kyPulse",
+   "observed_surface": "logs (filters collapsed)",
+   "scores": {
+    "coherence": 8,
+    "color": 8,
+    "density_layout": 8,
+    "hierarchy": 7,
+    "typography": 8,
+    "visible_affordances": 7
+   },
+   "sha256": "cc8ee0d47ec200de79f020eee5acf0dbeaf26cbb88c7aa2d340ca3b71b4044c6",
+   "state": "empty/unpaired",
+   "theme": "dark (OS, no saved choice)",
+   "total": "7.7",
+   "viewport": "desktop 1280x900 DPR1",
+   "width": 1280,
+   "prior_total": null
+  },
+  {
+   "artifacts": "none; live fixture durations/timestamps",
+   "bytes": 70217,
+   "caveat": "default collapsed disclosure; empty/unpaired fixture; no Applied indicator state captured",
+   "cohort": "admin-console",
+   "confidence": "high",
+   "duplicate_of": null,
+   "file": "screenshots/kypulse-07-after-logs-desktop-light.png",
+   "filename_matches_content": true,
+   "filter_disclosure": "collapsed",
+   "height": 900,
+   "ky_fit": {
+    "scores": {
+     "accent_discipline": 8,
+     "palette_tokens": 8,
+     "shell": 8,
+     "suite_cohesion": 8,
+     "type_geometry": 8
+    },
+    "observations": {
+     "accent_discipline": "no orange in content",
+     "palette_tokens": "cream page/charcoal sidebar ink and orange accent match ky-ui 0.4.3 tokens; status hues stay paired with text",
+     "shell": "240px left sidebar with stamp wordmark, 40px icon rows, accent rail selection, account region pinned bottom",
+     "suite_cohesion": "nav selection tint+rail, Space Grotesk and outline secondaries match the KyNotes reference set; Pulse's persistent alert band is product-specific",
+     "type_geometry": "24px/600 title, 40px controls and 8px radii consistent with contract"
+    },
+    "total": "8.0",
+    "note": "Reported only, never added to total; KyNotes refs used for brand cohesion only."
+   },
+   "observations": {
+    "coherence": "same title/notes/link pattern as the sibling page",
+    "color": "content entirely neutral; only nav row and alert band carry colour",
+    "density_layout": "collapsed filters lift Log sources into view; 3-column source form aligned",
+    "hierarchy": "no primary in view: Filters is a small text disclosure and Log sources' Add source is outlined",
+    "typography": "empty result 'No logs found.' at 15px strong ink over 13px muted notes",
+    "visible_affordances": "native \u25b8 triangle + 'Filters' text has no control shape, reads as plain text at a glance"
+   },
+   "observed_product": "kyPulse",
+   "observed_surface": "logs (filters collapsed)",
+   "scores": {
+    "coherence": 8,
+    "color": 8,
+    "density_layout": 8,
+    "hierarchy": 7,
+    "typography": 8,
+    "visible_affordances": 7
+   },
+   "sha256": "0c66d17cfcc0fc8512a1aface19f16a4b529ce0419c915431586300ee8d9af8f",
+   "state": "empty/unpaired",
+   "theme": "light (OS, no saved choice)",
+   "total": "7.7",
+   "viewport": "desktop 1280x900 DPR1",
+   "width": 1280,
+   "prior_total": null
+  },
+  {
+   "artifacts": "none; live fixture durations/timestamps",
+   "bytes": 77802,
+   "caveat": "explicitly expanded; empty result; no applied filter",
+   "cohort": "admin-console",
+   "confidence": "high",
+   "duplicate_of": null,
+   "file": "screenshots/kypulse-07-after-logs-filters-desktop-dark.png",
+   "filename_matches_content": true,
+   "filter_disclosure": "expanded",
+   "height": 900,
+   "ky_fit": {
+    "scores": {
+     "accent_discipline": 8,
+     "palette_tokens": 8,
+     "shell": 8,
+     "suite_cohesion": 8,
+     "type_geometry": 8
+    },
+    "observations": {
+     "accent_discipline": "orange marks Apply and selection only",
+     "palette_tokens": "cream page/charcoal sidebar ink and orange accent match ky-ui 0.4.3 tokens; status hues stay paired with text",
+     "shell": "240px left sidebar with stamp wordmark, 40px icon rows, accent rail selection, account region pinned bottom",
+     "suite_cohesion": "nav selection tint+rail, Space Grotesk and outline secondaries match the KyNotes reference set; Pulse's persistent alert band is product-specific",
+     "type_geometry": "24px/600 title, 40px controls and 8px radii consistent with contract"
+    },
+    "total": "8.0",
+    "note": "Reported only, never added to total; KyNotes refs used for brand cohesion only."
+   },
+   "observations": {
+    "coherence": "fields reuse Settings/Log sources field style",
+    "color": "salmon Apply on charcoal; native date icons light",
+    "density_layout": "3-column field grid aligns with Log sources grid; Apply/Clear sit in third column on date row",
+    "hierarchy": "Apply is the only filled button; result line directly below",
+    "typography": "13px field labels, 15px result text",
+    "visible_affordances": "40px inputs, native datetime controls show placeholder and picker icon"
+   },
+   "observed_product": "kyPulse",
+   "observed_surface": "logs-filters (filters expanded)",
+   "scores": {
+    "coherence": 8,
+    "color": 8,
+    "density_layout": 8,
+    "hierarchy": 8,
+    "typography": 8,
+    "visible_affordances": 8
+   },
+   "sha256": "bc66bbb3d1e4e22602d98d963cce0afd40d827799166fa9c4b9850ae5ec9b55d",
+   "state": "synthetic sparse/default",
+   "theme": "dark (OS, no saved choice)",
+   "total": "8.0",
+   "viewport": "desktop 1280x900 DPR1",
+   "width": 1280,
+   "prior_total": "8.0"
+  },
+  {
+   "artifacts": "none; live fixture durations/timestamps",
+   "bytes": 77333,
+   "caveat": "explicitly expanded; empty result; no applied filter",
+   "cohort": "admin-console",
+   "confidence": "high",
+   "duplicate_of": null,
+   "file": "screenshots/kypulse-07-after-logs-filters-desktop-light.png",
+   "filename_matches_content": true,
+   "filter_disclosure": "expanded",
+   "height": 900,
+   "ky_fit": {
+    "scores": {
+     "accent_discipline": 8,
+     "palette_tokens": 8,
+     "shell": 8,
+     "suite_cohesion": 8,
+     "type_geometry": 8
+    },
+    "observations": {
+     "accent_discipline": "orange marks Apply and selection only",
+     "palette_tokens": "cream page/charcoal sidebar ink and orange accent match ky-ui 0.4.3 tokens; status hues stay paired with text",
+     "shell": "240px left sidebar with stamp wordmark, 40px icon rows, accent rail selection, account region pinned bottom",
+     "suite_cohesion": "nav selection tint+rail, Space Grotesk and outline secondaries match the KyNotes reference set; Pulse's persistent alert band is product-specific",
+     "type_geometry": "24px/600 title, 40px controls and 8px radii consistent with contract"
+    },
+    "total": "8.0",
+    "note": "Reported only, never added to total; KyNotes refs used for brand cohesion only."
+   },
+   "observations": {
+    "coherence": "fields reuse Settings/Log sources field style",
+    "color": "orange Apply on cream; fields neutral",
+    "density_layout": "3-column field grid aligns with Log sources grid; Apply/Clear sit in third column on date row",
+    "hierarchy": "Apply is the only filled button; result line directly below",
+    "typography": "13px field labels, 15px result text",
+    "visible_affordances": "40px inputs, native datetime controls show placeholder and picker icon"
+   },
+   "observed_product": "kyPulse",
+   "observed_surface": "logs-filters (filters expanded)",
+   "scores": {
+    "coherence": 8,
+    "color": 8,
+    "density_layout": 8,
+    "hierarchy": 8,
+    "typography": 8,
+    "visible_affordances": 8
+   },
+   "sha256": "13fc7219c0d73f4ecd41a18f9e5eec5973e1ea0ff6a2bc8a68fd47322c76d8cc",
+   "state": "synthetic sparse/default",
+   "theme": "light (OS, no saved choice)",
+   "total": "8.0",
+   "viewport": "desktop 1280x900 DPR1",
+   "width": 1280,
+   "prior_total": "8.0"
+  },
+  {
+   "artifacts": "none; live fixture durations/timestamps",
+   "bytes": 38768,
+   "caveat": "result fully visible; Log sources below fold",
+   "cohort": "admin-console",
+   "confidence": "high",
+   "duplicate_of": null,
+   "file": "screenshots/kypulse-07-after-logs-filters-mobile-dark.png",
+   "filename_matches_content": true,
+   "filter_disclosure": "expanded",
+   "height": 844,
+   "ky_fit": {
+    "scores": {
+     "accent_discipline": 8,
+     "palette_tokens": 8,
+     "shell": 8,
+     "suite_cohesion": 8,
+     "type_geometry": 8
+    },
+    "observations": {
+     "accent_discipline": "orange only Apply + current tab",
+     "palette_tokens": "same Busnes token surfaces at 390px; status hues paired with text",
+     "shell": "phone header wordmark + sign-out icon; horizontally scrolling tabs keep current tab fully visible with tint + underline",
+     "suite_cohesion": "nav selection tint+rail, Space Grotesk and outline secondaries match the KyNotes reference set; Pulse's persistent alert band is product-specific",
+     "type_geometry": "40px controls and 8px radii hold at phone width; title 24px"
+    },
+    "total": "8.0",
+    "note": "Reported only, never added to total; KyNotes refs used for brand cohesion only."
+   },
+   "observations": {
+    "coherence": "same field vocabulary as Settings phone",
+    "color": "salmon Apply on charcoal",
+    "density_layout": "two half-width then three full-width fields push the result to the bottom edge",
+    "hierarchy": "Apply filled primary beside outlined Clear",
+    "typography": "13px labels, 15px result",
+    "visible_affordances": "full-width native date inputs show placeholder and picker icon"
+   },
+   "observed_product": "kyPulse",
+   "observed_surface": "logs-filters (filters expanded)",
+   "scores": {
+    "coherence": 8,
+    "color": 8,
+    "density_layout": 7,
+    "hierarchy": 8,
+    "typography": 8,
+    "visible_affordances": 8
+   },
+   "sha256": "41a6b80a0bec3ed592ed83f38aa37cc1b81f3c741b41996643f4184707683240",
+   "state": "synthetic sparse/default",
+   "theme": "dark (OS, no saved choice)",
+   "total": "7.8",
+   "viewport": "mobile 390x844 DPR1",
+   "width": 390,
+   "prior_total": "7.8"
+  },
+  {
+   "artifacts": "none; live fixture durations/timestamps",
+   "bytes": 38422,
+   "caveat": "result fully visible; Log sources below fold",
+   "cohort": "admin-console",
+   "confidence": "high",
+   "duplicate_of": null,
+   "file": "screenshots/kypulse-07-after-logs-filters-mobile-light.png",
+   "filename_matches_content": true,
+   "filter_disclosure": "expanded",
+   "height": 844,
+   "ky_fit": {
+    "scores": {
+     "accent_discipline": 8,
+     "palette_tokens": 8,
+     "shell": 8,
+     "suite_cohesion": 8,
+     "type_geometry": 8
+    },
+    "observations": {
+     "accent_discipline": "orange only Apply + current tab",
+     "palette_tokens": "same Busnes token surfaces at 390px; status hues paired with text",
+     "shell": "phone header wordmark + sign-out icon; horizontally scrolling tabs keep current tab fully visible with tint + underline",
+     "suite_cohesion": "nav selection tint+rail, Space Grotesk and outline secondaries match the KyNotes reference set; Pulse's persistent alert band is product-specific",
+     "type_geometry": "40px controls and 8px radii hold at phone width; title 24px"
+    },
+    "total": "8.0",
+    "note": "Reported only, never added to total; KyNotes refs used for brand cohesion only."
+   },
+   "observations": {
+    "coherence": "same field vocabulary as Settings phone",
+    "color": "orange Apply on cream",
+    "density_layout": "two half-width then three full-width fields push the result to the bottom edge",
+    "hierarchy": "Apply filled primary beside outlined Clear",
+    "typography": "13px labels, 15px result",
+    "visible_affordances": "full-width native date inputs show placeholder and picker icon"
+   },
+   "observed_product": "kyPulse",
+   "observed_surface": "logs-filters (filters expanded)",
+   "scores": {
+    "coherence": 8,
+    "color": 8,
+    "density_layout": 7,
+    "hierarchy": 8,
+    "typography": 8,
+    "visible_affordances": 8
+   },
+   "sha256": "5ab112c7d692f41b211941dd785f5e675a771db5a12d5f9550a4f6ffa0649711",
+   "state": "synthetic sparse/default",
+   "theme": "light (OS, no saved choice)",
+   "total": "7.8",
+   "viewport": "mobile 390x844 DPR1",
+   "width": 390,
+   "prior_total": "7.8"
+  },
+  {
+   "artifacts": "none; live fixture durations/timestamps",
+   "bytes": 49031,
+   "caveat": "default collapsed; empty/unpaired",
+   "cohort": "admin-console",
+   "confidence": "high",
+   "duplicate_of": null,
+   "file": "screenshots/kypulse-07-after-logs-mobile-dark.png",
+   "filename_matches_content": true,
+   "filter_disclosure": "collapsed",
+   "height": 844,
+   "ky_fit": {
+    "scores": {
+     "accent_discipline": 8,
+     "palette_tokens": 8,
+     "shell": 8,
+     "suite_cohesion": 8,
+     "type_geometry": 8
+    },
+    "observations": {
+     "accent_discipline": "no content orange",
+     "palette_tokens": "same Busnes token surfaces at 390px; status hues paired with text",
+     "shell": "phone header wordmark + sign-out icon; horizontally scrolling tabs keep current tab fully visible with tint + underline",
+     "suite_cohesion": "nav selection tint+rail, Space Grotesk and outline secondaries match the KyNotes reference set; Pulse's persistent alert band is product-specific",
+     "type_geometry": "40px controls and 8px radii hold at phone width; title 24px"
+    },
+    "total": "8.0",
+    "note": "Reported only, never added to total; KyNotes refs used for brand cohesion only."
+   },
+   "observations": {
+    "coherence": "matches desktop page pattern",
+    "color": "neutral content; colour only in alert band and current tab",
+    "density_layout": "compact: Log sources form starts at y\u2248520",
+    "hierarchy": "no primary visible; small Filters disclosure precedes empty result",
+    "typography": "15px strong empty message; muted 13px notes wrap cleanly",
+    "visible_affordances": "disclosure triangle tiny, no tap-target shape"
+   },
+   "observed_product": "kyPulse",
+   "observed_surface": "logs (filters collapsed)",
+   "scores": {
+    "coherence": 8,
+    "color": 8,
+    "density_layout": 8,
+    "hierarchy": 7,
+    "typography": 8,
+    "visible_affordances": 7
+   },
+   "sha256": "0190060487b6090afe828e428bb3c354092a5b73794ec949076fe93f144a59b9",
+   "state": "empty/unpaired",
+   "theme": "dark (OS, no saved choice)",
+   "total": "7.7",
+   "viewport": "mobile 390x844 DPR1",
+   "width": 390,
+   "prior_total": null
+  },
+  {
+   "artifacts": "none; live fixture durations/timestamps",
+   "bytes": 48362,
+   "caveat": "default collapsed; empty/unpaired",
+   "cohort": "admin-console",
+   "confidence": "high",
+   "duplicate_of": null,
+   "file": "screenshots/kypulse-07-after-logs-mobile-light.png",
+   "filename_matches_content": true,
+   "filter_disclosure": "collapsed",
+   "height": 844,
+   "ky_fit": {
+    "scores": {
+     "accent_discipline": 8,
+     "palette_tokens": 8,
+     "shell": 8,
+     "suite_cohesion": 8,
+     "type_geometry": 8
+    },
+    "observations": {
+     "accent_discipline": "no content orange",
+     "palette_tokens": "same Busnes token surfaces at 390px; status hues paired with text",
+     "shell": "phone header wordmark + sign-out icon; horizontally scrolling tabs keep current tab fully visible with tint + underline",
+     "suite_cohesion": "nav selection tint+rail, Space Grotesk and outline secondaries match the KyNotes reference set; Pulse's persistent alert band is product-specific",
+     "type_geometry": "40px controls and 8px radii hold at phone width; title 24px"
+    },
+    "total": "8.0",
+    "note": "Reported only, never added to total; KyNotes refs used for brand cohesion only."
+   },
+   "observations": {
+    "coherence": "matches desktop page pattern",
+    "color": "neutral content; colour only in alert band and current tab",
+    "density_layout": "compact: Log sources form starts at y\u2248520",
+    "hierarchy": "no primary visible; small Filters disclosure precedes empty result",
+    "typography": "15px strong empty message; muted 13px notes wrap cleanly",
+    "visible_affordances": "disclosure triangle tiny, no tap-target shape"
+   },
+   "observed_product": "kyPulse",
+   "observed_surface": "logs (filters collapsed)",
+   "scores": {
+    "coherence": 8,
+    "color": 8,
+    "density_layout": 8,
+    "hierarchy": 7,
+    "typography": 8,
+    "visible_affordances": 7
+   },
+   "sha256": "0330959c1fedd181e29aec7105aa6f6d1574a6b43754cf2ecb94ac772b1ac1ef",
+   "state": "empty/unpaired",
+   "theme": "light (OS, no saved choice)",
+   "total": "7.7",
+   "viewport": "mobile 390x844 DPR1",
+   "width": 390,
+   "prior_total": null
+  },
+  {
+   "artifacts": "none; live fixture durations/timestamps",
+   "bytes": 82074,
+   "caveat": "fourth card cut at fold; viewer view unverified",
+   "cohort": "settings",
+   "confidence": "high",
+   "duplicate_of": null,
+   "file": "screenshots/kypulse-07-after-settings-desktop-dark.png",
+   "filename_matches_content": true,
+   "filter_disclosure": null,
+   "height": 900,
+   "ky_fit": {
+    "scores": {
+     "accent_discipline": 8,
+     "palette_tokens": 8,
+     "shell": 8,
+     "suite_cohesion": 8,
+     "type_geometry": 8
+    },
+    "observations": {
+     "accent_discipline": "orange only Save webhook + selection",
+     "palette_tokens": "cream page/charcoal sidebar ink and orange accent match ky-ui 0.4.3 tokens; status hues stay paired with text",
+     "shell": "240px left sidebar with stamp wordmark, 40px icon rows, accent rail selection, account region pinned bottom",
+     "suite_cohesion": "nav selection tint+rail, Space Grotesk and outline secondaries match the KyNotes reference set; Pulse's persistent alert band is product-specific",
+     "type_geometry": "24px/600 title, 40px controls and 8px radii consistent with contract"
+    },
+    "total": "8.0",
+    "note": "Reported only, never added to total; KyNotes refs used for brand cohesion only."
+   },
+   "observations": {
+    "coherence": "one card per topic, no card nesting; differs from flat Backup page",
+    "color": "salmon Save webhook only accent; inputs darker than panel",
+    "density_layout": "card padding consistent; 3-column webhook fields align",
+    "hierarchy": "title + description; Save webhook is the only filled button",
+    "typography": "card titles 17px with icons; 13px labels; Off badge small",
+    "visible_affordances": "outlined secondaries (Set up 2FA, Pair) distinct from filled primary"
+   },
+   "observed_product": "kyPulse",
+   "observed_surface": "settings",
+   "scores": {
+    "coherence": 8,
+    "color": 8,
+    "density_layout": 8,
+    "hierarchy": 8,
+    "typography": 8,
+    "visible_affordances": 8
+   },
+   "sha256": "48deda855b31cab3b2aa525794e8290c9456da2479b25e47adbe6c4665caefc6",
+   "state": "synthetic sparse/default",
+   "theme": "dark (OS, no saved choice)",
+   "total": "8.0",
+   "viewport": "desktop 1280x900 DPR1",
+   "width": 1280,
+   "prior_total": "8.0"
+  },
+  {
+   "artifacts": "none; live fixture durations/timestamps",
+   "bytes": 82055,
+   "caveat": "fourth card cut at fold; viewer view unverified",
+   "cohort": "settings",
+   "confidence": "high",
+   "duplicate_of": null,
+   "file": "screenshots/kypulse-07-after-settings-desktop-light.png",
+   "filename_matches_content": true,
+   "filter_disclosure": null,
+   "height": 900,
+   "ky_fit": {
+    "scores": {
+     "accent_discipline": 8,
+     "palette_tokens": 8,
+     "shell": 8,
+     "suite_cohesion": 8,
+     "type_geometry": 8
+    },
+    "observations": {
+     "accent_discipline": "orange only Save webhook + selection",
+     "palette_tokens": "cream page/charcoal sidebar ink and orange accent match ky-ui 0.4.3 tokens; status hues stay paired with text",
+     "shell": "240px left sidebar with stamp wordmark, 40px icon rows, accent rail selection, account region pinned bottom",
+     "suite_cohesion": "nav selection tint+rail, Space Grotesk and outline secondaries match the KyNotes reference set; Pulse's persistent alert band is product-specific",
+     "type_geometry": "24px/600 title, 40px controls and 8px radii consistent with contract"
+    },
+    "total": "8.0",
+    "note": "Reported only, never added to total; KyNotes refs used for brand cohesion only."
+   },
+   "observations": {
+    "coherence": "one card per topic, no card nesting; differs from flat Backup page",
+    "color": "orange Save webhook only accent; inputs cream inside white cards",
+    "density_layout": "card padding consistent; 3-column webhook fields align",
+    "hierarchy": "title + description; Save webhook is the only filled button",
+    "typography": "card titles 17px with icons; 13px labels; Off badge small",
+    "visible_affordances": "outlined secondaries (Set up 2FA, Pair) distinct from filled primary"
+   },
+   "observed_product": "kyPulse",
+   "observed_surface": "settings",
+   "scores": {
+    "coherence": 8,
+    "color": 8,
+    "density_layout": 8,
+    "hierarchy": 8,
+    "typography": 8,
+    "visible_affordances": 8
+   },
+   "sha256": "c13d85a73642a37acb942b4a4f871f06e20733d1d65611a0c4d5af15b1010da0",
+   "state": "synthetic sparse/default",
+   "theme": "light (OS, no saved choice)",
+   "total": "8.0",
+   "viewport": "desktop 1280x900 DPR1",
+   "width": 1280,
+   "prior_total": "8.0"
+  },
+  {
+   "artifacts": "none; live fixture durations/timestamps",
+   "bytes": 46757,
+   "caveat": "fourth card cut at fold; viewer view unverified",
+   "cohort": "settings",
+   "confidence": "high",
+   "duplicate_of": null,
+   "file": "screenshots/kypulse-07-after-settings-mobile-dark.png",
+   "filename_matches_content": true,
+   "filter_disclosure": null,
+   "height": 844,
+   "ky_fit": {
+    "scores": {
+     "accent_discipline": 8,
+     "palette_tokens": 8,
+     "shell": 8,
+     "suite_cohesion": 8,
+     "type_geometry": 8
+    },
+    "observations": {
+     "accent_discipline": "orange only Save webhook + selection",
+     "palette_tokens": "same Busnes token surfaces at 390px; status hues paired with text",
+     "shell": "phone header wordmark + sign-out icon; horizontally scrolling tabs keep current tab fully visible with tint + underline",
+     "suite_cohesion": "nav selection tint+rail, Space Grotesk and outline secondaries match the KyNotes reference set; Pulse's persistent alert band is product-specific",
+     "type_geometry": "40px controls and 8px radii hold at phone width; title 24px"
+    },
+    "total": "8.0",
+    "note": "Reported only, never added to total; KyNotes refs used for brand cohesion only."
+   },
+   "observations": {
+    "coherence": "one card per topic, no card nesting; differs from flat Backup page",
+    "color": "salmon Save webhook only accent; inputs darker than panel",
+    "density_layout": "cards stack with even padding; fields full width",
+    "hierarchy": "title + description; Save webhook is the only filled button",
+    "typography": "card titles 17px with icons; 13px labels; Off badge small",
+    "visible_affordances": "outlined secondaries (Set up 2FA, Pair) distinct from filled primary"
+   },
+   "observed_product": "kyPulse",
+   "observed_surface": "settings",
+   "scores": {
+    "coherence": 8,
+    "color": 8,
+    "density_layout": 8,
+    "hierarchy": 8,
+    "typography": 8,
+    "visible_affordances": 8
+   },
+   "sha256": "1d008fd35e6da5b8a4a2539e23bd698a970a76b47565a67f5e39c45c7705b962",
+   "state": "synthetic sparse/default",
+   "theme": "dark (OS, no saved choice)",
+   "total": "8.0",
+   "viewport": "mobile 390x844 DPR1",
+   "width": 390,
+   "prior_total": "8.0"
+  },
+  {
+   "artifacts": "none; live fixture durations/timestamps",
+   "bytes": 46429,
+   "caveat": "fourth card cut at fold; viewer view unverified",
+   "cohort": "settings",
+   "confidence": "high",
+   "duplicate_of": null,
+   "file": "screenshots/kypulse-07-after-settings-mobile-light.png",
+   "filename_matches_content": true,
+   "filter_disclosure": null,
+   "height": 844,
+   "ky_fit": {
+    "scores": {
+     "accent_discipline": 8,
+     "palette_tokens": 8,
+     "shell": 8,
+     "suite_cohesion": 8,
+     "type_geometry": 8
+    },
+    "observations": {
+     "accent_discipline": "orange only Save webhook + selection",
+     "palette_tokens": "same Busnes token surfaces at 390px; status hues paired with text",
+     "shell": "phone header wordmark + sign-out icon; horizontally scrolling tabs keep current tab fully visible with tint + underline",
+     "suite_cohesion": "nav selection tint+rail, Space Grotesk and outline secondaries match the KyNotes reference set; Pulse's persistent alert band is product-specific",
+     "type_geometry": "40px controls and 8px radii hold at phone width; title 24px"
+    },
+    "total": "8.0",
+    "note": "Reported only, never added to total; KyNotes refs used for brand cohesion only."
+   },
+   "observations": {
+    "coherence": "one card per topic, no card nesting; differs from flat Backup page",
+    "color": "orange Save webhook only accent; inputs cream inside white cards",
+    "density_layout": "cards stack with even padding; fields full width",
+    "hierarchy": "title + description; Save webhook is the only filled button",
+    "typography": "card titles 17px with icons; 13px labels; Off badge small",
+    "visible_affordances": "outlined secondaries (Set up 2FA, Pair) distinct from filled primary"
+   },
+   "observed_product": "kyPulse",
+   "observed_surface": "settings",
+   "scores": {
+    "coherence": 8,
+    "color": 8,
+    "density_layout": 8,
+    "hierarchy": 8,
+    "typography": 8,
+    "visible_affordances": 8
+   },
+   "sha256": "e8feea20f99b6babdc1d065fd8e75b7c94246867277a3e0585b0db9dd0a4e15d",
+   "state": "synthetic sparse/default",
+   "theme": "light (OS, no saved choice)",
+   "total": "8.0",
+   "viewport": "mobile 390x844 DPR1",
+   "width": 390,
+   "prior_total": "8.0"
+  },
+  {
+   "artifacts": "none; live fixture durations/timestamps",
+   "bytes": 69886,
+   "caveat": "sparse 3-app synthetic fixture; live durations; empty space below is captured state",
+   "cohort": "admin-console",
+   "confidence": "high",
+   "duplicate_of": null,
+   "file": "screenshots/kypulse-07-after-status-desktop-dark.png",
+   "filename_matches_content": true,
+   "filter_disclosure": null,
+   "height": 900,
+   "ky_fit": {
+    "scores": {
+     "accent_discipline": 8,
+     "palette_tokens": 8,
+     "shell": 8,
+     "suite_cohesion": 8,
+     "type_geometry": 8
+    },
+    "observations": {
+     "accent_discipline": "orange only on Add app and selected nav row",
+     "palette_tokens": "cream page/charcoal sidebar ink and orange accent match ky-ui 0.4.3 tokens; status hues stay paired with text",
+     "shell": "240px left sidebar with stamp wordmark, 40px icon rows, accent rail selection, account region pinned bottom",
+     "suite_cohesion": "nav selection tint+rail, Space Grotesk and outline secondaries match the KyNotes reference set; Pulse's persistent alert band is product-specific",
+     "type_geometry": "24px/600 title, 40px controls and 8px radii consistent with contract"
+    },
+    "total": "8.0",
+    "note": "Reported only, never added to total; KyNotes refs used for brand cohesion only."
+   },
+   "observations": {
+    "coherence": "one table-panel vocabulary; alert band links echo row states without new styles",
+    "color": "muted salmon/amber/mint status dots and text read against charcoal",
+    "density_layout": "three rows align across Application/Status/Latest check columns; description wraps leaving 'controls.' orphaned",
+    "hierarchy": "single filled 'Add app' primary opposite the Status title; problems sorted first",
+    "typography": "proportional bold 'down \u00b7 status_503' over 13px meta; one mono-free table scale",
+    "visible_affordances": "app names are underlined links; Add app reads as button; sign-out icon button outlined"
+   },
+   "observed_product": "kyPulse",
+   "observed_surface": "status",
+   "scores": {
+    "coherence": 8,
+    "color": 8,
+    "density_layout": 8,
+    "hierarchy": 8,
+    "typography": 8,
+    "visible_affordances": 8
+   },
+   "sha256": "a7e3e30a288adb2cbb578d12ddf85dd841ce45ca63edbcdd3738a1de5d026607",
+   "state": "synthetic sparse/default",
+   "theme": "dark (OS, no saved choice)",
+   "total": "8.0",
+   "viewport": "desktop 1280x900 DPR1",
+   "width": 1280,
+   "prior_total": "8.0"
+  },
+  {
+   "artifacts": "none; live fixture durations/timestamps",
+   "bytes": 70032,
+   "caveat": "sparse 3-app synthetic fixture; live durations; empty space below is captured state",
+   "cohort": "admin-console",
+   "confidence": "high",
+   "duplicate_of": null,
+   "file": "screenshots/kypulse-07-after-status-desktop-light.png",
+   "filename_matches_content": true,
+   "filter_disclosure": null,
+   "height": 900,
+   "ky_fit": {
+    "scores": {
+     "accent_discipline": 8,
+     "palette_tokens": 8,
+     "shell": 8,
+     "suite_cohesion": 8,
+     "type_geometry": 8
+    },
+    "observations": {
+     "accent_discipline": "orange only on Add app and selected nav row",
+     "palette_tokens": "cream page/charcoal sidebar ink and orange accent match ky-ui 0.4.3 tokens; status hues stay paired with text",
+     "shell": "240px left sidebar with stamp wordmark, 40px icon rows, accent rail selection, account region pinned bottom",
+     "suite_cohesion": "nav selection tint+rail, Space Grotesk and outline secondaries match the KyNotes reference set; Pulse's persistent alert band is product-specific",
+     "type_geometry": "24px/600 title, 40px controls and 8px radii consistent with contract"
+    },
+    "total": "8.0",
+    "note": "Reported only, never added to total; KyNotes refs used for brand cohesion only."
+   },
+   "observations": {
+    "coherence": "one table-panel vocabulary; alert band links echo row states without new styles",
+    "color": "red/amber/green status text each paired with words on cream",
+    "density_layout": "three rows align across Application/Status/Latest check columns; description wraps leaving 'controls.' orphaned",
+    "hierarchy": "single filled 'Add app' primary opposite the Status title; problems sorted first",
+    "typography": "proportional bold 'down \u00b7 status_503' over 13px meta; one mono-free table scale",
+    "visible_affordances": "app names are underlined links; Add app reads as button; sign-out icon button outlined"
+   },
+   "observed_product": "kyPulse",
+   "observed_surface": "status",
+   "scores": {
+    "coherence": 8,
+    "color": 8,
+    "density_layout": 8,
+    "hierarchy": 8,
+    "typography": 8,
+    "visible_affordances": 8
+   },
+   "sha256": "bd9418d645af3123fa0216e1f1ed701d81851b5d38a66ee2278978efba9ca3d9",
+   "state": "synthetic sparse/default",
+   "theme": "light (OS, no saved choice)",
+   "total": "8.0",
+   "viewport": "desktop 1280x900 DPR1",
+   "width": 1280,
+   "prior_total": "8.0"
+  },
+  {
+   "artifacts": "none; live fixture durations/timestamps",
+   "bytes": 50398,
+   "caveat": "initial viewport only; Billing row last fully visible; live durations",
+   "cohort": "admin-console",
+   "confidence": "high",
+   "duplicate_of": null,
+   "file": "screenshots/kypulse-07-after-status-mobile-dark.png",
+   "filename_matches_content": true,
+   "filter_disclosure": null,
+   "height": 844,
+   "ky_fit": {
+    "scores": {
+     "accent_discipline": 8,
+     "palette_tokens": 8,
+     "shell": 8,
+     "suite_cohesion": 8,
+     "type_geometry": 8
+    },
+    "observations": {
+     "accent_discipline": "orange on Add app and the current tab underline only",
+     "palette_tokens": "same Busnes token surfaces at 390px; status hues paired with text",
+     "shell": "phone header wordmark + sign-out icon; horizontally scrolling tabs keep current tab fully visible with tint + underline",
+     "suite_cohesion": "nav selection tint+rail, Space Grotesk and outline secondaries match the KyNotes reference set; Pulse's persistent alert band is product-specific",
+     "type_geometry": "40px controls and 8px radii hold at phone width; title 24px"
+    },
+    "total": "8.0",
+    "note": "Reported only, never added to total; KyNotes refs used for brand cohesion only."
+   },
+   "observations": {
+    "coherence": "same list panel as desktop, no nested chrome",
+    "color": "pastel status colours legible on charcoal panel",
+    "density_layout": "stacked rows keep even 16px rhythm; meta 'checked \u2026 0 ms' on one line",
+    "hierarchy": "title + filled Add app on one row; failure-first stacked rows",
+    "typography": "app name 15px bold underlined, status line 15px, meta 13px - three clear steps",
+    "visible_affordances": "Logs tab clipped at right edge signals horizontal scroll; Add app filled"
+   },
+   "observed_product": "kyPulse",
+   "observed_surface": "status",
+   "scores": {
+    "coherence": 8,
+    "color": 8,
+    "density_layout": 8,
+    "hierarchy": 8,
+    "typography": 8,
+    "visible_affordances": 8
+   },
+   "sha256": "62210ebbd661ffd4f8942bddeea3d8d234639ac62a20973cbbb1c42024a12f64",
+   "state": "synthetic sparse/default",
+   "theme": "dark (OS, no saved choice)",
+   "total": "8.0",
+   "viewport": "mobile 390x844 DPR1",
+   "width": 390,
+   "prior_total": "8.0"
+  },
+  {
+   "artifacts": "none; live fixture durations/timestamps",
+   "bytes": 49927,
+   "caveat": "initial viewport only; Billing row last fully visible; live durations",
+   "cohort": "admin-console",
+   "confidence": "high",
+   "duplicate_of": null,
+   "file": "screenshots/kypulse-07-after-status-mobile-light.png",
+   "filename_matches_content": true,
+   "filter_disclosure": null,
+   "height": 844,
+   "ky_fit": {
+    "scores": {
+     "accent_discipline": 8,
+     "palette_tokens": 8,
+     "shell": 8,
+     "suite_cohesion": 8,
+     "type_geometry": 8
+    },
+    "observations": {
+     "accent_discipline": "orange on Add app and the current tab underline only",
+     "palette_tokens": "same Busnes token surfaces at 390px; status hues paired with text",
+     "shell": "phone header wordmark + sign-out icon; horizontally scrolling tabs keep current tab fully visible with tint + underline",
+     "suite_cohesion": "nav selection tint+rail, Space Grotesk and outline secondaries match the KyNotes reference set; Pulse's persistent alert band is product-specific",
+     "type_geometry": "40px controls and 8px radii hold at phone width; title 24px"
+    },
+    "total": "8.0",
+    "note": "Reported only, never added to total; KyNotes refs used for brand cohesion only."
+   },
+   "observations": {
+    "coherence": "same list panel as desktop, no nested chrome",
+    "color": "status colours on white panel with text",
+    "density_layout": "stacked rows keep even 16px rhythm; meta 'checked \u2026 0 ms' on one line",
+    "hierarchy": "title + filled Add app on one row; failure-first stacked rows",
+    "typography": "app name 15px bold underlined, status line 15px, meta 13px - three clear steps",
+    "visible_affordances": "Logs tab clipped at right edge signals horizontal scroll; Add app filled"
+   },
+   "observed_product": "kyPulse",
+   "observed_surface": "status",
+   "scores": {
+    "coherence": 8,
+    "color": 8,
+    "density_layout": 8,
+    "hierarchy": 8,
+    "typography": 8,
+    "visible_affordances": 8
+   },
+   "sha256": "9f49f64085f432ded86b49161c92d15500df03047f6e7a5baa205942bea503dc",
+   "state": "synthetic sparse/default",
+   "theme": "light (OS, no saved choice)",
+   "total": "8.0",
+   "viewport": "mobile 390x844 DPR1",
+   "width": 390,
+   "prior_total": "8.0"
+  }
+ ],
+ "cohort_rankings": {
+  "admin-console": {
+   "n": 28,
+   "matched": true,
+   "ky_gap": "N/A (no competitor in source set)",
+   "products": [
+    {
+     "product": "kyPulse",
+     "n": 28,
+     "exact_mean": "7.857142857142857142857142857",
+     "exact_fraction": "55/7",
+     "min": "7.7",
+     "max": "8.0",
+     "ky_fit_exact_mean": "8.0"
+    }
+   ],
+   "rank_order": [
+    {
+     "file": "screenshots/kypulse-07-after-activity-filters-desktop-dark.png",
+     "total": "8.0"
+    },
+    {
+     "file": "screenshots/kypulse-07-after-activity-filters-desktop-light.png",
+     "total": "8.0"
+    },
+    {
+     "file": "screenshots/kypulse-07-after-alerts-desktop-dark.png",
+     "total": "8.0"
+    },
+    {
+     "file": "screenshots/kypulse-07-after-alerts-desktop-light.png",
+     "total": "8.0"
+    },
+    {
+     "file": "screenshots/kypulse-07-after-app-detail-mobile-dark.png",
+     "total": "8.0"
+    },
+    {
+     "file": "screenshots/kypulse-07-after-app-detail-mobile-light.png",
+     "total": "8.0"
+    },
+    {
+     "file": "screenshots/kypulse-07-after-logs-filters-desktop-dark.png",
+     "total": "8.0"
+    },
+    {
+     "file": "screenshots/kypulse-07-after-logs-filters-desktop-light.png",
+     "total": "8.0"
+    },
+    {
+     "file": "screenshots/kypulse-07-after-status-desktop-dark.png",
+     "total": "8.0"
+    },
+    {
+     "file": "screenshots/kypulse-07-after-status-desktop-light.png",
+     "total": "8.0"
+    },
+    {
+     "file": "screenshots/kypulse-07-after-status-mobile-dark.png",
+     "total": "8.0"
+    },
+    {
+     "file": "screenshots/kypulse-07-after-status-mobile-light.png",
+     "total": "8.0"
+    },
+    {
+     "file": "screenshots/kypulse-07-after-activity-filters-mobile-dark.png",
+     "total": "7.8"
+    },
+    {
+     "file": "screenshots/kypulse-07-after-activity-filters-mobile-light.png",
+     "total": "7.8"
+    },
+    {
+     "file": "screenshots/kypulse-07-after-alerts-mobile-dark.png",
+     "total": "7.8"
+    },
+    {
+     "file": "screenshots/kypulse-07-after-alerts-mobile-light.png",
+     "total": "7.8"
+    },
+    {
+     "file": "screenshots/kypulse-07-after-app-detail-desktop-dark.png",
+     "total": "7.8"
+    },
+    {
+     "file": "screenshots/kypulse-07-after-app-detail-desktop-light.png",
+     "total": "7.8"
+    },
+    {
+     "file": "screenshots/kypulse-07-after-logs-filters-mobile-dark.png",
+     "total": "7.8"
+    },
+    {
+     "file": "screenshots/kypulse-07-after-logs-filters-mobile-light.png",
+     "total": "7.8"
+    },
+    {
+     "file": "screenshots/kypulse-07-after-activity-desktop-dark.png",
+     "total": "7.7"
+    },
+    {
+     "file": "screenshots/kypulse-07-after-activity-desktop-light.png",
+     "total": "7.7"
+    },
+    {
+     "file": "screenshots/kypulse-07-after-activity-mobile-dark.png",
+     "total": "7.7"
+    },
+    {
+     "file": "screenshots/kypulse-07-after-activity-mobile-light.png",
+     "total": "7.7"
+    },
+    {
+     "file": "screenshots/kypulse-07-after-logs-desktop-dark.png",
+     "total": "7.7"
+    },
+    {
+     "file": "screenshots/kypulse-07-after-logs-desktop-light.png",
+     "total": "7.7"
+    },
+    {
+     "file": "screenshots/kypulse-07-after-logs-mobile-dark.png",
+     "total": "7.7"
+    },
+    {
+     "file": "screenshots/kypulse-07-after-logs-mobile-light.png",
+     "total": "7.7"
+    }
+   ],
+   "prior_round6": {
+    "n": 20,
+    "exact_mean": "7.96"
+   },
+   "common_state": {
+    "n": 20,
+    "round7_exact_mean": "7.92",
+    "round7_fraction": "198/25",
+    "round6_exact_mean": "7.96",
+    "drift": "-0.04",
+    "note": "matched files only; Logs/Activity round 7 expanded vs round 6 always-visible"
+   },
+   "coverage_change": {
+    "added": 8,
+    "note": "new default-collapsed Logs/Activity states, no prior; raw cohort difference is not a patch-gain claim"
+   }
+  },
+  "settings": {
+   "n": 12,
+   "matched": true,
+   "ky_gap": "N/A (no competitor in source set)",
+   "products": [
+    {
+     "product": "kyPulse",
+     "n": 12,
+     "exact_mean": "7.933333333333333333333333333",
+     "exact_fraction": "119/15",
+     "min": "7.5",
+     "max": "8.2",
+     "ky_fit_exact_mean": "8.066666666666666666666666667"
+    }
+   ],
+   "rank_order": [
+    {
+     "file": "screenshots/kypulse-07-after-appearance-desktop-dark.png",
+     "total": "8.2"
+    },
+    {
+     "file": "screenshots/kypulse-07-after-appearance-desktop-light.png",
+     "total": "8.2"
+    },
+    {
+     "file": "screenshots/kypulse-07-after-appearance-mobile-dark.png",
+     "total": "8.2"
+    },
+    {
+     "file": "screenshots/kypulse-07-after-appearance-mobile-light.png",
+     "total": "8.2"
+    },
+    {
+     "file": "screenshots/kypulse-07-after-settings-desktop-dark.png",
+     "total": "8.0"
+    },
+    {
+     "file": "screenshots/kypulse-07-after-settings-desktop-light.png",
+     "total": "8.0"
+    },
+    {
+     "file": "screenshots/kypulse-07-after-settings-mobile-dark.png",
+     "total": "8.0"
+    },
+    {
+     "file": "screenshots/kypulse-07-after-settings-mobile-light.png",
+     "total": "8.0"
+    },
+    {
+     "file": "screenshots/kypulse-07-after-backup-mobile-dark.png",
+     "total": "7.7"
+    },
+    {
+     "file": "screenshots/kypulse-07-after-backup-mobile-light.png",
+     "total": "7.7"
+    },
+    {
+     "file": "screenshots/kypulse-07-after-backup-desktop-dark.png",
+     "total": "7.5"
+    },
+    {
+     "file": "screenshots/kypulse-07-after-backup-desktop-light.png",
+     "total": "7.5"
+    }
+   ],
+   "prior_round6": {
+    "n": 12,
+    "exact_mean": "7.983333333333333333333333333"
+   },
+   "common_state": {
+    "n": 12,
+    "round7_exact_mean": "7.933333333333333333333333333",
+    "round7_fraction": "119/15",
+    "round6_exact_mean": "7.983333333333333333333333333",
+    "drift": "-0.050000000000000000000000000",
+    "note": "matched files only; Logs/Activity round 7 expanded vs round 6 always-visible"
+   },
+   "coverage_change": {
+    "added": 0,
+    "note": "none"
+   }
+  }
+ },
+ "drift": {
+  "against": "opus-round6.json (own)",
+  "files": [
+   {
+    "file": "screenshots/kypulse-07-after-activity-desktop-dark.png",
+    "prior_file": null,
+    "prior_total": null,
+    "total": "7.7",
+    "delta": null,
+    "cause": "coverage",
+    "explanation": "new default-collapsed disclosure state; no matched round-6 capture"
+   },
+   {
+    "file": "screenshots/kypulse-07-after-activity-desktop-light.png",
+    "prior_file": null,
+    "prior_total": null,
+    "total": "7.7",
+    "delta": null,
+    "cause": "coverage",
+    "explanation": "new default-collapsed disclosure state; no matched round-6 capture"
+   },
+   {
+    "file": "screenshots/kypulse-07-after-activity-filters-desktop-dark.png",
+    "prior_file": "screenshots/kypulse-06-after-activity-desktop-dark.png",
+    "prior_total": "8.0",
+    "total": "8.0",
+    "delta": "0.0",
+    "cause": "none",
+    "explanation": "expanded filters compared with round-6 always-visible filters"
+   },
+   {
+    "file": "screenshots/kypulse-07-after-activity-filters-desktop-light.png",
+    "prior_file": "screenshots/kypulse-06-after-activity-desktop-light.png",
+    "prior_total": "8.0",
+    "total": "8.0",
+    "delta": "0.0",
+    "cause": "none",
+    "explanation": "expanded filters compared with round-6 always-visible filters"
+   },
+   {
+    "file": "screenshots/kypulse-07-after-activity-filters-mobile-dark.png",
+    "prior_file": "screenshots/kypulse-06-after-activity-mobile-dark.png",
+    "prior_total": "7.8",
+    "total": "7.8",
+    "delta": "0.0",
+    "cause": "none",
+    "explanation": "expanded filters compared with round-6 always-visible filters"
+   },
+   {
+    "file": "screenshots/kypulse-07-after-activity-filters-mobile-light.png",
+    "prior_file": "screenshots/kypulse-06-after-activity-mobile-light.png",
+    "prior_total": "7.8",
+    "total": "7.8",
+    "delta": "0.0",
+    "cause": "none",
+    "explanation": "expanded filters compared with round-6 always-visible filters"
+   },
+   {
+    "file": "screenshots/kypulse-07-after-activity-mobile-dark.png",
+    "prior_file": null,
+    "prior_total": null,
+    "total": "7.7",
+    "delta": null,
+    "cause": "coverage",
+    "explanation": "new default-collapsed disclosure state; no matched round-6 capture"
+   },
+   {
+    "file": "screenshots/kypulse-07-after-activity-mobile-light.png",
+    "prior_file": null,
+    "prior_total": null,
+    "total": "7.7",
+    "delta": null,
+    "cause": "coverage",
+    "explanation": "new default-collapsed disclosure state; no matched round-6 capture"
+   },
+   {
+    "file": "screenshots/kypulse-07-after-alerts-desktop-dark.png",
+    "prior_file": "screenshots/kypulse-06-after-alerts-desktop-dark.png",
+    "prior_total": "8.0",
+    "total": "8.0",
+    "delta": "0.0",
+    "cause": "none",
+    "explanation": ""
+   },
+   {
+    "file": "screenshots/kypulse-07-after-alerts-desktop-light.png",
+    "prior_file": "screenshots/kypulse-06-after-alerts-desktop-light.png",
+    "prior_total": "8.0",
+    "total": "8.0",
+    "delta": "0.0",
+    "cause": "none",
+    "explanation": ""
+   },
+   {
+    "file": "screenshots/kypulse-07-after-alerts-mobile-dark.png",
+    "prior_file": "screenshots/kypulse-06-after-alerts-mobile-dark.png",
+    "prior_total": "8.0",
+    "total": "7.8",
+    "delta": "-0.2",
+    "cause": "reviewer variation",
+    "explanation": "reviewer variation: H 8->7 on the per-alert title emphasis; 06->07 pixels differ only in live chronology"
+   },
+   {
+    "file": "screenshots/kypulse-07-after-alerts-mobile-light.png",
+    "prior_file": "screenshots/kypulse-06-after-alerts-mobile-light.png",
+    "prior_total": "8.0",
+    "total": "7.8",
+    "delta": "-0.2",
+    "cause": "reviewer variation",
+    "explanation": "reviewer variation: H 8->7 on the per-alert title emphasis; 06->07 pixels differ only in live chronology"
+   },
+   {
+    "file": "screenshots/kypulse-07-after-app-detail-desktop-dark.png",
+    "prior_file": "screenshots/kypulse-06-after-app-detail-desktop-dark.png",
+    "prior_total": "8.0",
+    "total": "7.8",
+    "delta": "-0.2",
+    "cause": "reviewer variation",
+    "explanation": "reviewer variation: D 8->7 on uneven section rhythm; 06->07 pixels differ only in live chronology"
+   },
+   {
+    "file": "screenshots/kypulse-07-after-app-detail-desktop-light.png",
+    "prior_file": "screenshots/kypulse-06-after-app-detail-desktop-light.png",
+    "prior_total": "8.0",
+    "total": "7.8",
+    "delta": "-0.2",
+    "cause": "reviewer variation",
+    "explanation": "reviewer variation: D 8->7 on uneven section rhythm; 06->07 pixels differ only in live chronology"
+   },
+   {
+    "file": "screenshots/kypulse-07-after-app-detail-mobile-dark.png",
+    "prior_file": "screenshots/kypulse-06-after-app-detail-mobile-dark.png",
+    "prior_total": "8.0",
+    "total": "8.0",
+    "delta": "0.0",
+    "cause": "none",
+    "explanation": ""
+   },
+   {
+    "file": "screenshots/kypulse-07-after-app-detail-mobile-light.png",
+    "prior_file": "screenshots/kypulse-06-after-app-detail-mobile-light.png",
+    "prior_total": "8.0",
+    "total": "8.0",
+    "delta": "0.0",
+    "cause": "none",
+    "explanation": ""
+   },
+   {
+    "file": "screenshots/kypulse-07-after-appearance-desktop-dark.png",
+    "prior_file": "screenshots/kypulse-06-after-appearance-desktop-dark.png",
+    "prior_total": "8.0",
+    "total": "8.2",
+    "delta": "0.2",
+    "cause": "reviewer variation",
+    "explanation": "reviewer variation: Co 8->9; 06->07 pixels differ only in the live alert band"
+   },
+   {
+    "file": "screenshots/kypulse-07-after-appearance-desktop-light.png",
+    "prior_file": "screenshots/kypulse-06-after-appearance-desktop-light.png",
+    "prior_total": "8.0",
+    "total": "8.2",
+    "delta": "0.2",
+    "cause": "reviewer variation",
+    "explanation": "reviewer variation: Co 8->9; 06->07 pixels differ only in the live alert band"
+   },
+   {
+    "file": "screenshots/kypulse-07-after-appearance-mobile-dark.png",
+    "prior_file": "screenshots/kypulse-06-after-appearance-mobile-dark.png",
+    "prior_total": "8.0",
+    "total": "8.2",
+    "delta": "0.2",
+    "cause": "reviewer variation",
+    "explanation": "reviewer variation: Co 8->9; 06->07 pixels differ only in the live alert band"
+   },
+   {
+    "file": "screenshots/kypulse-07-after-appearance-mobile-light.png",
+    "prior_file": "screenshots/kypulse-06-after-appearance-mobile-light.png",
+    "prior_total": "8.0",
+    "total": "8.2",
+    "delta": "0.2",
+    "cause": "reviewer variation",
+    "explanation": "reviewer variation: Co 8->9; 06->07 pixels differ only in the live alert band"
+   },
+   {
+    "file": "screenshots/kypulse-07-after-backup-desktop-dark.png",
+    "prior_file": "screenshots/kypulse-06-after-backup-desktop-dark.png",
+    "prior_total": "7.9",
+    "total": "7.5",
+    "delta": "-0.4",
+    "cause": "correction",
+    "explanation": "product change (four panel wrappers removed, 34.9% pixels changed) plus reviewer judgment: Co 7->8 credits the flat surface; H 8->7 and D 8->7 are judgment on competing actions and unequal setup-column ends (overlaps owner-designated taste); C 8->7 is a correction: round 6 called the notice 'danger', but pixels and computed style are --ky-accent"
+   },
+   {
+    "file": "screenshots/kypulse-07-after-backup-desktop-light.png",
+    "prior_file": "screenshots/kypulse-06-after-backup-desktop-light.png",
+    "prior_total": "7.9",
+    "total": "7.5",
+    "delta": "-0.4",
+    "cause": "correction",
+    "explanation": "product change (four panel wrappers removed, 34.9% pixels changed) plus reviewer judgment: Co 7->8 credits the flat surface; H 8->7 and D 8->7 are judgment on competing actions and unequal setup-column ends (overlaps owner-designated taste); C 8->7 is a correction: round 6 called the notice 'danger', but pixels and computed style are --ky-accent"
+   },
+   {
+    "file": "screenshots/kypulse-07-after-backup-mobile-dark.png",
+    "prior_file": "screenshots/kypulse-06-after-backup-mobile-dark.png",
+    "prior_total": "8.0",
+    "total": "7.7",
+    "delta": "-0.3",
+    "cause": "correction",
+    "explanation": "product change (wrappers removed, 47.0% pixels changed); D 8->7 judgment on two long stacked setup explanations; C 8->7 correction: notice outline is --ky-accent, not danger as I wrote in round 6"
+   },
+   {
+    "file": "screenshots/kypulse-07-after-backup-mobile-light.png",
+    "prior_file": "screenshots/kypulse-06-after-backup-mobile-light.png",
+    "prior_total": "8.0",
+    "total": "7.7",
+    "delta": "-0.3",
+    "cause": "correction",
+    "explanation": "product change (wrappers removed, 47.0% pixels changed); D 8->7 judgment on two long stacked setup explanations; C 8->7 correction: notice outline is --ky-accent, not danger as I wrote in round 6"
+   },
+   {
+    "file": "screenshots/kypulse-07-after-logs-desktop-dark.png",
+    "prior_file": null,
+    "prior_total": null,
+    "total": "7.7",
+    "delta": null,
+    "cause": "coverage",
+    "explanation": "new default-collapsed disclosure state; no matched round-6 capture"
+   },
+   {
+    "file": "screenshots/kypulse-07-after-logs-desktop-light.png",
+    "prior_file": null,
+    "prior_total": null,
+    "total": "7.7",
+    "delta": null,
+    "cause": "coverage",
+    "explanation": "new default-collapsed disclosure state; no matched round-6 capture"
+   },
+   {
+    "file": "screenshots/kypulse-07-after-logs-filters-desktop-dark.png",
+    "prior_file": "screenshots/kypulse-06-after-logs-desktop-dark.png",
+    "prior_total": "8.0",
+    "total": "8.0",
+    "delta": "0.0",
+    "cause": "none",
+    "explanation": "expanded filters compared with round-6 always-visible filters"
+   },
+   {
+    "file": "screenshots/kypulse-07-after-logs-filters-desktop-light.png",
+    "prior_file": "screenshots/kypulse-06-after-logs-desktop-light.png",
+    "prior_total": "8.0",
+    "total": "8.0",
+    "delta": "0.0",
+    "cause": "none",
+    "explanation": "expanded filters compared with round-6 always-visible filters"
+   },
+   {
+    "file": "screenshots/kypulse-07-after-logs-filters-mobile-dark.png",
+    "prior_file": "screenshots/kypulse-06-after-logs-mobile-dark.png",
+    "prior_total": "7.8",
+    "total": "7.8",
+    "delta": "0.0",
+    "cause": "none",
+    "explanation": "expanded filters compared with round-6 always-visible filters"
+   },
+   {
+    "file": "screenshots/kypulse-07-after-logs-filters-mobile-light.png",
+    "prior_file": "screenshots/kypulse-06-after-logs-mobile-light.png",
+    "prior_total": "7.8",
+    "total": "7.8",
+    "delta": "0.0",
+    "cause": "none",
+    "explanation": "expanded filters compared with round-6 always-visible filters"
+   },
+   {
+    "file": "screenshots/kypulse-07-after-logs-mobile-dark.png",
+    "prior_file": null,
+    "prior_total": null,
+    "total": "7.7",
+    "delta": null,
+    "cause": "coverage",
+    "explanation": "new default-collapsed disclosure state; no matched round-6 capture"
+   },
+   {
+    "file": "screenshots/kypulse-07-after-logs-mobile-light.png",
+    "prior_file": null,
+    "prior_total": null,
+    "total": "7.7",
+    "delta": null,
+    "cause": "coverage",
+    "explanation": "new default-collapsed disclosure state; no matched round-6 capture"
+   },
+   {
+    "file": "screenshots/kypulse-07-after-settings-desktop-dark.png",
+    "prior_file": "screenshots/kypulse-06-after-settings-desktop-dark.png",
+    "prior_total": "8.0",
+    "total": "8.0",
+    "delta": "0.0",
+    "cause": "none",
+    "explanation": ""
+   },
+   {
+    "file": "screenshots/kypulse-07-after-settings-desktop-light.png",
+    "prior_file": "screenshots/kypulse-06-after-settings-desktop-light.png",
+    "prior_total": "8.0",
+    "total": "8.0",
+    "delta": "0.0",
+    "cause": "none",
+    "explanation": ""
+   },
+   {
+    "file": "screenshots/kypulse-07-after-settings-mobile-dark.png",
+    "prior_file": "screenshots/kypulse-06-after-settings-mobile-dark.png",
+    "prior_total": "8.0",
+    "total": "8.0",
+    "delta": "0.0",
+    "cause": "none",
+    "explanation": ""
+   },
+   {
+    "file": "screenshots/kypulse-07-after-settings-mobile-light.png",
+    "prior_file": "screenshots/kypulse-06-after-settings-mobile-light.png",
+    "prior_total": "8.0",
+    "total": "8.0",
+    "delta": "0.0",
+    "cause": "none",
+    "explanation": ""
+   },
+   {
+    "file": "screenshots/kypulse-07-after-status-desktop-dark.png",
+    "prior_file": "screenshots/kypulse-06-after-status-desktop-dark.png",
+    "prior_total": "8.0",
+    "total": "8.0",
+    "delta": "0.0",
+    "cause": "none",
+    "explanation": ""
+   },
+   {
+    "file": "screenshots/kypulse-07-after-status-desktop-light.png",
+    "prior_file": "screenshots/kypulse-06-after-status-desktop-light.png",
+    "prior_total": "8.0",
+    "total": "8.0",
+    "delta": "0.0",
+    "cause": "none",
+    "explanation": ""
+   },
+   {
+    "file": "screenshots/kypulse-07-after-status-mobile-dark.png",
+    "prior_file": "screenshots/kypulse-06-after-status-mobile-dark.png",
+    "prior_total": "8.0",
+    "total": "8.0",
+    "delta": "0.0",
+    "cause": "none",
+    "explanation": ""
+   },
+   {
+    "file": "screenshots/kypulse-07-after-status-mobile-light.png",
+    "prior_file": "screenshots/kypulse-06-after-status-mobile-light.png",
+    "prior_total": "8.0",
+    "total": "8.0",
+    "delta": "0.0",
+    "cause": "none",
+    "explanation": ""
+   }
+  ],
+  "summary": {
+   "admin_common_state": {
+    "n": 20,
+    "round7_exact_mean": "7.92",
+    "round7_fraction": "198/25",
+    "round6_exact_mean": "7.96",
+    "drift": "-0.04",
+    "note": "matched files only; Logs/Activity round 7 expanded vs round 6 always-visible"
+   },
+   "settings_common_state": {
+    "n": 12,
+    "round7_exact_mean": "7.933333333333333333333333333",
+    "round7_fraction": "119/15",
+    "round6_exact_mean": "7.983333333333333333333333333",
+    "drift": "-0.050000000000000000000000000",
+    "note": "matched files only; Logs/Activity round 7 expanded vs round 6 always-visible"
+   },
+   "coverage": "round 6: 32 originals (20 admin, 12 settings); round 7: 40 (28 admin, 12 settings); +8 collapsed admin files with no prior",
+   "competitor": "N/A (no competitor files)",
+   "caution": "Retained-screen changes are reviewer variation, never product gain; the cohort-wide drop from 7.96 to 7.857 is mostly the added collapsed coverage, not a regression claim"
+  }
+ },
+ "gates": {
+  "keyboard": "untested (supplement only)",
+  "focus": "untested (supplement only)",
+  "contrast": "untested",
+  "states": "untested",
+  "responsive": "untested"
+ },
+ "unscored": [],
+ "native_supplemental": {
+  "tab": "own incognito tab (reuseExistingTab:false), closed afterwards",
+  "ua": "Mozilla/5.0 (X11; Linux x86_64) ... Chrome/154.0.0.0 Safari/537.36",
+  "dpr": 2,
+  "note": "Differs from Chromium 153 / DPR 1 originals; supplemental only, never replaces an original.",
+  "backup_notice_1280": {
+   "selector": ".dr-alert-warn",
+   "border": "rgb(191, 63, 24) = --ky-accent #bf3f18",
+   "background": "rgb(251, 240, 236) (accent-soft)",
+   "tokens": {
+    "--ky-danger": "#b42318",
+    "--ky-warning": "#875b12"
+   },
+   "source": "web/src/styles/theme.css:326 at 1657c1b",
+   "panels_in_main": 0,
+   "navCount": 1
+  },
+  "logs_disclosure_1280": {
+   "initial_open": false,
+   "summary": "Filters, 14px/500, list-style disclosure-closed, 976x40 box",
+   "keyboard": "focus summary + Enter opened it; focus stayed on SUMMARY",
+   "focus_outline": "rgb(191, 63, 24) solid 2px offset 2px",
+   "draft": "typed Literal text 'zz-none': summary stays 'Filters'",
+   "applied": "Apply -> 'Filters Applied' (Applied 13px muted ink, no fill)",
+   "close_reopen": "closed keeps 'Filters Applied'; reopened values ['','','zz-none','',''] and result unchanged",
+   "clear": "Clear -> summary 'Filters'"
+  },
+  "phone_390x844": {
+   "logs": "navCount 1, overflowX 0, summary 40px tall; Logs current item [190.5,271] inside nav [16,374] at 100/500/1500 ms after route change",
+   "activity": "collapsed, result bottom 491, current item inside",
+   "backup": "current item inside, overflowX 0",
+   "transient": "one measurement taken immediately after resizing the open #/logs page from 1280 to 390 reported the Logs item outside the nav; a second resize repro and route re-entry showed it inside. Unproven, not a capture condition, not scored or claimed as a defect."
+  },
+  "saved_theme": "null before and after; data-theme busnes-light; appearance emulation reset to system",
+  "not_done": "no pair/pin/backup/silence/edit/delete/configuration actions"
+ },
+ "sensitivity": [
+  {
+   "change": "as frozen",
+   "means": {
+    "admin-console": "7.857142857142857142857142857",
+    "settings": "7.933333333333333333333333333"
+   }
+  },
+  {
+   "change": "E1 fixed: Backup notice off accent (C 7->8 on 4 Backup files)",
+   "means": {
+    "admin-console": "7.857142857142857142857142857",
+    "settings": "7.966666666666666666666666667"
+   }
+  },
+  {
+   "change": "collapsed disclosure reads as a control (A 7->8 on 8 collapsed files)",
+   "means": {
+    "admin-console": "7.885714285714285714285714286",
+    "settings": "7.933333333333333333333333333"
+   }
+  },
+  {
+   "change": "Backup desktop D 7->8 (drop the taste-overlapping unequal-column deduction)",
+   "means": {
+    "admin-console": "7.857142857142857142857142857",
+    "settings": "7.966666666666666666666666667"
+   }
+  },
+  {
+   "change": "all three above",
+   "means": {
+    "admin-console": "7.885714285714285714285714286",
+    "settings": "8.0"
+   }
+  }
+ ],
+ "verdict": {
+  "scope": "visual8 progression gate only; not full-product 8, not 9 Accept; behaviour gates untested",
+  "satisfied": false,
+  "cohorts": {
+   "admin-console": {
+    "satisfied": false,
+    "exact_mean": "7.857142857142857142857142857",
+    "exact_fraction": "55/7",
+    "threshold": ">= 8.0 exact, no rounding"
+   },
+   "settings": {
+    "satisfied": false,
+    "exact_mean": "7.933333333333333333333333333",
+    "exact_fraction": "119/15",
+    "threshold": ">= 8.0 exact, no rounding"
+   }
+  },
+  "evidence_backed_defects": [
+   {
+    "id": "E1",
+    "cohort": "settings",
+    "files": [
+     "backup-desktop-light",
+     "backup-desktop-dark",
+     "backup-mobile-light",
+     "backup-mobile-dark"
+    ],
+    "observation": "The 'No backups are being made' notice is outlined in --ky-accent (pixel #bf3f18 light / #f5865f dark; computed border rgb(191,63,24)) over accent-soft fill, via .dr-alert-warn at web/src/styles/theme.css:326.",
+    "contract": "design-contract Color roles: orange is reserved for the single primary, selection and focus; status uses --ky-warning/--ky-danger with text.",
+    "fix": "Point .dr-alert-warn at the existing warning (or danger) status alias instead of accent; no copy, route or behaviour change.",
+    "history": "Retained from earlier rounds, not a round-7 regression; my round 6 misread it as danger."
+   }
+  ],
+  "remaining_judgment_deductions": [
+   {
+    "id": "J1",
+    "cohort": "admin-console",
+    "files": "logs/activity collapsed x8",
+    "kind": "judgment",
+    "observation": "Collapsed 'Filters' is a bare triangle + 14px text with no control shape and no filled action in view (H7, A7). Natively the hit area is a 40px full-width row with a visible 2px accent focus ring, so this is visual affordance only."
+   },
+   {
+    "id": "J2",
+    "cohort": "admin-console",
+    "files": "logs/activity filters mobile x4",
+    "kind": "retained layout judgment",
+    "observation": "Expanded phone stack (2 half + 3 full-width fields) pushes the result to the viewport bottom; Activity's continues below the fold (normal scroll). Same D7 as round 6; the rejected paired-date option is not reopened."
+   },
+   {
+    "id": "J3",
+    "cohort": "settings",
+    "files": "backup-desktop x2",
+    "kind": "judgment; partly overlaps owner taste",
+    "observation": "Refresh, Pin key and a three-button row headed 'Back up now' (same label as its button) compete with Pair (H7); unequal setup-column ends leave space under Pair (D7, overlaps the designated unequal-heights taste item)."
+   },
+   {
+    "id": "J4",
+    "cohort": "admin-console",
+    "files": "alerts-mobile x2, app-detail-desktop x2",
+    "kind": "reviewer variation on unchanged screens",
+    "observation": "Per-alert title emphasis (H7) and app-detail section rhythm (D7) scored lower than my round 6 on pixels that changed only in live chronology."
+   }
+  ],
+  "taste_not_scored_down": [
+   "persistent incident band repeating newest incidents",
+   "phone chronology wraps",
+   "unequal Backup setup heights (beyond J3 disclosure)",
+   "Settings card panels vs flat Backup surface",
+   "Status description orphan 'controls.'"
+  ],
+  "gemini": "must wait: Opus not satisfied in either cohort"
+ }
+}
