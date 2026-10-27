@@ -7,6 +7,7 @@ import (
 	"log/slog"
 	"net/http"
 	"strings"
+	"time"
 
 	"github.com/Busnes-app/ky-primitives/logging"
 	"github.com/Busnes-app/kypulse-server/internal/crypto"
@@ -109,7 +110,11 @@ func (s *Server) handleKySignOnCallback(w http.ResponseWriter, r *http.Request) 
 		return
 	}
 
-	_, _, err = s.sessions.IssueSession(r.Context(), w, r, user)
+	_, _, err = s.sessions.IssueSSOSession(r.Context(), w, r, user, claims.SessionID, claims.IssuedAt)
+	if errors.Is(err, store.ErrSSOSessionEnded) {
+		s.writeError(w, http.StatusUnauthorized, "SSO session already ended")
+		return
+	}
 	if err != nil {
 		s.writeError(w, http.StatusInternalServerError, "Session creation failed")
 		return
@@ -146,6 +151,34 @@ func (s *Server) handleKySignOnSyncWebhook(w http.ResponseWriter, r *http.Reques
 	}
 
 	s.writeJSON(w, http.StatusOK, map[string]bool{"synced": true})
+}
+
+// ssoLogoutFence outlives the 5-minute login callback window, so a logout that lands
+// while the browser is still finishing that login also ends it.
+const ssoLogoutFence = 10 * time.Minute
+
+// handleKySignOnBackchannelLogout is the OpenID Connect Back-Channel Logout receiver: KySignOn
+// POSTs a signed logout_token when a login ends, and every local session of it ends here.
+func (s *Server) handleKySignOnBackchannelLogout(w http.ResponseWriter, r *http.Request) {
+	r.Body = http.MaxBytesReader(w, r.Body, 16<<10)
+	claims, err := s.kysignon.VerifyLogoutToken(r.Context(), r.PostFormValue("logout_token"))
+	if err != nil {
+		s.writeError(w, http.StatusBadRequest, "invalid_request")
+		return
+	}
+	fenceUntil := time.Now().Add(ssoLogoutFence)
+	if claims.SessionID != "" {
+		err = s.store.Sessions().EndSSOSession(r.Context(), claims.SessionID, fenceUntil)
+	} else {
+		// iat has whole-second precision: round up so a login from that same second ends too.
+		err = s.store.Sessions().EndSSOSubject(r.Context(), "kysignon", claims.Subject, claims.IssuedAt.Add(time.Second), fenceUntil)
+	}
+	if err != nil {
+		s.writeError(w, http.StatusInternalServerError, "logout failed")
+		return
+	}
+	s.audit(r.Context(), "", r, "auth.sso_backchannel_logout", "session", "")
+	w.WriteHeader(http.StatusOK)
 }
 
 func (s *Server) handleSAMLMetadata(w http.ResponseWriter, r *http.Request) {
