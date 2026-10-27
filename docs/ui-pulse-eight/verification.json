@@ -1,75 +1,37 @@
 {
-  "product_source": "39840441429f2f8f336f1046a07d908e7b301722",
+  "product_source": "1bf757d0e0135a889bf452d4290f3f6e6c118f41",
   "shared_source": "58626b7",
-  "status": "Round3 browser,SQLite FIPS and PostgreSQL FIPS in flight; frontend/makeci/Docker/repeatable builds pass. No visual8 progression yet.",
+  "status": "Round4 frontend/build/makeci and scoped layout verification pass. Fresh full remote CI and security gates will run at the pushed head. Historical round3 full checks are not claimed as fresh round4 executions.",
   "checks": {
     "frontend": {
       "status": "pass",
-      "evidence": "checks/r3-frontend.txt",
-      "raw_sha256": "b2e8be8bea20a628acef3433cb0848511cfbabe6ca279310dd379f94f3024af4",
-      "sha256": "b2e8be8bea20a628acef3433cb0848511cfbabe6ca279310dd379f94f3024af4"
+      "evidence": "checks/r4-frontend.txt",
+      "sha256": "4204cb845d40acf58482af3273696ee559ceb992840d6bcdd351f96d8bc0b4a8",
+      "raw_sha256": "4204cb845d40acf58482af3273696ee559ceb992840d6bcdd351f96d8bc0b4a8"
     },
     "make_ci": {
       "status": "pass",
-      "evidence": "checks/r3-make_ci.txt",
-      "raw_sha256": "51221af4b19cdd5bd088ed426e7590b1940a1b572a1721c8a86249df3e033248",
-      "sha256": "51221af4b19cdd5bd088ed426e7590b1940a1b572a1721c8a86249df3e033248"
-    },
-    "docker_build": {
-      "status": "pass",
-      "evidence": "checks/r3-docker_build.txt",
-      "raw_sha256": "0c081411381d34f66038498fefbfd21d615633e35c2d15c2a9055a6d9008ec09",
-      "sha256": "20edb4804b888cdac2e07940f4c4b2e458628c373b5ddfe834950149824f9ea9"
+      "evidence": "checks/r4-make_ci.txt",
+      "sha256": "b9a8fd47f5f0693be12955649b9cf5caf0af1fd3c0a6a16223bd3e1a4b5b6d13",
+      "raw_sha256": "b9a8fd47f5f0693be12955649b9cf5caf0af1fd3c0a6a16223bd3e1a4b5b6d13"
     },
     "impeccable": {
-      "status": "reported2pinned-style findings; regex-only scan",
-      "evidence": "checks/r3-impeccable.txt",
-      "raw_sha256": "6a2d1b9c8d8665e08c7471d8f987e29c784f4edb5a7f28595d84f431fa508429",
-      "sha256": "6a2d1b9c8d8665e08c7471d8f987e29c784f4edb5a7f28595d84f431fa508429"
+      "status": "reported2pinned-style findings",
+      "evidence": "checks/r4-impeccable.txt",
+      "sha256": "6a2d1b9c8d8665e08c7471d8f987e29c784f4edb5a7f28595d84f431fa508429",
+      "raw_sha256": "6a2d1b9c8d8665e08c7471d8f987e29c784f4edb5a7f28595d84f431fa508429"
     },
-    "shared_check": {
+    "backup_geometry": {
       "status": "pass",
-      "evidence": "checks/r3-shared_check.txt",
-      "raw_sha256": "8d2bb06e052e6800efbc514d9ae2a10af940a6bec2f5cb761011a05e2392af1b",
-      "sha256": "8d2bb06e052e6800efbc514d9ae2a10af940a6bec2f5cb761011a05e2392af1b"
-    },
-    "shared_browser": {
-      "status": "pass",
-      "evidence": "checks/r3-shared_browser.txt",
-      "raw_sha256": "8bed49fdb063695206666c652d970bc4438a0d2b9655894925ae45a6787924e5",
-      "sha256": "8bed49fdb063695206666c652d970bc4438a0d2b9655894925ae45a6787924e5"
-    },
-    "runtime": {
-      "status": "pass",
-      "evidence": "checks/r3-runtime.json",
-      "sha256": "75b386cd896e41c59b45dc4d3e53c0572d0fc3d644039c3d987d6cf574234b91"
-    },
-    "repeatable": {
-      "status": "pass",
-      "evidence": "checks/r3-repeatable.json",
-      "sha256": "8db88dccd95e75f29a1145c24561dc5b4f3341d62d524f7b324586a6b889e0de"
-    },
-    "fips": {
-      "status": "in flight",
-      "log": "/tmp/kypulse-eight-r3-fips.log"
-    },
-    "postgres": {
-      "status": "in flight",
-      "log": "/tmp/kypulse-eight-r3-postgres.log"
-    },
-    "browser": {
-      "status": "in flight",
-      "log": "/tmp/kypulse-eight-r3-browser.log"
+      "evidence": "geometry-round4.json",
+      "result": "334.5px/416px natural-height cards; no detached icon; no overflow; one primary navigation region"
     }
   },
-  "retained_checks": {
-    "fuzz_shellcheck": "Round2 pass retained: parser and shell inputs unchanged. See verification-round2.json.",
-    "govulncheck_npm_audit_module_verification": "Round2 pass retained: dependencies/backend imports unchanged. CI runs fresh on the pushed head."
-  },
+  "retained_checks": "Parsers/dependencies/backend logic unchanged; historical checks are in verification-round3.json. Full FIPS/Postgres/browser/Docker/repeatable gates must pass freshly in remote CI before hand-back.",
   "limitations": [
-    "Admin initial-viewport screenshot coverage only, no full behavior acceptance.",
-    "Native Chrome152 differs from scored Chromium153.",
-    "No merge/deployment.",
-    "MySlop401 unknown/revoked token; board posting unavailable."
+    "Only Backup markup/decorative icon and scoped card alignment changed. No data/route/handler/role changes.",
+    "Normal source detector reports2prescribed-style findings; regex-only, not accessibility acceptance.",
+    "Native T3 browser click/wait calls timed out twice; repository Playwright fallback verified geometry on the owned fixture.",
+    "No merge/deploy; MySlop401 still blocks board posting."
   ]
 }

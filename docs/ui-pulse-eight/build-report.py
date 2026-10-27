@@ -102,7 +102,7 @@ latest_round = max([1,*[n for _,n in reports],*[json.loads(path.read_text()).get
 for number in range(1,latest_round+1):
     for name,label in [('opus','Claude Opus5.5'),('sol','GPTSol'),('gemini','Gemini4Argon')]:
         r=reports.get((name,number))
-        vals=[str(rounded(r['means'][c])) if r and c in r['means'] else ('Deferred' if name=='gemini' else 'Pending') for c in ['admin-console','settings']]
+        vals=[(f"{r['means'][c]:.4f} (<8)" if r['means'][c] < 8 <= rounded(r['means'][c]) else str(rounded(r['means'][c]))) if r and c in r['means'] else ('Deferred' if name=='gemini' else 'Pending') for c in ['admin-console','settings']]
         satisfied=str(r['report'].get('verdict',{}).get('satisfied')) if r else '—'
         markdown.append(f'| {number} | {label} | {vals[0]} | {vals[1]} | {satisfied} |')
 markdown += ['', 'Baseline exact means: Opus6.28/6.95; Sol7.39/8.00. The Sol Status transcription caveat remains in its raw report. Parent reinspection retained independent scores. No provider-level or cross-cohort mean is used.','','See KyPulse-Council.xlsx for dimensions, hashes, evidence, spreads and checks. Original reviewer reports remain unchanged.']

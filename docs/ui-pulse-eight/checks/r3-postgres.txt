@@ -1,0 +1,46 @@
+POSTGRES MODE normal
+ok  	github.com/Busnes-app/kypulse-server/cmd/kypulse-send	25.221s
+ok  	github.com/Busnes-app/kypulse-server/cmd/server	6.041s
+ok  	github.com/Busnes-app/kypulse-server/internal/alerts	1.024s
+ok  	github.com/Busnes-app/kypulse-server/internal/api	135.648s
+ok  	github.com/Busnes-app/kypulse-server/internal/appversion	1.119s
+ok  	github.com/Busnes-app/kypulse-server/internal/auth	1.226s
+ok  	github.com/Busnes-app/kypulse-server/internal/backup	15.712s
+ok  	github.com/Busnes-app/kypulse-server/internal/config	1.204s
+ok  	github.com/Busnes-app/kypulse-server/internal/crypto	1.122s
+ok  	github.com/Busnes-app/kypulse-server/internal/egress	1.669s
+ok  	github.com/Busnes-app/kypulse-server/internal/ingest	1.207s
+ok  	github.com/Busnes-app/kypulse-server/internal/kyyard	19.796s
+ok  	github.com/Busnes-app/kypulse-server/internal/logstore	1.247s
+ok  	github.com/Busnes-app/kypulse-server/internal/monitor	21.036s
+ok  	github.com/Busnes-app/kypulse-server/internal/notify	2.220s
+ok  	github.com/Busnes-app/kypulse-server/internal/poller	1.365s
+ok  	github.com/Busnes-app/kypulse-server/internal/sender	7.435s
+ok  	github.com/Busnes-app/kypulse-server/internal/sso	3.945s
+ok  	github.com/Busnes-app/kypulse-server/internal/store	37.207s
+?   	github.com/Busnes-app/kypulse-server/internal/store/migrations	[no test files]
+?   	github.com/Busnes-app/kypulse-server/internal/testdb	[no test files]
+?   	github.com/Busnes-app/kypulse-server/web	[no test files]
+POSTGRES MODE fips140=on
+ok  	github.com/Busnes-app/kypulse-server/cmd/kypulse-send	25.232s
+ok  	github.com/Busnes-app/kypulse-server/cmd/server	5.323s
+ok  	github.com/Busnes-app/kypulse-server/internal/alerts	1.027s
+ok  	github.com/Busnes-app/kypulse-server/internal/api	118.626s
+ok  	github.com/Busnes-app/kypulse-server/internal/appversion	1.018s
+ok  	github.com/Busnes-app/kypulse-server/internal/auth	1.782s
+ok  	github.com/Busnes-app/kypulse-server/internal/backup	13.005s
+ok  	github.com/Busnes-app/kypulse-server/internal/config	1.617s
+ok  	github.com/Busnes-app/kypulse-server/internal/crypto	1.633s
+ok  	github.com/Busnes-app/kypulse-server/internal/egress	2.100s
+ok  	github.com/Busnes-app/kypulse-server/internal/ingest	1.028s
+ok  	github.com/Busnes-app/kypulse-server/internal/kyyard	14.356s
+ok  	github.com/Busnes-app/kypulse-server/internal/logstore	1.034s
+ok  	github.com/Busnes-app/kypulse-server/internal/monitor	17.078s
+ok  	github.com/Busnes-app/kypulse-server/internal/notify	2.031s
+ok  	github.com/Busnes-app/kypulse-server/internal/poller	1.231s
+ok  	github.com/Busnes-app/kypulse-server/internal/sender	6.773s
+ok  	github.com/Busnes-app/kypulse-server/internal/sso	4.041s
+ok  	github.com/Busnes-app/kypulse-server/internal/store	25.909s
+?   	github.com/Busnes-app/kypulse-server/internal/store/migrations	[no test files]
+?   	github.com/Busnes-app/kypulse-server/internal/testdb	[no test files]
+?   	github.com/Busnes-app/kypulse-server/web	[no test files]

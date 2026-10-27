@@ -1,0 +1,28 @@
+npm notice run pretest
+npm notice run node src/ky-ui/check-vendor.mjs
+ky-ui 0.4.3: vendor files verified
+npm notice run test
+npm notice run vitest run
+
+ RUN  v5.0.5 /home/yoshi/git/busnes.app/kyPulse-server/.claude/worktrees/ui-pulse-eight/web
+
+
+ Test Files  19 passed (19)
+      Tests  96 passed (96)
+   Start at  01:29:03
+   Duration  3.01s (environment 55%, tests 25%, import 14%, transform 5%)
+
+npm notice run prebuild
+npm notice run node src/ky-ui/check-vendor.mjs
+ky-ui 0.4.3: vendor files verified
+npm notice run build
+npm notice run tsc -b && vite build
+vite v6.4.5 building for production...
+transforming...
+✓ 1840 modules transformed.
+rendering chunks...
+computing gzip size...
+dist/index.html                   0.57 kB │ gzip:  0.34 kB
+dist/assets/index-D2l7r6rd.css   31.06 kB │ gzip:  6.60 kB
+dist/assets/index-DNuWKZSC.js   299.26 kB │ gzip: 90.42 kB
+✓ built in 1.01s

@@ -1,0 +1,15 @@
+{
+  "round": 3,
+  "raw_reports": {
+    "opus-round3.md": "b2474cffd8d884c2fb12c40208065fe2808cffe8b19ac599dbf88524a1be8886",
+    "opus-round3.json": "87ac2dcc534d08ba15d67065a8d649b6df116145d27e4f712215dffa00408b90",
+    "sol-round3.md": "9d5afb6d1d0bece5f03a8d0eeb058ef48594c37a226f104784e953c54ae94db3",
+    "sol-round3.json": "12bc517d57f9abb6d7f8b2ccd28161594857a2bbaf50b39d258f4373c3ef4a38"
+  },
+  "arithmetic": "Fixed rubric and32rows per reviewer validate. Opus corrected admin8.00, settings95.6/12=7.966666666666667; Sol admin8.26, settings98.6/12=8.216666666666667. No averaging. Settings has NOT reached8 for Opus.",
+  "spreads_at_least2": {},
+  "post_freeze_correction": "Opus app-detail typography7->8 on4images after verifying Down is proportional Space Grotesk20px/700, not mono; original7.9/image retained. Admin mean7.98->8.00. Corrected final score retained with explicit blinding/sensitivity caveat.",
+  "reviewer_drift": "Opus desktop Alerts+0.3 mostly judgment/control; applying its prior judgment yields admin7.97. No new product improvement claimed from that drift.",
+  "parent_findings": "Both original Backup desktop images inspected; native fixture confirms icon block and equally stretched434px cards. Fix these two supported Backup layout issues only; no other P3 scope expansion.",
+  "next": "Round4fresh originals and independent reviews; Gemini remains deferred."
+}
