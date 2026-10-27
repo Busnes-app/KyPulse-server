@@ -3,6 +3,7 @@
 // `go build -o .browser/server ./cmd/server`:
 //   node docs/ui-pulse-eight/capture.mjs <stage nn> <before|after>
 import { createHash } from 'node:crypto';
+import { readFileSync } from 'node:fs';
 import { createServer } from 'node:http';
 import { createRequire } from 'node:module';
 import { connect } from 'node:net';
@@ -77,7 +78,7 @@ function worktreeHash() {
   const untracked = git('ls-files', '--others', '--exclude-standard', '-z', '--', '.', evidence).toString().split('\0').filter(Boolean);
   if (!tracked.length && !untracked.length) return null;
   const h = createHash('sha256').update(tracked);
-  for (const file of untracked.sort()) h.update(file).update(execFileSync('cat', [join(root, file)]));
+  for (const file of untracked.sort()) h.update(file).update(readFileSync(join(root, file)));
   return h.digest('hex');
 }
 
@@ -150,7 +151,7 @@ try {
     fonts: `self-hosted Space Grotesk bundled in web/dist; ${fonts}`,
     server: 'disposable .browser/server embedding this web/dist; owned temporary SQLite data; KEEP_FIXTURE=1 retains it for Computer Use until SIGTERM',
     served_index_sha256: sha(Buffer.from(await (await fetch(base + '/')).arrayBuffer())),
-    source_files: Object.fromEntries(['web/src/App.tsx', 'web/src/components/AlertBar.tsx', 'web/src/components/AppHeader.tsx', 'web/src/components/LogSources.tsx', 'web/src/components/TwoFactorCard.tsx', 'web/src/components/WebhookForm.tsx', 'web/src/components/KyYardCard.tsx', 'web/src/pages/Logs.tsx', 'web/src/pages/Activity.tsx', 'web/src/pages/Settings.tsx', 'web/src/pages/Backup.tsx', 'web/src/pages/Status.tsx', 'web/src/pages/AppDetail.tsx', 'web/src/pages/Alerts.tsx', 'web/src/pages/Appearance.tsx', 'web/src/styles/theme.css', 'web/src/ky-ui/VERSION', 'web/package-lock.json', 'web/dist/index.html'].map(file => [file, sha(execFileSync('cat', [join(root, file)]))])),
+    source_files: Object.fromEntries(['web/src/App.tsx', 'web/src/components/AlertBar.tsx', 'web/src/components/AppHeader.tsx', 'web/src/components/LogSources.tsx', 'web/src/components/TwoFactorCard.tsx', 'web/src/components/WebhookForm.tsx', 'web/src/components/KyYardCard.tsx', 'web/src/pages/Logs.tsx', 'web/src/pages/Activity.tsx', 'web/src/pages/Settings.tsx', 'web/src/pages/Backup.tsx', 'web/src/pages/Status.tsx', 'web/src/pages/AppDetail.tsx', 'web/src/pages/Alerts.tsx', 'web/src/pages/Appearance.tsx', 'web/src/styles/theme.css', 'web/src/ky-ui/VERSION', 'web/package-lock.json', 'web/dist/index.html'].map(file => [file, sha(readFileSync(join(root, file)))])),
     fixture: 'synthetic: admin account; three watched apps (Billing API ok, Mail relay degraded, Backup agent down) served by a capture-owned fake health endpoint on a private bridge address. Durations and timestamps are live and differ between runs',
     shots,
     checks,
