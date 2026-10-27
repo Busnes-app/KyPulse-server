@@ -1,0 +1,40 @@
+{
+  "round": 13,
+  "runtime_source": "699d201c8f3831c225fe4ba61d4ce2349882e2e1",
+  "raw_reports": {
+    "opus-round13.md": "3c594b6c99c799e770ef68eafeb146f3ac73d0c4d97d1b93653900ac6e633fd9",
+    "opus-round13.json": "b15bba4a1b45e27a74caa38912782474d9adf0b7e4ee51da41da5c07ceb65b63",
+    "sol-round13.md": "2190ebcd04fe61a68c44587a1e512cacc13c2e72dcdcc1669c42635b980c9b20",
+    "sol-round13.json": "01b2bb9657524770e451c8129bf8286f2d879c0dfe585f8299efffb4b3929236"
+  },
+  "cohorts": {
+    "opus": {
+      "admin-console": {
+        "n": 28,
+        "sum": "224.0",
+        "exact_mean": "8"
+      },
+      "settings": {
+        "n": 12,
+        "sum": "95.8",
+        "exact_mean": "479/60"
+      }
+    },
+    "sol": {
+      "admin-console": {
+        "n": 28,
+        "sum": "236.8",
+        "exact_mean": "296/35"
+      },
+      "settings": {
+        "n": 12,
+        "sum": "101.2",
+        "exact_mean": "253/30"
+      }
+    }
+  },
+  "next": "Align .badge with the shared13px meta token. Use a prospectively declared focused unblinded confirmation against each own immediately preceding R13 report; inspect all new originals, carry unaffected ratings forward, reassess actual affected dimensions/regressions. No threshold waiver, best-of-history selection, competitive rerank or rewritten baseline. Gemini deferred.",
+  "spreads_at_least2": [],
+  "method_reason": "Repeated full fresh ratings keep introducing deductions on unchanged pixels. A bounded fix-verification mode freezes the latest baseline prospectively while retaining reviewer discretion over actual changes/new regressions and honest satisfaction. All old reports remain immutable; new R14 numbers are explicitly mixed carried-forward and reassessed observations, not a new blind ranking.",
+  "discarded_summary_sensitivity": "The Opus terminal summary mentions96.4 as a hypothetical sum after raising two Backup desktop typography dimensions. Its own rounded table instead implies95.8+2*(8.0-7.9)=96.0. This unused sensitivity statement is not a score, repair or prediction; original95.8/12 remains frozen and unmet."
+}

@@ -1,32 +1,26 @@
 {
-  "product_source": "699d201c8f3831c225fe4ba61d4ce2349882e2e1",
+  "product_source": "f1dcb5553e2693ee997488e2a3bd4434b2bb4f1e",
   "shared_source": "58626b7",
-  "status": "Round13 source699d201 build/typecheck/makeci/native pass;40fresh originals/21pins/zero overflow/duplicates. Full local browser/current-head remote CI/security and primary reviews pending. Prior12 Opus admin559/70 remains below8; Gemini deferred.",
+  "status": "Round14 sourcef1dcb55 build/typecheck/makeci/native pass;40fresh originals/21pins/zero overflow/duplicates. Focused unblinded own-R13-baseline confirmations/full current browser/current-head remote gates pending. Gemini deferred.",
   "checks": {
     "build": {
       "status": "pass",
-      "evidence": "checks/r13-web.txt"
+      "evidence": "checks/r14-web.txt"
     },
     "make_ci": {
       "status": "pass",
-      "evidence": "checks/r13-ci.txt",
+      "evidence": "checks/r14-ci.txt",
       "result": "Tidy/vet/race/96frontend/real-server smoke pass;exit0."
     },
     "browser": {
       "status": "running",
-      "evidence": "/tmp/kypulse-r13-browser.log",
-      "exit_record": "/tmp/kypulse-r13-browser.exit"
-    },
-    "remote_previous": {
-      "head": "63df86c56e963fb9c74dbad581036000b5ad31d8",
-      "status": "ci-pass-security-pending",
-      "evidence": "checks/r12-remote.json",
-      "note": "Superseded by new source699d201; fresh exact-head gates required."
+      "evidence": "/tmp/kypulse-r14-browser.log",
+      "exit_record": "/tmp/kypulse-r14-browser.exit"
     },
     "native": {
       "status": "pass-scoped",
-      "evidence": "native-round13.json",
-      "result": "Desktop hints612px=72ch while source form976px; phone hints358px fit,one nav/no overflow/no saved choice; expanded Activity complete group824.5inside844."
+      "evidence": "native-round14.json",
+      "result": "All4Backup badges13px/no clipping at1280and390; one nav/zero document overflow/no saved theme. Not full acceptance."
     }
   },
   "retained_checks": "verification-round7.json/checks/r7-remote.json preserve remote CI success54fc13e (including clean browser completion), local assertions22pass6skips with wrapper143, and stale authored securityc976d40. These predate round8 source.",
