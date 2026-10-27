@@ -24,12 +24,14 @@
     "nav_before": {
       "status": "failed-as-expected",
       "evidence": "checks/r6-nav_before.txt",
-      "sha256": "c3c6a73799ad2034918aa7d6d9b1c9be1a2266f9a33ad9cd40ab1dd3ca2225d2",
-      "raw_sha256": "c3c6a73799ad2034918aa7d6d9b1c9be1a2266f9a33ad9cd40ab1dd3ca2225d2"
+      "sha256": "764590e7f6b91a5f34d6edbb6307b4e1f9a1dd35185a211cd29dcd7992db828c",
+      "raw_sha256": "c3c6a73799ad2034918aa7d6d9b1c9be1a2266f9a33ad9cd40ab1dd3ca2225d2",
+      "normalization": "ANSI escapes and trailing line whitespace removed; raw SHA256 retained."
     },
     "browser": {
       "status": "running",
-      "evidence": "/tmp/kypulse-r6-browser.log"
+      "evidence": "/tmp/kypulse-r6-browser.log",
+      "scoped_result": "Light-phone delayed-font regression and existing deep-link regression passed after the fix; full suite still running."
     },
     "native": {
       "status": "pass-scoped",
