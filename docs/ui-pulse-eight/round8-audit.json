@@ -1,0 +1,29 @@
+{
+  "round": 8,
+  "raw_reports": {
+    "opus-round8.md": "d27f1266d43680023b4364551c2734eca948368eabe3911b3870b216d230c70d",
+    "opus-round8.json": "355f83c25094017980748451571cc40a6f723b4383a16228b6ef154785f78305",
+    "sol-round8.md": "8a6bd22dc5a199c6fe66baad694c1e7ee81e2e9ae1b334c9a73b1f248c3f74da",
+    "sol-round8.json": "9aee27cec19370dda4266816302c7ce970e198f5117d42beb71fe272021c6320"
+  },
+  "spreads_at_least2": {
+    "kypulse-08-after-appearance-desktop-dark.png": {
+      "visible_affordances": [
+        7,
+        9
+      ]
+    },
+    "kypulse-08-after-appearance-mobile-dark.png": {
+      "visible_affordances": [
+        7,
+        9
+      ]
+    }
+  },
+  "arithmetic": "Both40-file memberships/pins and exact Decimal arithmetic validate. Opus222/28=7.928571429;95/12=7.916666667. Sol240/28=8.571428571;102/12=8.5. No pooling or threshold rounding.",
+  "resolved": "Both confirm semantic warning styling, outlined disclosure and full-width dates; complete expanded phone Activity result now fits inside844px. Neither names a remaining blocker-level defect.",
+  "dispute_reinspection": "Parent re-viewed both dark Appearance originals at full resolution plus representative Logs/detail/Backup/phone filter originals. Sample desktop native radio ring RGB124,125,125 vs card31,43,46 is3.524:1; interior59,59,59 is1.299:1 vs card. This one-ring image measurement is not full behavior/contrast acceptance and does not erase the subjective7vs9 spread.",
+  "diagnosis": "Repeated changes in retained-screen judgments are now driving additional scope. Hold product UI stable for an explicit unblinded calibration audit by both primaries; preserve all original scores and distinguish advice from a new rating.",
+  "next": "Two narrowly scoped calibration/dispute audits, no new numeric scoring or random re-review. Gemini remains deferred and the exact visual8 threshold remains unmet.",
+  "ci_obstacle": "Remote browser job40465525998 exceeded15min: setup-browser/dependency installation6m9s plus test suite still in final dark project at cancellation. Full local suite22pass6skips in8.6min/subprocess+wrapper0. Increase browser job budget20min, keeping per-test timeouts/assertions unchanged; fresh remote run required."
+}

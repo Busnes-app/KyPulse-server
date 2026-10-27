@@ -1,0 +1,13 @@
+{
+  "head": "a8b6e511217493ef7f9622f7719c83d8075b508c",
+  "ci": "pass;11successful checks and2expected publish/promote skips",
+  "run": "40471535642",
+  "browser": "pass",
+  "security": {
+    "status": "cleared",
+    "author": "Yoshiofthewire",
+    "marker": "<!-- pr-reviewer persona=security head=a8b6e511217493ef7f9622f7719c83d8075b508c seen=1970-01-01T00:00:00Z verdict=cleared -->",
+    "url": "https://github.com/Busnes-app/KyPulse-server/pull/53#issuecomment-6434915698"
+  },
+  "scope": "Observed before new source3b69600 is pushed; historical for the next source."
+}

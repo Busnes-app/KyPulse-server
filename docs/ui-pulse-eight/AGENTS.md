@@ -13,7 +13,9 @@
 ## Local Contracts
 
 - Use one left navigation region; preserve routes,roles,CSP,CSRF,themes and native semantics.
-- Read original images at full resolution before numeric priors; record hashes,viewport,theme,state and fixedky-suite-v2 arithmetic.
+- Fresh ratings read original images at full resolution before numeric priors; record hashes,viewport,theme,state and fixedky-suite-v2 arithmetic.
+- Label any explicitly calibrated reassessment of unchanged originals as unblinded; disclose prior reports and classify score differences as review calibration, never product improvement.
+- A focused fix confirmation prospectively pins the immediately preceding reviewer report. Disclose it as unblinded, inspect all current originals, carry forward that reviewer's unaffected dimensions and reassess dimensions affected by the actual patch, including any layout regression. Log newly noticed pre-existing concerns separately. Preserve baseline reports, weights, exact means and honest satisfaction; label the result a confirmation rather than a fresh independent rating or competitive rerank.
 - Keep comparable cohorts separate. Unseen behavior stays unverified; a screenshot target is not an achieved score.
 - Opus5.5 and GPTSol review first; Gemini4Argon is advisory only after both satisfied,then parent-audited. Show every round’s scores including deferred reviewers.
 - Wait for terminal reviews before regenerating shared score artifacts. Keep original reports unchanged; corrections belong in explicit audits.
@@ -21,7 +23,8 @@
 ## Work Guidance
 
 - Use Computer Use on an owned fixture/tab with synthetic data only. No deployment or merge is authorized.
-- Capture1280x900/390x844,light/dark with normal service-worker behavior. Logs/Activity baseline are empty/unpaired; do not imply populated-state coverage.
+- Capture1280x900/390x844,light/dark with normal service-worker behavior. Logs/Activity are empty/unpaired; do not imply populated-state coverage. From stage07, score both default collapsed and explicitly expanded filter states:40originals,28admin-console and12settings. Earlier stages retain32originals,20admin-console and12settings.
+- Capture only after fonts settle and the current primary navigation item is fully visible; the driver waits for geometry, without scrolling or altering the page to repair a capture.
 
 ## Verification
 

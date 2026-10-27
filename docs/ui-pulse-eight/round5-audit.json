@@ -1,0 +1,15 @@
+{
+  "round": 5,
+  "raw_reports": {
+    "opus-round5.md": "c6a3d29c0d9c2ba84e85740decfc222bea96a069be9b4aafde6d9b5324814067",
+    "opus-round5.json": "3db6568e61db269936266a15506f09485b26951d8cf581bfc980a85cce819dbc",
+    "sol-round5.md": "600f782c244434e90b0840d14e1502a388e720b451c86b91a1c2ed10b70158ee",
+    "sol-round5.json": "299cbfd0efb2c0399c7b9d7f0219c8fd9964d5a0d35167220a865def9dbc4aa7"
+  },
+  "spreads_at_least2": {},
+  "arithmetic": "32 original pins/membership and fixed Decimal arithmetic validated for both. Opus159.5/20=7.975;96.4/12=8.033333333333333. Sol166.8/20=8.34;100.6/12=8.383333333333333. No averaging or threshold rounding.",
+  "drift": "Sol explicitly attributes most upward movement to reviewer variation; Opus Activity phone density drops on retained layout and Appearance desktop rises on retained layout. Both frozen reports remain unchanged.",
+  "supported_actions": "Logs phone light current tab is visibly clipped. Delayed-font browser regression reproduces the underlying problem before the fix: the first scroll uses fallback font metrics. Reveal again after fonts settle. Give both Logs/Activity result text the shared body size and strong ink for consistency.",
+  "bounded_judgment": "No further Backup/incident-strip/layout redesign. Activity phone result emphasis is a small bounded response, not a promised score. No copy/route/API/role/security changes.",
+  "next": "Round6 fresh capture/review after root-cause fix. Gemini remains deferred because Opus admin is below8."
+}

@@ -1,0 +1,111 @@
+{
+  "source": "447f25a",
+  "method": "T3 collaborative preview, owned synthetic fixture18429; snapshot login refs and navigation/filter only",
+  "browser_caveat": "Chrome154/DPR2 differs from Chromium153/DPR1 originals.",
+  "activity_phone": {
+    "ua": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/154.0.0.0 Safari/537.36",
+    "dpr": 2,
+    "viewport": [
+      390,
+      844
+    ],
+    "navCount": 1,
+    "nav": {
+      "x": 16,
+      "y": 68,
+      "width": 358,
+      "height": 40,
+      "top": 68,
+      "right": 374,
+      "bottom": 108,
+      "left": 16
+    },
+    "active": {
+      "x": 205,
+      "y": 68,
+      "width": 101.5,
+      "height": 40,
+      "top": 68,
+      "right": 306.5,
+      "bottom": 108,
+      "left": 205
+    },
+    "message": "No audit events found in the retained 7-day window.",
+    "fontSize": "15px",
+    "color": "rgb(24, 35, 38)",
+    "box": {
+      "x": 16,
+      "y": 763.5,
+      "width": 358,
+      "height": 45,
+      "top": 763.5,
+      "right": 374,
+      "bottom": 808.5,
+      "left": 16
+    },
+    "overflow": 0,
+    "savedTheme": null
+  },
+  "logs_phone": {
+    "nav": {
+      "x": 16,
+      "y": 68,
+      "width": 358,
+      "height": 40,
+      "top": 68,
+      "right": 374,
+      "bottom": 108,
+      "left": 16
+    },
+    "active": {
+      "x": 293.5,
+      "y": 68,
+      "width": 80.5,
+      "height": 40,
+      "top": 68,
+      "right": 374,
+      "bottom": 108,
+      "left": 293.5
+    },
+    "scrollLeft": 17,
+    "fontSize": "15px",
+    "color": "rgb(24, 35, 38)",
+    "overflow": 0
+  },
+  "logs_deeplink": {
+    "nav": {
+      "x": 16,
+      "y": 68,
+      "width": 358,
+      "height": 40,
+      "top": 68,
+      "right": 374,
+      "bottom": 108,
+      "left": 16
+    },
+    "active": {
+      "x": 293.5,
+      "y": 68,
+      "width": 80.5,
+      "height": 40,
+      "top": 68,
+      "right": 374,
+      "bottom": 108,
+      "left": 293.5
+    },
+    "fonts": "loaded",
+    "overflow": 0
+  },
+  "logs_desktop": {
+    "navCount": 1,
+    "overflow": 0,
+    "fontSize": "15px",
+    "savedTheme": null
+  },
+  "errors": [],
+  "limitations": [
+    "No theme choice saved; no fixture content/configuration writes.",
+    "Delayed-font race proof is the repository browser regression, not this warm-cache native inspection.",
+    "Full behavior acceptance remains unverified."
+  ]
+}

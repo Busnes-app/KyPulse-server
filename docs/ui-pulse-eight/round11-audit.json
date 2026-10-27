@@ -1,0 +1,66 @@
+{
+  "round": 11,
+  "raw_reports": {
+    "opus-round11.md": "0017881e31da5b1b8cceb8d23d33c0a7f17721e7a62237681b620055be511334",
+    "opus-round11.json": "7f84e014d521f5d5137ab11becfd96d9615c5e5b975aa5ece225caa6e962b3a7",
+    "sol-round11.md": "9b79e2eef4c780a54f25f8bfd6630b0620ab85e97e33cb384f911043ed9f36ee",
+    "sol-round11.json": "629b0cbf1e6f8fb682fee1ad48c55785c44ae8a8480cd3eb791ab57be4324bfa"
+  },
+  "cohorts": {
+    "opus": {
+      "admin-console": {
+        "n": 28,
+        "sum": "222.0",
+        "exact_mean": "111/14"
+      },
+      "settings": {
+        "n": 12,
+        "sum": "96.4",
+        "exact_mean": "241/30"
+      }
+    },
+    "sol": {
+      "admin-console": {
+        "n": 28,
+        "sum": "232.4",
+        "exact_mean": "83/10"
+      },
+      "settings": {
+        "n": 12,
+        "sum": "100.8",
+        "exact_mean": "42/5"
+      }
+    }
+  },
+  "runtime_source": "3b696001b04d79eaad6705756272288d1336397c",
+  "next": "Bounded Logs/Activity grouping: place the existing always-mounted KyYardCollection after empty-result status and before result rows, retaining it in populated/loading/error states; use8px Log sources heading and16px paragraph gaps. Gemini deferred.",
+  "spreads_at_least2": [
+    {
+      "file": "screenshots/kypulse-11-after-settings-desktop-dark.png",
+      "dimension": "coherence",
+      "opus": 7,
+      "sol": 9
+    },
+    {
+      "file": "screenshots/kypulse-11-after-settings-desktop-light.png",
+      "dimension": "coherence",
+      "opus": 7,
+      "sol": 9
+    },
+    {
+      "file": "screenshots/kypulse-11-after-settings-mobile-dark.png",
+      "dimension": "coherence",
+      "opus": 7,
+      "sol": 9
+    },
+    {
+      "file": "screenshots/kypulse-11-after-settings-mobile-light.png",
+      "dimension": "coherence",
+      "opus": 7,
+      "sol": 9
+    }
+  ],
+  "correction_limit": "Opus claim that pairing is the only next action is too broad: direct sender source creation is another Logs path. Preserve all existing collection/source guidance, data and subscriptions. Repositioning guidance supports context without making KyYard mandatory.",
+  "scope": "Both confirm N1/A1\u2013A3. Remaining Settings component-style differences are optional/taste; no Settings redesign selected. Raw score variation and post-freeze font correction remain explicit, never product gains.",
+  "spread_reinspection": "Parent individually re-viewed all4Settings originals for coherence7vs9. First-level section cards repeat the same radius/type/fields with no nested cards; treating overall framing as optional taste is defensible. Preserve raw ratings; no Settings redesign selected, no averaging."
+}

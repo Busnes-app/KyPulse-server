@@ -1,0 +1,4 @@
+{
+  "rule": "same dimensions, changed pixels<0.1%, max channel delta<=8",
+  "near_duplicates": []
+}

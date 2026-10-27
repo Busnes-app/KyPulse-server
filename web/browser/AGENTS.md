@@ -24,7 +24,7 @@ This directory owns test setup, disposable server launch and UI assertions. The 
   viewer starts from the existing CLI password-hash path, then native `node:sqlite` lowers
   its role and clears its initial-password flag in this owned test database only.
 - `logs.spec.mjs` pairs a bound source, ingests sample log/audit lines through real routes,
-  exercises filters/pagination, offline retry, safe text, bursts, recent app lines and
+  exercises native filter disclosure by keyboard, applied-filter indication and field/result preservation across close/reopen, filters/pagination, offline retry, safe text, bursts, recent app lines and
   revocation, then signs in as the real viewer to assert deep-link/API/detail denial.
   It exercises live KyYard collection status in Logs/Activity/Settings against a private-interface fake upstream with a legacy audit array, and unpairs/deletes its watched target on exit and preserves the webhook form's exact URL selector.
   Each case extracts the displayed sender origin and passes it to the real Go `Pair`
@@ -36,6 +36,8 @@ This directory owns test setup, disposable server launch and UI assertions. The 
 Owned fake HTTP servers close all remaining connections during teardown, after workflow assertions and API cleanup; pooled or incomplete requests must not hold the server-close callback open.
 
 Prefer browser-native behavior and assertions over screenshot-only checks. A passing suite covers these workflows, not every page or a complete accessibility audit.
+- Pixel contrast sampling scrolls the real control into view before reading its screenshot bounds; controls may appear below the initial viewport.
+- `nav.spec.mjs` delays the real font response in a fresh authenticated context to prove the active phone tab remains fully visible after font metrics settle; normal service-worker/CSP/CSRF behavior remains enabled. Its desktop-to-phone regression keeps the active Backup item visible while retaining focus and page scroll.
 
 ## Verification
 

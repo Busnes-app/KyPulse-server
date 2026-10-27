@@ -1,0 +1,155 @@
+==> Checking go.mod is tidy...
+==> Checking formatting and vet...
+==> Running test suite with race detector...
+ok  	github.com/Busnes-app/kypulse-server/cmd/kypulse-send	(cached)	coverage: 73.1% of statements
+ok  	github.com/Busnes-app/kypulse-server/cmd/server	(cached)	coverage: 20.4% of statements
+ok  	github.com/Busnes-app/kypulse-server/internal/alerts	(cached)	coverage: 100.0% of statements
+ok  	github.com/Busnes-app/kypulse-server/internal/api	61.237s	coverage: 78.0% of statements
+ok  	github.com/Busnes-app/kypulse-server/internal/appversion	(cached)	coverage: 100.0% of statements
+ok  	github.com/Busnes-app/kypulse-server/internal/auth	(cached)	coverage: 56.5% of statements
+ok  	github.com/Busnes-app/kypulse-server/internal/backup	7.441s	coverage: 85.5% of statements
+ok  	github.com/Busnes-app/kypulse-server/internal/config	(cached)	coverage: 77.8% of statements
+ok  	github.com/Busnes-app/kypulse-server/internal/crypto	(cached)	coverage: 69.6% of statements
+ok  	github.com/Busnes-app/kypulse-server/internal/egress	(cached)	coverage: 88.3% of statements
+ok  	github.com/Busnes-app/kypulse-server/internal/ingest	(cached)	coverage: 94.7% of statements
+ok  	github.com/Busnes-app/kypulse-server/internal/kyyard	(cached)	coverage: 91.3% of statements
+ok  	github.com/Busnes-app/kypulse-server/internal/logstore	(cached)	coverage: 94.5% of statements
+ok  	github.com/Busnes-app/kypulse-server/internal/monitor	(cached)	coverage: 87.2% of statements
+ok  	github.com/Busnes-app/kypulse-server/internal/notify	(cached)	coverage: 95.2% of statements
+ok  	github.com/Busnes-app/kypulse-server/internal/poller	(cached)	coverage: 96.4% of statements
+ok  	github.com/Busnes-app/kypulse-server/internal/sender	(cached)	coverage: 78.4% of statements
+ok  	github.com/Busnes-app/kypulse-server/internal/sso	(cached)	coverage: 69.0% of statements
+ok  	github.com/Busnes-app/kypulse-server/internal/store	(cached)	coverage: 74.1% of statements
+	github.com/Busnes-app/kypulse-server/internal/store/migrations		coverage: 0.0% of statements
+	github.com/Busnes-app/kypulse-server/internal/testdb		coverage: 0.0% of statements
+	github.com/Busnes-app/kypulse-server/web		coverage: 0.0% of statements
+total:											(statements)			74.4%
+==> Running frontend test suite...
+npm warn deprecated whatwg-encoding@3.1.1: Use @exodus/bytes instead for a more spec-conformant and faster implementation
+
+added 140 packages, and audited 141 packages in 2s
+
+21 packages are looking for funding
+  run `npm fund` for details
+
+found 0 vulnerabilities
+npm warn install-scripts 1 package had install scripts blocked because they are not covered by allowScripts:
+npm warn install-scripts   esbuild@0.25.12 (postinstall: node install.js)
+npm warn install-scripts
+npm warn install-scripts Run `npm install-scripts ls` to review, or `npm install-scripts approve <pkg>` to allow.
+npm notice run pretest
+npm notice run node src/ky-ui/check-vendor.mjs
+ky-ui 0.4.3: vendor files verified
+npm notice run test
+npm notice run vitest run
+
+ RUN  v5.0.5 /home/yoshi/git/busnes.app/kyPulse-server/.claude/worktrees/ui-pulse-eight/web
+
+
+ Test Files  19 passed (19)
+      Tests  96 passed (96)
+   Start at  02:19:14
+   Duration  2.74s (environment 44%, tests 29%, transform 14%, import 13%)
+
+==> Compiling kypulse binaries...
+==> CLI subcommands
+  [ok]   version exits 0 (0)
+  [ok]   version prints name
+  [ok]   backup-drill seals and reopens the payload
+  [ok]   backup-drill verifies the required files
+  [ok]   backup-drill checks database integrity
+  [ok]   backup-drill passes on a complete payload
+  [ok]   init-admin rejects short password (1)
+  [ok]   init-admin creates admin (0)
+==> HTTP with default PoW captcha
+  [ok]   GET / serves the PWA (200)
+  [ok]   healthz is 200 when the database is up (200)
+  [ok]   healthz serves ky.health/1
+  [ok]   healthz reports the audit check
+  [ok]   index.html has react root
+  [ok]   SPA fallback for unknown route (200)
+  [ok]   login blocked without captcha token (403)
+  [ok]   malformed login body rejected (400)
+  [ok]   login rejects GET (405)
+  [ok]   pow challenge issued (200)
+  [ok]   unauthenticated /me reports not authenticated
+  [ok]   anonymous cannot export the capsule (401)
+  [ok]   anonymous cannot run backup drill (401)
+  [ok]   anonymous cannot pair remote recovery (401)
+  [ok]   anonymous cannot read backup status (401)
+  [ok]   anonymous cannot pin a key (401)
+  [ok]   anonymous cannot set the schedule (401)
+  [ok]   anonymous cannot unpair (401)
+  [ok]   anonymous cannot set site theme (401)
+  [ok]   graceful shutdown on SIGTERM
+==> HTTP auth flow (captcha disabled)
+  [ok]   wrong password is 401 (401)
+  [ok]   unknown user is 401 (401)
+  [ok]   login succeeds
+  [ok]   session cookie is HttpOnly
+  [ok]   session cookie is SameSite
+  [ok]   password hash never leaves the server
+  [ok]   /me returns the session user
+  [ok]   anonymous settings keep login fields
+  [ok]   anonymous settings hide extra_settings
+  [ok]   anonymous settings hide db_driver
+  [ok]   bootstrap requires password replacement
+  [ok]   bootstrap session cannot read backup state (403)
+  [ok]   password replacement requires CSRF (403)
+  [ok]   bootstrap password replacement succeeds (200)
+  [ok]   bootstrap session was revoked
+  [ok]   old bootstrap password stops working (401)
+  [ok]   replacement password signs in
+  [ok]   replacement clears the restriction
+  [ok]   init-admin resets the existing admin (0)
+  [ok]   operator reset revokes the previous session (401)
+  [ok]   operator reset requires replacement
+  [ok]   reset login cannot read backup state (403)
+  [ok]   operator password replacement succeeds (200)
+  [ok]   reset replacement signs in
+  [ok]   admin settings include db_driver
+  [ok]   deposit CLI refuses without a key (1)
+==> monitoring
+  [ok]   viewer-tier status needs a session (401)
+  [ok]   admin creates a target (201)
+  [ok]   targets list shows it
+  [ok]   webhook must be https without the opt-in (400)
+==> collected logs
+  [ok]   viewer signs in
+  [ok]   claim without session binds the source (tgt_ef765896348586c7)
+  [ok]   source token ingests one line (204)
+  [ok]   admin reads the stored line
+  [ok]   stored source is authoritative
+  [ok]   viewer cannot read logs (403)
+  [ok]   viewer cannot read activity (403)
+  [ok]   source token cannot read logs (401)
+  [ok]   admin revokes the source (200)
+  [ok]   revoked token cannot ingest (401)
+==> KyYard
+  [ok]   kyyard status is unpaired
+  [ok]   kyyard pair refuses loopback (400)
+  [ok]   kyyard pair needs a session (401)
+  [ok]   status carries kyyard
+  [ok]   self target was polled and refused
+  [ok]   export-capsule is a POST behind CSRF (403)
+  [ok]   admin export-capsule refuses without a key (412)
+  [ok]   export-capsule says why it refused
+  [ok]   backup status reports no key
+  [ok]   backup status names the local directory
+  [ok]   backup status never carries a token (clean)
+  [ok]   pin-key refuses garbage (400)
+  [ok]   schedule refuses below the floor (400)
+  [ok]   schedule accepts off (200)
+  [ok]   status reads the schedule back
+  [ok]   run refuses without a key (412)
+  [ok]   unpair refuses while unpaired (412)
+  [ok]   logout succeeds (200)
+  [ok]   session dead after logout
+  [ok]   graceful shutdown on SIGTERM
+==> Audit chain
+  [ok]   server logs the chain placement at start
+  [ok]   audit-verify walks the chain the server wrote
+  [ok]   audit-verify exits 0 on an intact chain (0)
+
+smoke test: all checks passed
+==> Local CI checks passed

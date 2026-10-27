@@ -1,0 +1,37 @@
+{
+  "product_source": "1bf757d0e0135a889bf452d4290f3f6e6c118f41",
+  "shared_source": "58626b7",
+  "status": "Round4 frontend/build/makeci and scoped layout verification pass. Fresh full remote CI and security gates will run at the pushed head. Historical round3 full checks are not claimed as fresh round4 executions.",
+  "checks": {
+    "frontend": {
+      "status": "pass",
+      "evidence": "checks/r4-frontend.txt",
+      "sha256": "4204cb845d40acf58482af3273696ee559ceb992840d6bcdd351f96d8bc0b4a8",
+      "raw_sha256": "4204cb845d40acf58482af3273696ee559ceb992840d6bcdd351f96d8bc0b4a8"
+    },
+    "make_ci": {
+      "status": "pass",
+      "evidence": "checks/r4-make_ci.txt",
+      "sha256": "b9a8fd47f5f0693be12955649b9cf5caf0af1fd3c0a6a16223bd3e1a4b5b6d13",
+      "raw_sha256": "b9a8fd47f5f0693be12955649b9cf5caf0af1fd3c0a6a16223bd3e1a4b5b6d13"
+    },
+    "impeccable": {
+      "status": "reported2pinned-style findings",
+      "evidence": "checks/r4-impeccable.txt",
+      "sha256": "6a2d1b9c8d8665e08c7471d8f987e29c784f4edb5a7f28595d84f431fa508429",
+      "raw_sha256": "6a2d1b9c8d8665e08c7471d8f987e29c784f4edb5a7f28595d84f431fa508429"
+    },
+    "backup_geometry": {
+      "status": "pass",
+      "evidence": "geometry-round4.json",
+      "result": "334.5px/416px natural-height cards; no detached icon; no overflow; one primary navigation region"
+    }
+  },
+  "retained_checks": "Parsers/dependencies/backend logic unchanged; historical checks are in verification-round3.json. Full FIPS/Postgres/browser/Docker/repeatable gates must pass freshly in remote CI before hand-back.",
+  "limitations": [
+    "Only Backup markup/decorative icon and scoped card alignment changed. No data/route/handler/role changes.",
+    "Normal source detector reports2prescribed-style findings; regex-only, not accessibility acceptance.",
+    "Native T3 browser click/wait calls timed out twice; repository Playwright fallback verified geometry on the owned fixture.",
+    "No merge/deploy; MySlop401 still blocks board posting."
+  ]
+}

@@ -1,0 +1,5 @@
+{
+  "head": "63df86c56e963fb9c74dbad581036000b5ad31d8",
+  "ci": "all11checks pass plus2expected publish/promote skips, including full browser",
+  "security": "pending;last authored clearance b8f8c05"
+}

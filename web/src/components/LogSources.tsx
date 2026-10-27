@@ -68,7 +68,7 @@ export function LogSources() {
       <label>Sender HTTPS origin<input type="url" required aria-describedby="sender-origin-help" placeholder="https://pulse.example.com" value={origin} disabled={busy || !!pairing} onChange={e => setOrigin(e.target.value)} /></label>
       <label>Log source name<input value={name} disabled={busy || !!pairing} required pattern="[A-Za-z0-9][A-Za-z0-9_.\-]{0,63}" maxLength={64} onChange={e => setName(e.target.value)} /></label>
       <div className="filter-actions"><button type="submit" className="btn-secondary" disabled={busy || loading || !!pairing}>Add source</button>
-      <button type="button" className="btn-secondary" disabled={busy || loading} onClick={() => setRefresh(r => r + 1)}>Refresh sources</button></div>
+      <button type="button" className="btn-tertiary" disabled={busy || loading} onClick={() => setRefresh(r => r + 1)}>Refresh sources</button></div>
     </form>
     {pairing && <div role="status">
       <p>Pairing code: <strong>{pairing.code}</strong> · expires {pairing.expires_at}</p>

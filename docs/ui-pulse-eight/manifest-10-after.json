@@ -1,0 +1,641 @@
+{
+  "product": "kyPulse-server",
+  "stage": "10",
+  "phase": "after",
+  "councilRound": 10,
+  "captured_at": "2026-10-27T08:07:24.227Z",
+  "source_commit": "61e4a0c2fdcff64910c1a9d6a8f33e81cb1df910",
+  "uncommitted_source_sha256": null,
+  "os": "Linux 7.2.10-1-cachyos",
+  "driver": "Playwright 1.63.0 Chromium 153.0.8010.12, device scale 1, normal service worker behavior",
+  "fonts": "self-hosted Space Grotesk bundled in web/dist; Space Grotesk loaded: true",
+  "server": "disposable .browser/server embedding this web/dist; owned temporary SQLite data; KEEP_FIXTURE=1 retains it for Computer Use until SIGTERM",
+  "served_index_sha256": "351bd3e31ceb9282f03674b34215decd24d77e533427b89f0789dc3e150887f9",
+  "source_files": {
+    "web/src/App.tsx": "757c2f492879db18e8de427faeb1fd648b55ab9a4db9a961dba76038aa0bf82c",
+    "web/src/components/AlertBar.tsx": "3a5300514f462f0c723bd3a35c467d1bb4d8e9ae7eeabf2cf8341609ef066589",
+    "web/src/components/AppHeader.tsx": "ce71573f7d5e621c8636ef95c3da646b65ebc9b4070cf300222bed617c9ae1e4",
+    "web/src/components/LogSources.tsx": "f5b03fc6c272a9e4145c3731dcea448a76aba9dc9f75018e619d844315a92297",
+    "web/src/components/LogTimeline.tsx": "93c47ffbfc4621102af806cfa5c6d6918ae3da66389f3f884a53653eca9dd733",
+    "web/src/components/KyYardCollectors.tsx": "9454e43766d38edc63d0c8e824519087747eec521d82752063a48a711f45fc46",
+    "web/src/components/TwoFactorCard.tsx": "84729cbd60f799836ea446302c766bed3f6ddd35ff79d646dd8c877194fed027",
+    "web/src/components/WebhookForm.tsx": "ad30c99503057e9966c103a5b078641e2c0b01c95162f43e65c997d3664bd832",
+    "web/src/components/KyYardCard.tsx": "fb09122a8377a0e489c1387e9598b497e0ae4f83019e7114ccb4cf2234b66d88",
+    "web/src/pages/Logs.tsx": "98e42c1942f8c8fb03ae1c6419de47b461fcebba4f82fb59f03f88cb43fb6c6f",
+    "web/src/pages/Activity.tsx": "ba6d5b312146d5d924b74a57bd676d8be9c3b90dafa041b9028830193d010c6a",
+    "web/src/pages/Settings.tsx": "dc07bcef0ee618e7caed8293d76ff21107e16e7f840aec024d1b27948874a120",
+    "web/src/pages/Backup.tsx": "b9554de83e418de956a2e34a2da26b4d32a79894f586aac02d13997037de5726",
+    "web/src/pages/Status.tsx": "fbf3cb89ae0e99996d1f608b897fa26fa523596dac903f8e18639bd99db2053c",
+    "web/src/pages/AppDetail.tsx": "51d90f0ef7bb871c42d044cb8fc3c9de9658498714156d906993a29b7e1e177c",
+    "web/src/pages/Alerts.tsx": "01fc69eb2069aa518b66e88a64ef14f1d44a99e291c98c5524999fabba376790",
+    "web/src/pages/Appearance.tsx": "7adef8d399d7ccd688af1aa5b0dae9a187b3a426dd434e9033756358e55fd00a",
+    "web/src/styles/theme.css": "a611eb3b2fde5cd51e80754d8e4b322959d6edb3699b018eec62d2babea799a9",
+    "web/src/ky-ui/VERSION": "dfdf8f21203cf33b0a1f2cf8ed6128b216b3d9ad56807ffabc0bf87b5e31a5db",
+    "web/package-lock.json": "9a307408bab1bfeb55c3be91e0e87464db37d4ede8c1f4a4f38273be99d836d9",
+    "web/dist/index.html": "351bd3e31ceb9282f03674b34215decd24d77e533427b89f0789dc3e150887f9"
+  },
+  "fixture": "synthetic: admin account; three watched apps (Billing API ok, Mail relay degraded, Backup agent down) served by a capture-owned fake health endpoint on a private bridge address. Durations and timestamps are live and differ between runs",
+  "shots": [
+    {
+      "file": "kypulse-10-after-status-desktop-light.png",
+      "sha256": "6cf1fc7f6b082f57b06353014907603f2bea3631135574edb9f689b2d83e5759",
+      "bytes": 68946,
+      "viewport": {
+        "width": 1280,
+        "height": 900
+      },
+      "overflow": 0,
+      "surface": "status",
+      "url": "#/status",
+      "device": "desktop",
+      "filter_disclosure": null,
+      "theme_source": "OS light (prefers-color-scheme), no saved choice"
+    },
+    {
+      "file": "kypulse-10-after-alerts-desktop-light.png",
+      "sha256": "ea1d0b119ed39d2cf27b77ba80ec6b5b837431f465daac65ddf5a2f56ec7d610",
+      "bytes": 51954,
+      "viewport": {
+        "width": 1280,
+        "height": 900
+      },
+      "overflow": 0,
+      "surface": "alerts",
+      "url": "#/alerts",
+      "device": "desktop",
+      "filter_disclosure": null,
+      "theme_source": "OS light (prefers-color-scheme), no saved choice"
+    },
+    {
+      "file": "kypulse-10-after-appearance-desktop-light.png",
+      "sha256": "456d13dd05ced4519b039ba08e8a73ef07562be6f34523be0658a5b95dd9c01c",
+      "bytes": 79241,
+      "viewport": {
+        "width": 1280,
+        "height": 900
+      },
+      "overflow": 0,
+      "surface": "appearance",
+      "url": "#/appearance",
+      "device": "desktop",
+      "filter_disclosure": null,
+      "theme_source": "OS light (prefers-color-scheme), no saved choice"
+    },
+    {
+      "file": "kypulse-10-after-settings-desktop-light.png",
+      "sha256": "7a121d05a4f79ce0b4ea0ebdc29db84e2456a778e4ba9810f92eb6c10663c239",
+      "bytes": 81854,
+      "viewport": {
+        "width": 1280,
+        "height": 900
+      },
+      "overflow": 0,
+      "surface": "settings",
+      "url": "#/settings",
+      "device": "desktop",
+      "filter_disclosure": null,
+      "theme_source": "OS light (prefers-color-scheme), no saved choice"
+    },
+    {
+      "file": "kypulse-10-after-backup-desktop-light.png",
+      "sha256": "ced4ce34ddfc17a686d1dfbf8b3b78ea82501c87d4537dc59fdab492fd42e776",
+      "bytes": 113766,
+      "viewport": {
+        "width": 1280,
+        "height": 900
+      },
+      "overflow": 0,
+      "surface": "backup",
+      "url": "#/backup",
+      "device": "desktop",
+      "filter_disclosure": null,
+      "theme_source": "OS light (prefers-color-scheme), no saved choice"
+    },
+    {
+      "file": "kypulse-10-after-logs-desktop-light.png",
+      "sha256": "d66aaa234ccf585b2d8bfb389b8ff9d91bd8f8992804fa9df04eca88ee12da29",
+      "bytes": 70438,
+      "viewport": {
+        "width": 1280,
+        "height": 900
+      },
+      "overflow": 0,
+      "surface": "logs",
+      "url": "#/logs",
+      "device": "desktop",
+      "filter_disclosure": "collapsed",
+      "theme_source": "OS light (prefers-color-scheme), no saved choice"
+    },
+    {
+      "file": "kypulse-10-after-activity-desktop-light.png",
+      "sha256": "288db435a5de71bb80529799b1bccff141f519637d21100cdee95bd410da921b",
+      "bytes": 48224,
+      "viewport": {
+        "width": 1280,
+        "height": 900
+      },
+      "overflow": 0,
+      "surface": "activity",
+      "url": "#/activity",
+      "device": "desktop",
+      "filter_disclosure": "collapsed",
+      "theme_source": "OS light (prefers-color-scheme), no saved choice"
+    },
+    {
+      "file": "kypulse-10-after-app-detail-desktop-light.png",
+      "sha256": "169b35be0fa92b82629b9c28c3ee857882a5c5ed34e1c72f445fc87dab204980",
+      "bytes": 88277,
+      "viewport": {
+        "width": 1280,
+        "height": 900
+      },
+      "overflow": 0,
+      "surface": "app-detail",
+      "url": "#/apps/tgt_00c352797fe734a4",
+      "device": "desktop",
+      "filter_disclosure": null,
+      "theme_source": "OS light (prefers-color-scheme), no saved choice"
+    },
+    {
+      "file": "kypulse-10-after-logs-filters-desktop-light.png",
+      "sha256": "3e09a56060ad03d972fdb8f6c541b541560dd5bd212d612954120e7f054649fa",
+      "bytes": 77454,
+      "viewport": {
+        "width": 1280,
+        "height": 900
+      },
+      "overflow": 0,
+      "surface": "logs-filters",
+      "url": "#/logs",
+      "device": "desktop",
+      "filter_disclosure": "expanded",
+      "theme_source": "OS light (prefers-color-scheme), no saved choice"
+    },
+    {
+      "file": "kypulse-10-after-activity-filters-desktop-light.png",
+      "sha256": "ba49c77e34824ae68cd90707c4ed9e7e43cd4b732302cf159def4fe9a5ae6940",
+      "bytes": 55412,
+      "viewport": {
+        "width": 1280,
+        "height": 900
+      },
+      "overflow": 0,
+      "surface": "activity-filters",
+      "url": "#/activity",
+      "device": "desktop",
+      "filter_disclosure": "expanded",
+      "theme_source": "OS light (prefers-color-scheme), no saved choice"
+    },
+    {
+      "file": "kypulse-10-after-status-mobile-light.png",
+      "sha256": "46ae60b3de0132f6ea31d6b50e09c2d7a23e2055459d7d34c257ce4017758aae",
+      "bytes": 49519,
+      "viewport": {
+        "width": 390,
+        "height": 844
+      },
+      "overflow": 0,
+      "surface": "status",
+      "url": "#/status",
+      "device": "mobile",
+      "filter_disclosure": null,
+      "theme_source": "OS light (prefers-color-scheme), no saved choice"
+    },
+    {
+      "file": "kypulse-10-after-alerts-mobile-light.png",
+      "sha256": "3fb0e22f1bc511d2b12d8b9efd97d070a335c0e412ad98552540acb85c533d06",
+      "bytes": 41345,
+      "viewport": {
+        "width": 390,
+        "height": 844
+      },
+      "overflow": 0,
+      "surface": "alerts",
+      "url": "#/alerts",
+      "device": "mobile",
+      "filter_disclosure": null,
+      "theme_source": "OS light (prefers-color-scheme), no saved choice"
+    },
+    {
+      "file": "kypulse-10-after-appearance-mobile-light.png",
+      "sha256": "7944a9f2f6cff416420f5fe6aa9d50fe9daef58602dc8da26d296b8ea0a9090d",
+      "bytes": 41468,
+      "viewport": {
+        "width": 390,
+        "height": 844
+      },
+      "overflow": 0,
+      "surface": "appearance",
+      "url": "#/appearance",
+      "device": "mobile",
+      "filter_disclosure": null,
+      "theme_source": "OS light (prefers-color-scheme), no saved choice"
+    },
+    {
+      "file": "kypulse-10-after-settings-mobile-light.png",
+      "sha256": "e8feea20f99b6babdc1d065fd8e75b7c94246867277a3e0585b0db9dd0a4e15d",
+      "bytes": 46429,
+      "viewport": {
+        "width": 390,
+        "height": 844
+      },
+      "overflow": 0,
+      "surface": "settings",
+      "url": "#/settings",
+      "device": "mobile",
+      "filter_disclosure": null,
+      "theme_source": "OS light (prefers-color-scheme), no saved choice"
+    },
+    {
+      "file": "kypulse-10-after-backup-mobile-light.png",
+      "sha256": "012a3304e0179f72f0dbb4c9cbdb468e00978e8e415549d342b9bafddac1808f",
+      "bytes": 53187,
+      "viewport": {
+        "width": 390,
+        "height": 844
+      },
+      "overflow": 0,
+      "surface": "backup",
+      "url": "#/backup",
+      "device": "mobile",
+      "filter_disclosure": null,
+      "theme_source": "OS light (prefers-color-scheme), no saved choice"
+    },
+    {
+      "file": "kypulse-10-after-logs-mobile-light.png",
+      "sha256": "4d8120d214d2ea5182e26f02cce9f7cb30dfe3f0e4836683898c784bb5dff6b8",
+      "bytes": 48772,
+      "viewport": {
+        "width": 390,
+        "height": 844
+      },
+      "overflow": 0,
+      "surface": "logs",
+      "url": "#/logs",
+      "device": "mobile",
+      "filter_disclosure": "collapsed",
+      "theme_source": "OS light (prefers-color-scheme), no saved choice"
+    },
+    {
+      "file": "kypulse-10-after-activity-mobile-light.png",
+      "sha256": "4bf31f9f60f81607532156543e2a3dcdf1bf6049bc2d95efe74a7f9db659ee97",
+      "bytes": 32601,
+      "viewport": {
+        "width": 390,
+        "height": 844
+      },
+      "overflow": 0,
+      "surface": "activity",
+      "url": "#/activity",
+      "device": "mobile",
+      "filter_disclosure": "collapsed",
+      "theme_source": "OS light (prefers-color-scheme), no saved choice"
+    },
+    {
+      "file": "kypulse-10-after-app-detail-mobile-light.png",
+      "sha256": "2afbacef9a0a4f63d0123df2882ac89ff94e73ef8870937cd0894655923756c6",
+      "bytes": 52378,
+      "viewport": {
+        "width": 390,
+        "height": 844
+      },
+      "overflow": 0,
+      "surface": "app-detail",
+      "url": "#/apps/tgt_00c352797fe734a4",
+      "device": "mobile",
+      "filter_disclosure": null,
+      "theme_source": "OS light (prefers-color-scheme), no saved choice"
+    },
+    {
+      "file": "kypulse-10-after-logs-filters-mobile-light.png",
+      "sha256": "555e5eb03a31274584402154715732f72653fc6ec89e13afeb302689ba29d7f6",
+      "bytes": 38859,
+      "viewport": {
+        "width": 390,
+        "height": 844
+      },
+      "overflow": 0,
+      "surface": "logs-filters",
+      "url": "#/logs",
+      "device": "mobile",
+      "filter_disclosure": "expanded",
+      "theme_source": "OS light (prefers-color-scheme), no saved choice"
+    },
+    {
+      "file": "kypulse-10-after-activity-filters-mobile-light.png",
+      "sha256": "d3cb6246aefebdf3a0f063d4f29e962e5ea19062f28dc24a3e6bd41a584ee08a",
+      "bytes": 42732,
+      "viewport": {
+        "width": 390,
+        "height": 844
+      },
+      "overflow": 0,
+      "surface": "activity-filters",
+      "url": "#/activity",
+      "device": "mobile",
+      "filter_disclosure": "expanded",
+      "theme_source": "OS light (prefers-color-scheme), no saved choice"
+    },
+    {
+      "file": "kypulse-10-after-status-desktop-dark.png",
+      "sha256": "90e8967f61c13ce7ec4d6f25e67d2ca3a60faa5511364dc5a2f04108e2cc3150",
+      "bytes": 69139,
+      "viewport": {
+        "width": 1280,
+        "height": 900
+      },
+      "overflow": 0,
+      "surface": "status",
+      "url": "#/status",
+      "device": "desktop",
+      "filter_disclosure": null,
+      "theme_source": "OS dark (prefers-color-scheme), no saved choice"
+    },
+    {
+      "file": "kypulse-10-after-alerts-desktop-dark.png",
+      "sha256": "31543b0de76fe4b4dd629d3e008aa6f32d30d718876aeb5ed85a9bf24d038542",
+      "bytes": 52364,
+      "viewport": {
+        "width": 1280,
+        "height": 900
+      },
+      "overflow": 0,
+      "surface": "alerts",
+      "url": "#/alerts",
+      "device": "desktop",
+      "filter_disclosure": null,
+      "theme_source": "OS dark (prefers-color-scheme), no saved choice"
+    },
+    {
+      "file": "kypulse-10-after-appearance-desktop-dark.png",
+      "sha256": "57edfb4f9b3d32f359a086f39aa0024acf9e420370f43b08d27b518f38bf73d2",
+      "bytes": 80100,
+      "viewport": {
+        "width": 1280,
+        "height": 900
+      },
+      "overflow": 0,
+      "surface": "appearance",
+      "url": "#/appearance",
+      "device": "desktop",
+      "filter_disclosure": null,
+      "theme_source": "OS dark (prefers-color-scheme), no saved choice"
+    },
+    {
+      "file": "kypulse-10-after-settings-desktop-dark.png",
+      "sha256": "3e2571d5f7747ba30f0344ef247b088aa5de05ecac445e57db1e747d51c211aa",
+      "bytes": 81857,
+      "viewport": {
+        "width": 1280,
+        "height": 900
+      },
+      "overflow": 0,
+      "surface": "settings",
+      "url": "#/settings",
+      "device": "desktop",
+      "filter_disclosure": null,
+      "theme_source": "OS dark (prefers-color-scheme), no saved choice"
+    },
+    {
+      "file": "kypulse-10-after-backup-desktop-dark.png",
+      "sha256": "4f9c812b3aa7d68ee0435ad9160fa5050b9f05bcf19319618e92d3ff63cdbb0b",
+      "bytes": 113445,
+      "viewport": {
+        "width": 1280,
+        "height": 900
+      },
+      "overflow": 0,
+      "surface": "backup",
+      "url": "#/backup",
+      "device": "desktop",
+      "filter_disclosure": null,
+      "theme_source": "OS dark (prefers-color-scheme), no saved choice"
+    },
+    {
+      "file": "kypulse-10-after-logs-desktop-dark.png",
+      "sha256": "bdd7c74f33e249422755d7ce7cd6c5f77cb99af7671af856a18151cb6a3e042b",
+      "bytes": 70432,
+      "viewport": {
+        "width": 1280,
+        "height": 900
+      },
+      "overflow": 0,
+      "surface": "logs",
+      "url": "#/logs",
+      "device": "desktop",
+      "filter_disclosure": "collapsed",
+      "theme_source": "OS dark (prefers-color-scheme), no saved choice"
+    },
+    {
+      "file": "kypulse-10-after-activity-desktop-dark.png",
+      "sha256": "fcee07b4d9853ff6527b3d98be435d7e2ecd83854a7370d8a34fb8fa7d6cff06",
+      "bytes": 48168,
+      "viewport": {
+        "width": 1280,
+        "height": 900
+      },
+      "overflow": 0,
+      "surface": "activity",
+      "url": "#/activity",
+      "device": "desktop",
+      "filter_disclosure": "collapsed",
+      "theme_source": "OS dark (prefers-color-scheme), no saved choice"
+    },
+    {
+      "file": "kypulse-10-after-app-detail-desktop-dark.png",
+      "sha256": "06945a2a55e41914aa2819410e7a6eb1d528c8fd50e125071c191677c9df632b",
+      "bytes": 88068,
+      "viewport": {
+        "width": 1280,
+        "height": 900
+      },
+      "overflow": 0,
+      "surface": "app-detail",
+      "url": "#/apps/tgt_00c352797fe734a4",
+      "device": "desktop",
+      "filter_disclosure": null,
+      "theme_source": "OS dark (prefers-color-scheme), no saved choice"
+    },
+    {
+      "file": "kypulse-10-after-logs-filters-desktop-dark.png",
+      "sha256": "a89101864ddd5f3b730d6e09c659af1a8987722a8a50f64579dbbba1d775a3d4",
+      "bytes": 78027,
+      "viewport": {
+        "width": 1280,
+        "height": 900
+      },
+      "overflow": 0,
+      "surface": "logs-filters",
+      "url": "#/logs",
+      "device": "desktop",
+      "filter_disclosure": "expanded",
+      "theme_source": "OS dark (prefers-color-scheme), no saved choice"
+    },
+    {
+      "file": "kypulse-10-after-activity-filters-desktop-dark.png",
+      "sha256": "96cd0b37af3dc461b8b742e609f950ea1dee5007c2c30db7ed11479d1fc4993a",
+      "bytes": 55831,
+      "viewport": {
+        "width": 1280,
+        "height": 900
+      },
+      "overflow": 0,
+      "surface": "activity-filters",
+      "url": "#/activity",
+      "device": "desktop",
+      "filter_disclosure": "expanded",
+      "theme_source": "OS dark (prefers-color-scheme), no saved choice"
+    },
+    {
+      "file": "kypulse-10-after-status-mobile-dark.png",
+      "sha256": "7d98663a02ee33250315e47c55e43e3574409e919ed11f6975107b7bf0aa8fb4",
+      "bytes": 49915,
+      "viewport": {
+        "width": 390,
+        "height": 844
+      },
+      "overflow": 0,
+      "surface": "status",
+      "url": "#/status",
+      "device": "mobile",
+      "filter_disclosure": null,
+      "theme_source": "OS dark (prefers-color-scheme), no saved choice"
+    },
+    {
+      "file": "kypulse-10-after-alerts-mobile-dark.png",
+      "sha256": "592d1cc95407c3d19abcc4098bb7efadcac43cc40af35374bf26b16c5aef5973",
+      "bytes": 42244,
+      "viewport": {
+        "width": 390,
+        "height": 844
+      },
+      "overflow": 0,
+      "surface": "alerts",
+      "url": "#/alerts",
+      "device": "mobile",
+      "filter_disclosure": null,
+      "theme_source": "OS dark (prefers-color-scheme), no saved choice"
+    },
+    {
+      "file": "kypulse-10-after-appearance-mobile-dark.png",
+      "sha256": "7943c89143b282cc9b4482f04ee010d927820c142d234234990cc8d6378dc974",
+      "bytes": 42210,
+      "viewport": {
+        "width": 390,
+        "height": 844
+      },
+      "overflow": 0,
+      "surface": "appearance",
+      "url": "#/appearance",
+      "device": "mobile",
+      "filter_disclosure": null,
+      "theme_source": "OS dark (prefers-color-scheme), no saved choice"
+    },
+    {
+      "file": "kypulse-10-after-settings-mobile-dark.png",
+      "sha256": "1d008fd35e6da5b8a4a2539e23bd698a970a76b47565a67f5e39c45c7705b962",
+      "bytes": 46757,
+      "viewport": {
+        "width": 390,
+        "height": 844
+      },
+      "overflow": 0,
+      "surface": "settings",
+      "url": "#/settings",
+      "device": "mobile",
+      "filter_disclosure": null,
+      "theme_source": "OS dark (prefers-color-scheme), no saved choice"
+    },
+    {
+      "file": "kypulse-10-after-backup-mobile-dark.png",
+      "sha256": "400cb3d5fa6107d7b911008884c0d54cb6c6480ab89ab60fd3295a9069baa20a",
+      "bytes": 53949,
+      "viewport": {
+        "width": 390,
+        "height": 844
+      },
+      "overflow": 0,
+      "surface": "backup",
+      "url": "#/backup",
+      "device": "mobile",
+      "filter_disclosure": null,
+      "theme_source": "OS dark (prefers-color-scheme), no saved choice"
+    },
+    {
+      "file": "kypulse-10-after-logs-mobile-dark.png",
+      "sha256": "3a15dfee4665c92d7872aad5513e57b4cb27c416af7e721eaac4a6cfb8dc716d",
+      "bytes": 49488,
+      "viewport": {
+        "width": 390,
+        "height": 844
+      },
+      "overflow": 0,
+      "surface": "logs",
+      "url": "#/logs",
+      "device": "mobile",
+      "filter_disclosure": "collapsed",
+      "theme_source": "OS dark (prefers-color-scheme), no saved choice"
+    },
+    {
+      "file": "kypulse-10-after-activity-mobile-dark.png",
+      "sha256": "82c861b0194ae6de09a1728d653f64ad93f7b820d1bd49482a3be99ea5d0955b",
+      "bytes": 33143,
+      "viewport": {
+        "width": 390,
+        "height": 844
+      },
+      "overflow": 0,
+      "surface": "activity",
+      "url": "#/activity",
+      "device": "mobile",
+      "filter_disclosure": "collapsed",
+      "theme_source": "OS dark (prefers-color-scheme), no saved choice"
+    },
+    {
+      "file": "kypulse-10-after-app-detail-mobile-dark.png",
+      "sha256": "cb47d19bcfeef1ad032523d437246e7b0a87adc436197054c8e923043a61cc76",
+      "bytes": 52455,
+      "viewport": {
+        "width": 390,
+        "height": 844
+      },
+      "overflow": 0,
+      "surface": "app-detail",
+      "url": "#/apps/tgt_00c352797fe734a4",
+      "device": "mobile",
+      "filter_disclosure": null,
+      "theme_source": "OS dark (prefers-color-scheme), no saved choice"
+    },
+    {
+      "file": "kypulse-10-after-logs-filters-mobile-dark.png",
+      "sha256": "d4625536e705c3e47fe7cd9b96501a72571d16cef9fc70e9f588deb384512553",
+      "bytes": 39206,
+      "viewport": {
+        "width": 390,
+        "height": 844
+      },
+      "overflow": 0,
+      "surface": "logs-filters",
+      "url": "#/logs",
+      "device": "mobile",
+      "filter_disclosure": "expanded",
+      "theme_source": "OS dark (prefers-color-scheme), no saved choice"
+    },
+    {
+      "file": "kypulse-10-after-activity-filters-mobile-dark.png",
+      "sha256": "56d444404ccc40fea380d1b1481b1342316184100dc3fd45bd820b1a3da94009",
+      "bytes": 43143,
+      "viewport": {
+        "width": 390,
+        "height": 844
+      },
+      "overflow": 0,
+      "surface": "activity-filters",
+      "url": "#/activity",
+      "device": "mobile",
+      "filter_disclosure": "expanded",
+      "theme_source": "OS dark (prefers-color-scheme), no saved choice"
+    }
+  ],
+  "checks": []
+}

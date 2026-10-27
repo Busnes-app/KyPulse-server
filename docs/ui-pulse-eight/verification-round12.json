@@ -1,0 +1,53 @@
+{
+  "product_source": "68bf09f8d3c417bc578665ec9affb7b0405ce05a",
+  "shared_source": "58626b7",
+  "status": "Round12 source68bf09f build/typecheck/makeci/full-browser24pass8skips/native pass.40fresh originals/21pins/zero overflow/duplicates. Current-head remote CI/security and primary reviews pending; Gemini deferred.",
+  "checks": {
+    "build": {
+      "status": "pass",
+      "evidence": "checks/r12-web.txt"
+    },
+    "make_ci": {
+      "status": "pass",
+      "evidence": "checks/r12-ci.txt",
+      "result": "Tidy/vet/race/96frontend/real smoke pass;exit0."
+    },
+    "browser": {
+      "status": "pass",
+      "evidence": "checks/r12-browser.txt",
+      "sha256": "88679a23d5fed6d14279197d3dcca0d0c12eed9d3ac4924dd48267af4d42fd17",
+      "raw_sha256": "88679a23d5fed6d14279197d3dcca0d0c12eed9d3ac4924dd48267af4d42fd17",
+      "normalization": "ANSI escapes and trailing line whitespace removed.",
+      "exit_record": "checks/r12-browser.exit.txt",
+      "subprocess_exit_code": 0,
+      "wrapper_exit_code": 0,
+      "result": "24passed,8layout-specific skips,8.7min; complete production-server matrix with clean teardown.",
+      "source": "68bf09f8d3c417bc578665ec9affb7b0405ce05a"
+    },
+    "remote": {
+      "status": "ci-pass-security-pending",
+      "head": "63df86c56e963fb9c74dbad581036000b5ad31d8",
+      "evidence": "checks/r12-remote.json"
+    },
+    "native": {
+      "status": "pass-scoped",
+      "evidence": "native-round12.json",
+      "result": "KyYard guidance follows empty messages,source heading8px/paragraph16px at390and1280; expanded phone Activity result+guidance end824.5within844,one nav/zero overflow,OSlight/no saved choice."
+    }
+  },
+  "retained_checks": "verification-round7.json/checks/r7-remote.json preserve remote CI success54fc13e (including clean browser completion), local assertions22pass6skips with wrapper143, and stale authored securityc976d40. These predate round8 source.",
+  "coverage": "40 distinct originals,28admin-console/12settings, default collapsed and expanded filters. Same coverage as round7; earlier rounds20admin/12settings remain historical.",
+  "limitations": [
+    "Synthetic admin,initial viewport,empty/unpaired Logs/Activity,unconfigured Settings/Backup. Other roles/populated/lower content remain unscored.",
+    "Native Chrome154/DPR2 differs from scored Chromium153/DPR1.",
+    "Warning contrast scoped to Busnes light/dark,not all named themes/states.",
+    "Regex detector reports prescribed Space Grotesk and selected-nav accent border;not accessibility acceptance.",
+    "No merge/deploy;MySlop401 prevents shared-board posting."
+  ],
+  "calibration": {
+    "status": "round9-both-terminal-gate-unmet",
+    "evidence": "round9-audit.json",
+    "runtime_unchanged": true,
+    "next": "Actual bounded Backup layout change; fresh round10 evidence/review, no unchanged-image reroll."
+  }
+}

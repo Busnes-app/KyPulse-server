@@ -1,0 +1,68 @@
+{
+  "round": 13,
+  "runtime_source": "699d201",
+  "method": "Owned T3 Computer Use tab Chrome154/DPR2, synthetic admin fixture18435; OSlight/no saved choice. Supplements Chromium153/DPR1 originals; no recovery/content/configuration/theme writes.",
+  "logs_desktop": {
+    "viewport": [
+      1280,
+      900
+    ],
+    "sourceHints": [
+      {
+        "width": 612,
+        "height": 39,
+        "maxWidth": "612px",
+        "fontSize": "13px"
+      },
+      {
+        "width": 612,
+        "height": 58.5,
+        "maxWidth": "612px",
+        "fontSize": "13px"
+      },
+      {
+        "width": 612,
+        "height": 19.5,
+        "maxWidth": "612px",
+        "fontSize": "13px"
+      }
+    ],
+    "formWidth": 976,
+    "navCount": 1,
+    "overflow": 0,
+    "theme": null
+  },
+  "logs_phone": {
+    "viewport": [
+      390,
+      844
+    ],
+    "sourceHints": [
+      {
+        "width": 358,
+        "height": 58.5,
+        "maxWidth": "612px"
+      },
+      {
+        "width": 358,
+        "height": 78,
+        "maxWidth": "612px"
+      },
+      {
+        "width": 358,
+        "height": 19.5,
+        "maxWidth": "612px"
+      }
+    ],
+    "navCount": 1,
+    "overflow": 0,
+    "theme": null
+  },
+  "activity_phone_expanded": {
+    "emptyBottom": 773.5,
+    "guidanceBottom": 824.5,
+    "pairLinkFollowsEmpty": true,
+    "overflow": 0
+  },
+  "limits": "Supporting prose measure/layout only, not full acceptance; all other behavior/contrast states remain scoped to separate tests."
+}

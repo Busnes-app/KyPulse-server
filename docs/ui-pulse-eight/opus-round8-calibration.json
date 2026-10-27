@@ -1,0 +1,215 @@
+{
+  "schema": "kypulse-calibration-advisory/1",
+  "round": 8,
+  "advisory": true,
+  "new_numeric_scores": null,
+  "reviewer": {
+    "model": "claude-opus-5-5",
+    "name": "Claude Opus 5.5",
+    "subagents": false,
+    "gemini": false
+  },
+  "rubric": {
+    "version": "ky-suite-v2",
+    "producer": "58626b7",
+    "rubric_sha256": "ad3516620420fbdc30f5273f82b7c72c76e1365d1b6296fcaa56be3cbebf2c41",
+    "design_contract_sha256": "c191803eb1662f907a90eb7d9fc1c193f156c0cab8f49d8a00fe30c286f7358c"
+  },
+  "tokens": {
+    "vendor_version": "0.4.3",
+    "tokens_css_sha256": "636fcf04ce783edd7625b5265f63abb8b3abd9fae78ee653b1a2ea3142f235f4",
+    "appearance_css_sha256": "f689ae75f13319f1cf2ddf60903df07165fac2ceaf81db21d735bc0eb411ccba",
+    "equals_producer_58626b7": true,
+    "dirty_root_ky_ui_used": false
+  },
+  "source_commit": "1fac23363f782c09e5b281ccb05b46d19c08455f",
+  "evidence_commit": "4128723ff9742a6a6f5b1b22b0b990f9bea54ec0",
+  "inputs": {
+    "opus-round8.md": "d27f1266d43680023b4364551c2734eca948368eabe3911b3870b216d230c70d",
+    "opus-round8.json": "355f83c25094017980748451571cc40a6f723b4383a16228b6ef154785f78305",
+    "sol-round8.md": "8a6bd22dc5a199c6fe66baad694c1e7ee81e2e9ae1b334c9a73b1f248c3f74da",
+    "sol-round8.json": "9aee27cec19370dda4266816302c7ce970e198f5117d42beb71fe272021c6320",
+    "round8-audit.md": "fe6795d9e2d9b337d2956851072050cc068868a6ece05030cacfdcc6debca3ae",
+    "round8-audit.json": "cb642f948856eb708268ec6550af24867a2e19e84c528e9e8930c2f62f605d22",
+    "native-round8.json": "8d52d868411ea26cc52228986da314349ee3aeaa5cb13f8c025f9083177c00c9",
+    "inventory-v8.json": "5ea7b62a05b049f1b7abe8118e3472b7c05ebe0c16872378b4b6a11cc7cec29e",
+    "manifest-08-after.json": "16ac716abc3ee73609284ec71767d1613e51bf0b139fbdc533efd70b9af86756"
+  },
+  "inventory_check": {
+    "originals": 40,
+    "hash_mismatches": 0
+  },
+  "originals_viewed_full_resolution": {
+    "kypulse-08-after-appearance-desktop-dark.png": "01fad0561e4d241516bc9a68934e35a20621de28bf9bc5de4d2d838c0a481b9f",
+    "kypulse-08-after-appearance-desktop-light.png": "b30125dae3f238bb3f050c70fc9daa37ade0178841732f91236a2c8bab7cd741",
+    "kypulse-08-after-appearance-mobile-dark.png": "d7016865f2a6974f5bfa74821aced14c6e086221f8e1760dce1cda11fc6aac6c",
+    "kypulse-08-after-logs-desktop-light.png": "d3855558c393bbe73dcc572656e461e6b9ba90274bb2c04511a351351098507c",
+    "kypulse-08-after-logs-filters-desktop-light.png": "0df5fe94f06838bc420abebfb092f911e4c3bb4582178db5d5a718c5a15a9a74",
+    "kypulse-08-after-logs-filters-mobile-light.png": "555e5eb03a31274584402154715732f72653fc6ec89e13afeb302689ba29d7f6",
+    "kypulse-08-after-activity-filters-mobile-dark.png": "3cec4fdb49133edd4cc7820e665d0f48ba513086c8b3a8825047c42c16b69b5d",
+    "kypulse-08-after-app-detail-desktop-light.png": "6dad68f791f06390647f5c936befdbcfd6672110b4a22d0a3c8356780e7a1f66",
+    "kypulse-08-after-app-detail-mobile-dark.png": "fd8f4d4233a267cd310042c5d8ea8e403b1c54a57196c010d06e3cfa8d21c3e7",
+    "kypulse-08-after-alerts-desktop-light.png": "65d8bf931d034b3dacde79c83dbe2e4a9b02ba3a9409ecb3335d9dbf86f3223b",
+    "kypulse-08-after-backup-desktop-light.png": "3e53ad1a111b77b425be8593ad98eafd3cd6a851d78d2ffa2e3055fad017dd4f",
+    "kypulse-08-after-backup-mobile-light.png": "001d1f532538a19a5dd62974bef7de66556942dab589f7f523056e108f4aac6d"
+  },
+  "verdict": {
+    "required_changes": [],
+    "raw_gate": "unmet for Opus; preserved",
+    "gemini": "deferred",
+    "summary": "No disputed deduction is a user-visible required defect; remaining Opus shortfall is mainly round-8 judgment shift on retained pixels plus taste. Not converted into a pass."
+  },
+  "gate_unchanged": {
+    "opus": {
+      "admin-console": "222.0/28",
+      "settings": "95.0/12",
+      "satisfied": false
+    },
+    "sol": {
+      "admin-console": "240.0/28",
+      "settings": "102.0/12",
+      "satisfied": true
+    },
+    "pooling": false,
+    "rounding_into_8": false,
+    "waiver": false
+  },
+  "claims": [
+    {
+      "id": "J5",
+      "surface": "appearance dark desktop/mobile",
+      "dimension": "visible_affordances",
+      "spread": "Opus 7 vs Sol 9",
+      "class": "misapplied",
+      "evidence": [
+        "native radio appearance:auto 16px with accent-color; Chromium dark unchecked fill #3b3b3b",
+        "ring/card dark #7c7d7d on #1f2b2e = 3.52:1; light #828282 on #ffffff = 3.84:1 (original pixels)",
+        "whole LABEL card 186x120 cursor:pointer carries selection via accent border+outline+filled radio",
+        "Opus A8 on unchanged pixels rounds 3-7"
+      ],
+      "producer_ky_ui_change": false,
+      "recommendation": "no change",
+      "unknown": [
+        "21 other named themes rendered contrast",
+        "dark hover/focus",
+        "contrast gate"
+      ]
+    },
+    {
+      "id": "J1",
+      "surface": "logs desktop collapsed/expanded",
+      "dimension": "hierarchy",
+      "class": "misapplied",
+      "evidence": [
+        "collapsed: no filled button; expanded: Apply only filled",
+        "Add source and Refresh sources both btn-secondary (native)",
+        "Opus round 2 requested demoting Add source; shipped round 3; Opus H8 rounds 3-6 on unchanged buttons"
+      ],
+      "read_only_empty_requires_filled_primary": false,
+      "one_primary_plan_if_owner_wants": {
+        "change": "Add source filled submit; Logs Apply btn-secondary; Clear and Refresh secondary",
+        "completion": "exactly one computed accent fill in main for Logs collapsed and expanded at 1280 and 390",
+        "recommended": false,
+        "cost": "Logs Apply diverges from Activity Apply; filter submit demoted"
+      },
+      "rejected_variants": [
+        "two filled in expanded state (contract)",
+        "text-only tertiary Refresh (new vocabulary; no tertiary class exists)"
+      ],
+      "recommendation": "no change"
+    },
+    {
+      "id": "J2",
+      "surface": "expanded phone logs/activity",
+      "dimension": "density_layout",
+      "class": "taste",
+      "evidence": [
+        "2 short paired + full-width text + 2 full-width native dates; 8px gaps",
+        "paired dates rejected (native clip at 390)",
+        "single column adds ~72px pushing result past 844"
+      ],
+      "recommendation": "no change"
+    },
+    {
+      "id": "J3",
+      "surface": "app detail",
+      "dimension": "coherence, density_layout",
+      "class": "misapplied (coherence); polish (inline Checks)",
+      "evidence": [
+        "status banner, key/value facts, events table are distinct semantic roles",
+        "history table reuses Alerts events component (AppDetail.tsx:196, Alerts.tsx:56)",
+        "inline Checks was round-3 fix for Opus round-2 half-column void (theme.css:590-592, 3984044)",
+        "Opus Co8 rounds 3-7"
+      ],
+      "optional_polish": {
+        "change": "drop theme.css:591-592; keep 590",
+        "completion": "empty-checks hint sits below Checks heading at 1280 and 390, both themes, same heading-to-hint gap as KyYard",
+        "gate_lever": false
+      },
+      "recommendation": "no required change"
+    },
+    {
+      "id": "J4",
+      "surface": "backup desktop/mobile",
+      "dimension": "hierarchy, density_layout",
+      "class": "polish/taste",
+      "evidence": [
+        "7 buttons incl. 2 visibly distinct disabled and sidebar Sign out; Pair primary while needsSetup, Back up now primary after (Backup.tsx:365,494)",
+        "heading 'Back up now' repeats adjacent button label",
+        "desktop columns end ~31px apart (y456 vs y487)",
+        "phone ink gaps: notice->KyRecovery 17px, Pair->Recovery key by hand 49px (hierarchical grouping)",
+        "Opus Backup desktop D7 in rounds 3,4,7,8"
+      ],
+      "optional_polish": {
+        "change": "rename 'Back up now' section heading",
+        "requires": "owner copy approval",
+        "completion": "heading text differs from every button label in the section",
+        "gate_lever": false
+      },
+      "recommendation": "no required change"
+    }
+  ],
+  "implementation_list": [],
+  "native_supplement": {
+    "browser": "Chrome/154.0.0.0",
+    "dpr": 2,
+    "differs_from_scored": "Chromium 153 DPR 1",
+    "fixture": "http://127.0.0.1:18431",
+    "tab": "own incognito, reuseExistingTab:false; parent tab untouched",
+    "login": "snapshot refs; waited Security check verified; waited navigation[name=Primary]",
+    "appearance": {
+      "nav": 1,
+      "overflow": 0,
+      "radios": 23,
+      "checked": "system",
+      "radio_appearance": "auto",
+      "radio_size": [
+        16,
+        16
+      ],
+      "accent_color": "rgb(191, 63, 24)",
+      "card": "LABEL 186x120 cursor:pointer border rgba(24, 35, 38, 0.38)",
+      "selected_border_outline": "rgb(191, 63, 24) 1px"
+    },
+    "logs_collapsed": {
+      "filters_summary_height": 40,
+      "add_source": "btn-secondary transparent",
+      "refresh_sources": "btn-secondary transparent"
+    },
+    "ky_theme": "null throughout",
+    "writes": "none",
+    "closed": "own tab only"
+  },
+  "limits": [
+    "visual calibration only; no build/test/CI run",
+    "keyboard/focus/contrast/states/responsive gates untested",
+    "other roles, populated Logs/Activity, lower content, named-theme contrast unverified",
+    "12 of 40 originals re-viewed (disputed surfaces only)",
+    "same model as Opus primary; calibration, not independent confirmation",
+    "a future Opus scoring pass would be primed by this advisory"
+  ],
+  "files_written": [
+    "opus-round8-calibration.md",
+    "opus-round8-calibration.json"
+  ]
+}

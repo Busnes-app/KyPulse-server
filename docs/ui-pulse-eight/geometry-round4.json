@@ -1,0 +1,27 @@
+{
+  "viewport": {
+    "width": 1280,
+    "height": 900
+  },
+  "cards": [
+    {
+      "top": 187.5,
+      "bottom": 522,
+      "height": 334.5
+    },
+    {
+      "top": 187.5,
+      "bottom": 603.5,
+      "height": 416
+    }
+  ],
+  "alignItems": "start",
+  "note": {
+    "text": "Local copies land in /tmp/kypulse-capture-QPA9lx/backups; the newest 7 are kept.",
+    "iconCount": 0
+  },
+  "overflow": 0,
+  "onePrimaryNav": 1,
+  "browser": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/153.0.8010.12 Safari/537.36",
+  "method": "Repository Playwright fallback after native collaborative-browser click/wait timeouts; no service-worker/CSP/CSRF changes"
+}

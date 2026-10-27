@@ -1,0 +1,82 @@
+{
+  "product_source": "39840441429f2f8f336f1046a07d908e7b301722",
+  "shared_source": "58626b7",
+  "status": "All required local round3 checks passed at UI3984044. Current-head remote CI/security and independent visual reviews remain separate pending gates.",
+  "checks": {
+    "frontend": {
+      "status": "pass",
+      "evidence": "checks/r3-frontend.txt",
+      "raw_sha256": "b2e8be8bea20a628acef3433cb0848511cfbabe6ca279310dd379f94f3024af4",
+      "sha256": "b2e8be8bea20a628acef3433cb0848511cfbabe6ca279310dd379f94f3024af4"
+    },
+    "make_ci": {
+      "status": "pass",
+      "evidence": "checks/r3-make_ci.txt",
+      "raw_sha256": "51221af4b19cdd5bd088ed426e7590b1940a1b572a1721c8a86249df3e033248",
+      "sha256": "51221af4b19cdd5bd088ed426e7590b1940a1b572a1721c8a86249df3e033248"
+    },
+    "docker_build": {
+      "status": "pass",
+      "evidence": "checks/r3-docker_build.txt",
+      "raw_sha256": "0c081411381d34f66038498fefbfd21d615633e35c2d15c2a9055a6d9008ec09",
+      "sha256": "20edb4804b888cdac2e07940f4c4b2e458628c373b5ddfe834950149824f9ea9"
+    },
+    "impeccable": {
+      "status": "reported2pinned-style findings; regex-only scan",
+      "evidence": "checks/r3-impeccable.txt",
+      "raw_sha256": "6a2d1b9c8d8665e08c7471d8f987e29c784f4edb5a7f28595d84f431fa508429",
+      "sha256": "6a2d1b9c8d8665e08c7471d8f987e29c784f4edb5a7f28595d84f431fa508429"
+    },
+    "shared_check": {
+      "status": "pass",
+      "evidence": "checks/r3-shared_check.txt",
+      "raw_sha256": "8d2bb06e052e6800efbc514d9ae2a10af940a6bec2f5cb761011a05e2392af1b",
+      "sha256": "8d2bb06e052e6800efbc514d9ae2a10af940a6bec2f5cb761011a05e2392af1b"
+    },
+    "shared_browser": {
+      "status": "pass",
+      "evidence": "checks/r3-shared_browser.txt",
+      "raw_sha256": "8bed49fdb063695206666c652d970bc4438a0d2b9655894925ae45a6787924e5",
+      "sha256": "8bed49fdb063695206666c652d970bc4438a0d2b9655894925ae45a6787924e5"
+    },
+    "runtime": {
+      "status": "pass",
+      "evidence": "checks/r3-runtime.json",
+      "sha256": "75b386cd896e41c59b45dc4d3e53c0572d0fc3d644039c3d987d6cf574234b91"
+    },
+    "repeatable": {
+      "status": "pass",
+      "evidence": "checks/r3-repeatable.json",
+      "sha256": "8db88dccd95e75f29a1145c24561dc5b4f3341d62d524f7b324586a6b889e0de"
+    },
+    "fips": {
+      "status": "pass",
+      "evidence": "checks/r3-fips.txt",
+      "raw_sha256": "f175c5c4dec974186cf9e62f86a3a42adb82b80c627be290e43e9077cc636d00",
+      "sha256": "f175c5c4dec974186cf9e62f86a3a42adb82b80c627be290e43e9077cc636d00"
+    },
+    "postgres": {
+      "status": "pass",
+      "evidence": "checks/r3-postgres.txt",
+      "raw_sha256": "743075d59e3188120e0595d8fe1dcc7777851707c1098c961d915886e87b3bd6",
+      "sha256": "743075d59e3188120e0595d8fe1dcc7777851707c1098c961d915886e87b3bd6"
+    },
+    "browser": {
+      "status": "pass",
+      "evidence": "checks/r3-browser.txt",
+      "raw_sha256": "e8bb114d2c31e58eb7ea91757c02ea3d41f31bef7d9c40a671ff3a10d0346f63",
+      "sha256": "e8bb114d2c31e58eb7ea91757c02ea3d41f31bef7d9c40a671ff3a10d0346f63",
+      "result": "20passed,4 intentional viewport skips;8.7min; normal service workers, real server/CSP"
+    }
+  },
+  "retained_checks": {
+    "fuzz_shellcheck": "Round2 pass retained: parser and shell inputs unchanged. See verification-round2.json.",
+    "govulncheck_npm_audit_module_verification": "Round2 pass retained: dependencies/backend imports unchanged. CI runs fresh on the pushed head."
+  },
+  "limitations": [
+    "Admin initial-viewport screenshot coverage only, no full behavior acceptance.",
+    "Native Chrome152 differs from scored Chromium153.",
+    "No merge/deployment.",
+    "MySlop401 unknown/revoked token; board posting unavailable."
+  ]
+}

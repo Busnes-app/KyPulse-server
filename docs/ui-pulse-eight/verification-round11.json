@@ -1,0 +1,72 @@
+{
+  "product_source": "3b696001b04d79eaad6705756272288d1336397c",
+  "shared_source": "58626b7",
+  "status": "Round11 bothreviews terminal: Opus admin111/14 below8,settings241/30pass;Sol83/10and42/5pass. Full local browser rerun24pass8skips/subprocess+wrapper0 after test-only repair. Fresh remote head gates pending; nextbounded Logs/Activity grouping requires new checks/captures.",
+  "checks": {
+    "build": {
+      "status": "pass",
+      "evidence": "checks/r11-web.txt"
+    },
+    "resize_regression": {
+      "status": "pass",
+      "before": "checks/r11-resize-before.txt",
+      "after": "checks/r11-nav-after.txt",
+      "result": "New resize test fails on source61 at active-item visibility; after fix6pass6layout-specific skips in nav suite, focus and scroll retained, exit0."
+    },
+    "make_ci": {
+      "status": "pass",
+      "evidence": "checks/r11-ci.txt",
+      "result": "Tidy/formatting/vet/race/96frontend/smoke pass; exit0."
+    },
+    "browser": {
+      "status": "pass",
+      "evidence": "checks/r11-browser-fixed.txt",
+      "sha256": "9aba79ce28cb856c8d1d62238b2bd3a4394da558dff83d3369ed6269089f27d7",
+      "raw_sha256": "9aba79ce28cb856c8d1d62238b2bd3a4394da558dff83d3369ed6269089f27d7",
+      "exit_record": "checks/r11-browser-fixed.exit.txt",
+      "subprocess_exit_code": 0,
+      "wrapper_exit_code": 0,
+      "result": "24passed,8layout-specific skips,8.4min,clean teardown; assertions preserved after contrast-sampling repair.",
+      "runtime_source": "3b696001b04d79eaad6705756272288d1336397c",
+      "test_fix_head": "b8f8c05"
+    },
+    "remote_previous": {
+      "status": "all-green",
+      "head": "a8b6e511217493ef7f9622f7719c83d8075b508c",
+      "evidence": "checks/r10-remote.json",
+      "note": "Both CI and authored security clear a8; superseded by new source3b69600."
+    },
+    "native": {
+      "status": "pass-scoped",
+      "evidence": "native-round11.json",
+      "result": "Selected Backup visible after desktop\u2192phone resize;7detail heading gaps16px, centered silence labels, tertiary Refresh40px, one nav/no overflow; OSlight390 only."
+    },
+    "browser_first_attempt": {
+      "status": "fail",
+      "evidence": "checks/r11-browser-failed.txt",
+      "exit_record": "checks/r11-browser-failed.exit.txt",
+      "result": "22passed,2failed,8layout-specific skips,8.5min; both failures in danger-button screenshot sampling below viewport, clean teardown,exit1."
+    },
+    "contrast_sampling_fix": {
+      "status": "pass-scoped",
+      "before": "checks/r11-danger-before.txt",
+      "after": "checks/r11-danger-after.txt",
+      "result": "Reproduced clip failure; scroll actual Delete into view before bounding-box sample.2pass/2layout-specific skips in13.1s, all15suite palette rest/hover/focus contrast assertions preserved; no runtime change."
+    }
+  },
+  "retained_checks": "verification-round7.json/checks/r7-remote.json preserve remote CI success54fc13e (including clean browser completion), local assertions22pass6skips with wrapper143, and stale authored securityc976d40. These predate round8 source.",
+  "coverage": "40 distinct originals,28admin-console/12settings, default collapsed and expanded filters. Same coverage as round7; earlier rounds20admin/12settings remain historical.",
+  "limitations": [
+    "Synthetic admin,initial viewport,empty/unpaired Logs/Activity,unconfigured Settings/Backup. Other roles/populated/lower content remain unscored.",
+    "Native Chrome154/DPR2 differs from scored Chromium153/DPR1.",
+    "Warning contrast scoped to Busnes light/dark,not all named themes/states.",
+    "Regex detector reports prescribed Space Grotesk and selected-nav accent border;not accessibility acceptance.",
+    "No merge/deploy;MySlop401 prevents shared-board posting."
+  ],
+  "calibration": {
+    "status": "round9-both-terminal-gate-unmet",
+    "evidence": "round9-audit.json",
+    "runtime_unchanged": true,
+    "next": "Actual bounded Backup layout change; fresh round10 evidence/review, no unchanged-image reroll."
+  }
+}

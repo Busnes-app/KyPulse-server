@@ -1,0 +1,77 @@
+{
+  "round": 14,
+  "review_mode": "focused_fix_confirmation",
+  "runtime_source": "f1dcb55",
+  "method": "Owned T3 Computer Use tab Chrome154/DPR2, synthetic admin fixture18436, OSlight/no saved choice; supplements scored Chromium153/DPR1 originals. No recovery/content/configuration/theme writes.",
+  "backup_desktop": {
+    "viewport": [
+      1280,
+      900
+    ],
+    "badges": [
+      {
+        "text": "None",
+        "fontSize": "13px",
+        "height": 25.5,
+        "width": 50,
+        "clipped": false
+      },
+      {
+        "text": "Not paired",
+        "fontSize": "13px",
+        "height": 25.5,
+        "width": 84.5,
+        "clipped": false
+      },
+      {
+        "text": "0 of 7",
+        "fontSize": "13px",
+        "height": 25.5,
+        "width": 54,
+        "clipped": false
+      },
+      {
+        "text": "Daily",
+        "fontSize": "13px",
+        "height": 25.5,
+        "width": 49,
+        "clipped": false
+      }
+    ],
+    "navCount": 1,
+    "overflow": 0,
+    "theme": null
+  },
+  "backup_phone": {
+    "viewport": [
+      390,
+      844
+    ],
+    "badges": [
+      {
+        "text": "None",
+        "fontSize": "13px",
+        "clipped": false
+      },
+      {
+        "text": "Not paired",
+        "fontSize": "13px",
+        "clipped": false
+      },
+      {
+        "text": "0 of 7",
+        "fontSize": "13px",
+        "clipped": false
+      },
+      {
+        "text": "Daily",
+        "fontSize": "13px",
+        "clipped": false
+      }
+    ],
+    "navCount": 1,
+    "overflow": 0,
+    "theme": null
+  },
+  "limits": "Badge size/clipping and scoped navigation/overflow only; not full acceptance."
+}

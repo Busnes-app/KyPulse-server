@@ -1,75 +1,54 @@
 {
-  "product_source": "39840441429f2f8f336f1046a07d908e7b301722",
+  "product_source": "f1dcb5553e2693ee997488e2a3bd4434b2bb4f1e",
   "shared_source": "58626b7",
-  "status": "Round3 browser,SQLite FIPS and PostgreSQL FIPS in flight; frontend/makeci/Docker/repeatable builds pass. No visual8 progression yet.",
+  "status": "Round14 both focused confirmations terminal and satisfied; Opus8/8,Sol296/35and253/30. Current runtime local required checks/full browser pass; remote7569allCIpass,security stale; Gemini advisory eligible.",
   "checks": {
-    "frontend": {
+    "build": {
       "status": "pass",
-      "evidence": "checks/r3-frontend.txt",
-      "raw_sha256": "b2e8be8bea20a628acef3433cb0848511cfbabe6ca279310dd379f94f3024af4",
-      "sha256": "b2e8be8bea20a628acef3433cb0848511cfbabe6ca279310dd379f94f3024af4"
+      "evidence": "checks/r14-web.txt"
     },
     "make_ci": {
       "status": "pass",
-      "evidence": "checks/r3-make_ci.txt",
-      "raw_sha256": "51221af4b19cdd5bd088ed426e7590b1940a1b572a1721c8a86249df3e033248",
-      "sha256": "51221af4b19cdd5bd088ed426e7590b1940a1b572a1721c8a86249df3e033248"
-    },
-    "docker_build": {
-      "status": "pass",
-      "evidence": "checks/r3-docker_build.txt",
-      "raw_sha256": "0c081411381d34f66038498fefbfd21d615633e35c2d15c2a9055a6d9008ec09",
-      "sha256": "20edb4804b888cdac2e07940f4c4b2e458628c373b5ddfe834950149824f9ea9"
-    },
-    "impeccable": {
-      "status": "reported2pinned-style findings; regex-only scan",
-      "evidence": "checks/r3-impeccable.txt",
-      "raw_sha256": "6a2d1b9c8d8665e08c7471d8f987e29c784f4edb5a7f28595d84f431fa508429",
-      "sha256": "6a2d1b9c8d8665e08c7471d8f987e29c784f4edb5a7f28595d84f431fa508429"
-    },
-    "shared_check": {
-      "status": "pass",
-      "evidence": "checks/r3-shared_check.txt",
-      "raw_sha256": "8d2bb06e052e6800efbc514d9ae2a10af940a6bec2f5cb761011a05e2392af1b",
-      "sha256": "8d2bb06e052e6800efbc514d9ae2a10af940a6bec2f5cb761011a05e2392af1b"
-    },
-    "shared_browser": {
-      "status": "pass",
-      "evidence": "checks/r3-shared_browser.txt",
-      "raw_sha256": "8bed49fdb063695206666c652d970bc4438a0d2b9655894925ae45a6787924e5",
-      "sha256": "8bed49fdb063695206666c652d970bc4438a0d2b9655894925ae45a6787924e5"
-    },
-    "runtime": {
-      "status": "pass",
-      "evidence": "checks/r3-runtime.json",
-      "sha256": "75b386cd896e41c59b45dc4d3e53c0572d0fc3d644039c3d987d6cf574234b91"
-    },
-    "repeatable": {
-      "status": "pass",
-      "evidence": "checks/r3-repeatable.json",
-      "sha256": "8db88dccd95e75f29a1145c24561dc5b4f3341d62d524f7b324586a6b889e0de"
-    },
-    "fips": {
-      "status": "in flight",
-      "log": "/tmp/kypulse-eight-r3-fips.log"
-    },
-    "postgres": {
-      "status": "in flight",
-      "log": "/tmp/kypulse-eight-r3-postgres.log"
+      "evidence": "checks/r14-ci.txt",
+      "result": "Tidy/vet/race/96frontend/real-server smoke pass;exit0."
     },
     "browser": {
-      "status": "in flight",
-      "log": "/tmp/kypulse-eight-r3-browser.log"
+      "status": "pass",
+      "evidence": "checks/r14-browser.txt",
+      "sha256": "fc16db88fd9267caaedb5cd510ebeeb6c620b268868e5f4561da3c8cf330dec2",
+      "raw_sha256": "fc16db88fd9267caaedb5cd510ebeeb6c620b268868e5f4561da3c8cf330dec2",
+      "normalization": "ANSI escapes and trailing line whitespace removed.",
+      "exit_record": "checks/r14-browser.exit.txt",
+      "subprocess_exit_code": 0,
+      "wrapper_exit_code": 0,
+      "result": "24passed,8layout-specific skips,9.5min; complete production-server matrix and clean teardown.",
+      "source": "f1dcb5553e2693ee997488e2a3bd4434b2bb4f1e"
+    },
+    "native": {
+      "status": "pass-scoped",
+      "evidence": "native-round14.json",
+      "result": "All4Backup badges13px/no clipping at1280and390; one nav/zero document overflow/no saved theme. Not full acceptance."
+    },
+    "remote_previous": {
+      "head": "7569de314217dd4b161b968dd44a1a8230df1828",
+      "status": "ci-pass-security-pending",
+      "evidence": "checks/r14-remote.json",
+      "note": "Fresh head gates required after evidence commit."
     }
   },
-  "retained_checks": {
-    "fuzz_shellcheck": "Round2 pass retained: parser and shell inputs unchanged. See verification-round2.json.",
-    "govulncheck_npm_audit_module_verification": "Round2 pass retained: dependencies/backend imports unchanged. CI runs fresh on the pushed head."
-  },
+  "retained_checks": "verification-round7.json/checks/r7-remote.json preserve remote CI success54fc13e (including clean browser completion), local assertions22pass6skips with wrapper143, and stale authored securityc976d40. These predate round8 source.",
+  "coverage": "40 distinct originals,28admin-console/12settings, default collapsed and expanded filters. Same coverage as round7; earlier rounds20admin/12settings remain historical.",
   "limitations": [
-    "Admin initial-viewport screenshot coverage only, no full behavior acceptance.",
-    "Native Chrome152 differs from scored Chromium153.",
-    "No merge/deployment.",
-    "MySlop401 unknown/revoked token; board posting unavailable."
-  ]
+    "Synthetic admin,initial viewport,empty/unpaired Logs/Activity,unconfigured Settings/Backup. Other roles/populated/lower content remain unscored.",
+    "Native Chrome154/DPR2 differs from scored Chromium153/DPR1.",
+    "Warning contrast scoped to Busnes light/dark,not all named themes/states.",
+    "Regex detector reports prescribed Space Grotesk and selected-nav accent border;not accessibility acceptance.",
+    "No merge/deploy;MySlop401 prevents shared-board posting."
+  ],
+  "calibration": {
+    "status": "round14-focused-confirmation-complete",
+    "evidence": "round14-audit.json",
+    "method": "Explicitly unblinded own-R13 carry/reassess,not fresh independent rank.",
+    "next": "Gemini advisory,parent-audited."
+  }
 }

@@ -108,7 +108,7 @@ export const AppDetail: React.FC<AppDetailProps> = ({ id, user, onChanged }) => 
   const cls = stateClass(target);
   const failing = target.enabled && !!target.last_polled_at && target.state !== 'ok';
   return (
-    <div className="dr-page">
+    <div className="dr-page app-detail-page">
       <p className="dr-hint"><a href={hrefFor('/status')}><ArrowLeft size={14} aria-hidden="true" />Status</a></p>
       <div className="dr-header">
         <h1>{target.name}</h1>
@@ -146,7 +146,7 @@ export const AppDetail: React.FC<AppDetailProps> = ({ id, user, onChanged }) => 
         <div className="dr-section">
           <h3>Silence webhook messages</h3>
           <p className="dr-hint">The alert bar and this page keep showing the problem; only webhook messages stop.</p>
-          <div className="dr-actions">
+          <div className="dr-actions silence-actions">
             <button type="button" className="btn-secondary" disabled={busy} onClick={() => silence('1h')}>Silence 1h</button>
             <button type="button" className="btn-secondary" disabled={busy} onClick={() => silence('8h')}>Silence 8h</button>
             <button type="button" className="btn-secondary" disabled={busy} onClick={() => silence('until_fixed')}>Silence until fixed</button>

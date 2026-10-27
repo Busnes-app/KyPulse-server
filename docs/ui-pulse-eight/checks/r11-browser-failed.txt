@@ -1,0 +1,153 @@
+npm notice run test:browser
+npm notice run playwright test
+[WebServer] {"timestamp":"2026-10-27T04:32:46.23889022-04:00","level":"INFO","message":"✓ Admin user \"admin\" created successfully","app":"kypulse","severity":6,"facility":16}
+[WebServer] {"timestamp":"2026-10-27T04:32:46.295849324-04:00","level":"INFO","message":"✓ Admin user \"viewer\" created successfully","app":"kypulse","severity":6,"facility":16}
+[WebServer] {"timestamp":"2026-10-27T04:32:46.310785208-04:00","level":"INFO","message":"[ALERTS] KYPULSE_ALERT_ALLOW_HTTP is on: a plain-http webhook receiver is admitted (loopback and link-local remain refused)","app":"kypulse","severity":6,"facility":16}
+[WebServer] {"timestamp":"2026-10-27T04:32:46.310876107-04:00","level":"INFO","message":"[KYYARD] KYPULSE_KYYARD_ALLOW_HTTP is on: a plain-http KyYard URL is admitted (loopback and link-local remain refused)","app":"kypulse","severity":6,"facility":16}
+[WebServer] {"timestamp":"2026-10-27T04:32:46.310889032-04:00","level":"WARN","message":"audit key sits beside the database; move it to its own directory and set KYPULSE_AUDIT_KEY_FILE","app":"kypulse","event":"audit_key_beside_db","path":"/tmp/ky-browser-Ntj89f/data/audit.key","severity":4,"facility":16}
+[WebServer] {"timestamp":"2026-10-27T04:32:46.312120031-04:00","level":"INFO","message":"audit chain placed at start","app":"kypulse","event":"audit_chain_placed","mode":"new","count":0,"head":"0000000000000000000000000000000000000000000000000000000000000000","severity":6,"facility":16}
+[WebServer] {"timestamp":"2026-10-27T04:32:46.313140067-04:00","level":"INFO","message":"[KYPULSE] kyPulse listening on http://127.0.0.1:5391 (DB: sqlite)","app":"kypulse","severity":6,"facility":16}
+
+Running 32 tests using 1 worker
+
+(node:1632513) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  -   1 [light-390] › browser/danger-button.spec.mjs:37:1 › the filled danger button label reads on its fill in every suite palette
+
+  ✓   2 [light-390] › browser/logs.spec.mjs:44:1 › admin logs, activity, pairing, filters, retry and viewer boundaries (1.1m)
+  ✓   3 [light-390] › browser/monitor.spec.mjs:48:1 › empty alert bar remains visible while watched apps load (423ms)
+[WebServer] {"timestamp":"2026-10-27T04:34:26.318670108-04:00","level":"WARN","message":"watched app changed state","app":"kypulse","event":"target_state_changed","target_id":"tgt_2639ff86c69a245a","state":"down","previous":"pending","reason_code":"status_503","severity":4,"facility":16}
+[WebServer] {"timestamp":"2026-10-27T04:34:56.319964507-04:00","level":"WARN","message":"watched app changed state","app":"kypulse","event":"target_state_changed","target_id":"tgt_2639ff86c69a245a","state":"ok","previous":"down","reason_code":"","severity":4,"facility":16}
+  ✓   4 [light-390] › browser/monitor.spec.mjs:66:1 › status, alerts, detail page and the alert bar in every state (1.3m)
+  -   5 [light-390] › browser/nav.spec.mjs:3:1 › desktop to phone resizing keeps the current navigation item visible
+  ✓   6 [light-390] › browser/nav.spec.mjs:28:1 › phone navigation keeps the current row visible after the font loads (794ms)
+  ✓   7 [light-390] › browser/nav.spec.mjs:65:1 › phone navigation reveals the current row on a deep link (564ms)
+[WebServer] {"timestamp":"2026-10-27T04:35:11.893377259-04:00","level":"WARN","message":"alert could not be delivered","app":"kypulse","event":"alert_send_failed","target_id":"tgt_2639ff86c69a245a","state":"ok","error_kind":"connection refused","severity":4,"facility":16}
+  ✓   8 [light-390] › browser/ui.spec.mjs:15:1 › production CSP, worker, themes, keyboard and responsive shell (4.2s)
+(node:1633607) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✘   9 [light-1280] › browser/danger-button.spec.mjs:37:1 › the filled danger button label reads on its fill in every suite palette (722ms)
+(node:1633718) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+
+  ✓  10 [light-1280] › browser/logs.spec.mjs:44:1 › admin logs, activity, pairing, filters, retry and viewer boundaries (48.7s)
+  ✓  11 [light-1280] › browser/monitor.spec.mjs:48:1 › empty alert bar remains visible while watched apps load (438ms)
+[WebServer] {"timestamp":"2026-10-27T04:36:36.318999889-04:00","level":"WARN","message":"watched app changed state","app":"kypulse","event":"target_state_changed","target_id":"tgt_f5e58f347fa981af","state":"down","previous":"pending","reason_code":"status_503","severity":4,"facility":16}
+[WebServer] {"timestamp":"2026-10-27T04:36:52.893667817-04:00","level":"WARN","message":"alert could not be delivered","app":"kypulse","event":"alert_send_failed","target_id":"tgt_f5e58f347fa981af","state":"down","error_kind":"connection refused","severity":4,"facility":16}
+[WebServer] {"timestamp":"2026-10-27T04:37:06.319219419-04:00","level":"WARN","message":"watched app changed state","app":"kypulse","event":"target_state_changed","target_id":"tgt_f5e58f347fa981af","state":"ok","previous":"down","reason_code":"","severity":4,"facility":16}
+  ✓  12 [light-1280] › browser/monitor.spec.mjs:66:1 › status, alerts, detail page and the alert bar in every state (1.3m)
+  ✓  13 [light-1280] › browser/nav.spec.mjs:3:1 › desktop to phone resizing keeps the current navigation item visible (621ms)
+  -  14 [light-1280] › browser/nav.spec.mjs:28:1 › phone navigation keeps the current row visible after the font loads
+  -  15 [light-1280] › browser/nav.spec.mjs:65:1 › phone navigation reveals the current row on a deep link
+[WebServer] {"timestamp":"2026-10-27T04:37:21.430539632-04:00","level":"WARN","message":"alert could not be delivered","app":"kypulse","event":"alert_send_failed","target_id":"tgt_f5e58f347fa981af","state":"ok","error_kind":"connection refused","severity":4,"facility":16}
+  ✓  16 [light-1280] › browser/ui.spec.mjs:15:1 › production CSP, worker, themes, keyboard and responsive shell (4.0s)
+(node:1634904) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  -  17 [dark-390] › browser/danger-button.spec.mjs:37:1 › the filled danger button label reads on its fill in every suite palette
+
+  ✓  18 [dark-390] › browser/logs.spec.mjs:44:1 › admin logs, activity, pairing, filters, retry and viewer boundaries (34.0s)
+  ✓  19 [dark-390] › browser/monitor.spec.mjs:48:1 › empty alert bar remains visible while watched apps load (458ms)
+[WebServer] {"timestamp":"2026-10-27T04:38:31.318805704-04:00","level":"WARN","message":"watched app changed state","app":"kypulse","event":"target_state_changed","target_id":"tgt_a49ae608f2027b63","state":"down","previous":"pending","reason_code":"status_503","severity":4,"facility":16}
+[WebServer] {"timestamp":"2026-10-27T04:38:46.546856339-04:00","level":"WARN","message":"alert could not be delivered","app":"kypulse","event":"alert_send_failed","target_id":"tgt_a49ae608f2027b63","state":"down","error_kind":"connection refused","severity":4,"facility":16}
+[WebServer] {"timestamp":"2026-10-27T04:39:16.319071192-04:00","level":"WARN","message":"watched app changed state","app":"kypulse","event":"target_state_changed","target_id":"tgt_a49ae608f2027b63","state":"ok","previous":"down","reason_code":"","severity":4,"facility":16}
+  ✓  20 [dark-390] › browser/monitor.spec.mjs:66:1 › status, alerts, detail page and the alert bar in every state (1.5m)
+  -  21 [dark-390] › browser/nav.spec.mjs:3:1 › desktop to phone resizing keeps the current navigation item visible
+  ✓  22 [dark-390] › browser/nav.spec.mjs:28:1 › phone navigation keeps the current row visible after the font loads (930ms)
+  ✓  23 [dark-390] › browser/nav.spec.mjs:65:1 › phone navigation reveals the current row on a deep link (725ms)
+[WebServer] {"timestamp":"2026-10-27T04:39:32.753549288-04:00","level":"WARN","message":"alert could not be delivered","app":"kypulse","event":"alert_send_failed","target_id":"tgt_a49ae608f2027b63","state":"ok","error_kind":"connection refused","severity":4,"facility":16}
+  ✓  24 [dark-390] › browser/ui.spec.mjs:15:1 › production CSP, worker, themes, keyboard and responsive shell (4.3s)
+(node:1637041) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✘  25 [dark-1280] › browser/danger-button.spec.mjs:37:1 › the filled danger button label reads on its fill in every suite palette (711ms)
+(node:1637168) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+
+  ✓  26 [dark-1280] › browser/logs.spec.mjs:44:1 › admin logs, activity, pairing, filters, retry and viewer boundaries (19.1s)
+  ✓  27 [dark-1280] › browser/monitor.spec.mjs:48:1 › empty alert bar remains visible while watched apps load (547ms)
+[WebServer] {"timestamp":"2026-10-27T04:40:31.318665527-04:00","level":"WARN","message":"watched app changed state","app":"kypulse","event":"target_state_changed","target_id":"tgt_665d6008ce3fcb87","state":"down","previous":"pending","reason_code":"status_503","severity":4,"facility":16}
+[WebServer] {"timestamp":"2026-10-27T04:40:45.844663597-04:00","level":"WARN","message":"alert could not be delivered","app":"kypulse","event":"alert_send_failed","target_id":"tgt_665d6008ce3fcb87","state":"down","error_kind":"connection refused","severity":4,"facility":16}
+[WebServer] {"timestamp":"2026-10-27T04:41:01.319195923-04:00","level":"WARN","message":"watched app changed state","app":"kypulse","event":"target_state_changed","target_id":"tgt_665d6008ce3fcb87","state":"ok","previous":"down","reason_code":"","severity":4,"facility":16}
+  ✓  28 [dark-1280] › browser/monitor.spec.mjs:66:1 › status, alerts, detail page and the alert bar in every state (1.3m)
+  ✓  29 [dark-1280] › browser/nav.spec.mjs:3:1 › desktop to phone resizing keeps the current navigation item visible (553ms)
+  -  30 [dark-1280] › browser/nav.spec.mjs:28:1 › phone navigation keeps the current row visible after the font loads
+  -  31 [dark-1280] › browser/nav.spec.mjs:65:1 › phone navigation reveals the current row on a deep link
+[WebServer] {"timestamp":"2026-10-27T04:41:16.39968859-04:00","level":"WARN","message":"alert could not be delivered","app":"kypulse","event":"alert_send_failed","target_id":"tgt_665d6008ce3fcb87","state":"ok","error_kind":"connection refused","severity":4,"facility":16}
+  ✓  32 [dark-1280] › browser/ui.spec.mjs:15:1 › production CSP, worker, themes, keyboard and responsive shell (4.3s)
+[WebServer] {"timestamp":"2026-10-27T04:41:19.023323466-04:00","level":"INFO","message":"[KYPULSE] Shutting down gracefully...","app":"kypulse","severity":6,"facility":16}
+[WebServer] {"timestamp":"2026-10-27T04:41:19.023438822-04:00","level":"INFO","message":"[KYPULSE] waiting for the scheduled backup in flight...","app":"kypulse","severity":6,"facility":16}
+[WebServer] {"timestamp":"2026-10-27T04:41:19.0234968-04:00","level":"INFO","message":"[KYPULSE] Server stopped","app":"kypulse","severity":6,"facility":16}
+
+
+  1) [light-1280] › browser/danger-button.spec.mjs:37:1 › the filled danger button label reads on its fill in every suite palette
+
+    Error: page.screenshot: Clipped area is either empty or outside the resulting image
+    Call log:
+      - taking page screenshot
+        - disabled all CSS animations
+      - waiting for fonts to load...
+      - fonts loaded
+
+
+      12 | const shot = async (page, button) => {
+      13 |   const box = await button.boundingBox();
+    > 14 |   return page.screenshot({ animations: 'disabled', clip: { x: box.x + 8, y: box.y + 4, width: box.width - 16, height: box.height - 8 } });
+         |               ^
+      15 | };
+      16 | const contrast = (decoder, png) => decoder.evaluate(async b64 => {
+      17 |   const img = new Image();
+        at shot (/home/yoshi/git/busnes.app/kyPulse-server/.claude/worktrees/ui-pulse-eight/web/browser/danger-button.spec.mjs:14:15)
+        at /home/yoshi/git/busnes.app/kyPulse-server/.claude/worktrees/ui-pulse-eight/web/browser/danger-button.spec.mjs:64:44
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results/danger-button-the-filled-d-202fd-fill-in-every-suite-palette-light-1280/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results/danger-button-the-filled-d-202fd-fill-in-every-suite-palette-light-1280/error-context.md
+
+    attachment #3: trace (application/zip) ─────────────────────────────────────────────────────────
+    test-results/danger-button-the-filled-d-202fd-fill-in-every-suite-palette-light-1280/trace.zip
+    Usage:
+
+        npx playwright show-trace test-results/danger-button-the-filled-d-202fd-fill-in-every-suite-palette-light-1280/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  2) [dark-1280] › browser/danger-button.spec.mjs:37:1 › the filled danger button label reads on its fill in every suite palette
+
+    Error: page.screenshot: Clipped area is either empty or outside the resulting image
+    Call log:
+      - taking page screenshot
+        - disabled all CSS animations
+      - waiting for fonts to load...
+      - fonts loaded
+
+
+      12 | const shot = async (page, button) => {
+      13 |   const box = await button.boundingBox();
+    > 14 |   return page.screenshot({ animations: 'disabled', clip: { x: box.x + 8, y: box.y + 4, width: box.width - 16, height: box.height - 8 } });
+         |               ^
+      15 | };
+      16 | const contrast = (decoder, png) => decoder.evaluate(async b64 => {
+      17 |   const img = new Image();
+        at shot (/home/yoshi/git/busnes.app/kyPulse-server/.claude/worktrees/ui-pulse-eight/web/browser/danger-button.spec.mjs:14:15)
+        at /home/yoshi/git/busnes.app/kyPulse-server/.claude/worktrees/ui-pulse-eight/web/browser/danger-button.spec.mjs:64:44
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    test-results/danger-button-the-filled-d-202fd-fill-in-every-suite-palette-dark-1280/test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: test-results/danger-button-the-filled-d-202fd-fill-in-every-suite-palette-dark-1280/error-context.md
+
+    attachment #3: trace (application/zip) ─────────────────────────────────────────────────────────
+    test-results/danger-button-the-filled-d-202fd-fill-in-every-suite-palette-dark-1280/trace.zip
+    Usage:
+
+        npx playwright show-trace test-results/danger-button-the-filled-d-202fd-fill-in-every-suite-palette-dark-1280/trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  2 failed
+    [light-1280] › browser/danger-button.spec.mjs:37:1 › the filled danger button label reads on its fill in every suite palette
+    [dark-1280] › browser/danger-button.spec.mjs:37:1 › the filled danger button label reads on its fill in every suite palette
+  8 skipped
+  22 passed (8.5m)

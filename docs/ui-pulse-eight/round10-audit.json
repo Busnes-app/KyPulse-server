@@ -1,0 +1,54 @@
+{
+  "round": 10,
+  "raw_reports": {
+    "opus-round10.md": "574022891d00d3548b0d58660e128cc51044b63a7cd3e75a3b5316c133396a99",
+    "opus-round10.json": "00a5b03d116383a73abd7ad64f088a643cf2a4b3122f72476d977716b88b566e",
+    "sol-round10.md": "611abd457a31c9514b03a7bb03ad87b81396c6d3837f66a9b908e43324c552bf",
+    "sol-round10.json": "371a18785a01e56484568217daa18a6016dba794bee0a9f7d2af7c973edc7b27"
+  },
+  "cohorts": {
+    "opus": {
+      "admin-console": {
+        "n": 28,
+        "sum": "221.8",
+        "exact_mean": "1109/140"
+      },
+      "settings": {
+        "n": 12,
+        "sum": "96.0",
+        "exact_mean": "8"
+      }
+    },
+    "sol": {
+      "admin-console": {
+        "n": 28,
+        "sum": "238.0",
+        "exact_mean": "17/2"
+      },
+      "settings": {
+        "n": 12,
+        "sum": "102.8",
+        "exact_mean": "257/30"
+      }
+    }
+  },
+  "runtime_source": "61e4a0c2fdcff64910c1a9d6a8f33e81cb1df910",
+  "source_gate": "unmet",
+  "next": "Fix reproduced N1 viewport-resize navigation bug and bounded A1\u2013A3 button/section emphasis findings; preserve full-width dates and constrained filter spacing. No unchanged-picture reroll; fresh source/captures needed. Gemini deferred.",
+  "spreads_at_least2": [
+    {
+      "file": "screenshots/kypulse-10-after-app-detail-mobile-dark.png",
+      "dimension": "visible_affordances",
+      "opus": 7,
+      "sol": 9
+    },
+    {
+      "file": "screenshots/kypulse-10-after-app-detail-mobile-light.png",
+      "dimension": "visible_affordances",
+      "opus": 7,
+      "sol": 9
+    }
+  ],
+  "spread_reinspection": "Parent individually re-viewed both original phone app-detail frames. Left-aligned stretched Silence labels are visible; centering is a small justified affordance improvement. No raw score averaged or replaced.",
+  "drift": "Backup gains are product changes; all other score shifts are reviewer variation on retained pixels, not regressions. Opus post-freeze correction for unseen phone source buttons is explicit in raw report; quality and late brand-fit freezes in Sol stay separate."
+}

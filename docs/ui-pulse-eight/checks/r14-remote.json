@@ -1,0 +1,71 @@
+{
+  "head": "7569de314217dd4b161b968dd44a1a8230df1828",
+  "checks": [
+    {
+      "bucket": "skipping",
+      "link": "https://github.com/Busnes-app/KyPulse-server/actions/runs/40483847474/job/122124858388",
+      "name": "publish"
+    },
+    {
+      "bucket": "skipping",
+      "link": "https://github.com/Busnes-app/KyPulse-server/actions/runs/40483847474/job/122124858326",
+      "name": "promote"
+    },
+    {
+      "bucket": "pass",
+      "link": "https://github.com/Busnes-app/KyPulse-server/runs/122120802943",
+      "name": "CodeQL"
+    },
+    {
+      "bucket": "pass",
+      "link": "https://github.com/Busnes-app/KyPulse-server/actions/runs/40483847474/job/122120579192",
+      "name": "Docker image build & run"
+    },
+    {
+      "bucket": "pass",
+      "link": "https://github.com/Busnes-app/KyPulse-server/actions/runs/40483847474/job/122120579007",
+      "name": "Go tests (PostgreSQL)"
+    },
+    {
+      "bucket": "pass",
+      "link": "https://github.com/Busnes-app/KyPulse-server/actions/runs/40483847474/job/122120579140",
+      "name": "Browser regressions (production server)"
+    },
+    {
+      "bucket": "pass",
+      "link": "https://github.com/Busnes-app/KyPulse-server/actions/runs/40483847474/job/122120579233",
+      "name": "Vulnerability scan"
+    },
+    {
+      "bucket": "pass",
+      "link": "https://github.com/Busnes-app/KyPulse-server/actions/runs/40483847474/job/122120579209",
+      "name": "End-to-end smoke test"
+    },
+    {
+      "bucket": "pass",
+      "link": "https://github.com/Busnes-app/KyPulse-server/actions/runs/40483847474/job/122120579313",
+      "name": "Go build, vet & tests (SQLite)"
+    },
+    {
+      "bucket": "pass",
+      "link": "https://github.com/Busnes-app/KyPulse-server/actions/runs/40483847474/job/122120578795",
+      "name": "Frontend typecheck & build"
+    },
+    {
+      "bucket": "pass",
+      "link": "https://github.com/Busnes-app/KyPulse-server/actions/runs/40483840884/job/122120563997",
+      "name": "Analyze (javascript-typescript)"
+    },
+    {
+      "bucket": "pass",
+      "link": "https://github.com/Busnes-app/KyPulse-server/actions/runs/40483840884/job/122120564075",
+      "name": "Analyze (go)"
+    },
+    {
+      "bucket": "pass",
+      "link": "https://github.com/Busnes-app/KyPulse-server/actions/runs/40483840884/job/122120563592",
+      "name": "Analyze (actions)"
+    }
+  ],
+  "security": "pending; last authored clearancea0a5558 stale"
+}

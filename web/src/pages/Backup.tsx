@@ -4,7 +4,6 @@ import {
   CheckCircle2,
   Clock,
   Download,
-  HardDrive,
   KeyRound,
   Link2,
   Loader2,
@@ -333,13 +332,12 @@ export const Backup: React.FC = () => {
 
   const needsSetup = Boolean(status && (!keyPinned || (!paired && !hasLocal)));
   const recoverySetup = (
-    <div className="dr-two">
-      <div className="panel dr-section">
+    <div className="dr-two backup-setup">
+      <div className="dr-section">
         <div className="panel-header">
           <h3>
             <Server size={16} /> KyRecovery
           </h3>
-          <Badge tone={paired ? 'success' : 'muted'}>{paired ? 'Paired' : 'Not paired'}</Badge>
         </div>
         <p className="dr-hint">
           KyRecovery keeps capsules it cannot open, off this host. In its dashboard, generate a pairing code for this service and enter it
@@ -380,12 +378,11 @@ export const Backup: React.FC = () => {
         {pairError && <Alert kind="error">{pairError}</Alert>}
       </div>
 
-      <div className="panel dr-section">
+      <div className="dr-section">
         <div className="panel-header">
           <h3>
             <KeyRound size={16} /> Recovery key by hand
           </h3>
-          <Badge tone={keyPinned ? 'success' : 'danger'}>{keyPinned ? 'Pinned' : 'None'}</Badge>
         </div>
         {keyPinned ? (
           <p className="dr-hint">
@@ -421,17 +418,12 @@ export const Backup: React.FC = () => {
             {pinError && <Alert kind="error">{pinError}</Alert>}
           </>
         )}
-        {hasLocal && (
-          <p className="dr-hint">
-            <HardDrive size={12} /> Local copies land in {status?.local_dir}; the newest {status?.local_keep} are kept.
-          </p>
-        )}
       </div>
     </div>
   );
 
   return (
-    <div className="dr-page">
+    <div className="dr-page backup-page">
       <div className="dr-header">
         <h1>Backup &amp; recovery</h1>
         <button type="button" className="btn-secondary" onClick={fetchStatus} disabled={loadingStatus}>
@@ -495,29 +487,29 @@ export const Backup: React.FC = () => {
         </div>
       </div>
 
-      <div className="panel dr-section">
+      <div className="dr-section">
         <div className="panel-header">
           <h3>Back up now</h3>
-          <div className="dr-actions">
-            <button type="button" onClick={runBackup} disabled={running || !canBackUp}>
-              {running ? <Loader2 size={14} className="animate-spin" /> : <Send size={14} />}
-              <span>{running ? 'Sealing…' : 'Back up now'}</span>
-            </button>
-            <button type="button" className="btn-secondary" onClick={downloadCapsule} disabled={!keyPinned}>
-              <Download size={14} />
-              <span>Download capsule</span>
-            </button>
-            <button type="button" className="btn-secondary" onClick={runDrill} disabled={runningDrill}>
-              {runningDrill ? <Loader2 size={14} className="animate-spin" /> : <Play size={14} />}
-              <span>{runningDrill ? 'Restoring…' : 'Run restore drill'}</span>
-            </button>
-          </div>
         </div>
         <p className="dr-hint">
           One sealed capsule goes to every destination above: the local directory, and KyRecovery when paired. Download saves the same
           capsule to this browser instead. Nothing on this server can open a capsule; that takes {status?.threshold ?? 'k'} custodian cards
           together.
         </p>
+        <div className="dr-actions backup-actions">
+          <button type="button" onClick={runBackup} disabled={running || !canBackUp}>
+            {running ? <Loader2 size={14} className="animate-spin" /> : <Send size={14} />}
+            <span>{running ? 'Sealing…' : 'Back up now'}</span>
+          </button>
+          <button type="button" className="btn-secondary" onClick={downloadCapsule} disabled={!keyPinned}>
+            <Download size={14} />
+            <span>Download capsule</span>
+          </button>
+          <button type="button" className="btn-secondary" onClick={runDrill} disabled={runningDrill}>
+            {runningDrill ? <Loader2 size={14} className="animate-spin" /> : <Play size={14} />}
+            <span>{runningDrill ? 'Restoring…' : 'Run restore drill'}</span>
+          </button>
+        </div>
         <div className="dr-hint">A capsule carries</div>
         <ul className="dr-members">
           {(status?.members ?? []).map((m) => (
@@ -558,7 +550,7 @@ export const Backup: React.FC = () => {
         )}
       </div>
 
-      <div className="panel dr-section">
+      <div className="dr-section">
         <div className="panel-header">
           <h3>Schedule</h3>
         </div>
