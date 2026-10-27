@@ -423,7 +423,7 @@ export const Backup: React.FC = () => {
   );
 
   return (
-    <div className="dr-page">
+    <div className="dr-page backup-page">
       <div className="dr-header">
         <h1>Backup &amp; recovery</h1>
         <button type="button" className="btn-secondary" onClick={fetchStatus} disabled={loadingStatus}>
@@ -490,26 +490,26 @@ export const Backup: React.FC = () => {
       <div className="dr-section">
         <div className="panel-header">
           <h3>Back up now</h3>
-          <div className="dr-actions">
-            <button type="button" onClick={runBackup} disabled={running || !canBackUp}>
-              {running ? <Loader2 size={14} className="animate-spin" /> : <Send size={14} />}
-              <span>{running ? 'Sealing…' : 'Back up now'}</span>
-            </button>
-            <button type="button" className="btn-secondary" onClick={downloadCapsule} disabled={!keyPinned}>
-              <Download size={14} />
-              <span>Download capsule</span>
-            </button>
-            <button type="button" className="btn-secondary" onClick={runDrill} disabled={runningDrill}>
-              {runningDrill ? <Loader2 size={14} className="animate-spin" /> : <Play size={14} />}
-              <span>{runningDrill ? 'Restoring…' : 'Run restore drill'}</span>
-            </button>
-          </div>
         </div>
         <p className="dr-hint">
           One sealed capsule goes to every destination above: the local directory, and KyRecovery when paired. Download saves the same
           capsule to this browser instead. Nothing on this server can open a capsule; that takes {status?.threshold ?? 'k'} custodian cards
           together.
         </p>
+        <div className="dr-actions backup-actions">
+          <button type="button" onClick={runBackup} disabled={running || !canBackUp}>
+            {running ? <Loader2 size={14} className="animate-spin" /> : <Send size={14} />}
+            <span>{running ? 'Sealing…' : 'Back up now'}</span>
+          </button>
+          <button type="button" className="btn-secondary" onClick={downloadCapsule} disabled={!keyPinned}>
+            <Download size={14} />
+            <span>Download capsule</span>
+          </button>
+          <button type="button" className="btn-secondary" onClick={runDrill} disabled={runningDrill}>
+            {runningDrill ? <Loader2 size={14} className="animate-spin" /> : <Play size={14} />}
+            <span>{runningDrill ? 'Restoring…' : 'Run restore drill'}</span>
+          </button>
+        </div>
         <div className="dr-hint">A capsule carries</div>
         <ul className="dr-members">
           {(status?.members ?? []).map((m) => (

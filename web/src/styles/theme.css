@@ -592,6 +592,12 @@ textarea { border-radius: var(--ky-control-radius); }
 .app-detail-diagnostics:not(:has(.dr-checks)) > :first-child .dr-hint { margin: 0; }
 
 .backup-setup { align-items: start; }
+.backup-actions { margin-bottom: var(--ky-space-2); }
+@media (max-width: 720px) {
+  .backup-page > .dr-alert { margin-bottom: var(--ky-space-5); }
+  .backup-setup { row-gap: var(--ky-space-5); }
+  .backup-setup .dr-stack, .backup-setup .dr-row { margin-bottom: 0; }
+}
 .log-empty { font-size: var(--ky-type-body); color: var(--ink-strong); }
 
 @media (min-width: 481px) {
