@@ -238,7 +238,7 @@ input:focus, select:focus, textarea:focus {
   display: inline-flex;
   align-items: center;
   gap: 4px;
-  font-size: 12px;
+  font-size: var(--ky-type-meta);
   font-weight: 600;
   padding: 2px 8px;
   border-radius: 4px;
