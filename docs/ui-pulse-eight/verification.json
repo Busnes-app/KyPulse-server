@@ -1,37 +1,47 @@
 {
-  "product_source": "fb2da30970ced6b6a86545bcd1f23a7a43990c26",
+  "product_source": "447f25ae539f4fe85d043afe3bb2b84ac876de1e",
   "shared_source": "58626b7",
-  "status": "Round5 frontend96/build/makeci and scoped native checks pass. Fresh full remote current-head CI and security gates pending. Historical checks remain separate.",
+  "status": "Round6 frontend96/build/makeci and scoped native checks pass. Full browser suite running; fresh full current-head remote CI/security pending. Historical checks remain separate.",
   "checks": {
     "frontend": {
       "status": "pass",
-      "evidence": "checks/r5-frontend.txt",
-      "sha256": "30c0d5e6a284aacbc7bade2365ecc273eb06f9b20de4a7a688e228e1a26c5461",
-      "raw_sha256": "30c0d5e6a284aacbc7bade2365ecc273eb06f9b20de4a7a688e228e1a26c5461"
+      "evidence": "checks/r6-frontend.txt",
+      "sha256": "162ef4c1fa6fe8b64d1c48905f540d565c7710698391d1258bf74c1d386c4aab",
+      "raw_sha256": "162ef4c1fa6fe8b64d1c48905f540d565c7710698391d1258bf74c1d386c4aab"
     },
     "make_ci": {
       "status": "pass",
-      "evidence": "checks/r5-make_ci.txt",
-      "sha256": "9955b45801d2b8bb7ca15db100e5e57a5df3a7902935028544b2beab98ee4ab8",
-      "raw_sha256": "9955b45801d2b8bb7ca15db100e5e57a5df3a7902935028544b2beab98ee4ab8"
+      "evidence": "checks/r6-make_ci.txt",
+      "sha256": "729ee44435ccc7f70dcdf092902bf1a5555560908b1f6175fd401ca46a5faeb4",
+      "raw_sha256": "729ee44435ccc7f70dcdf092902bf1a5555560908b1f6175fd401ca46a5faeb4"
     },
     "impeccable": {
       "status": "reported2pinned-style findings",
-      "evidence": "checks/r5-impeccable.txt",
+      "evidence": "checks/r6-impeccable.txt",
       "sha256": "6a2d1b9c8d8665e08c7471d8f987e29c784f4edb5a7f28595d84f431fa508429",
       "raw_sha256": "6a2d1b9c8d8665e08c7471d8f987e29c784f4edb5a7f28595d84f431fa508429"
     },
+    "nav_before": {
+      "status": "failed-as-expected",
+      "evidence": "checks/r6-nav_before.txt",
+      "sha256": "c3c6a73799ad2034918aa7d6d9b1c9be1a2266f9a33ad9cd40ab1dd3ca2225d2",
+      "raw_sha256": "c3c6a73799ad2034918aa7d6d9b1c9be1a2266f9a33ad9cd40ab1dd3ca2225d2"
+    },
+    "browser": {
+      "status": "running",
+      "evidence": "/tmp/kypulse-r6-browser.log"
+    },
     "native": {
       "status": "pass-scoped",
-      "evidence": "native-round5.json",
-      "result": "One primary nav; overflow0; one copy of Backup badges/path; Time166px; Activity initial/draft/applied/Clear; phone silence controls175/175/358px."
+      "evidence": "native-round6.json",
+      "result": "15px strong-ink results; one navigation; fully visible selected Logs tab after route/deep link; no overflow."
     }
   },
-  "retained_checks": "Round3 full runs in verification-round3.json; round4 local runs in verification-round4.json. Neither is claimed as a fresh round5 execution. Remote CI must freshly cover browser/FIPS/Postgres/Docker/repeatable-build gates before hand-back.",
+  "retained_checks": "verification-round5.json and checks/r5-remote.json are historical. Remote full CI passed1c13c82; security remained stale at e959112. Fresh round6 remote FIPS/Postgres/Docker/repeatable/security gates still required before hand-back.",
   "limitations": [
-    "Synthetic admin;32initial-viewport originals only. Logs/Activity empty/unpaired; Settings/Backup unconfigured.",
-    "Native Chrome154/DPR2 differs from scored Chromium153/DPR1. Actionable locator errors and corrections recorded in native-round5.json.",
-    "No merge/deploy. MySlop401 prevents shared-board posting.",
-    "Regex detector reports prescribed Space Grotesk and selected navigation accent-border styling; not accessibility acceptance."
+    "Synthetic admin;32 initial-viewport originals only. Logs/Activity empty/unpaired;Settings/Backup unconfigured.",
+    "Native Chrome154/DPR2 differs from scored Chromium153/DPR1.",
+    "Impeccable regex detector reports prescribed Space Grotesk and selected-navigation accent border; not accessibility acceptance.",
+    "No merge/deploy; MySlop401 prevents shared-board posting."
   ]
 }
