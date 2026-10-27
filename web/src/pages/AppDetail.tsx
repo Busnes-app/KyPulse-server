@@ -108,7 +108,7 @@ export const AppDetail: React.FC<AppDetailProps> = ({ id, user, onChanged }) => 
   const cls = stateClass(target);
   const failing = target.enabled && !!target.last_polled_at && target.state !== 'ok';
   return (
-    <div className="dr-page">
+    <div className="dr-page app-detail-page">
       <p className="dr-hint"><a href={hrefFor('/status')}><ArrowLeft size={14} aria-hidden="true" />Status</a></p>
       <div className="dr-header">
         <h1>{target.name}</h1>

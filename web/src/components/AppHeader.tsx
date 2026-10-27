@@ -29,9 +29,13 @@ export const AppHeader: React.FC<AppHeaderProps> = ({ appName, activePath, user,
       if (!cancelled) navRef.current?.querySelector('[aria-current="page"]')?.scrollIntoView?.({ block: 'nearest', inline: 'nearest' });
     };
     revealCurrent();
+    window.addEventListener('resize', revealCurrent);
     // Font loading can widen the row after the first scroll.
     void document.fonts?.ready.then(revealCurrent);
-    return () => { cancelled = true; };
+    return () => {
+      cancelled = true;
+      window.removeEventListener('resize', revealCurrent);
+    };
   }, [activePath]);
   return (
     <header className="app-header">
