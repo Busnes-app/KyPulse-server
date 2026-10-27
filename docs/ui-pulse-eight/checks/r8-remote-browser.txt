@@ -1,0 +1,672 @@
+Browser regressions (production server)	Set up job	﻿2026-10-27T07:10:34.2332128Z Current runner version: '2.338.0'
+Browser regressions (production server)	Set up job	2026-10-27T07:10:34.2357704Z ##[group]Runner Image Provisioner
+Browser regressions (production server)	Set up job	2026-10-27T07:10:34.2358748Z Hosted Compute Agent
+Browser regressions (production server)	Set up job	2026-10-27T07:10:34.2359330Z Version: 20261021.618
+Browser regressions (production server)	Set up job	2026-10-27T07:10:34.2359964Z Commit: 21505ad2541d5be6135ed84fc33697146cf75b8e
+Browser regressions (production server)	Set up job	2026-10-27T07:10:34.2360747Z Build Date: 2026-10-21T00:45:21Z
+Browser regressions (production server)	Set up job	2026-10-27T07:10:34.2361430Z Worker ID: {e0b9db24-2997-4a7f-9848-04829d054444}
+Browser regressions (production server)	Set up job	2026-10-27T07:10:34.2362164Z Region: westus3
+Browser regressions (production server)	Set up job	2026-10-27T07:10:34.2362707Z Cloud: Azure
+Browser regressions (production server)	Set up job	2026-10-27T07:10:34.2363274Z ##[endgroup]
+Browser regressions (production server)	Set up job	2026-10-27T07:10:34.2364657Z ##[group]Operating System
+Browser regressions (production server)	Set up job	2026-10-27T07:10:34.2365276Z Ubuntu
+Browser regressions (production server)	Set up job	2026-10-27T07:10:34.2366078Z 24.04.5
+Browser regressions (production server)	Set up job	2026-10-27T07:10:34.2366760Z LTS
+Browser regressions (production server)	Set up job	2026-10-27T07:10:34.2367264Z ##[endgroup]
+Browser regressions (production server)	Set up job	2026-10-27T07:10:34.2367847Z ##[group]Runner Image
+Browser regressions (production server)	Set up job	2026-10-27T07:10:34.2368455Z Image: ubuntu-24.04
+Browser regressions (production server)	Set up job	2026-10-27T07:10:34.2369048Z Version: 20261012.334.1
+Browser regressions (production server)	Set up job	2026-10-27T07:10:34.2370087Z Included Software: https://github.com/actions/runner-images/blob/ubuntu24/20261012.334/images/ubuntu/Ubuntu2404-Readme.md
+Browser regressions (production server)	Set up job	2026-10-27T07:10:34.2371800Z Image Release: https://github.com/actions/runner-images/releases/tag/ubuntu24%2F20261012.334
+Browser regressions (production server)	Set up job	2026-10-27T07:10:34.2372739Z ##[endgroup]
+Browser regressions (production server)	Set up job	2026-10-27T07:10:34.2373882Z ##[group]GITHUB_TOKEN Permissions
+Browser regressions (production server)	Set up job	2026-10-27T07:10:34.2376391Z Contents: read
+Browser regressions (production server)	Set up job	2026-10-27T07:10:34.2377056Z Metadata: read
+Browser regressions (production server)	Set up job	2026-10-27T07:10:34.2377611Z ##[endgroup]
+Browser regressions (production server)	Set up job	2026-10-27T07:10:34.2379706Z Secret source: Actions
+Browser regressions (production server)	Set up job	2026-10-27T07:10:34.2380671Z Cache mode: write
+Browser regressions (production server)	Set up job	2026-10-27T07:10:34.2381677Z Prepare workflow directory
+Browser regressions (production server)	Set up job	2026-10-27T07:10:34.2799088Z Prepare all required actions
+Browser regressions (production server)	Set up job	2026-10-27T07:10:34.2854665Z Getting action download info
+Browser regressions (production server)	Set up job	2026-10-27T07:10:34.6335297Z Download action repository 'actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1' (SHA:3d3c42e5aac5ba805825da76410c181273ba90b1)
+Browser regressions (production server)	Set up job	2026-10-27T07:10:34.7273391Z Download action repository 'actions/setup-go@b7ad1dad31e06c5925ef5d2fc7ad053ef454303e' (SHA:b7ad1dad31e06c5925ef5d2fc7ad053ef454303e)
+Browser regressions (production server)	Set up job	2026-10-27T07:10:35.6008938Z Download action repository 'actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1' (SHA:949feb2413d6458794dcd2491c4babbbce0c15c1)
+Browser regressions (production server)	Set up job	2026-10-27T07:10:36.3581011Z Download action repository 'actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9' (SHA:cf430e030ddbb5b0abf93d22962f4752f3646cd9)
+Browser regressions (production server)	Set up job	2026-10-27T07:10:37.3253437Z Complete job name: Browser regressions (production server)
+Browser regressions (production server)	Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1	﻿2026-10-27T07:10:37.4043357Z ##[group]Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+Browser regressions (production server)	Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1	2026-10-27T07:10:37.4044164Z with:
+Browser regressions (production server)	Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1	2026-10-27T07:10:37.4044534Z   persist-credentials: false
+Browser regressions (production server)	Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1	2026-10-27T07:10:37.4045016Z   repository: Busnes-app/KyPulse-server
+Browser regressions (production server)	Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1	2026-10-27T07:10:37.4048057Z   token: ***
+Browser regressions (production server)	Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1	2026-10-27T07:10:37.4048501Z   ssh-strict: true
+Browser regressions (production server)	Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1	2026-10-27T07:10:37.4048895Z   ssh-user: git
+Browser regressions (production server)	Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1	2026-10-27T07:10:37.4049226Z   clean: true
+Browser regressions (production server)	Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1	2026-10-27T07:10:37.4049638Z   sparse-checkout-cone-mode: true
+Browser regressions (production server)	Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1	2026-10-27T07:10:37.4050055Z   fetch-depth: 1
+Browser regressions (production server)	Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1	2026-10-27T07:10:37.4050425Z   fetch-tags: false
+Browser regressions (production server)	Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1	2026-10-27T07:10:37.4050828Z   show-progress: true
+Browser regressions (production server)	Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1	2026-10-27T07:10:37.4051299Z   lfs: false
+Browser regressions (production server)	Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1	2026-10-27T07:10:37.4051670Z   submodules: false
+Browser regressions (production server)	Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1	2026-10-27T07:10:37.4052041Z   set-safe-directory: true
+Browser regressions (production server)	Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1	2026-10-27T07:10:37.4052484Z   allow-unsafe-pr-checkout: false
+Browser regressions (production server)	Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1	2026-10-27T07:10:37.4053066Z env:
+Browser regressions (production server)	Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1	2026-10-27T07:10:37.4053400Z   NODE_VERSION: 26
+Browser regressions (production server)	Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1	2026-10-27T07:10:37.4053769Z ##[endgroup]
+Browser regressions (production server)	Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1	2026-10-27T07:10:37.6756981Z Syncing repository: Busnes-app/KyPulse-server
+Browser regressions (production server)	Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1	2026-10-27T07:10:37.6759154Z ##[group]Getting Git version info
+Browser regressions (production server)	Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1	2026-10-27T07:10:37.6760076Z Working directory is '/home/runner/work/KyPulse-server/KyPulse-server'
+Browser regressions (production server)	Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1	2026-10-27T07:10:37.6761295Z [command]/usr/bin/git version
+Browser regressions (production server)	Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1	2026-10-27T07:10:37.6828523Z git version 2.55.0
+Browser regressions (production server)	Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1	2026-10-27T07:10:37.6851618Z ##[endgroup]
+Browser regressions (production server)	Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1	2026-10-27T07:10:37.6859266Z Temporarily overriding HOME='/home/runner/work/_temp/a07c673d-4077-4f6e-b6ba-581fb9fbd92d' before making global git config changes
+Browser regressions (production server)	Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1	2026-10-27T07:10:37.6861462Z Adding repository directory to the temporary git global config as a safe directory
+Browser regressions (production server)	Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1	2026-10-27T07:10:37.6863145Z [command]/usr/bin/git config --global --add safe.directory /home/runner/work/KyPulse-server/KyPulse-server
+Browser regressions (production server)	Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1	2026-10-27T07:10:37.6908760Z Deleting the contents of '/home/runner/work/KyPulse-server/KyPulse-server'
+Browser regressions (production server)	Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1	2026-10-27T07:10:37.6913567Z ##[group]Determining repository object format
+Browser regressions (production server)	Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1	2026-10-27T07:10:37.6915415Z ##[endgroup]
+Browser regressions (production server)	Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1	2026-10-27T07:10:37.6916462Z ##[group]Initializing the repository
+Browser regressions (production server)	Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1	2026-10-27T07:10:37.6920742Z [command]/usr/bin/git init /home/runner/work/KyPulse-server/KyPulse-server
+Browser regressions (production server)	Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1	2026-10-27T07:10:37.7101843Z hint: Using 'master' as the name for the initial branch. This default branch name
+Browser regressions (production server)	Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1	2026-10-27T07:10:37.7103039Z hint: will change to "main" in Git 3.0. To configure the initial branch name
+Browser regressions (production server)	Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1	2026-10-27T07:10:37.7104102Z hint: to use in all of your new repositories, which will suppress this warning,
+Browser regressions (production server)	Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1	2026-10-27T07:10:37.7104664Z hint: call:
+Browser regressions (production server)	Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1	2026-10-27T07:10:37.7105125Z hint:
+Browser regressions (production server)	Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1	2026-10-27T07:10:37.7105655Z hint: 	git config --global init.defaultBranch <name>
+Browser regressions (production server)	Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1	2026-10-27T07:10:37.7106507Z hint:
+Browser regressions (production server)	Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1	2026-10-27T07:10:37.7107201Z hint: Names commonly chosen instead of 'master' are 'main', 'trunk' and
+Browser regressions (production server)	Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1	2026-10-27T07:10:37.7108192Z hint: 'development'. The just-created branch can be renamed via this command:
+Browser regressions (production server)	Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1	2026-10-27T07:10:37.7108988Z hint:
+Browser regressions (production server)	Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1	2026-10-27T07:10:37.7109502Z hint: 	git branch -m <name>
+Browser regressions (production server)	Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1	2026-10-27T07:10:37.7109863Z hint:
+Browser regressions (production server)	Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1	2026-10-27T07:10:37.7110539Z hint: Disable this message with "git config set advice.defaultBranchName false"
+Browser regressions (production server)	Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1	2026-10-27T07:10:37.7111386Z Initialized empty Git repository in /home/runner/work/KyPulse-server/KyPulse-server/.git/
+Browser regressions (production server)	Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1	2026-10-27T07:10:37.7113699Z [command]/usr/bin/git remote add origin https://github.com/Busnes-app/KyPulse-server
+Browser regressions (production server)	Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1	2026-10-27T07:10:37.7209664Z ##[endgroup]
+Browser regressions (production server)	Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1	2026-10-27T07:10:37.7210816Z ##[group]Disabling automatic garbage collection
+Browser regressions (production server)	Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1	2026-10-27T07:10:37.7222490Z [command]/usr/bin/git config --local gc.auto 0
+Browser regressions (production server)	Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1	2026-10-27T07:10:37.7625199Z ##[endgroup]
+Browser regressions (production server)	Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1	2026-10-27T07:10:37.7626296Z ##[group]Setting up auth
+Browser regressions (production server)	Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1	2026-10-27T07:10:37.7626883Z Removing SSH command configuration
+Browser regressions (production server)	Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1	2026-10-27T07:10:37.7634612Z [command]/usr/bin/git config --local --name-only --get-regexp core\.sshCommand
+Browser regressions (production server)	Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1	2026-10-27T07:10:37.7668211Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
+Browser regressions (production server)	Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1	2026-10-27T07:10:37.7969909Z Removing HTTP extra header
+Browser regressions (production server)	Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1	2026-10-27T07:10:37.7974788Z [command]/usr/bin/git config --local --name-only --get-regexp http\.https\:\/\/github\.com\/\.extraheader
+Browser regressions (production server)	Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1	2026-10-27T07:10:37.8006373Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :"
+Browser regressions (production server)	Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1	2026-10-27T07:10:37.8193301Z Removing includeIf entries pointing to credentials config files
+Browser regressions (production server)	Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1	2026-10-27T07:10:37.8197983Z [command]/usr/bin/git config --local --name-only --get-regexp ^includeIf\.gitdir:
+Browser regressions (production server)	Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1	2026-10-27T07:10:37.8227380Z [command]/usr/bin/git submodule foreach --recursive git config --local --show-origin --name-only --get-regexp remote.origin.url
+Browser regressions (production server)	Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1	2026-10-27T07:10:37.8417673Z [command]/usr/bin/git config --file /home/runner/work/_temp/git-credentials-94070414-47e0-4815-86f4-4ceb6ce87340.config http.https://github.com/.extraheader AUTHORIZATION: basic ***
+Browser regressions (production server)	Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1	2026-10-27T07:10:37.8506235Z [command]/usr/bin/git config --local includeIf.gitdir:/home/runner/work/KyPulse-server/KyPulse-server/.git.path /home/runner/work/_temp/git-credentials-94070414-47e0-4815-86f4-4ceb6ce87340.config
+Browser regressions (production server)	Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1	2026-10-27T07:10:37.8534551Z [command]/usr/bin/git config --local includeIf.gitdir:/home/runner/work/KyPulse-server/KyPulse-server/.git/worktrees/*.path /home/runner/work/_temp/git-credentials-94070414-47e0-4815-86f4-4ceb6ce87340.config
+Browser regressions (production server)	Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1	2026-10-27T07:10:37.8707481Z [command]/usr/bin/git config --local includeIf.gitdir:/github/workspace/.git.path /github/runner_temp/git-credentials-94070414-47e0-4815-86f4-4ceb6ce87340.config
+Browser regressions (production server)	Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1	2026-10-27T07:10:37.8741287Z [command]/usr/bin/git config --local includeIf.gitdir:/github/workspace/.git/worktrees/*.path /github/runner_temp/git-credentials-94070414-47e0-4815-86f4-4ceb6ce87340.config
+Browser regressions (production server)	Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1	2026-10-27T07:10:37.8770729Z ##[endgroup]
+Browser regressions (production server)	Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1	2026-10-27T07:10:37.8771455Z ##[group]Fetching the repository
+Browser regressions (production server)	Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1	2026-10-27T07:10:37.8780198Z [command]/usr/bin/git -c protocol.version=2 fetch --no-tags --prune --no-recurse-submodules --depth=1 origin +b8cade8ae468330043202cd5bc27e05c5715d08f:refs/remotes/pull/53/merge
+Browser regressions (production server)	Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1	2026-10-27T07:10:39.4478124Z From https://github.com/Busnes-app/KyPulse-server
+Browser regressions (production server)	Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1	2026-10-27T07:10:39.4479202Z  * [new ref]         b8cade8ae468330043202cd5bc27e05c5715d08f -> pull/53/merge
+Browser regressions (production server)	Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1	2026-10-27T07:10:39.4482256Z ##[endgroup]
+Browser regressions (production server)	Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1	2026-10-27T07:10:39.4483477Z ##[group]Determining the checkout info
+Browser regressions (production server)	Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1	2026-10-27T07:10:39.4484359Z ##[endgroup]
+Browser regressions (production server)	Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1	2026-10-27T07:10:39.4489467Z [command]/usr/bin/git sparse-checkout disable
+Browser regressions (production server)	Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1	2026-10-27T07:10:39.4541565Z [command]/usr/bin/git config --local --unset-all extensions.worktreeConfig
+Browser regressions (production server)	Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1	2026-10-27T07:10:39.4570764Z ##[group]Checking out the ref
+Browser regressions (production server)	Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1	2026-10-27T07:10:39.4574709Z [command]/usr/bin/git checkout --progress --force refs/remotes/pull/53/merge
+Browser regressions (production server)	Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1	2026-10-27T07:10:39.7041365Z Note: switching to 'refs/remotes/pull/53/merge'.
+Browser regressions (production server)	Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1	2026-10-27T07:10:39.7041849Z
+Browser regressions (production server)	Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1	2026-10-27T07:10:39.7042152Z You are in 'detached HEAD' state. You can look around, make experimental
+Browser regressions (production server)	Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1	2026-10-27T07:10:39.7042757Z changes and commit them, and you can discard any commits you make in this
+Browser regressions (production server)	Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1	2026-10-27T07:10:39.7043531Z state without impacting any branches by switching back to a branch.
+Browser regressions (production server)	Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1	2026-10-27T07:10:39.7044008Z
+Browser regressions (production server)	Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1	2026-10-27T07:10:39.7044396Z If you want to create a new branch to retain commits you create, you may
+Browser regressions (production server)	Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1	2026-10-27T07:10:39.7044939Z do so (now or later) by using -c with the switch command. Example:
+Browser regressions (production server)	Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1	2026-10-27T07:10:39.7045284Z
+Browser regressions (production server)	Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1	2026-10-27T07:10:39.7045603Z   git switch -c <new-branch-name>
+Browser regressions (production server)	Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1	2026-10-27T07:10:39.7046061Z
+Browser regressions (production server)	Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1	2026-10-27T07:10:39.7046218Z Or undo this operation with:
+Browser regressions (production server)	Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1	2026-10-27T07:10:39.7046453Z
+Browser regressions (production server)	Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1	2026-10-27T07:10:39.7046575Z   git switch -
+Browser regressions (production server)	Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1	2026-10-27T07:10:39.7046782Z
+Browser regressions (production server)	Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1	2026-10-27T07:10:39.7047102Z Turn off this advice by setting config variable advice.detachedHead to false
+Browser regressions (production server)	Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1	2026-10-27T07:10:39.7047412Z
+Browser regressions (production server)	Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1	2026-10-27T07:10:39.7047782Z HEAD is now at b8cade8 Merge 4128723ff9742a6a6f5b1b22b0b990f9bea54ec0 into b5b193c9fcf8ea702f4d296d6d2a98cf00163244
+Browser regressions (production server)	Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1	2026-10-27T07:10:39.7055465Z ##[endgroup]
+Browser regressions (production server)	Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1	2026-10-27T07:10:39.7098513Z [command]/usr/bin/git log -1 --format=%H
+Browser regressions (production server)	Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1	2026-10-27T07:10:39.7122597Z b8cade8ae468330043202cd5bc27e05c5715d08f
+Browser regressions (production server)	Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1	2026-10-27T07:10:39.7133961Z ##[group]Removing auth
+Browser regressions (production server)	Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1	2026-10-27T07:10:39.7134311Z Removing SSH command configuration
+Browser regressions (production server)	Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1	2026-10-27T07:10:39.7142387Z [command]/usr/bin/git config --local --name-only --get-regexp core\.sshCommand
+Browser regressions (production server)	Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1	2026-10-27T07:10:39.7165545Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
+Browser regressions (production server)	Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1	2026-10-27T07:10:39.7364951Z Removing HTTP extra header
+Browser regressions (production server)	Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1	2026-10-27T07:10:39.7369882Z [command]/usr/bin/git config --local --name-only --get-regexp http\.https\:\/\/github\.com\/\.extraheader
+Browser regressions (production server)	Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1	2026-10-27T07:10:39.7399521Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :"
+Browser regressions (production server)	Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1	2026-10-27T07:10:39.7585128Z Removing includeIf entries pointing to credentials config files
+Browser regressions (production server)	Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1	2026-10-27T07:10:39.7587925Z [command]/usr/bin/git config --local --name-only --get-regexp ^includeIf\.gitdir:
+Browser regressions (production server)	Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1	2026-10-27T07:10:39.7613272Z includeif.gitdir:/home/runner/work/KyPulse-server/KyPulse-server/.git.path
+Browser regressions (production server)	Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1	2026-10-27T07:10:39.7614170Z includeif.gitdir:/home/runner/work/KyPulse-server/KyPulse-server/.git/worktrees/*.path
+Browser regressions (production server)	Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1	2026-10-27T07:10:39.7614782Z includeif.gitdir:/github/workspace/.git.path
+Browser regressions (production server)	Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1	2026-10-27T07:10:39.7615200Z includeif.gitdir:/github/workspace/.git/worktrees/*.path
+Browser regressions (production server)	Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1	2026-10-27T07:10:39.7621739Z [command]/usr/bin/git config --local --get-all includeif.gitdir:/home/runner/work/KyPulse-server/KyPulse-server/.git.path
+Browser regressions (production server)	Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1	2026-10-27T07:10:39.7642480Z /home/runner/work/_temp/git-credentials-94070414-47e0-4815-86f4-4ceb6ce87340.config
+Browser regressions (production server)	Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1	2026-10-27T07:10:39.7654364Z [command]/usr/bin/git config --local --unset includeif.gitdir:/home/runner/work/KyPulse-server/KyPulse-server/.git.path \/home\/runner\/work\/_temp\/git\-credentials\-94070414\-47e0\-4815\-86f4\-4ceb6ce87340\.config
+Browser regressions (production server)	Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1	2026-10-27T07:10:39.7695715Z [command]/usr/bin/git config --local --get-all includeif.gitdir:/home/runner/work/KyPulse-server/KyPulse-server/.git/worktrees/*.path
+Browser regressions (production server)	Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1	2026-10-27T07:10:39.7715684Z /home/runner/work/_temp/git-credentials-94070414-47e0-4815-86f4-4ceb6ce87340.config
+Browser regressions (production server)	Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1	2026-10-27T07:10:39.7724220Z [command]/usr/bin/git config --local --unset includeif.gitdir:/home/runner/work/KyPulse-server/KyPulse-server/.git/worktrees/*.path \/home\/runner\/work\/_temp\/git\-credentials\-94070414\-47e0\-4815\-86f4\-4ceb6ce87340\.config
+Browser regressions (production server)	Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1	2026-10-27T07:10:39.7753539Z [command]/usr/bin/git config --local --get-all includeif.gitdir:/github/workspace/.git.path
+Browser regressions (production server)	Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1	2026-10-27T07:10:39.7774771Z /github/runner_temp/git-credentials-94070414-47e0-4815-86f4-4ceb6ce87340.config
+Browser regressions (production server)	Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1	2026-10-27T07:10:39.7795255Z [command]/usr/bin/git config --local --unset includeif.gitdir:/github/workspace/.git.path \/github\/runner_temp\/git\-credentials\-94070414\-47e0\-4815\-86f4\-4ceb6ce87340\.config
+Browser regressions (production server)	Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1	2026-10-27T07:10:39.7824608Z [command]/usr/bin/git config --local --get-all includeif.gitdir:/github/workspace/.git/worktrees/*.path
+Browser regressions (production server)	Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1	2026-10-27T07:10:39.7844521Z /github/runner_temp/git-credentials-94070414-47e0-4815-86f4-4ceb6ce87340.config
+Browser regressions (production server)	Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1	2026-10-27T07:10:39.7852787Z [command]/usr/bin/git config --local --unset includeif.gitdir:/github/workspace/.git/worktrees/*.path \/github\/runner_temp\/git\-credentials\-94070414\-47e0\-4815\-86f4\-4ceb6ce87340\.config
+Browser regressions (production server)	Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1	2026-10-27T07:10:39.7882470Z [command]/usr/bin/git submodule foreach --recursive git config --local --show-origin --name-only --get-regexp remote.origin.url
+Browser regressions (production server)	Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1	2026-10-27T07:10:39.8075497Z Removing credentials config '/home/runner/work/_temp/git-credentials-94070414-47e0-4815-86f4-4ceb6ce87340.config'
+Browser regressions (production server)	Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1	2026-10-27T07:10:39.8085575Z ##[endgroup]
+Browser regressions (production server)	Run actions/setup-go@b7ad1dad31e06c5925ef5d2fc7ad053ef454303e	﻿2026-10-27T07:10:39.8304713Z ##[group]Run actions/setup-go@b7ad1dad31e06c5925ef5d2fc7ad053ef454303e
+Browser regressions (production server)	Run actions/setup-go@b7ad1dad31e06c5925ef5d2fc7ad053ef454303e	2026-10-27T07:10:39.8305122Z with:
+Browser regressions (production server)	Run actions/setup-go@b7ad1dad31e06c5925ef5d2fc7ad053ef454303e	2026-10-27T07:10:39.8305352Z   go-version-file: go.mod
+Browser regressions (production server)	Run actions/setup-go@b7ad1dad31e06c5925ef5d2fc7ad053ef454303e	2026-10-27T07:10:39.8305594Z   cache: true
+Browser regressions (production server)	Run actions/setup-go@b7ad1dad31e06c5925ef5d2fc7ad053ef454303e	2026-10-27T07:10:39.8306079Z   check-latest: false
+Browser regressions (production server)	Run actions/setup-go@b7ad1dad31e06c5925ef5d2fc7ad053ef454303e	2026-10-27T07:10:39.8308623Z   token: ***
+Browser regressions (production server)	Run actions/setup-go@b7ad1dad31e06c5925ef5d2fc7ad053ef454303e	2026-10-27T07:10:39.8308832Z env:
+Browser regressions (production server)	Run actions/setup-go@b7ad1dad31e06c5925ef5d2fc7ad053ef454303e	2026-10-27T07:10:39.8309032Z   NODE_VERSION: 26
+Browser regressions (production server)	Run actions/setup-go@b7ad1dad31e06c5925ef5d2fc7ad053ef454303e	2026-10-27T07:10:39.8309249Z ##[endgroup]
+Browser regressions (production server)	Run actions/setup-go@b7ad1dad31e06c5925ef5d2fc7ad053ef454303e	2026-10-27T07:10:39.9452916Z Setup go version spec 1.27.3
+Browser regressions (production server)	Run actions/setup-go@b7ad1dad31e06c5925ef5d2fc7ad053ef454303e	2026-10-27T07:10:39.9460475Z Attempting to download 1.27.3...
+Browser regressions (production server)	Run actions/setup-go@b7ad1dad31e06c5925ef5d2fc7ad053ef454303e	2026-10-27T07:10:40.9637787Z matching 1.27.3...
+Browser regressions (production server)	Run actions/setup-go@b7ad1dad31e06c5925ef5d2fc7ad053ef454303e	2026-10-27T07:10:40.9651474Z Acquiring 1.27.3 from https://github.com/actions/go-versions/releases/download/1.27.3-39437817176/go-1.27.3-linux-x64.tar.gz
+Browser regressions (production server)	Run actions/setup-go@b7ad1dad31e06c5925ef5d2fc7ad053ef454303e	2026-10-27T07:10:41.4753866Z Extracting Go...
+Browser regressions (production server)	Run actions/setup-go@b7ad1dad31e06c5925ef5d2fc7ad053ef454303e	2026-10-27T07:10:41.4862141Z [command]/usr/bin/tar xz --warning=no-unknown-keyword --overwrite -C /home/runner/work/_temp/e4149540-9373-466d-9abc-f923ded05a95 -f /home/runner/work/_temp/fb49e824-c067-455d-a345-c68e154f0116
+Browser regressions (production server)	Run actions/setup-go@b7ad1dad31e06c5925ef5d2fc7ad053ef454303e	2026-10-27T07:10:43.2049821Z Successfully extracted go to /home/runner/work/_temp/e4149540-9373-466d-9abc-f923ded05a95
+Browser regressions (production server)	Run actions/setup-go@b7ad1dad31e06c5925ef5d2fc7ad053ef454303e	2026-10-27T07:10:43.2050583Z Adding to the cache ...
+Browser regressions (production server)	Run actions/setup-go@b7ad1dad31e06c5925ef5d2fc7ad053ef454303e	2026-10-27T07:10:48.6531463Z Successfully cached go to /opt/hostedtoolcache/go/1.27.3/x64
+Browser regressions (production server)	Run actions/setup-go@b7ad1dad31e06c5925ef5d2fc7ad053ef454303e	2026-10-27T07:10:48.6533367Z Added go to the path
+Browser regressions (production server)	Run actions/setup-go@b7ad1dad31e06c5925ef5d2fc7ad053ef454303e	2026-10-27T07:10:48.6535396Z Successfully set up Go version 1.27.3
+Browser regressions (production server)	Run actions/setup-go@b7ad1dad31e06c5925ef5d2fc7ad053ef454303e	2026-10-27T07:10:48.6717178Z [command]/opt/hostedtoolcache/go/1.27.3/x64/bin/go env GOCACHE
+Browser regressions (production server)	Run actions/setup-go@b7ad1dad31e06c5925ef5d2fc7ad053ef454303e	2026-10-27T07:10:48.6742849Z [command]/opt/hostedtoolcache/go/1.27.3/x64/bin/go env GOMODCACHE
+Browser regressions (production server)	Run actions/setup-go@b7ad1dad31e06c5925ef5d2fc7ad053ef454303e	2026-10-27T07:10:48.6770123Z /home/runner/.cache/go-build
+Browser regressions (production server)	Run actions/setup-go@b7ad1dad31e06c5925ef5d2fc7ad053ef454303e	2026-10-27T07:10:48.6791138Z /home/runner/go/pkg/mod
+Browser regressions (production server)	Run actions/setup-go@b7ad1dad31e06c5925ef5d2fc7ad053ef454303e	2026-10-27T07:10:48.8809652Z Cache hit for: setup-go-Linux-x64-ubuntu24-go-1.27.3-186b65b13eb791eada9fb28f483492db0492cd19ace9f5f0957541f3b8a6ed3f
+Browser regressions (production server)	Run actions/setup-go@b7ad1dad31e06c5925ef5d2fc7ad053ef454303e	2026-10-27T07:10:50.1378432Z Received 33554432 of 142426472 (23.6%), 32.0 MBs/sec
+Browser regressions (production server)	Run actions/setup-go@b7ad1dad31e06c5925ef5d2fc7ad053ef454303e	2026-10-27T07:10:51.1374468Z Received 138412032 of 142426472 (97.2%), 66.0 MBs/sec
+Browser regressions (production server)	Run actions/setup-go@b7ad1dad31e06c5925ef5d2fc7ad053ef454303e	2026-10-27T07:10:51.3667143Z Received 142426472 of 142426472 (100.0%), 60.9 MBs/sec
+Browser regressions (production server)	Run actions/setup-go@b7ad1dad31e06c5925ef5d2fc7ad053ef454303e	2026-10-27T07:10:51.3667911Z Cache Size: ~136 MB (142426472 B)
+Browser regressions (production server)	Run actions/setup-go@b7ad1dad31e06c5925ef5d2fc7ad053ef454303e	2026-10-27T07:10:51.3706598Z [command]/usr/bin/tar -xf /home/runner/work/_temp/27526f6d-45f6-4f8d-a9f2-b97c1082b45c/cache.tzst -P -C /home/runner/work/KyPulse-server/KyPulse-server --use-compress-program unzstd
+Browser regressions (production server)	Run actions/setup-go@b7ad1dad31e06c5925ef5d2fc7ad053ef454303e	2026-10-27T07:10:52.0703727Z Cache restored successfully
+Browser regressions (production server)	Run actions/setup-go@b7ad1dad31e06c5925ef5d2fc7ad053ef454303e	2026-10-27T07:10:52.0907736Z Cache restored from key: setup-go-Linux-x64-ubuntu24-go-1.27.3-186b65b13eb791eada9fb28f483492db0492cd19ace9f5f0957541f3b8a6ed3f
+Browser regressions (production server)	Run actions/setup-go@b7ad1dad31e06c5925ef5d2fc7ad053ef454303e	2026-10-27T07:10:52.0939358Z go version go1.27.3 linux/amd64
+Browser regressions (production server)	Run actions/setup-go@b7ad1dad31e06c5925ef5d2fc7ad053ef454303e	2026-10-27T07:10:52.0939618Z
+Browser regressions (production server)	Run actions/setup-go@b7ad1dad31e06c5925ef5d2fc7ad053ef454303e	2026-10-27T07:10:52.0939973Z ##[group]go env
+Browser regressions (production server)	Run actions/setup-go@b7ad1dad31e06c5925ef5d2fc7ad053ef454303e	2026-10-27T07:10:52.1342850Z AR='ar'
+Browser regressions (production server)	Run actions/setup-go@b7ad1dad31e06c5925ef5d2fc7ad053ef454303e	2026-10-27T07:10:52.1343615Z CC='gcc'
+Browser regressions (production server)	Run actions/setup-go@b7ad1dad31e06c5925ef5d2fc7ad053ef454303e	2026-10-27T07:10:52.1343937Z CGO_CFLAGS='-O2 -g'
+Browser regressions (production server)	Run actions/setup-go@b7ad1dad31e06c5925ef5d2fc7ad053ef454303e	2026-10-27T07:10:52.1344273Z CGO_CPPFLAGS=''
+Browser regressions (production server)	Run actions/setup-go@b7ad1dad31e06c5925ef5d2fc7ad053ef454303e	2026-10-27T07:10:52.1344648Z CGO_CXXFLAGS='-O2 -g'
+Browser regressions (production server)	Run actions/setup-go@b7ad1dad31e06c5925ef5d2fc7ad053ef454303e	2026-10-27T07:10:52.1344963Z CGO_ENABLED='1'
+Browser regressions (production server)	Run actions/setup-go@b7ad1dad31e06c5925ef5d2fc7ad053ef454303e	2026-10-27T07:10:52.1345255Z CGO_FFLAGS='-O2 -g'
+Browser regressions (production server)	Run actions/setup-go@b7ad1dad31e06c5925ef5d2fc7ad053ef454303e	2026-10-27T07:10:52.1345562Z CGO_LDFLAGS='-O2 -g'
+Browser regressions (production server)	Run actions/setup-go@b7ad1dad31e06c5925ef5d2fc7ad053ef454303e	2026-10-27T07:10:52.1346059Z CXX='g++'
+Browser regressions (production server)	Run actions/setup-go@b7ad1dad31e06c5925ef5d2fc7ad053ef454303e	2026-10-27T07:10:52.1346366Z GCCGO='gccgo'
+Browser regressions (production server)	Run actions/setup-go@b7ad1dad31e06c5925ef5d2fc7ad053ef454303e	2026-10-27T07:10:52.1346628Z GO111MODULE=''
+Browser regressions (production server)	Run actions/setup-go@b7ad1dad31e06c5925ef5d2fc7ad053ef454303e	2026-10-27T07:10:52.1346921Z GOAMD64='v1'
+Browser regressions (production server)	Run actions/setup-go@b7ad1dad31e06c5925ef5d2fc7ad053ef454303e	2026-10-27T07:10:52.1347205Z GOARCH='amd64'
+Browser regressions (production server)	Run actions/setup-go@b7ad1dad31e06c5925ef5d2fc7ad053ef454303e	2026-10-27T07:10:52.1347487Z GOAUTH='netrc'
+Browser regressions (production server)	Run actions/setup-go@b7ad1dad31e06c5925ef5d2fc7ad053ef454303e	2026-10-27T07:10:52.1347791Z GOBIN='/home/runner/go/bin'
+Browser regressions (production server)	Run actions/setup-go@b7ad1dad31e06c5925ef5d2fc7ad053ef454303e	2026-10-27T07:10:52.1348195Z GOCACHE='/home/runner/.cache/go-build'
+Browser regressions (production server)	Run actions/setup-go@b7ad1dad31e06c5925ef5d2fc7ad053ef454303e	2026-10-27T07:10:52.1348596Z GOCACHEPROG=''
+Browser regressions (production server)	Run actions/setup-go@b7ad1dad31e06c5925ef5d2fc7ad053ef454303e	2026-10-27T07:10:52.1348897Z GODEBUG=''
+Browser regressions (production server)	Run actions/setup-go@b7ad1dad31e06c5925ef5d2fc7ad053ef454303e	2026-10-27T07:10:52.1349213Z GOENV='/home/runner/.config/go/env'
+Browser regressions (production server)	Run actions/setup-go@b7ad1dad31e06c5925ef5d2fc7ad053ef454303e	2026-10-27T07:10:52.1349579Z GOEXE=''
+Browser regressions (production server)	Run actions/setup-go@b7ad1dad31e06c5925ef5d2fc7ad053ef454303e	2026-10-27T07:10:52.1349864Z GOEXPERIMENT=''
+Browser regressions (production server)	Run actions/setup-go@b7ad1dad31e06c5925ef5d2fc7ad053ef454303e	2026-10-27T07:10:52.1350146Z GOFIPS140='off'
+Browser regressions (production server)	Run actions/setup-go@b7ad1dad31e06c5925ef5d2fc7ad053ef454303e	2026-10-27T07:10:52.1350417Z GOFLAGS=''
+Browser regressions (production server)	Run actions/setup-go@b7ad1dad31e06c5925ef5d2fc7ad053ef454303e	2026-10-27T07:10:52.1351360Z GOGCCFLAGS='-fPIC -m64 -pthread -Wl,--no-gc-sections -fmessage-length=0 -ffile-prefix-map=/tmp/go-build3797775215=/tmp/go-build -gno-record-gcc-switches'
+Browser regressions (production server)	Run actions/setup-go@b7ad1dad31e06c5925ef5d2fc7ad053ef454303e	2026-10-27T07:10:52.1352324Z GOHOSTARCH='amd64'
+Browser regressions (production server)	Run actions/setup-go@b7ad1dad31e06c5925ef5d2fc7ad053ef454303e	2026-10-27T07:10:52.1352616Z GOHOSTOS='linux'
+Browser regressions (production server)	Run actions/setup-go@b7ad1dad31e06c5925ef5d2fc7ad053ef454303e	2026-10-27T07:10:52.1352901Z GOINSECURE=''
+Browser regressions (production server)	Run actions/setup-go@b7ad1dad31e06c5925ef5d2fc7ad053ef454303e	2026-10-27T07:10:52.1353644Z GOMOD='/home/runner/work/KyPulse-server/KyPulse-server/go.mod'
+Browser regressions (production server)	Run actions/setup-go@b7ad1dad31e06c5925ef5d2fc7ad053ef454303e	2026-10-27T07:10:52.1354182Z GOMODCACHE='/home/runner/go/pkg/mod'
+Browser regressions (production server)	Run actions/setup-go@b7ad1dad31e06c5925ef5d2fc7ad053ef454303e	2026-10-27T07:10:52.1354595Z GONOPROXY=''
+Browser regressions (production server)	Run actions/setup-go@b7ad1dad31e06c5925ef5d2fc7ad053ef454303e	2026-10-27T07:10:52.1355002Z GONOSUMDB=''
+Browser regressions (production server)	Run actions/setup-go@b7ad1dad31e06c5925ef5d2fc7ad053ef454303e	2026-10-27T07:10:52.1355293Z GOOS='linux'
+Browser regressions (production server)	Run actions/setup-go@b7ad1dad31e06c5925ef5d2fc7ad053ef454303e	2026-10-27T07:10:52.1355588Z GOPACKAGESDRIVER=''
+Browser regressions (production server)	Run actions/setup-go@b7ad1dad31e06c5925ef5d2fc7ad053ef454303e	2026-10-27T07:10:52.1356055Z GOPATH='/home/runner/go'
+Browser regressions (production server)	Run actions/setup-go@b7ad1dad31e06c5925ef5d2fc7ad053ef454303e	2026-10-27T07:10:52.1356386Z GOPRIVATE=''
+Browser regressions (production server)	Run actions/setup-go@b7ad1dad31e06c5925ef5d2fc7ad053ef454303e	2026-10-27T07:10:52.1356771Z GOPROXY='https://proxy.golang.org,direct'
+Browser regressions (production server)	Run actions/setup-go@b7ad1dad31e06c5925ef5d2fc7ad053ef454303e	2026-10-27T07:10:52.1357218Z GOROOT='/opt/hostedtoolcache/go/1.27.3/x64'
+Browser regressions (production server)	Run actions/setup-go@b7ad1dad31e06c5925ef5d2fc7ad053ef454303e	2026-10-27T07:10:52.1357661Z GOSUMDB='sum.golang.org'
+Browser regressions (production server)	Run actions/setup-go@b7ad1dad31e06c5925ef5d2fc7ad053ef454303e	2026-10-27T07:10:52.1357984Z GOTELEMETRY='local'
+Browser regressions (production server)	Run actions/setup-go@b7ad1dad31e06c5925ef5d2fc7ad053ef454303e	2026-10-27T07:10:52.1358359Z GOTELEMETRYDIR='/home/runner/.config/go/telemetry'
+Browser regressions (production server)	Run actions/setup-go@b7ad1dad31e06c5925ef5d2fc7ad053ef454303e	2026-10-27T07:10:52.1358791Z GOTMPDIR=''
+Browser regressions (production server)	Run actions/setup-go@b7ad1dad31e06c5925ef5d2fc7ad053ef454303e	2026-10-27T07:10:52.1359058Z GOTOOLCHAIN='local'
+Browser regressions (production server)	Run actions/setup-go@b7ad1dad31e06c5925ef5d2fc7ad053ef454303e	2026-10-27T07:10:52.1359496Z GOTOOLDIR='/opt/hostedtoolcache/go/1.27.3/x64/pkg/tool/linux_amd64'
+Browser regressions (production server)	Run actions/setup-go@b7ad1dad31e06c5925ef5d2fc7ad053ef454303e	2026-10-27T07:10:52.1360003Z GOVCS=''
+Browser regressions (production server)	Run actions/setup-go@b7ad1dad31e06c5925ef5d2fc7ad053ef454303e	2026-10-27T07:10:52.1360291Z GOVERSION='go1.27.3'
+Browser regressions (production server)	Run actions/setup-go@b7ad1dad31e06c5925ef5d2fc7ad053ef454303e	2026-10-27T07:10:52.1360594Z GOWORK=''
+Browser regressions (production server)	Run actions/setup-go@b7ad1dad31e06c5925ef5d2fc7ad053ef454303e	2026-10-27T07:10:52.1360926Z PKG_CONFIG='pkg-config'
+Browser regressions (production server)	Run actions/setup-go@b7ad1dad31e06c5925ef5d2fc7ad053ef454303e	2026-10-27T07:10:52.1361133Z
+Browser regressions (production server)	Run actions/setup-go@b7ad1dad31e06c5925ef5d2fc7ad053ef454303e	2026-10-27T07:10:52.1361617Z ##[endgroup]
+Browser regressions (production server)	Run actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1	﻿2026-10-27T07:10:52.1552029Z ##[group]Run actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1
+Browser regressions (production server)	Run actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1	2026-10-27T07:10:52.1552452Z with:
+Browser regressions (production server)	Run actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1	2026-10-27T07:10:52.1552684Z   node-version: 26
+Browser regressions (production server)	Run actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1	2026-10-27T07:10:52.1552907Z   cache: npm
+Browser regressions (production server)	Run actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1	2026-10-27T07:10:52.1553162Z   cache-dependency-path: web/package-lock.json
+Browser regressions (production server)	Run actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1	2026-10-27T07:10:52.1553478Z   check-latest: false
+Browser regressions (production server)	Run actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1	2026-10-27T07:10:52.1556172Z   token: ***
+Browser regressions (production server)	Run actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1	2026-10-27T07:10:52.1556468Z   package-manager-cache: true
+Browser regressions (production server)	Run actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1	2026-10-27T07:10:52.1556734Z env:
+Browser regressions (production server)	Run actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1	2026-10-27T07:10:52.1556955Z   NODE_VERSION: 26
+Browser regressions (production server)	Run actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1	2026-10-27T07:10:52.1557187Z   GOTOOLCHAIN: local
+Browser regressions (production server)	Run actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1	2026-10-27T07:10:52.1557421Z ##[endgroup]
+Browser regressions (production server)	Run actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1	2026-10-27T07:10:52.2812630Z Attempting to download 26...
+Browser regressions (production server)	Run actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1	2026-10-27T07:10:53.3279499Z Acquiring 26.12.1 - x64 from https://github.com/actions/node-versions/releases/download/26.12.1-39618969937/node-26.12.1-linux-x64.tar.gz
+Browser regressions (production server)	Run actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1	2026-10-27T07:10:53.9079654Z Extracting ...
+Browser regressions (production server)	Run actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1	2026-10-27T07:10:53.9180069Z [command]/usr/bin/tar xz --strip 1 --warning=no-unknown-keyword --overwrite -C /home/runner/work/_temp/22aae77d-2d27-4e4e-93f3-85758f4b790c -f /home/runner/work/_temp/123d6b12-16b9-4bfc-8dfc-bd03ca970c34
+Browser regressions (production server)	Run actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1	2026-10-27T07:10:55.4207366Z Adding to the cache ...
+Browser regressions (production server)	Run actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1	2026-10-27T07:10:57.5232148Z ##[group]Environment details
+Browser regressions (production server)	Run actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1	2026-10-27T07:10:57.7288284Z node: v26.12.1
+Browser regressions (production server)	Run actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1	2026-10-27T07:10:57.7288641Z npm: 11.20.0
+Browser regressions (production server)	Run actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1	2026-10-27T07:10:57.7288873Z yarn: 1.22.22
+Browser regressions (production server)	Run actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1	2026-10-27T07:10:57.7289415Z ##[endgroup]
+Browser regressions (production server)	Run actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1	2026-10-27T07:10:57.7303985Z [command]/opt/hostedtoolcache/node/26.12.1/x64/bin/npm config get cache
+Browser regressions (production server)	Run actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1	2026-10-27T07:10:57.8212737Z /home/runner/.npm
+Browser regressions (production server)	Run actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1	2026-10-27T07:10:58.0343680Z Cache hit for: node-cache-Linux-x64-npm-e21ef146482189a0f94dbf70cc18b82269d8626957c20dafe880ad4e4f1a3d44
+Browser regressions (production server)	Run actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1	2026-10-27T07:10:59.2853661Z Received 22866153 of 27060457 (84.5%), 21.8 MBs/sec
+Browser regressions (production server)	Run actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1	2026-10-27T07:10:59.4009340Z Received 27060457 of 27060457 (100.0%), 23.1 MBs/sec
+Browser regressions (production server)	Run actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1	2026-10-27T07:10:59.4009857Z Cache Size: ~26 MB (27060457 B)
+Browser regressions (production server)	Run actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1	2026-10-27T07:10:59.4037638Z [command]/usr/bin/tar -xf /home/runner/work/_temp/16220c25-df05-41c9-b195-848d23e63d78/cache.tzst -P -C /home/runner/work/KyPulse-server/KyPulse-server --use-compress-program unzstd
+Browser regressions (production server)	Run actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1	2026-10-27T07:10:59.4470446Z Cache restored successfully
+Browser regressions (production server)	Run actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1	2026-10-27T07:10:59.4486874Z Cache restored from key: node-cache-Linux-x64-npm-e21ef146482189a0f94dbf70cc18b82269d8626957c20dafe880ad4e4f1a3d44
+Browser regressions (production server)	Run npm ci	﻿2026-10-27T07:10:59.4628012Z ##[group]Run npm ci
+Browser regressions (production server)	Run npm ci	2026-10-27T07:10:59.4628391Z ^[[36;1mnpm ci^[[0m
+Browser regressions (production server)	Run npm ci	2026-10-27T07:10:59.4842056Z shell: /usr/bin/bash -e {0}
+Browser regressions (production server)	Run npm ci	2026-10-27T07:10:59.4842394Z env:
+Browser regressions (production server)	Run npm ci	2026-10-27T07:10:59.4842638Z   NODE_VERSION: 26
+Browser regressions (production server)	Run npm ci	2026-10-27T07:10:59.4842884Z   GOTOOLCHAIN: local
+Browser regressions (production server)	Run npm ci	2026-10-27T07:10:59.4843124Z ##[endgroup]
+Browser regressions (production server)	Run npm ci	2026-10-27T07:11:00.5416129Z npm warn deprecated whatwg-encoding@3.1.1: Use @exodus/bytes instead for a more spec-conformant and faster implementation
+Browser regressions (production server)	Run npm ci	2026-10-27T07:11:02.4398384Z
+Browser regressions (production server)	Run npm ci	2026-10-27T07:11:02.4399402Z added 140 packages, and audited 141 packages in 3s
+Browser regressions (production server)	Run npm ci	2026-10-27T07:11:02.4400114Z
+Browser regressions (production server)	Run npm ci	2026-10-27T07:11:02.4400445Z 21 packages are looking for funding
+Browser regressions (production server)	Run npm ci	2026-10-27T07:11:02.4401026Z   run `npm fund` for details
+Browser regressions (production server)	Run npm ci	2026-10-27T07:11:02.4408159Z
+Browser regressions (production server)	Run npm ci	2026-10-27T07:11:02.4408514Z found 0 vulnerabilities
+Browser regressions (production server)	Run npm ci	2026-10-27T07:11:02.4415960Z npm warn install-scripts 1 package has install scripts not yet covered by allowScripts:
+Browser regressions (production server)	Run npm ci	2026-10-27T07:11:02.4416990Z npm warn install-scripts   esbuild@0.25.12 (postinstall: node install.js)
+Browser regressions (production server)	Run npm ci	2026-10-27T07:11:02.4417811Z npm warn install-scripts
+Browser regressions (production server)	Run npm ci	2026-10-27T07:11:02.4418777Z npm warn install-scripts Run `npm install-scripts ls` to review, or `npm install-scripts approve <pkg>` to allow.
+Browser regressions (production server)	Run npm run build	﻿2026-10-27T07:11:02.4838642Z ##[group]Run npm run build
+Browser regressions (production server)	Run npm run build	2026-10-27T07:11:02.4839146Z ^[[36;1mnpm run build^[[0m
+Browser regressions (production server)	Run npm run build	2026-10-27T07:11:02.4879459Z shell: /usr/bin/bash -e {0}
+Browser regressions (production server)	Run npm run build	2026-10-27T07:11:02.4879886Z env:
+Browser regressions (production server)	Run npm run build	2026-10-27T07:11:02.4880220Z   NODE_VERSION: 26
+Browser regressions (production server)	Run npm run build	2026-10-27T07:11:02.4880628Z   GOTOOLCHAIN: local
+Browser regressions (production server)	Run npm run build	2026-10-27T07:11:02.4880944Z ##[endgroup]
+Browser regressions (production server)	Run npm run build	2026-10-27T07:11:02.5862579Z
+Browser regressions (production server)	Run npm run build	2026-10-27T07:11:02.5863314Z > prebuild
+Browser regressions (production server)	Run npm run build	2026-10-27T07:11:02.5863820Z > node src/ky-ui/check-vendor.mjs
+Browser regressions (production server)	Run npm run build	2026-10-27T07:11:02.5864279Z
+Browser regressions (production server)	Run npm run build	2026-10-27T07:11:02.6193521Z ky-ui 0.4.3: vendor files verified
+Browser regressions (production server)	Run npm run build	2026-10-27T07:11:02.6231748Z
+Browser regressions (production server)	Run npm run build	2026-10-27T07:11:02.6232350Z > build
+Browser regressions (production server)	Run npm run build	2026-10-27T07:11:02.6232920Z > tsc -b && vite build
+Browser regressions (production server)	Run npm run build	2026-10-27T07:11:02.6233165Z
+Browser regressions (production server)	Run npm run build	2026-10-27T07:11:06.0147797Z ^[[36mvite v6.4.5 ^[[32mbuilding for production...^[[36m^[[39m
+Browser regressions (production server)	Run npm run build	2026-10-27T07:11:06.1025720Z transforming...
+Browser regressions (production server)	Run npm run build	2026-10-27T07:11:07.6237504Z ^[[32m✓^[[39m 1840 modules transformed.
+Browser regressions (production server)	Run npm run build	2026-10-27T07:11:07.8051295Z rendering chunks...
+Browser regressions (production server)	Run npm run build	2026-10-27T07:11:07.8117799Z computing gzip size...
+Browser regressions (production server)	Run npm run build	2026-10-27T07:11:07.8232271Z ^[[2mdist/^[[22m^[[32mindex.html                 ^[[39m^[[1m^[[2m  0.57 kB^[[22m^[[1m^[[22m^[[2m │ gzip:  0.33 kB^[[22m
+Browser regressions (production server)	Run npm run build	2026-10-27T07:11:07.8234290Z ^[[2mdist/^[[22m^[[2massets/^[[22m^[[35mindex-Cu-Wa8Av.css  ^[[39m^[[1m^[[2m 32.02 kB^[[22m^[[1m^[[22m^[[2m │ gzip:  6.75 kB^[[22m
+Browser regressions (production server)	Run npm run build	2026-10-27T07:11:07.8236300Z ^[[2mdist/^[[22m^[[2massets/^[[22m^[[36mindex-B3wPgvv8.js   ^[[39m^[[1m^[[2m299.65 kB^[[22m^[[1m^[[22m^[[2m │ gzip: 89.68 kB^[[22m
+Browser regressions (production server)	Run npm run build	2026-10-27T07:11:07.8237208Z ^[[32m✓ built in 1.77s^[[39m
+Browser regressions (production server)	Run go build -o .browser/server ./cmd/server	﻿2026-10-27T07:11:07.8618522Z ##[group]Run go build -o .browser/server ./cmd/server
+Browser regressions (production server)	Run go build -o .browser/server ./cmd/server	2026-10-27T07:11:07.8619287Z ^[[36;1mgo build -o .browser/server ./cmd/server^[[0m
+Browser regressions (production server)	Run go build -o .browser/server ./cmd/server	2026-10-27T07:11:07.8673693Z shell: /usr/bin/bash -e {0}
+Browser regressions (production server)	Run go build -o .browser/server ./cmd/server	2026-10-27T07:11:07.8674205Z env:
+Browser regressions (production server)	Run go build -o .browser/server ./cmd/server	2026-10-27T07:11:07.8674590Z   NODE_VERSION: 26
+Browser regressions (production server)	Run go build -o .browser/server ./cmd/server	2026-10-27T07:11:07.8674943Z   GOTOOLCHAIN: local
+Browser regressions (production server)	Run go build -o .browser/server ./cmd/server	2026-10-27T07:11:07.8675269Z ##[endgroup]
+Browser regressions (production server)	Run npx playwright install --with-deps chromium	﻿2026-10-27T07:11:24.9566042Z ##[group]Run npx playwright install --with-deps chromium
+Browser regressions (production server)	Run npx playwright install --with-deps chromium	2026-10-27T07:11:24.9566805Z ^[[36;1mnpx playwright install --with-deps chromium^[[0m
+Browser regressions (production server)	Run npx playwright install --with-deps chromium	2026-10-27T07:11:24.9607077Z shell: /usr/bin/bash -e {0}
+Browser regressions (production server)	Run npx playwright install --with-deps chromium	2026-10-27T07:11:24.9607603Z env:
+Browser regressions (production server)	Run npx playwright install --with-deps chromium	2026-10-27T07:11:24.9607914Z   NODE_VERSION: 26
+Browser regressions (production server)	Run npx playwright install --with-deps chromium	2026-10-27T07:11:24.9608267Z   GOTOOLCHAIN: local
+Browser regressions (production server)	Run npx playwright install --with-deps chromium	2026-10-27T07:11:24.9608692Z ##[endgroup]
+Browser regressions (production server)	Run npx playwright install --with-deps chromium	2026-10-27T07:11:25.6099693Z Installing dependencies...
+Browser regressions (production server)	Run npx playwright install --with-deps chromium	2026-10-27T07:11:25.6176100Z Switching to root user to install dependencies...
+Browser regressions (production server)	Run npx playwright install --with-deps chromium	2026-10-27T07:11:25.6911858Z Get:1 file:/etc/apt/apt-mirrors.txt Mirrorlist [144 B]
+Browser regressions (production server)	Run npx playwright install --with-deps chromium	2026-10-27T07:11:25.7378348Z Hit:2 http://azure.archive.ubuntu.com/ubuntu noble InRelease
+Browser regressions (production server)	Run npx playwright install --with-deps chromium	2026-10-27T07:11:25.7402605Z Get:3 http://azure.archive.ubuntu.com/ubuntu noble-updates InRelease [126 kB]
+Browser regressions (production server)	Run npx playwright install --with-deps chromium	2026-10-27T07:11:25.7460083Z Get:4 http://azure.archive.ubuntu.com/ubuntu noble-backports InRelease [126 kB]
+Browser regressions (production server)	Run npx playwright install --with-deps chromium	2026-10-27T07:11:25.7486420Z Get:5 http://azure.archive.ubuntu.com/ubuntu noble-security InRelease [126 kB]
+Browser regressions (production server)	Run npx playwright install --with-deps chromium	2026-10-27T07:11:25.7598987Z Get:6 https://packages.microsoft.com/ubuntu/24.04/prod noble InRelease [3600 B]
+Browser regressions (production server)	Run npx playwright install --with-deps chromium	2026-10-27T07:11:25.8498232Z Get:7 http://azure.archive.ubuntu.com/ubuntu noble-updates/main amd64 Packages [1401 kB]
+Browser regressions (production server)	Run npx playwright install --with-deps chromium	2026-10-27T07:11:25.8687796Z Get:8 http://azure.archive.ubuntu.com/ubuntu noble-updates/main Translation-en [310 kB]
+Browser regressions (production server)	Run npx playwright install --with-deps chromium	2026-10-27T07:11:25.8701309Z Get:9 http://azure.archive.ubuntu.com/ubuntu noble-updates/universe amd64 Packages [1706 kB]
+Browser regressions (production server)	Run npx playwright install --with-deps chromium	2026-10-27T07:11:25.8790332Z Get:10 http://azure.archive.ubuntu.com/ubuntu noble-updates/universe Translation-en [343 kB]
+Browser regressions (production server)	Run npx playwright install --with-deps chromium	2026-10-27T07:11:25.8843140Z Get:11 http://azure.archive.ubuntu.com/ubuntu noble-updates/restricted amd64 Packages [1805 kB]
+Browser regressions (production server)	Run npx playwright install --with-deps chromium	2026-10-27T07:11:25.8901947Z Get:12 http://azure.archive.ubuntu.com/ubuntu noble-updates/restricted Translation-en [411 kB]
+Browser regressions (production server)	Run npx playwright install --with-deps chromium	2026-10-27T07:11:25.9457567Z Get:13 http://azure.archive.ubuntu.com/ubuntu noble-security/main amd64 Packages [1146 kB]
+Browser regressions (production server)	Run npx playwright install --with-deps chromium	2026-10-27T07:11:25.9508758Z Get:14 http://azure.archive.ubuntu.com/ubuntu noble-security/main Translation-en [231 kB]
+Browser regressions (production server)	Run npx playwright install --with-deps chromium	2026-10-27T07:11:25.9547892Z Get:15 http://azure.archive.ubuntu.com/ubuntu noble-security/universe amd64 Packages [1223 kB]
+Browser regressions (production server)	Run npx playwright install --with-deps chromium	2026-10-27T07:11:25.9586137Z Get:16 http://azure.archive.ubuntu.com/ubuntu noble-security/universe Translation-en [246 kB]
+Browser regressions (production server)	Run npx playwright install --with-deps chromium	2026-10-27T07:11:25.9930263Z Get:19 https://packages.microsoft.com/ubuntu/24.04/prod noble/main amd64 Packages [661 kB]
+Browser regressions (production server)	Run npx playwright install --with-deps chromium	2026-10-27T07:11:26.0026580Z Get:20 https://packages.microsoft.com/ubuntu/24.04/prod noble/main armhf Packages [12.4 kB]
+Browser regressions (production server)	Run npx playwright install --with-deps chromium	2026-10-27T07:11:26.0062327Z Get:21 https://packages.microsoft.com/ubuntu/24.04/prod noble/main arm64 Packages [598 kB]
+Browser regressions (production server)	Run npx playwright install --with-deps chromium	2026-10-27T07:11:26.0064542Z Get:17 http://azure.archive.ubuntu.com/ubuntu noble-security/restricted amd64 Packages [1713 kB]
+Browser regressions (production server)	Run npx playwright install --with-deps chromium	2026-10-27T07:11:26.0157654Z Get:18 http://azure.archive.ubuntu.com/ubuntu noble-security/restricted Translation-en [392 kB]
+Browser regressions (production server)	Run npx playwright install --with-deps chromium	2026-10-27T07:11:34.0482051Z Fetched 12.6 MB in 1s (9175 kB/s)
+Browser regressions (production server)	Run npx playwright install --with-deps chromium	2026-10-27T07:11:35.0479629Z Reading package lists...
+Browser regressions (production server)	Run npx playwright install --with-deps chromium	2026-10-27T07:11:35.0774833Z Reading package lists...
+Browser regressions (production server)	Run npx playwright install --with-deps chromium	2026-10-27T07:11:35.3068150Z Building dependency tree...
+Browser regressions (production server)	Run npx playwright install --with-deps chromium	2026-10-27T07:11:35.3072451Z Reading state information...
+Browser regressions (production server)	Run npx playwright install --with-deps chromium	2026-10-27T07:11:35.4899528Z libasound2t64 is already the newest version (1.2.11-1ubuntu0.3).
+Browser regressions (production server)	Run npx playwright install --with-deps chromium	2026-10-27T07:11:35.4900737Z libasound2t64 set to manually installed.
+Browser regressions (production server)	Run npx playwright install --with-deps chromium	2026-10-27T07:11:35.4902090Z libatk-bridge2.0-0t64 is already the newest version (2.52.0-1build1).
+Browser regressions (production server)	Run npx playwright install --with-deps chromium	2026-10-27T07:11:35.4902738Z libatk-bridge2.0-0t64 set to manually installed.
+Browser regressions (production server)	Run npx playwright install --with-deps chromium	2026-10-27T07:11:35.4903292Z libatk1.0-0t64 is already the newest version (2.52.0-1build1).
+Browser regressions (production server)	Run npx playwright install --with-deps chromium	2026-10-27T07:11:35.4903850Z libatk1.0-0t64 set to manually installed.
+Browser regressions (production server)	Run npx playwright install --with-deps chromium	2026-10-27T07:11:35.4904384Z libatspi2.0-0t64 is already the newest version (2.52.0-1build1).
+Browser regressions (production server)	Run npx playwright install --with-deps chromium	2026-10-27T07:11:35.4904953Z libatspi2.0-0t64 set to manually installed.
+Browser regressions (production server)	Run npx playwright install --with-deps chromium	2026-10-27T07:11:35.4905477Z libcairo2 is already the newest version (1.18.0-3build1).
+Browser regressions (production server)	Run npx playwright install --with-deps chromium	2026-10-27T07:11:35.4906714Z libcairo2 set to manually installed.
+Browser regressions (production server)	Run npx playwright install --with-deps chromium	2026-10-27T07:11:35.4907382Z libcups2t64 is already the newest version (2.4.7-1.2ubuntu7.14).
+Browser regressions (production server)	Run npx playwright install --with-deps chromium	2026-10-27T07:11:35.4908415Z libcups2t64 set to manually installed.
+Browser regressions (production server)	Run npx playwright install --with-deps chromium	2026-10-27T07:11:35.4909069Z libdbus-1-3 is already the newest version (1.14.10-4ubuntu4.1).
+Browser regressions (production server)	Run npx playwright install --with-deps chromium	2026-10-27T07:11:35.4909675Z libdbus-1-3 set to manually installed.
+Browser regressions (production server)	Run npx playwright install --with-deps chromium	2026-10-27T07:11:35.4910341Z libdrm2 is already the newest version (2.4.125-1ubuntu0.1~24.04.2).
+Browser regressions (production server)	Run npx playwright install --with-deps chromium	2026-10-27T07:11:35.4911014Z libdrm2 set to manually installed.
+Browser regressions (production server)	Run npx playwright install --with-deps chromium	2026-10-27T07:11:35.4911777Z libgbm1 is already the newest version (25.2.8-0ubuntu0.24.04.4).
+Browser regressions (production server)	Run npx playwright install --with-deps chromium	2026-10-27T07:11:35.4912502Z libgbm1 set to manually installed.
+Browser regressions (production server)	Run npx playwright install --with-deps chromium	2026-10-27T07:11:35.4913242Z libnspr4 is already the newest version (2:4.35-1.1build1).
+Browser regressions (production server)	Run npx playwright install --with-deps chromium	2026-10-27T07:11:35.4913945Z libnspr4 set to manually installed.
+Browser regressions (production server)	Run npx playwright install --with-deps chromium	2026-10-27T07:11:35.4914753Z libpango-1.0-0 is already the newest version (1.52.1+ds-1build1).
+Browser regressions (production server)	Run npx playwright install --with-deps chromium	2026-10-27T07:11:35.4915653Z libpango-1.0-0 set to manually installed.
+Browser regressions (production server)	Run npx playwright install --with-deps chromium	2026-10-27T07:11:35.4916656Z libx11-6 is already the newest version (2:1.8.7-1ubuntu0.1).
+Browser regressions (production server)	Run npx playwright install --with-deps chromium	2026-10-27T07:11:35.4917353Z libx11-6 set to manually installed.
+Browser regressions (production server)	Run npx playwright install --with-deps chromium	2026-10-27T07:11:35.4918185Z libxcb1 is already the newest version (1.15-1ubuntu2).
+Browser regressions (production server)	Run npx playwright install --with-deps chromium	2026-10-27T07:11:35.4918856Z libxcb1 set to manually installed.
+Browser regressions (production server)	Run npx playwright install --with-deps chromium	2026-10-27T07:11:35.4919711Z libxcomposite1 is already the newest version (1:0.4.5-1build3).
+Browser regressions (production server)	Run npx playwright install --with-deps chromium	2026-10-27T07:11:35.4920514Z libxcomposite1 set to manually installed.
+Browser regressions (production server)	Run npx playwright install --with-deps chromium	2026-10-27T07:11:35.4921413Z libxdamage1 is already the newest version (1:1.1.6-1build1).
+Browser regressions (production server)	Run npx playwright install --with-deps chromium	2026-10-27T07:11:35.4922171Z libxdamage1 set to manually installed.
+Browser regressions (production server)	Run npx playwright install --with-deps chromium	2026-10-27T07:11:35.4922983Z libxext6 is already the newest version (2:1.3.4-1build2).
+Browser regressions (production server)	Run npx playwright install --with-deps chromium	2026-10-27T07:11:35.4923690Z libxext6 set to manually installed.
+Browser regressions (production server)	Run npx playwright install --with-deps chromium	2026-10-27T07:11:35.4924436Z libxfixes3 is already the newest version (1:6.0.0-2build1).
+Browser regressions (production server)	Run npx playwright install --with-deps chromium	2026-10-27T07:11:35.4925211Z libxfixes3 set to manually installed.
+Browser regressions (production server)	Run npx playwright install --with-deps chromium	2026-10-27T07:11:35.4926140Z libxkbcommon0 is already the newest version (1.6.0-1build1).
+Browser regressions (production server)	Run npx playwright install --with-deps chromium	2026-10-27T07:11:35.4926908Z libxkbcommon0 set to manually installed.
+Browser regressions (production server)	Run npx playwright install --with-deps chromium	2026-10-27T07:11:35.4927632Z libxrandr2 is already the newest version (2:1.5.2-2build1).
+Browser regressions (production server)	Run npx playwright install --with-deps chromium	2026-10-27T07:11:35.4928412Z libxrandr2 set to manually installed.
+Browser regressions (production server)	Run npx playwright install --with-deps chromium	2026-10-27T07:11:35.4929318Z fonts-noto-color-emoji is already the newest version (2.047-0ubuntu0.24.04.1).
+Browser regressions (production server)	Run npx playwright install --with-deps chromium	2026-10-27T07:11:35.4930294Z libfontconfig1 is already the newest version (2.15.0-1.1ubuntu2).
+Browser regressions (production server)	Run npx playwright install --with-deps chromium	2026-10-27T07:11:35.4931136Z libfontconfig1 set to manually installed.
+Browser regressions (production server)	Run npx playwright install --with-deps chromium	2026-10-27T07:11:35.4932001Z libfreetype6 is already the newest version (2.13.2+dfsg-1ubuntu0.2).
+Browser regressions (production server)	Run npx playwright install --with-deps chromium	2026-10-27T07:11:35.4932884Z libfreetype6 set to manually installed.
+Browser regressions (production server)	Run npx playwright install --with-deps chromium	2026-10-27T07:11:35.4933753Z fonts-liberation is already the newest version (1:2.1.5-3).
+Browser regressions (production server)	Run npx playwright install --with-deps chromium	2026-10-27T07:11:35.4934590Z fonts-liberation set to manually installed.
+Browser regressions (production server)	Run npx playwright install --with-deps chromium	2026-10-27T07:11:35.4935474Z The following additional packages will be installed:
+Browser regressions (production server)	Run npx playwright install --with-deps chromium	2026-10-27T07:11:35.4936621Z   gir1.2-glib-2.0 libglib2.0-bin libglib2.0-data libnss3-tools
+Browser regressions (production server)	Run npx playwright install --with-deps chromium	2026-10-27T07:11:35.4937584Z   xfonts-encodings xfonts-utils xserver-common
+Browser regressions (production server)	Run npx playwright install --with-deps chromium	2026-10-27T07:11:35.4938214Z Suggested packages:
+Browser regressions (production server)	Run npx playwright install --with-deps chromium	2026-10-27T07:11:35.4938953Z   low-memory-monitor
+Browser regressions (production server)	Run npx playwright install --with-deps chromium	2026-10-27T07:11:35.4939455Z Recommended packages:
+Browser regressions (production server)	Run npx playwright install --with-deps chromium	2026-10-27T07:11:35.4940238Z   fonts-ipafont-mincho fonts-tlwg-loma xfonts-base
+Browser regressions (production server)	Run npx playwright install --with-deps chromium	2026-10-27T07:11:35.5121989Z The following NEW packages will be installed:
+Browser regressions (production server)	Run npx playwright install --with-deps chromium	2026-10-27T07:11:35.5122887Z   fonts-freefont-ttf fonts-ipafont-gothic fonts-tlwg-loma-otf fonts-unifont
+Browser regressions (production server)	Run npx playwright install --with-deps chromium	2026-10-27T07:11:35.5130297Z   fonts-wqy-zenhei xfonts-cyrillic xfonts-encodings xfonts-scalable
+Browser regressions (production server)	Run npx playwright install --with-deps chromium	2026-10-27T07:11:35.5130930Z   xfonts-utils
+Browser regressions (production server)	Run npx playwright install --with-deps chromium	2026-10-27T07:11:35.5134399Z The following packages will be upgraded:
+Browser regressions (production server)	Run npx playwright install --with-deps chromium	2026-10-27T07:11:35.5136892Z   gir1.2-glib-2.0 libglib2.0-0t64 libglib2.0-bin libglib2.0-data libnss3
+Browser regressions (production server)	Run npx playwright install --with-deps chromium	2026-10-27T07:11:35.5141469Z   libnss3-tools xserver-common xvfb
+Browser regressions (production server)	Run npx playwright install --with-deps chromium	2026-10-27T07:11:35.5304090Z 8 upgraded, 9 newly installed, 0 to remove and 96 not upgraded.
+Browser regressions (production server)	Run npx playwright install --with-deps chromium	2026-10-27T07:11:35.5304824Z Need to get 25.9 MB of archives.
+Browser regressions (production server)	Run npx playwright install --with-deps chromium	2026-10-27T07:11:35.5305437Z After this operation, 79.5 MB of additional disk space will be used.
+Browser regressions (production server)	Run npx playwright install --with-deps chromium	2026-10-27T07:11:35.5306177Z Get:1 file:/etc/apt/apt-mirrors.txt Mirrorlist [144 B]
+Browser regressions (production server)	Run npx playwright install --with-deps chromium	2026-10-27T07:11:36.0234290Z Get:2 http://azure.archive.ubuntu.com/ubuntu noble/universe amd64 fonts-ipafont-gothic all 00303-21ubuntu1 [3513 kB]
+Browser regressions (production server)	Run npx playwright install --with-deps chromium	2026-10-27T07:12:23.4088995Z Get:3 http://azure.archive.ubuntu.com/ubuntu noble-updates/main amd64 libglib2.0-data all 2.80.0-6ubuntu3.10 [50.2 kB]
+Browser regressions (production server)	Run npx playwright install --with-deps chromium	2026-10-27T07:12:24.5739070Z Get:4 http://azure.archive.ubuntu.com/ubuntu noble-updates/main amd64 libglib2.0-bin amd64 2.80.0-6ubuntu3.10 [97.9 kB]
+Browser regressions (production server)	Run npx playwright install --with-deps chromium	2026-10-27T07:12:26.0298093Z Get:5 http://azure.archive.ubuntu.com/ubuntu noble-updates/main amd64 gir1.2-glib-2.0 amd64 2.80.0-6ubuntu3.10 [183 kB]
+Browser regressions (production server)	Run npx playwright install --with-deps chromium	2026-10-27T07:12:28.6223374Z Get:6 http://azure.archive.ubuntu.com/ubuntu noble-updates/main amd64 libglib2.0-0t64 amd64 2.80.0-6ubuntu3.10 [1548 kB]
+Browser regressions (production server)	Run npx playwright install --with-deps chromium	2026-10-27T07:12:49.0870430Z Get:7 http://azure.archive.ubuntu.com/ubuntu noble/main amd64 fonts-freefont-ttf all 20211204+svn4273-2 [5641 kB]
+Browser regressions (production server)	Run npx playwright install --with-deps chromium	2026-10-27T07:14:01.5293916Z Get:8 http://azure.archive.ubuntu.com/ubuntu noble/universe amd64 fonts-tlwg-loma-otf all 1:0.7.3-1 [107 kB]
+Browser regressions (production server)	Run npx playwright install --with-deps chromium	2026-10-27T07:14:03.2009519Z Get:9 http://azure.archive.ubuntu.com/ubuntu noble/universe amd64 fonts-unifont all 1:15.1.01-1build1 [2993 kB]
+Browser regressions (production server)	Run npx playwright install --with-deps chromium	2026-10-27T07:14:42.2148156Z Get:10 http://azure.archive.ubuntu.com/ubuntu noble/universe amd64 fonts-wqy-zenhei all 0.9.45-8 [7472 kB]
+Browser regressions (production server)	Run npx playwright install --with-deps chromium	2026-10-27T07:16:19.4652715Z Get:11 http://azure.archive.ubuntu.com/ubuntu noble-updates/main amd64 libnss3 amd64 2:3.98-1ubuntu0.3 [1445 kB]
+Browser regressions (production server)	Run npx playwright install --with-deps chromium	2026-10-27T07:16:40.2178174Z Get:12 http://azure.archive.ubuntu.com/ubuntu noble-updates/main amd64 libnss3-tools amd64 2:3.98-1ubuntu0.3 [615 kB]
+Browser regressions (production server)	Run npx playwright install --with-deps chromium	2026-10-27T07:16:48.2984357Z Get:13 http://azure.archive.ubuntu.com/ubuntu noble/main amd64 xfonts-encodings all 1:1.0.5-0ubuntu2 [578 kB]
+Browser regressions (production server)	Run npx playwright install --with-deps chromium	2026-10-27T07:16:55.8231120Z Get:14 http://azure.archive.ubuntu.com/ubuntu noble/main amd64 xfonts-utils amd64 1:7.7+6build3 [94.4 kB]
+Browser regressions (production server)	Run npx playwright install --with-deps chromium	2026-10-27T07:16:57.4158504Z Get:15 http://azure.archive.ubuntu.com/ubuntu noble/universe amd64 xfonts-cyrillic all 1:1.0.5+nmu1 [384 kB]
+Browser regressions (production server)	Run npx playwright install --with-deps chromium	2026-10-27T07:17:04.2754339Z Get:16 http://azure.archive.ubuntu.com/ubuntu noble/main amd64 xfonts-scalable all 1:1.0.3-1.3 [304 kB]
+Browser regressions (production server)	Run npx playwright install --with-deps chromium	2026-10-27T07:17:08.3950091Z Get:17 http://azure.archive.ubuntu.com/ubuntu noble-updates/main amd64 xserver-common all 2:21.1.12-1ubuntu1.9 [35.0 kB]
+Browser regressions (production server)	Run npx playwright install --with-deps chromium	2026-10-27T07:17:09.0849567Z Get:18 http://azure.archive.ubuntu.com/ubuntu noble-updates/universe amd64 xvfb amd64 2:21.1.12-1ubuntu1.9 [877 kB]
+Browser regressions (production server)	Run npx playwright install --with-deps chromium	2026-10-27T07:17:20.1712642Z Fetched 25.9 MB in 5min 44s (75.3 kB/s)
+Browser regressions (production server)	Run npx playwright install --with-deps chromium	2026-10-27T07:17:20.1915949Z Selecting previously unselected package fonts-ipafont-gothic.
+Browser regressions (production server)	Run npx playwright install --with-deps chromium	2026-10-27T07:17:20.2122019Z (Reading database ...
+Browser regressions (production server)	Run npx playwright install --with-deps chromium	2026-10-27T07:17:20.2122539Z (Reading database ... 5%
+Browser regressions (production server)	Run npx playwright install --with-deps chromium	2026-10-27T07:17:20.2123113Z (Reading database ... 10%
+Browser regressions (production server)	Run npx playwright install --with-deps chromium	2026-10-27T07:17:20.2123738Z (Reading database ... 15%
+Browser regressions (production server)	Run npx playwright install --with-deps chromium	2026-10-27T07:17:20.2124212Z (Reading database ... 20%
+Browser regressions (production server)	Run npx playwright install --with-deps chromium	2026-10-27T07:17:20.2124774Z (Reading database ... 25%
+Browser regressions (production server)	Run npx playwright install --with-deps chromium	2026-10-27T07:17:20.2125226Z (Reading database ... 30%
+Browser regressions (production server)	Run npx playwright install --with-deps chromium	2026-10-27T07:17:20.2126619Z (Reading database ... 35%
+Browser regressions (production server)	Run npx playwright install --with-deps chromium	2026-10-27T07:17:20.2127123Z (Reading database ... 40%
+Browser regressions (production server)	Run npx playwright install --with-deps chromium	2026-10-27T07:17:20.2127783Z (Reading database ... 45%
+Browser regressions (production server)	Run npx playwright install --with-deps chromium	2026-10-27T07:17:20.2128114Z (Reading database ... 50%
+Browser regressions (production server)	Run npx playwright install --with-deps chromium	2026-10-27T07:17:20.2160499Z (Reading database ... 55%
+Browser regressions (production server)	Run npx playwright install --with-deps chromium	2026-10-27T07:17:20.3314084Z (Reading database ... 60%
+Browser regressions (production server)	Run npx playwright install --with-deps chromium	2026-10-27T07:17:20.5367741Z (Reading database ... 65%
+Browser regressions (production server)	Run npx playwright install --with-deps chromium	2026-10-27T07:17:20.7433368Z (Reading database ... 70%
+Browser regressions (production server)	Run npx playwright install --with-deps chromium	2026-10-27T07:17:20.9444331Z (Reading database ... 75%
+Browser regressions (production server)	Run npx playwright install --with-deps chromium	2026-10-27T07:17:21.0497204Z (Reading database ... 80%
+Browser regressions (production server)	Run npx playwright install --with-deps chromium	2026-10-27T07:17:21.2471578Z (Reading database ... 85%
+Browser regressions (production server)	Run npx playwright install --with-deps chromium	2026-10-27T07:17:21.4127259Z (Reading database ... 90%
+Browser regressions (production server)	Run npx playwright install --with-deps chromium	2026-10-27T07:17:21.5532236Z (Reading database ... 95%
+Browser regressions (production server)	Run npx playwright install --with-deps chromium	2026-10-27T07:17:21.5533062Z (Reading database ... 100%
+Browser regressions (production server)	Run npx playwright install --with-deps chromium	2026-10-27T07:17:21.5533944Z (Reading database ... 203540 files and directories currently installed.)
+Browser regressions (production server)	Run npx playwright install --with-deps chromium	2026-10-27T07:17:21.5577171Z Preparing to unpack .../00-fonts-ipafont-gothic_00303-21ubuntu1_all.deb ...
+Browser regressions (production server)	Run npx playwright install --with-deps chromium	2026-10-27T07:17:21.5653790Z Unpacking fonts-ipafont-gothic (00303-21ubuntu1) ...
+Browser regressions (production server)	Run npx playwright install --with-deps chromium	2026-10-27T07:17:21.8431501Z Preparing to unpack .../01-libglib2.0-data_2.80.0-6ubuntu3.10_all.deb ...
+Browser regressions (production server)	Run npx playwright install --with-deps chromium	2026-10-27T07:17:21.8452097Z Unpacking libglib2.0-data (2.80.0-6ubuntu3.10) over (2.80.0-6ubuntu3.9) ...
+Browser regressions (production server)	Run npx playwright install --with-deps chromium	2026-10-27T07:17:21.8749637Z Preparing to unpack .../02-libglib2.0-bin_2.80.0-6ubuntu3.10_amd64.deb ...
+Browser regressions (production server)	Run npx playwright install --with-deps chromium	2026-10-27T07:17:21.8769873Z Unpacking libglib2.0-bin (2.80.0-6ubuntu3.10) over (2.80.0-6ubuntu3.9) ...
+Browser regressions (production server)	Run npx playwright install --with-deps chromium	2026-10-27T07:17:21.9205867Z Preparing to unpack .../03-gir1.2-glib-2.0_2.80.0-6ubuntu3.10_amd64.deb ...
+Browser regressions (production server)	Run npx playwright install --with-deps chromium	2026-10-27T07:17:21.9225273Z Unpacking gir1.2-glib-2.0:amd64 (2.80.0-6ubuntu3.10) over (2.80.0-6ubuntu3.9) ...
+Browser regressions (production server)	Run npx playwright install --with-deps chromium	2026-10-27T07:17:21.9587207Z Preparing to unpack .../04-libglib2.0-0t64_2.80.0-6ubuntu3.10_amd64.deb ...
+Browser regressions (production server)	Run npx playwright install --with-deps chromium	2026-10-27T07:17:21.9652526Z Unpacking libglib2.0-0t64:amd64 (2.80.0-6ubuntu3.10) over (2.80.0-6ubuntu3.9) ...
+Browser regressions (production server)	Run npx playwright install --with-deps chromium	2026-10-27T07:17:22.0076100Z Selecting previously unselected package fonts-freefont-ttf.
+Browser regressions (production server)	Run npx playwright install --with-deps chromium	2026-10-27T07:17:22.0203222Z Preparing to unpack .../05-fonts-freefont-ttf_20211204+svn4273-2_all.deb ...
+Browser regressions (production server)	Run npx playwright install --with-deps chromium	2026-10-27T07:17:22.0213228Z Unpacking fonts-freefont-ttf (20211204+svn4273-2) ...
+Browser regressions (production server)	Run npx playwright install --with-deps chromium	2026-10-27T07:17:22.1107920Z Selecting previously unselected package fonts-tlwg-loma-otf.
+Browser regressions (production server)	Run npx playwright install --with-deps chromium	2026-10-27T07:17:22.1229820Z Preparing to unpack .../06-fonts-tlwg-loma-otf_1%3a0.7.3-1_all.deb ...
+Browser regressions (production server)	Run npx playwright install --with-deps chromium	2026-10-27T07:17:22.1240587Z Unpacking fonts-tlwg-loma-otf (1:0.7.3-1) ...
+Browser regressions (production server)	Run npx playwright install --with-deps chromium	2026-10-27T07:17:22.1407133Z Selecting previously unselected package fonts-unifont.
+Browser regressions (production server)	Run npx playwright install --with-deps chromium	2026-10-27T07:17:22.1526045Z Preparing to unpack .../07-fonts-unifont_1%3a15.1.01-1build1_all.deb ...
+Browser regressions (production server)	Run npx playwright install --with-deps chromium	2026-10-27T07:17:22.1536208Z Unpacking fonts-unifont (1:15.1.01-1build1) ...
+Browser regressions (production server)	Run npx playwright install --with-deps chromium	2026-10-27T07:17:22.3423960Z Selecting previously unselected package fonts-wqy-zenhei.
+Browser regressions (production server)	Run npx playwright install --with-deps chromium	2026-10-27T07:17:22.3545681Z Preparing to unpack .../08-fonts-wqy-zenhei_0.9.45-8_all.deb ...
+Browser regressions (production server)	Run npx playwright install --with-deps chromium	2026-10-27T07:17:22.3626126Z Unpacking fonts-wqy-zenhei (0.9.45-8) ...
+Browser regressions (production server)	Run npx playwright install --with-deps chromium	2026-10-27T07:17:22.9236363Z Preparing to unpack .../09-libnss3_2%3a3.98-1ubuntu0.3_amd64.deb ...
+Browser regressions (production server)	Run npx playwright install --with-deps chromium	2026-10-27T07:17:22.9258487Z Unpacking libnss3:amd64 (2:3.98-1ubuntu0.3) over (2:3.98-1ubuntu0.2) ...
+Browser regressions (production server)	Run npx playwright install --with-deps chromium	2026-10-27T07:17:22.9814364Z Preparing to unpack .../10-libnss3-tools_2%3a3.98-1ubuntu0.3_amd64.deb ...
+Browser regressions (production server)	Run npx playwright install --with-deps chromium	2026-10-27T07:17:22.9834471Z Unpacking libnss3-tools (2:3.98-1ubuntu0.3) over (2:3.98-1ubuntu0.2) ...
+Browser regressions (production server)	Run npx playwright install --with-deps chromium	2026-10-27T07:17:23.0193440Z Selecting previously unselected package xfonts-encodings.
+Browser regressions (production server)	Run npx playwright install --with-deps chromium	2026-10-27T07:17:23.0313455Z Preparing to unpack .../11-xfonts-encodings_1%3a1.0.5-0ubuntu2_all.deb ...
+Browser regressions (production server)	Run npx playwright install --with-deps chromium	2026-10-27T07:17:23.0323498Z Unpacking xfonts-encodings (1:1.0.5-0ubuntu2) ...
+Browser regressions (production server)	Run npx playwright install --with-deps chromium	2026-10-27T07:17:23.0536599Z Selecting previously unselected package xfonts-utils.
+Browser regressions (production server)	Run npx playwright install --with-deps chromium	2026-10-27T07:17:23.0660308Z Preparing to unpack .../12-xfonts-utils_1%3a7.7+6build3_amd64.deb ...
+Browser regressions (production server)	Run npx playwright install --with-deps chromium	2026-10-27T07:17:23.0670707Z Unpacking xfonts-utils (1:7.7+6build3) ...
+Browser regressions (production server)	Run npx playwright install --with-deps chromium	2026-10-27T07:17:23.0907225Z Selecting previously unselected package xfonts-cyrillic.
+Browser regressions (production server)	Run npx playwright install --with-deps chromium	2026-10-27T07:17:23.1028405Z Preparing to unpack .../13-xfonts-cyrillic_1%3a1.0.5+nmu1_all.deb ...
+Browser regressions (production server)	Run npx playwright install --with-deps chromium	2026-10-27T07:17:23.1036804Z Unpacking xfonts-cyrillic (1:1.0.5+nmu1) ...
+Browser regressions (production server)	Run npx playwright install --with-deps chromium	2026-10-27T07:17:23.1263181Z Selecting previously unselected package xfonts-scalable.
+Browser regressions (production server)	Run npx playwright install --with-deps chromium	2026-10-27T07:17:23.1384129Z Preparing to unpack .../14-xfonts-scalable_1%3a1.0.3-1.3_all.deb ...
+Browser regressions (production server)	Run npx playwright install --with-deps chromium	2026-10-27T07:17:23.1394787Z Unpacking xfonts-scalable (1:1.0.3-1.3) ...
+Browser regressions (production server)	Run npx playwright install --with-deps chromium	2026-10-27T07:17:23.1688694Z Preparing to unpack .../15-xserver-common_2%3a21.1.12-1ubuntu1.9_all.deb ...
+Browser regressions (production server)	Run npx playwright install --with-deps chromium	2026-10-27T07:17:23.1709661Z Unpacking xserver-common (2:21.1.12-1ubuntu1.9) over (2:21.1.12-1ubuntu1.8) ...
+Browser regressions (production server)	Run npx playwright install --with-deps chromium	2026-10-27T07:17:23.2048159Z Preparing to unpack .../16-xvfb_2%3a21.1.12-1ubuntu1.9_amd64.deb ...
+Browser regressions (production server)	Run npx playwright install --with-deps chromium	2026-10-27T07:17:23.2067287Z Unpacking xvfb (2:21.1.12-1ubuntu1.9) over (2:21.1.12-1ubuntu1.8) ...
+Browser regressions (production server)	Run npx playwright install --with-deps chromium	2026-10-27T07:17:23.2613004Z Setting up fonts-wqy-zenhei (0.9.45-8) ...
+Browser regressions (production server)	Run npx playwright install --with-deps chromium	2026-10-27T07:17:23.2716626Z Setting up fonts-freefont-ttf (20211204+svn4273-2) ...
+Browser regressions (production server)	Run npx playwright install --with-deps chromium	2026-10-27T07:17:23.2735601Z Setting up libnss3:amd64 (2:3.98-1ubuntu0.3) ...
+Browser regressions (production server)	Run npx playwright install --with-deps chromium	2026-10-27T07:17:23.2756249Z Setting up libglib2.0-0t64:amd64 (2.80.0-6ubuntu3.10) ...
+Browser regressions (production server)	Run npx playwright install --with-deps chromium	2026-10-27T07:17:23.2859091Z Setting up libglib2.0-data (2.80.0-6ubuntu3.10) ...
+Browser regressions (production server)	Run npx playwright install --with-deps chromium	2026-10-27T07:17:23.2878632Z Setting up fonts-tlwg-loma-otf (1:0.7.3-1) ...
+Browser regressions (production server)	Run npx playwright install --with-deps chromium	2026-10-27T07:17:23.2897486Z Setting up xfonts-encodings (1:1.0.5-0ubuntu2) ...
+Browser regressions (production server)	Run npx playwright install --with-deps chromium	2026-10-27T07:17:23.2914799Z Setting up gir1.2-glib-2.0:amd64 (2.80.0-6ubuntu3.10) ...
+Browser regressions (production server)	Run npx playwright install --with-deps chromium	2026-10-27T07:17:23.2934246Z Setting up fonts-ipafont-gothic (00303-21ubuntu1) ...
+Browser regressions (production server)	Run npx playwright install --with-deps chromium	2026-10-27T07:17:23.2985901Z update-alternatives: using /usr/share/fonts/opentype/ipafont-gothic/ipag.ttf to provide /usr/share/fonts/truetype/fonts-japanese-gothic.ttf (fonts-japanese-gothic.ttf) in auto mode
+Browser regressions (production server)	Run npx playwright install --with-deps chromium	2026-10-27T07:17:23.3001245Z Setting up xserver-common (2:21.1.12-1ubuntu1.9) ...
+Browser regressions (production server)	Run npx playwright install --with-deps chromium	2026-10-27T07:17:23.3021755Z Setting up libnss3-tools (2:3.98-1ubuntu0.3) ...
+Browser regressions (production server)	Run npx playwright install --with-deps chromium	2026-10-27T07:17:23.3040536Z Setting up fonts-unifont (1:15.1.01-1build1) ...
+Browser regressions (production server)	Run npx playwright install --with-deps chromium	2026-10-27T07:17:23.3061514Z Setting up xvfb (2:21.1.12-1ubuntu1.9) ...
+Browser regressions (production server)	Run npx playwright install --with-deps chromium	2026-10-27T07:17:23.3083060Z Setting up libglib2.0-bin (2.80.0-6ubuntu3.10) ...
+Browser regressions (production server)	Run npx playwright install --with-deps chromium	2026-10-27T07:17:23.3102507Z Setting up xfonts-utils (1:7.7+6build3) ...
+Browser regressions (production server)	Run npx playwright install --with-deps chromium	2026-10-27T07:17:23.3144006Z Setting up xfonts-cyrillic (1:1.0.5+nmu1) ...
+Browser regressions (production server)	Run npx playwright install --with-deps chromium	2026-10-27T07:17:23.3384427Z Setting up xfonts-scalable (1:1.0.3-1.3) ...
+Browser regressions (production server)	Run npx playwright install --with-deps chromium	2026-10-27T07:17:23.3592425Z Processing triggers for libc-bin (2.39-0ubuntu8.9) ...
+Browser regressions (production server)	Run npx playwright install --with-deps chromium	2026-10-27T07:17:23.5542467Z Processing triggers for man-db (2.12.0-4build2) ...
+Browser regressions (production server)	Run npx playwright install --with-deps chromium	2026-10-27T07:17:23.5563749Z Not building database; man-db/auto-update is not 'true'.
+Browser regressions (production server)	Run npx playwright install --with-deps chromium	2026-10-27T07:17:23.5579125Z Processing triggers for fontconfig (2.15.0-1.1ubuntu2) ...
+Browser regressions (production server)	Run npx playwright install --with-deps chromium	2026-10-27T07:17:24.1288831Z
+Browser regressions (production server)	Run npx playwright install --with-deps chromium	2026-10-27T07:17:24.1289666Z Running kernel seems to be up-to-date.
+Browser regressions (production server)	Run npx playwright install --with-deps chromium	2026-10-27T07:17:24.1290100Z
+Browser regressions (production server)	Run npx playwright install --with-deps chromium	2026-10-27T07:17:24.1290312Z Restarting services...
+Browser regressions (production server)	Run npx playwright install --with-deps chromium	2026-10-27T07:17:24.1590819Z  systemctl restart php8.3-fpm.service polkit.service udisks2.service
+Browser regressions (production server)	Run npx playwright install --with-deps chromium	2026-10-27T07:17:24.2488364Z
+Browser regressions (production server)	Run npx playwright install --with-deps chromium	2026-10-27T07:17:24.2489329Z Service restarts being deferred:
+Browser regressions (production server)	Run npx playwright install --with-deps chromium	2026-10-27T07:17:24.2496266Z  systemctl restart ModemManager.service
+Browser regressions (production server)	Run npx playwright install --with-deps chromium	2026-10-27T07:17:24.2526660Z  systemctl restart networkd-dispatcher.service
+Browser regressions (production server)	Run npx playwright install --with-deps chromium	2026-10-27T07:17:24.2546365Z
+Browser regressions (production server)	Run npx playwright install --with-deps chromium	2026-10-27T07:17:24.2546996Z No containers need to be restarted.
+Browser regressions (production server)	Run npx playwright install --with-deps chromium	2026-10-27T07:17:24.2547614Z
+Browser regressions (production server)	Run npx playwright install --with-deps chromium	2026-10-27T07:17:24.2548164Z No user sessions are running outdated binaries.
+Browser regressions (production server)	Run npx playwright install --with-deps chromium	2026-10-27T07:17:24.2548534Z
+Browser regressions (production server)	Run npx playwright install --with-deps chromium	2026-10-27T07:17:24.2549027Z No VM guests are running outdated hypervisor (qemu) binaries on this host.
+Browser regressions (production server)	Run npx playwright install --with-deps chromium	2026-10-27T07:17:25.2040011Z Downloading Chrome for Testing 153.0.8010.12 (playwright chromium v1243) from https://cdn.playwright.dev/builds/cft/153.0.8010.12/linux64/chrome-linux64.zip
+Browser regressions (production server)	Run npx playwright install --with-deps chromium	2026-10-27T07:17:25.5920225Z |                                                                                |   0% of 186.8 MiB
+Browser regressions (production server)	Run npx playwright install --with-deps chromium	2026-10-27T07:17:25.7602487Z |■■■■■■■■                                                                        |  10% of 186.8 MiB
+Browser regressions (production server)	Run npx playwright install --with-deps chromium	2026-10-27T07:17:25.8196539Z |■■■■■■■■■■■■■■■■                                                                |  20% of 186.8 MiB
+Browser regressions (production server)	Run npx playwright install --with-deps chromium	2026-10-27T07:17:25.8927398Z |■■■■■■■■■■■■■■■■■■■■■■■■                                                        |  30% of 186.8 MiB
+Browser regressions (production server)	Run npx playwright install --with-deps chromium	2026-10-27T07:17:25.9415026Z |■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■                                                |  40% of 186.8 MiB
+Browser regressions (production server)	Run npx playwright install --with-deps chromium	2026-10-27T07:17:26.0021299Z |■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■                                        |  50% of 186.8 MiB
+Browser regressions (production server)	Run npx playwright install --with-deps chromium	2026-10-27T07:17:26.0747109Z |■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■                                |  60% of 186.8 MiB
+Browser regressions (production server)	Run npx playwright install --with-deps chromium	2026-10-27T07:17:26.1253354Z |■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■                        |  70% of 186.8 MiB
+Browser regressions (production server)	Run npx playwright install --with-deps chromium	2026-10-27T07:17:26.1888541Z |■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■                |  80% of 186.8 MiB
+Browser regressions (production server)	Run npx playwright install --with-deps chromium	2026-10-27T07:17:26.2602678Z |■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■        |  90% of 186.8 MiB
+Browser regressions (production server)	Run npx playwright install --with-deps chromium	2026-10-27T07:17:26.3188156Z |■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■| 100% of 186.8 MiB
+Browser regressions (production server)	Run npx playwright install --with-deps chromium	2026-10-27T07:17:29.2105372Z Chrome for Testing 153.0.8010.12 (playwright chromium v1243) downloaded to /home/runner/.cache/ms-playwright/chromium-1243
+Browser regressions (production server)	Run npx playwright install --with-deps chromium	2026-10-27T07:17:29.2108034Z Downloading FFmpeg (playwright ffmpeg v1011) from https://cdn.playwright.dev/dbazure/download/playwright/builds/ffmpeg/1011/ffmpeg-linux.zip
+Browser regressions (production server)	Run npx playwright install --with-deps chromium	2026-10-27T07:17:29.5309600Z |                                                                                |   0% of 2.3 MiB
+Browser regressions (production server)	Run npx playwright install --with-deps chromium	2026-10-27T07:17:29.5553863Z |■■■■■■■■                                                                        |  10% of 2.3 MiB
+Browser regressions (production server)	Run npx playwright install --with-deps chromium	2026-10-27T07:17:29.5649999Z |■■■■■■■■■■■■■■■■                                                                |  20% of 2.3 MiB
+Browser regressions (production server)	Run npx playwright install --with-deps chromium	2026-10-27T07:17:29.5729395Z |■■■■■■■■■■■■■■■■■■■■■■■■                                                        |  30% of 2.3 MiB
+Browser regressions (production server)	Run npx playwright install --with-deps chromium	2026-10-27T07:17:29.5797033Z |■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■                                                |  40% of 2.3 MiB
+Browser regressions (production server)	Run npx playwright install --with-deps chromium	2026-10-27T07:17:29.5839454Z |■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■                                        |  50% of 2.3 MiB
+Browser regressions (production server)	Run npx playwright install --with-deps chromium	2026-10-27T07:17:29.5890134Z |■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■                                |  60% of 2.3 MiB
+Browser regressions (production server)	Run npx playwright install --with-deps chromium	2026-10-27T07:17:29.5911530Z |■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■                        |  70% of 2.3 MiB
+Browser regressions (production server)	Run npx playwright install --with-deps chromium	2026-10-27T07:17:29.5928837Z |■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■                |  80% of 2.3 MiB
+Browser regressions (production server)	Run npx playwright install --with-deps chromium	2026-10-27T07:17:29.5973519Z |■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■        |  90% of 2.3 MiB
+Browser regressions (production server)	Run npx playwright install --with-deps chromium	2026-10-27T07:17:29.6001371Z |■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■| 100% of 2.3 MiB
+Browser regressions (production server)	Run npx playwright install --with-deps chromium	2026-10-27T07:17:29.6492465Z FFmpeg (playwright ffmpeg v1011) downloaded to /home/runner/.cache/ms-playwright/ffmpeg-1011
+Browser regressions (production server)	Run npx playwright install --with-deps chromium	2026-10-27T07:17:29.6495001Z Downloading Chrome Headless Shell 153.0.8010.12 (playwright chromium-headless-shell v1243) from https://cdn.playwright.dev/builds/cft/153.0.8010.12/linux64/chrome-headless-shell-linux64.zip
+Browser regressions (production server)	Run npx playwright install --with-deps chromium	2026-10-27T07:17:30.0453876Z |                                                                                |   0% of 114.3 MiB
+Browser regressions (production server)	Run npx playwright install --with-deps chromium	2026-10-27T07:17:30.4013998Z |■■■■■■■■                                                                        |  10% of 114.3 MiB
+Browser regressions (production server)	Run npx playwright install --with-deps chromium	2026-10-27T07:17:30.7317342Z |■■■■■■■■■■■■■■■■                                                                |  20% of 114.3 MiB
+Browser regressions (production server)	Run npx playwright install --with-deps chromium	2026-10-27T07:17:30.9323934Z |■■■■■■■■■■■■■■■■■■■■■■■■                                                        |  30% of 114.3 MiB
+Browser regressions (production server)	Run npx playwright install --with-deps chromium	2026-10-27T07:17:31.0409737Z |■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■                                                |  40% of 114.3 MiB
+Browser regressions (production server)	Run npx playwright install --with-deps chromium	2026-10-27T07:17:31.1952894Z |■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■                                        |  50% of 114.3 MiB
+Browser regressions (production server)	Run npx playwright install --with-deps chromium	2026-10-27T07:17:31.3613167Z |■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■                                |  60% of 114.3 MiB
+Browser regressions (production server)	Run npx playwright install --with-deps chromium	2026-10-27T07:17:31.5115748Z |■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■                        |  70% of 114.3 MiB
+Browser regressions (production server)	Run npx playwright install --with-deps chromium	2026-10-27T07:17:31.6430725Z |■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■                |  80% of 114.3 MiB
+Browser regressions (production server)	Run npx playwright install --with-deps chromium	2026-10-27T07:17:31.7386367Z |■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■        |  90% of 114.3 MiB
+Browser regressions (production server)	Run npx playwright install --with-deps chromium	2026-10-27T07:17:31.8353569Z |■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■| 100% of 114.3 MiB
+Browser regressions (production server)	Run npx playwright install --with-deps chromium	2026-10-27T07:17:33.9466344Z Chrome Headless Shell 153.0.8010.12 (playwright chromium-headless-shell v1243) downloaded to /home/runner/.cache/ms-playwright/chromium_headless_shell-1243
+Browser regressions (production server)	Run npm run test:browser	﻿2026-10-27T07:17:33.9658815Z ##[group]Run npm run test:browser
+Browser regressions (production server)	Run npm run test:browser	2026-10-27T07:17:33.9659423Z ^[[36;1mnpm run test:browser^[[0m
+Browser regressions (production server)	Run npm run test:browser	2026-10-27T07:17:33.9702178Z shell: /usr/bin/bash -e {0}
+Browser regressions (production server)	Run npm run test:browser	2026-10-27T07:17:33.9702677Z env:
+Browser regressions (production server)	Run npm run test:browser	2026-10-27T07:17:33.9703008Z   NODE_VERSION: 26
+Browser regressions (production server)	Run npm run test:browser	2026-10-27T07:17:33.9703340Z   GOTOOLCHAIN: local
+Browser regressions (production server)	Run npm run test:browser	2026-10-27T07:17:33.9703678Z ##[endgroup]
+Browser regressions (production server)	Run npm run test:browser	2026-10-27T07:17:34.0609552Z
+Browser regressions (production server)	Run npm run test:browser	2026-10-27T07:17:34.0610485Z > test:browser
+Browser regressions (production server)	Run npm run test:browser	2026-10-27T07:17:34.0611160Z > playwright test
+Browser regressions (production server)	Run npm run test:browser	2026-10-27T07:17:34.0611481Z
+Browser regressions (production server)	Run npm run test:browser	2026-10-27T07:17:35.2997581Z [WebServer] {"timestamp":"2026-10-27T07:17:35.298213168Z","level":"INFO","message":"✓ Admin user \"admin\" created successfully","app":"kypulse","severity":6,"facility":16}
+Browser regressions (production server)	Run npm run test:browser	2026-10-27T07:17:35.3530537Z [WebServer] {"timestamp":"2026-10-27T07:17:35.352406395Z","level":"INFO","message":"✓ Admin user \"viewer\" created successfully","app":"kypulse","severity":6,"facility":16}
+Browser regressions (production server)	Run npm run test:browser	2026-10-27T07:17:35.3611485Z [WebServer] {"timestamp":"2026-10-27T07:17:35.360395724Z","level":"INFO","message":"[ALERTS] KYPULSE_ALERT_ALLOW_HTTP is on: a plain-http webhook receiver is admitted (loopback and link-local remain refused)","app":"kypulse","severity":6,"facility":16}
+Browser regressions (production server)	Run npm run test:browser	2026-10-27T07:17:35.3614405Z [WebServer] {"timestamp":"2026-10-27T07:17:35.360444734Z","level":"INFO","message":"[KYYARD] KYPULSE_KYYARD_ALLOW_HTTP is on: a plain-http KyYard URL is admitted (loopback and link-local remain refused)","app":"kypulse","severity":6,"facility":16}
+Browser regressions (production server)	Run npm run test:browser	2026-10-27T07:17:35.3617443Z [WebServer] {"timestamp":"2026-10-27T07:17:35.360457203Z","level":"WARN","message":"audit key sits beside the database; move it to its own directory and set KYPULSE_AUDIT_KEY_FILE","app":"kypulse","event":"audit_key_beside_db","path":"/tmp/ky-browser-QEf2Nu/data/audit.key","severity":4,"facility":16}
+Browser regressions (production server)	Run npm run test:browser	2026-10-27T07:17:35.3620488Z [WebServer] {"timestamp":"2026-10-27T07:17:35.361614144Z","level":"INFO","message":"audit chain placed at start","app":"kypulse","event":"audit_chain_placed","mode":"new","count":0,"head":"0000000000000000000000000000000000000000000000000000000000000000","severity":6,"facility":16}
+Browser regressions (production server)	Run npm run test:browser	2026-10-27T07:17:35.3630073Z [WebServer] {"timestamp":"2026-10-27T07:17:35.362559354Z","level":"INFO","message":"[KYPULSE] kyPulse listening on http://127.0.0.1:5391 (DB: sqlite)","app":"kypulse","severity":6,"facility":16}
+Browser regressions (production server)	Run npm run test:browser	2026-10-27T07:17:35.9013414Z
+Browser regressions (production server)	Run npm run test:browser	2026-10-27T07:17:35.9014173Z Running 28 tests using 1 worker
+Browser regressions (production server)	Run npm run test:browser	2026-10-27T07:19:15.3660513Z [WebServer] {"timestamp":"2026-10-27T07:19:15.365385602Z","level":"WARN","message":"watched app changed state","app":"kypulse","event":"target_state_changed","target_id":"tgt_9b507a788a5c6899","state":"down","previous":"pending","reason_code":"status_503","severity":4,"facility":16}
+Browser regressions (production server)	Run npm run test:browser	2026-10-27T07:19:45.3660534Z [WebServer] {"timestamp":"2026-10-27T07:19:45.365264276Z","level":"WARN","message":"watched app changed state","app":"kypulse","event":"target_state_changed","target_id":"tgt_9b507a788a5c6899","state":"ok","previous":"down","reason_code":"","severity":4,"facility":16}
+Browser regressions (production server)	Run npm run test:browser	2026-10-27T07:19:59.1298705Z [WebServer] {"timestamp":"2026-10-27T07:19:59.12696916Z","level":"WARN","message":"alert could not be delivered","app":"kypulse","event":"alert_send_failed","target_id":"tgt_9b507a788a5c6899","state":"ok","error_kind":"connection refused","severity":4,"facility":16}
+Browser regressions (production server)	Run npm run test:browser	2026-10-27T07:20:09.8154236Z °······light-1280 [{"id":"dark-matter","rest":6.23,"hover":6.05,"focus":7.22},{"id":"light-matter","rest":5.75,"hover":5.03,"focus":5.75},{"id":"tropics","rest":5.83,"hover":5.07,"focus":5.83},{"id":"tropic-night","rest":7.66,"hover":6.41,"focus":7.66},{"id":"ocean","rest":7.27,"hover":6.1,"focus":7.27},{"id":"coffee","rest":7.37,"hover":6.17,"focus":7.37},{"id":"white-cliffs","rest":6.23,"hover":5.42,"focus":6.23},{"id":"cyber-punk","rest":8.08,"hover":6.68,"focus":8.08},{"id":"neon-purple","rest":7.97,"hover":6.6,"focus":7.97},{"id":"space","rest":7.94,"hover":6.57,"focus":7.94},{"id":"sky","rest":5.69,"hover":5.01,"focus":5.69},{"id":"forest","rest":7,"hover":5.89,"focus":7},{"id":"sun","rest":5.98,"hover":5.17,"focus":5.98},{"id":"patina-ky","rest":7.95,"hover":6.58,"focus":7.95},{"id":"polished-ky","rest":5.84,"hover":5.12,"focus":5.84}]
+Browser regressions (production server)	Run npm run test:browser	2026-10-27T07:21:15.3654077Z [WebServer] {"timestamp":"2026-10-27T07:21:15.364682132Z","level":"WARN","message":"watched app changed state","app":"kypulse","event":"target_state_changed","target_id":"tgt_5b54859fdf1f83c3","state":"down","previous":"pending","reason_code":"status_503","severity":4,"facility":16}
+Browser regressions (production server)	Run npm run test:browser	2026-10-27T07:21:33.8193806Z [WebServer] {"timestamp":"2026-10-27T07:21:33.818754373Z","level":"WARN","message":"alert could not be delivered","app":"kypulse","event":"alert_send_failed","target_id":"tgt_5b54859fdf1f83c3","state":"down","error_kind":"connection refused","severity":4,"facility":16}
+Browser regressions (production server)	Run npm run test:browser	2026-10-27T07:22:00.3662561Z [WebServer] {"timestamp":"2026-10-27T07:22:00.365685976Z","level":"WARN","message":"watched app changed state","app":"kypulse","event":"target_state_changed","target_id":"tgt_5b54859fdf1f83c3","state":"ok","previous":"down","reason_code":"","severity":4,"facility":16}
+Browser regressions (production server)	Run npm run test:browser	2026-10-27T07:22:12.8396438Z [WebServer] {"timestamp":"2026-10-27T07:22:12.839038675Z","level":"WARN","message":"alert could not be delivered","app":"kypulse","event":"alert_send_failed","target_id":"tgt_5b54859fdf1f83c3","state":"ok","error_kind":"notify: receiver answered 500","severity":4,"facility":16}
+Browser regressions (production server)	Run npm run test:browser	2026-10-27T07:23:15.3655102Z [WebServer] {"timestamp":"2026-10-27T07:23:15.364741493Z","level":"WARN","message":"watched app changed state","app":"kypulse","event":"target_state_changed","target_id":"tgt_bce2602df12e5169","state":"down","previous":"pending","reason_code":"status_503","severity":4,"facility":16}
+Browser regressions (production server)	Run npm run test:browser	2026-10-27T07:23:31.4749647Z [WebServer] {"timestamp":"2026-10-27T07:23:31.47436628Z","level":"WARN","message":"alert could not be delivered","app":"kypulse","event":"alert_send_failed","target_id":"tgt_bce2602df12e5169","state":"down","error_kind":"connection refused","severity":4,"facility":16}
+Browser regressions (production server)	Run npm run test:browser	2026-10-27T07:23:45.3659327Z [WebServer] {"timestamp":"2026-10-27T07:23:45.365324905Z","level":"WARN","message":"watched app changed state","app":"kypulse","event":"target_state_changed","target_id":"tgt_bce2602df12e5169","state":"ok","previous":"down","reason_code":"","severity":4,"facility":16}
+Browser regressions (production server)	Run npm run test:browser	2026-10-27T07:23:59.3466170Z [WebServer] {"timestamp":"2026-10-27T07:23:59.345883085Z","level":"WARN","message":"alert could not be delivered","app":"kypulse","event":"alert_send_failed","target_id":"tgt_bce2602df12e5169","state":"ok","error_kind":"connection refused","severity":4,"facility":16}
+Browser regressions (production server)	Run npm run test:browser	2026-10-27T07:24:08.0227839Z ····°°·°······dark-1280 [{"id":"dark-matter","rest":6.23,"hover":6.05,"focus":7.22},{"id":"light-matter","rest":5.75,"hover":5.03,"focus":5.75},{"id":"tropics","rest":5.83,"hover":5.07,"focus":5.83},{"id":"tropic-night","rest":7.66,"hover":6.41,"focus":7.66},{"id":"ocean","rest":7.27,"hover":6.1,"focus":7.27},{"id":"coffee","rest":7.37,"hover":6.17,"focus":7.37},{"id":"white-cliffs","rest":6.23,"hover":5.42,"focus":6.23},{"id":"cyber-punk","rest":8.08,"hover":6.68,"focus":8.08},{"id":"neon-purple","rest":7.97,"hover":6.6,"focus":7.97},{"id":"space","rest":7.94,"hover":6.57,"focus":7.94},{"id":"sky","rest":5.69,"hover":5.01,"focus":5.69},{"id":"forest","rest":7,"hover":5.89,"focus":7},{"id":"sun","rest":5.98,"hover":5.17,"focus":5.98},{"id":"patina-ky","rest":7.95,"hover":6.58,"focus":7.95},{"id":"polished-ky","rest":5.84,"hover":5.12,"focus":5.84}]
+Browser regressions (production server)	Run npm run test:browser	2026-10-27T07:25:15.3657497Z [WebServer] {"timestamp":"2026-10-27T07:25:15.365154312Z","level":"WARN","message":"watched app changed state","app":"kypulse","event":"target_state_changed","target_id":"tgt_a978df1e92e89a69","state":"down","previous":"pending","reason_code":"status_503","severity":4,"facility":16}
+Browser regressions (production server)	Run npm run test:browser	2026-10-27T07:25:30.8841960Z [WebServer] {"timestamp":"2026-10-27T07:25:30.883614567Z","level":"WARN","message":"alert could not be delivered","app":"kypulse","event":"alert_send_failed","target_id":"tgt_a978df1e92e89a69","state":"down","error_kind":"connection refused","severity":4,"facility":16}
+Browser regressions (production server)	Run npm run test:browser	2026-10-27T07:25:45.3656300Z [WebServer] {"timestamp":"2026-10-27T07:25:45.365081114Z","level":"WARN","message":"watched app changed state","app":"kypulse","event":"target_state_changed","target_id":"tgt_a978df1e92e89a69","state":"ok","previous":"down","reason_code":"","severity":4,"facility":16}
+Browser regressions (production server)	Run npm run test:browser	2026-10-27T07:25:48.1352622Z ##[error]The operation was canceled.
+Browser regressions (production server)	Run actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9	﻿2026-10-27T07:25:48.1416539Z ##[group]Run actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9
+Browser regressions (production server)	Run actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9	2026-10-27T07:25:48.1416988Z with:
+Browser regressions (production server)	Run actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9	2026-10-27T07:25:48.1417263Z   name: browser-results
+Browser regressions (production server)	Run actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9	2026-10-27T07:25:48.1417626Z   path: web/test-results/
+Browser regressions (production server)	Run actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9	2026-10-27T07:25:48.1417920Z   retention-days: 7
+Browser regressions (production server)	Run actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9	2026-10-27T07:25:48.1418252Z   if-no-files-found: warn
+Browser regressions (production server)	Run actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9	2026-10-27T07:25:48.1418542Z   compression-level: 6
+Browser regressions (production server)	Run actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9	2026-10-27T07:25:48.1418833Z   overwrite: false
+Browser regressions (production server)	Run actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9	2026-10-27T07:25:48.1419166Z   include-hidden-files: false
+Browser regressions (production server)	Run actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9	2026-10-27T07:25:48.1419476Z   archive: true
+Browser regressions (production server)	Run actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9	2026-10-27T07:25:48.1419783Z env:
+Browser regressions (production server)	Run actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9	2026-10-27T07:25:48.1420034Z   NODE_VERSION: 26
+Browser regressions (production server)	Run actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9	2026-10-27T07:25:48.1420317Z   GOTOOLCHAIN: local
+Browser regressions (production server)	Run actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9	2026-10-27T07:25:48.1420632Z ##[endgroup]
+Browser regressions (production server)	Run actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9	2026-10-27T07:25:48.2786549Z With the provided path, there will be 33 files uploaded
+Browser regressions (production server)	Run actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9	2026-10-27T07:25:48.2791100Z Artifact name is valid!
+Browser regressions (production server)	Run actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9	2026-10-27T07:25:48.2791595Z Root directory input is valid!
+Browser regressions (production server)	Run actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9	2026-10-27T07:25:48.6141146Z Uploading artifact: browser-results.zip
+Browser regressions (production server)	Run actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9	2026-10-27T07:25:48.6172083Z Beginning upload of artifact content to blob storage
+Browser regressions (production server)	Run actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9	2026-10-27T07:25:49.2862676Z Uploaded bytes 2482817
+Browser regressions (production server)	Run actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9	2026-10-27T07:25:49.3415489Z Finished uploading artifact content to blob storage!
+Browser regressions (production server)	Run actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9	2026-10-27T07:25:49.3416909Z SHA256 digest of uploaded artifact is 20b4203182667093b436aea54cc0be64d91c6eea75574082b5e3e08c2a5de80c
+Browser regressions (production server)	Run actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9	2026-10-27T07:25:49.3417869Z Finalizing artifact upload
+Browser regressions (production server)	Run actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9	2026-10-27T07:25:49.9237005Z Artifact browser-results successfully finalized. Artifact ID 12717185417
+Browser regressions (production server)	Run actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9	2026-10-27T07:25:49.9238823Z Artifact browser-results has been successfully uploaded! Final size is 2482817 bytes. Artifact ID is 12717185417
+Browser regressions (production server)	Run actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9	2026-10-27T07:25:49.9241079Z Artifact download URL: https://github.com/Busnes-app/KyPulse-server/actions/runs/40465525998/artifacts/12717185417
+Browser regressions (production server)	Post Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1	﻿2026-10-27T07:25:49.9413610Z Post job cleanup.
+Browser regressions (production server)	Post Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1	2026-10-27T07:25:50.0152311Z [command]/usr/bin/git version
+Browser regressions (production server)	Post Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1	2026-10-27T07:25:50.0192404Z git version 2.55.0
+Browser regressions (production server)	Post Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1	2026-10-27T07:25:50.0225139Z Temporarily overriding HOME='/home/runner/work/_temp/787c9a72-0f1e-4d41-8df8-3f88fb38374e' before making global git config changes
+Browser regressions (production server)	Post Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1	2026-10-27T07:25:50.0226241Z Adding repository directory to the temporary git global config as a safe directory
+Browser regressions (production server)	Post Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1	2026-10-27T07:25:50.0230236Z [command]/usr/bin/git config --global --add safe.directory /home/runner/work/KyPulse-server/KyPulse-server
+Browser regressions (production server)	Post Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1	2026-10-27T07:25:50.0256481Z Removing SSH command configuration
+Browser regressions (production server)	Post Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1	2026-10-27T07:25:50.0262128Z [command]/usr/bin/git config --local --name-only --get-regexp core\.sshCommand
+Browser regressions (production server)	Post Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1	2026-10-27T07:25:50.0290486Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
+Browser regressions (production server)	Post Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1	2026-10-27T07:25:50.0479528Z Removing HTTP extra header
+Browser regressions (production server)	Post Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1	2026-10-27T07:25:50.0484620Z [command]/usr/bin/git config --local --name-only --get-regexp http\.https\:\/\/github\.com\/\.extraheader
+Browser regressions (production server)	Post Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1	2026-10-27T07:25:50.0696040Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :"
+Browser regressions (production server)	Post Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1	2026-10-27T07:25:50.0698092Z Removing includeIf entries pointing to credentials config files
+Browser regressions (production server)	Post Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1	2026-10-27T07:25:50.0703531Z [command]/usr/bin/git config --local --name-only --get-regexp ^includeIf\.gitdir:
+Browser regressions (production server)	Post Run actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1	2026-10-27T07:25:50.0732089Z [command]/usr/bin/git submodule foreach --recursive git config --local --show-origin --name-only --get-regexp remote.origin.url
+Browser regressions (production server)	Complete job	﻿2026-10-27T07:25:50.1053244Z Cleaning up orphan processes
+Browser regressions (production server)	Complete job	2026-10-27T07:25:50.1251176Z Terminate orphan process: pid (3966) (npm run test:browser)
+Browser regressions (production server)	Complete job	2026-10-27T07:25:50.1448293Z Terminate orphan process: pid (3977) (sh)
+Browser regressions (production server)	Complete job	2026-10-27T07:25:50.1475608Z Terminate orphan process: pid (3978) (node-MainThread)
+Browser regressions (production server)	Complete job	2026-10-27T07:25:50.1513645Z Terminate orphan process: pid (4002) (sh)
+Browser regressions (production server)	Complete job	2026-10-27T07:25:50.1546804Z Terminate orphan process: pid (4003) (node-MainThread)
+Browser regressions (production server)	Complete job	2026-10-27T07:25:50.1611195Z Terminate orphan process: pid (5904) (node-MainThread)
+Browser regressions (production server)	Complete job	2026-10-27T07:25:50.1653649Z Terminate orphan process: pid (5916) (chrome-headless-shell)

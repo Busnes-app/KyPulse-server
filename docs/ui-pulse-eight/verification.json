@@ -1,7 +1,7 @@
 {
   "product_source": "1fac23363f782c09e5b281ccb05b46d19c08455f",
   "shared_source": "58626b7",
-  "status": "Round8 frontend96/build/makeci and scoped native/affected browser workflow pass; full local browser/current-head remote CI/security and primary reviews pending.",
+  "status": "Round8 local frontend96/build/makeci/full-browser22pass6skips/native pass. Authored security clears4128723, but remote browser whole-job timeout prevents full CI readiness. Primary visual threshold unmet; targeted calibration advice pending.",
   "checks": {
     "frontend": {
       "status": "pass",
@@ -25,15 +25,33 @@
       "normalization": "ANSI escapes and trailing line whitespace removed."
     },
     "browser": {
-      "status": "running",
-      "evidence": "/tmp/kypulse-r8-browser.log",
-      "exit_record": "/tmp/kypulse-r8-browser.exit",
-      "scoped_result": "Light390 Logs/Activity workflow passed. Subprocess exit file will distinguish test process completion from wrapper status."
+      "status": "pass",
+      "evidence": "checks/r8-browser.txt",
+      "sha256": "1a99f0df92e01df4d898eb3a17aa329864c5ae8bd9fc0d93e2647695af3a574c",
+      "raw_sha256": "1a99f0df92e01df4d898eb3a17aa329864c5ae8bd9fc0d93e2647695af3a574c",
+      "normalization": "ANSI escapes and trailing line whitespace removed.",
+      "exit_record": "checks/r8-browser.exit.txt",
+      "subprocess_exit_code": 0,
+      "wrapper_exit_code": 0,
+      "result": "22passed,6layout-specific skips,8.6min; full production-server suite, clean teardown and command completion.",
+      "source": "1fac23363f782c09e5b281ccb05b46d19c08455f"
     },
     "native": {
       "status": "pass-scoped",
       "evidence": "native-round8.json",
       "result": "Warning border/text contrast4.877/13.190light,5.775/9.430dark; Filters outlined40px,8px phone row gaps/full-width dates, Activity result ends824.5px within844viewport,one nav/no horizontal overflow."
+    },
+    "remote_ci": {
+      "status": "browser-job-timeout",
+      "head": "4128723ff9742a6a6f5b1b22b0b990f9bea54ec0",
+      "evidence": "checks/r8-remote.json",
+      "log": "checks/r8-remote-browser.txt",
+      "result": "Dependency/browser install6m9s left too little of15min whole-job budget for full suite; increase budget20min and rerun."
+    },
+    "security": {
+      "status": "cleared",
+      "head": "4128723ff9742a6a6f5b1b22b0b990f9bea54ec0",
+      "note": "Becomes historical after next commit; fresh authored current-head marker required."
     }
   },
   "retained_checks": "verification-round7.json/checks/r7-remote.json preserve remote CI success54fc13e (including clean browser completion), local assertions22pass6skips with wrapper143, and stale authored securityc976d40. These predate round8 source.",
