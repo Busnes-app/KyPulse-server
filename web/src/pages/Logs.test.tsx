@@ -22,25 +22,25 @@ it('checks JSON before accepting it', () => {
 });
 it('renders plain text and applies/clears literal and UTC filters', async () => {
  const f = stub();const { container } = render(<Logs user={{ role: 'admin' }} />);
- await screen.findByText(line.message);expect(container.querySelector('img')).toBeNull();expect(screen.getByText('truncated')).toBeTruthy();fireEvent.click(screen.getByText('Raw line'));expect(screen.getByText('raw line')).toBeTruthy();
- fireEvent.change(screen.getByLabelText('Log app'), { target: { value: 'vault' } });fireEvent.change(screen.getByLabelText('Log level'), { target: { value: 'error' } });fireEvent.change(screen.getByLabelText('Literal text'), { target: { value: '%_' } });fireEvent.change(screen.getByLabelText('From (UTC)'), { target: { value: '2026-09-27T10:00' } });fireEvent.click(screen.getByRole('button', { name: 'Apply' }));
+ await screen.findByText(line.message);expect(container.querySelector('.log-filter-panel')?.hasAttribute('open')).toBe(false);expect(container.querySelector('img')).toBeNull();expect(screen.getByText('truncated')).toBeTruthy();fireEvent.click(screen.getByText('Raw line'));expect(screen.getByText('raw line')).toBeTruthy();
+ fireEvent.click(screen.getByText('Filters'));fireEvent.change(screen.getByLabelText('Log app'), { target: { value: 'vault' } });fireEvent.change(screen.getByLabelText('Log level'), { target: { value: 'error' } });fireEvent.change(screen.getByLabelText('Literal text'), { target: { value: '%_' } });fireEvent.change(screen.getByLabelText('From (UTC)'), { target: { value: '2026-09-27T10:00' } });fireEvent.click(screen.getByRole('button', { name: 'Apply' }));
  await waitFor(() => expect(f.mock.calls.some(([url]) => String(url).includes('text=%25_') && String(url).includes('from=2026-09-27T10%3A00%3A00.000Z'))).toBe(true));
- fireEvent.click(screen.getByRole('button', { name: 'Clear' }));await waitFor(() => expect(String(f.mock.calls.at(-1)?.[0])).not.toContain('text='));
+ expect(screen.getByText('Applied')).toBeTruthy();fireEvent.click(screen.getByRole('button', { name: 'Clear' }));expect(screen.queryByText('Applied')).toBeNull();await waitFor(() => expect(String(f.mock.calls.at(-1)?.[0])).not.toContain('text='));
 });
 it('paginates, resets cursor, and distinguishes failure from empty results', async () => {
  let fail = false;const f = stub(async url => fail ? response({ error: 'Unavailable' }, 503) : response({ items: [{ ...line, id: url.includes('before_id') ? 8 : 9, message: url.includes('before_id') ? 'older' : 'newer' }], next_before_id: url.includes('before_id') ? 0 : 9 }));
  render(<Logs user={{ role: 'admin' }} />);await screen.findByText('newer');fireEvent.click(screen.getByRole('button', { name: 'Load more' }));await screen.findByText('older');
- fail = true;fireEvent.click(screen.getByRole('button', { name: 'Apply' }));await screen.findByText('Unavailable');expect(screen.queryByText('No logs found.')).toBeNull();
+ fail = true;fireEvent.click(screen.getByText('Filters'));fireEvent.click(screen.getByRole('button', { name: 'Apply' }));await screen.findByText('Unavailable');expect(screen.queryByText('No logs found.')).toBeNull();
  fail = false;fireEvent.click(screen.getByRole('button', { name: 'Retry' }));await screen.findByText('newer');expect(screen.queryByText('older')).toBeNull();expect(String(f.mock.calls.at(-1)?.[0])).not.toContain('before_id');
 });
 it('ignores stale requests and clears data on role/session change', async () => {
  let finish: ((r: Response) => void) | undefined;stub(async url => url.includes('app=fresh') ? response({ items: [{ ...line, message: 'fresh' }], next_before_id: 0 }) : new Promise<Response>(resolve => { finish = resolve; }));
- const { rerender } = render(<Logs user={{ role: 'admin', id: 'one' }} />);fireEvent.change(screen.getByLabelText('Log app'), { target: { value: 'fresh' } });fireEvent.click(screen.getByRole('button', { name: 'Apply' }));await screen.findByText('fresh');finish?.(response({ items: [line], next_before_id: 0 }));await waitFor(() => expect(screen.queryByText(line.message)).toBeNull());
+ const { rerender } = render(<Logs user={{ role: 'admin', id: 'one' }} />);fireEvent.click(screen.getByText('Filters'));fireEvent.change(screen.getByLabelText('Log app'), { target: { value: 'fresh' } });fireEvent.click(screen.getByRole('button', { name: 'Apply' }));await screen.findByText('fresh');finish?.(response({ items: [line], next_before_id: 0 }));await waitFor(() => expect(screen.queryByText(line.message)).toBeNull());
  rerender(<Logs user={{ role: 'viewer', id: 'one' }} />);expect(screen.queryByText('fresh')).toBeNull();
 });
 it('uses backend bursts and activity filters', async () => {
  const f = stub(async () => response({ items: [], next_before_id: 0, has_app_events: true, bursts: [{ app: 'vault', actor: 'alice', ip: '', count: 5, from: stamp, to: stamp }] }));render(<Activity user={{ role: 'admin' }} />);await screen.findByText(/5 failed sign-ins/);expect(screen.getByText(/screen-only triage hint/i)).toBeTruthy();
- fireEvent.change(screen.getByLabelText('Activity app'), { target: { value: 'vault' } });fireEvent.change(screen.getByLabelText('Actor'), { target: { value: 'alice' } });fireEvent.change(screen.getByLabelText('Outcome'), { target: { value: 'failure' } });fireEvent.click(screen.getByRole('button', { name: 'Apply' }));await waitFor(() => expect(String(f.mock.calls.at(-1)?.[0])).toContain('actor=alice&outcome=failure'));
+ fireEvent.click(screen.getByText('Filters'));fireEvent.change(screen.getByLabelText('Activity app'), { target: { value: 'vault' } });fireEvent.change(screen.getByLabelText('Actor'), { target: { value: 'alice' } });fireEvent.change(screen.getByLabelText('Outcome'), { target: { value: 'failure' } });fireEvent.click(screen.getByRole('button', { name: 'Apply' }));await waitFor(() => expect(String(f.mock.calls.at(-1)?.[0])).toContain('actor=alice&outcome=failure'));
 });
 it('never requests timelines for viewers', () => {const f = stub();render(<><Logs user={{ role: 'viewer' }} /><Activity user={{ role: 'viewer' }} /></>);expect(f).not.toHaveBeenCalled();});
 
@@ -73,7 +73,7 @@ it('clears retained rows and signals shell sign-out on authorization failure', a
 });
 it('distinguishes an unlogged app from an empty filtered activity page', async () => {
  let retained = true;stub(async () => response({ items: [], next_before_id: 0, bursts: [], has_app_events: retained }));
- render(<Activity user={{ role: 'admin' }} />);await screen.findByText('No audit events found in the retained 7-day window.');fireEvent.change(screen.getByLabelText('Activity app'), { target: { value: 'vault' } });expect(screen.getByText('No audit events found in the retained 7-day window.')).toBeTruthy();fireEvent.click(screen.getByRole('button', { name: 'Apply' }));await screen.findByText(/No audit events match/);expect(screen.queryByText(/no audit events: not on shared logging/)).toBeNull();
+ render(<Activity user={{ role: 'admin' }} />);await screen.findByText('No audit events found in the retained 7-day window.');fireEvent.click(screen.getByText('Filters'));fireEvent.change(screen.getByLabelText('Activity app'), { target: { value: 'vault' } });expect(screen.getByText('No audit events found in the retained 7-day window.')).toBeTruthy();fireEvent.click(screen.getByRole('button', { name: 'Apply' }));await screen.findByText(/No audit events match/);expect(screen.queryByText(/no audit events: not on shared logging/)).toBeNull();
  retained = false;fireEvent.click(screen.getByRole('button', { name: 'Apply' }));expect(await screen.findByText(/no audit events: not on shared logging/)).toBeTruthy();
  fireEvent.click(screen.getByRole('button', { name: 'Clear' }));expect(await screen.findByText('No audit events found in the retained 7-day window.')).toBeTruthy();
 });

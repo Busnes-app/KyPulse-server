@@ -113,6 +113,10 @@ try {
     await new Promise(r => setTimeout(r, 1000));
   }
   surfaces['app-detail'] = { hash: `#/apps/${targetIds['Backup agent']}`, ready: 'Backup agent' };
+  if (Number(stage) >= 7) {
+    surfaces['logs-filters'] = { hash: '#/logs', ready: 'Logs', expandFilters: true };
+    surfaces['activity-filters'] = { hash: '#/activity', ready: 'Activity', expandFilters: true };
+  }
   await writeFile(join(here, 'fixture.json'), JSON.stringify({ base, password, targetIds, data: dir }, null, 2) + '\n');
   const storage = await setup.storageState();
   await setup.close();
@@ -131,6 +135,10 @@ try {
         await page.reload();
         await page.getByRole('heading', { name: s.ready, exact: true }).first().waitFor();
         if (surface === 'app-detail') await page.getByRole('heading', { name: 'Alert history' }).waitFor();
+        if (s.expandFilters) {
+          await page.locator('.log-filter-panel summary').click();
+          await page.getByRole('button', { name: 'Apply', exact: true }).waitFor();
+        }
         if (surface === 'status') await page.getByText('Backup agent', { exact: true }).first().waitFor();
         await page.evaluate(() => document.fonts.ready);
         fonts ||= await page.evaluate(() => `Space Grotesk loaded: ${document.fonts.check('15px "Space Grotesk"')}`);
@@ -145,7 +153,7 @@ try {
         const file = `kypulse-${stage}-${phase}-${surface}-${device}-${theme}.png`;
         const bytes = await page.screenshot({ path: join(out, file), fullPage: false });
         const geometry = await page.evaluate(() => ({ viewport: { width: innerWidth, height: innerHeight }, overflow: document.documentElement.scrollWidth - document.documentElement.clientWidth }));
-        shots.push({ file, sha256: sha(bytes), bytes: bytes.length, ...geometry, surface, url: s.hash, device, viewport, theme_source: s.saved ? `saved choice ${s.saved}; OS ${theme} (prefers-color-scheme)` : `OS ${theme} (prefers-color-scheme), no saved choice` });
+        shots.push({ file, sha256: sha(bytes), bytes: bytes.length, ...geometry, surface, url: s.hash, device, viewport, filter_disclosure: s.expandFilters ? 'expanded' : ['logs', 'activity'].includes(surface) && Number(stage) >= 7 ? 'collapsed' : null, theme_source: s.saved ? `saved choice ${s.saved}; OS ${theme} (prefers-color-scheme)` : `OS ${theme} (prefers-color-scheme), no saved choice` });
       }
       await ctx.close();
     }

@@ -104,9 +104,19 @@ test('admin logs, activity, pairing, filters, retry and viewer boundaries', asyn
     await page.getByRole('button', { name: 'Hide code' }).click();
     await page.getByRole('button', { name: 'Refresh sources' }).click();
     await expect(page.getByRole('button', { name: `Revoke ${sourceName}`, exact: true })).toBeVisible();
+    const filterToggle = page.locator('.log-filter-panel summary');
+    await filterToggle.focus();
+    await filterToggle.press('Enter');
     await page.getByLabel('Log app', { exact: true }).fill(app);
     await page.getByRole('button', { name: 'Apply', exact: true }).click();
     await expect(page.locator('.log-lines').first().locator(':scope > li')).toHaveCount(100);
+    await expect(filterToggle).toContainText('Applied');
+    await filterToggle.focus();
+    await filterToggle.press('Enter');
+    await expect(page.getByLabel('Log app', { exact: true })).not.toBeVisible();
+    await expect(page.locator('.log-lines').first().locator(':scope > li')).toHaveCount(100);
+    await filterToggle.press('Enter');
+    await expect(page.getByLabel('Log app', { exact: true })).toHaveValue(app);
     await page.getByRole('button', { name: 'Load more', exact: true }).click();
     await expect(page.locator('.log-lines').first().locator(':scope > li')).toHaveCount(110);
     await page.getByLabel('Log level', { exact: true }).fill('error');
@@ -134,6 +144,7 @@ test('admin logs, activity, pairing, filters, retry and viewer boundaries', asyn
 
     await page.goto('/#/activity');
     await expect(page.getByRole('region', { name: 'KyYard collection' })).toContainText('audit_cursor_unsupported');
+    await page.locator('.log-filter-panel summary').click();
     await page.getByLabel('Activity app').fill(app);
     await page.getByLabel('Actor', { exact: true }).fill('alice');
     await page.getByLabel('Outcome', { exact: true }).fill('failure');

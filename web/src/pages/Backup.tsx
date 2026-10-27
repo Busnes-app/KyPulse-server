@@ -333,7 +333,7 @@ export const Backup: React.FC = () => {
   const needsSetup = Boolean(status && (!keyPinned || (!paired && !hasLocal)));
   const recoverySetup = (
     <div className="dr-two backup-setup">
-      <div className="panel dr-section">
+      <div className="dr-section">
         <div className="panel-header">
           <h3>
             <Server size={16} /> KyRecovery
@@ -378,7 +378,7 @@ export const Backup: React.FC = () => {
         {pairError && <Alert kind="error">{pairError}</Alert>}
       </div>
 
-      <div className="panel dr-section">
+      <div className="dr-section">
         <div className="panel-header">
           <h3>
             <KeyRound size={16} /> Recovery key by hand
@@ -487,7 +487,7 @@ export const Backup: React.FC = () => {
         </div>
       </div>
 
-      <div className="panel dr-section">
+      <div className="dr-section">
         <div className="panel-header">
           <h3>Back up now</h3>
           <div className="dr-actions">
@@ -550,7 +550,7 @@ export const Backup: React.FC = () => {
         )}
       </div>
 
-      <div className="panel dr-section">
+      <div className="dr-section">
         <div className="panel-header">
           <h3>Schedule</h3>
         </div>

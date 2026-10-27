@@ -25,6 +25,7 @@ function AdminActivity() {
       : 'No audit events found in the retained 7-day window.';
   return <div className="dr-page"><div className="dr-header"><h1>Activity</h1></div><p className="dr-hint">Audit events retained for up to 7 days, subject to the shared size limit. Imported chains are not verified. Times are UTC.</p>
     <KyYardCollection />
+    <details className="log-filter-panel"><summary>Filters{Object.values(appliedFilters).some(Boolean) && <span className="filter-applied"> Applied</span>}</summary>
     <form className="log-filters" onSubmit={event => { event.preventDefault(); apply(); }}>
       <label>Activity app<input value={filters.app} maxLength={256} onChange={e => setFilters({ ...filters, app: e.target.value })} /></label>
       <label>Actor<input value={filters.actor} maxLength={256} onChange={e => setFilters({ ...filters, actor: e.target.value })} /></label>
@@ -32,7 +33,7 @@ function AdminActivity() {
       <label>From (UTC)<input type="datetime-local" value={filters.from} onChange={e => setFilters({ ...filters, from: e.target.value })} /></label>
       <label>To (UTC)<input type="datetime-local" value={filters.to} onChange={e => setFilters({ ...filters, to: e.target.value })} /></label>
       <div className="filter-actions"><button type="submit">Apply</button><button type="button" className="btn-secondary" onClick={() => { setFilters(empty); setAppliedFilters(empty); setRangeError(''); page.apply('limit=100'); }}>Clear</button></div>
-    </form>
+    </form></details>
     {rangeError && <p role="alert">{rangeError}</p>}
     <PageControls page={page} />
     {!!page.bursts.length && <section className="dr-section" aria-label="Failed sign-in bursts"><h2>Failed sign-in bursts</h2>

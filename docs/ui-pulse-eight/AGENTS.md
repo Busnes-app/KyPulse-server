@@ -21,7 +21,7 @@
 ## Work Guidance
 
 - Use Computer Use on an owned fixture/tab with synthetic data only. No deployment or merge is authorized.
-- Capture1280x900/390x844,light/dark with normal service-worker behavior. Logs/Activity baseline are empty/unpaired; do not imply populated-state coverage.
+- Capture1280x900/390x844,light/dark with normal service-worker behavior. Logs/Activity are empty/unpaired; do not imply populated-state coverage. From stage07, score both default collapsed and explicitly expanded filter states:40originals,28admin-console and12settings. Earlier stages retain32originals,20admin-console and12settings.
 - Capture only after fonts settle and the current primary navigation item is fully visible; the driver waits for geometry, without scrolling or altering the page to repair a capture.
 
 ## Verification
