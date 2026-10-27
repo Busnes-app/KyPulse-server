@@ -1,0 +1,78 @@
+{
+  "round": 14,
+  "review_mode": "focused_fix_confirmation",
+  "unblinded": true,
+  "confirmation_of": 13,
+  "runtime_source": "f1dcb5553e2693ee997488e2a3bd4434b2bb4f1e",
+  "raw_reports": {
+    "opus-round14.md": "ce0f1fd55ed00ea0d1a1acdbb0d5eecaaf9f5aa93b0aa1f32e7b22f5b8e9963a",
+    "opus-round14.json": "509937c031a73b8dfc96f7f414f2a22a998612de7bd68c45b16bd0cece49d3d1",
+    "sol-round14.md": "0a479d1fe8f2f7c1f5a1c2d9718d252d598e5a0b974d804e79fb0a0946dea4ea",
+    "sol-round14.json": "50a5dd3af34e20bf44236ab7611be53c646c78fac6e5316a8c47f865d31be16d"
+  },
+  "cohorts": {
+    "opus": {
+      "admin-console": {
+        "n": 28,
+        "sum": "224.0",
+        "exact_mean": "8"
+      },
+      "settings": {
+        "n": 12,
+        "sum": "96.0",
+        "exact_mean": "8"
+      }
+    },
+    "sol": {
+      "admin-console": {
+        "n": 28,
+        "sum": "236.8",
+        "exact_mean": "296/35"
+      },
+      "settings": {
+        "n": 12,
+        "sum": "101.2",
+        "exact_mean": "253/30"
+      }
+    }
+  },
+  "baseline_pins_verified": {
+    "opus": {
+      "docs/ui-pulse-eight/opus-round13.md": "3c594b6c99c799e770ef68eafeb146f3ac73d0c4d97d1b93653900ac6e633fd9",
+      "docs/ui-pulse-eight/opus-round13.json": "b15bba4a1b45e27a74caa38912782474d9adf0b7e4ee51da41da5c07ceb65b63"
+    },
+    "sol": {
+      "docs/ui-pulse-eight/sol-round13.md": "2190ebcd04fe61a68c44587a1e512cacc13c2e72dcdcc1669c42635b980c9b20",
+      "docs/ui-pulse-eight/sol-round13.json": "01b2bb9657524770e451c8129bf8286f2d879c0dfe585f8299efffb4b3929236"
+    }
+  },
+  "quality_changes": {
+    "opus": [
+      {
+        "file": "screenshots/kypulse-14-after-backup-desktop-dark.png",
+        "changes": {
+          "typography": [
+            7,
+            8
+          ]
+        }
+      },
+      {
+        "file": "screenshots/kypulse-14-after-backup-desktop-light.png",
+        "changes": {
+          "typography": [
+            7,
+            8
+          ]
+        }
+      }
+    ],
+    "sol": []
+  },
+  "spreads_at_least2": [],
+  "scope": "Synthetic admin,40initial-view originals,28admin/12settings,OSlight/dark,1280x900/390x844; unconfigured Backup,empty/unpaired Logs/Activity collapsed+expanded. No full-product or competitive-ranking acceptance.",
+  "method_notes": "Both primaries terminal and genuinely satisfied. Mixed own-R13 carried/reassessed evidence, explicitly unblinded; no old score/weight/anchor change or best-of-history selection. Native supplement and parent patch brief are known priors. This is a confirmation, not an independent rerank.",
+  "preexisting_observations": "Orange sqlite readout and unpictured TOTP On accent predate badge change; retain as optional lower-content/state audit, not new deductions on unchanged scored pixels. Backup fold continuation is not clipping. No required concrete captured defect remains.",
+  "provenance_caveat": "Opus says worktree clean while later disclosing parent verification edits; interpret clean as runtime source only. Parent-owned verification log edits and reviewer reports were uncommitted during review. All21runtime pins remain committed/unchanged.",
+  "next": "Gemini4Argon advisory now eligible; audit every substantive claim independently before accepting or rejecting. No merge/deploy."
+}

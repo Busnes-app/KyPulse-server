@@ -9,6 +9,8 @@ Round,Reviewer,Cohort,Unique images,Exact mean,Displayed mean,At least 8,Reviewe
 12,opus,settings,12,8.066666666666666,8.1,True,False,4d5bc20e71ddae5cb23bc56558e317bf965b78decbc048ad5d780e3bf9402923
 13,opus,admin-console,28,8.0,8.0,True,False,b15bba4a1b45e27a74caa38912782474d9adf0b7e4ee51da41da5c07ceb65b63
 13,opus,settings,12,7.983333333333333,8.0,False,False,b15bba4a1b45e27a74caa38912782474d9adf0b7e4ee51da41da5c07ceb65b63
+14,opus,admin-console,28,8.0,8.0,True,True,509937c031a73b8dfc96f7f414f2a22a998612de7bd68c45b16bd0cece49d3d1
+14,opus,settings,12,8.0,8.0,True,True,509937c031a73b8dfc96f7f414f2a22a998612de7bd68c45b16bd0cece49d3d1
 2,opus,admin-console,20,7.61,7.6,False,False,c1c4b759c7990c1277bc0209d40de75efc6bc4c9238374990e640c617fd6f0d0
 2,opus,settings,12,7.866666666666666,7.9,False,False,c1c4b759c7990c1277bc0209d40de75efc6bc4c9238374990e640c617fd6f0d0
 3,opus,admin-console,20,8.0,8.0,True,False,87ac2dcc534d08ba15d67065a8d649b6df116145d27e4f712215dffa00408b90
@@ -35,6 +37,8 @@ Round,Reviewer,Cohort,Unique images,Exact mean,Displayed mean,At least 8,Reviewe
 12,sol,settings,12,8.566666666666666,8.6,True,True,b84e2fecf32dd49e1c3c46f0993acf8fafe29555d753a911ac61433727f3edee
 13,sol,admin-console,28,8.457142857142857,8.5,True,True,01b2bb9657524770e451c8129bf8286f2d879c0dfe585f8299efffb4b3929236
 13,sol,settings,12,8.433333333333334,8.4,True,True,01b2bb9657524770e451c8129bf8286f2d879c0dfe585f8299efffb4b3929236
+14,sol,admin-console,28,8.457142857142857,8.5,True,True,50a5dd3af34e20bf44236ab7611be53c646c78fac6e5316a8c47f865d31be16d
+14,sol,settings,12,8.433333333333334,8.4,True,True,50a5dd3af34e20bf44236ab7611be53c646c78fac6e5316a8c47f865d31be16d
 2,sol,admin-console,20,8.29,8.3,True,True,44e73eb9fb9df3f6fc3f006de4e1438ee80d0d214512a4904daed700f4ce00c4
 2,sol,settings,12,8.3,8.3,True,True,44e73eb9fb9df3f6fc3f006de4e1438ee80d0d214512a4904daed700f4ce00c4
 3,sol,admin-console,20,8.26,8.3,True,True,12bc517d57f9abb6d7f8b2ccd28161594857a2bbaf50b39d258f4373c3ef4a38

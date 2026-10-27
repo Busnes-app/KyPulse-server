@@ -7,7 +7,7 @@
   {
     "repository": "Busnes-app/KyPulse-server",
     "url": "https://github.com/Busnes-app/KyPulse-server/pull/53",
-    "status": "Open follow-up through round8 semantic warning styling, outlined disclosure and phone spacing; current-head reviews/full CI/security pending"
+    "status": "Open; round14 focused confirmations both satisfied,allcoveredcohorts>=8. Local checks/browser and7569remoteCIpass; new-headsecurity and Gemini advisory/audit pending. No merge/deploy."
   },
   {
     "repository": "Busnes-app/ky-ui",

@@ -1,0 +1,54 @@
+{
+  "product_source": "f1dcb5553e2693ee997488e2a3bd4434b2bb4f1e",
+  "shared_source": "58626b7",
+  "status": "Round14 both focused confirmations terminal and satisfied; Opus8/8,Sol296/35and253/30. Current runtime local required checks/full browser pass; remote7569allCIpass,security stale; Gemini advisory eligible.",
+  "checks": {
+    "build": {
+      "status": "pass",
+      "evidence": "checks/r14-web.txt"
+    },
+    "make_ci": {
+      "status": "pass",
+      "evidence": "checks/r14-ci.txt",
+      "result": "Tidy/vet/race/96frontend/real-server smoke pass;exit0."
+    },
+    "browser": {
+      "status": "pass",
+      "evidence": "checks/r14-browser.txt",
+      "sha256": "fc16db88fd9267caaedb5cd510ebeeb6c620b268868e5f4561da3c8cf330dec2",
+      "raw_sha256": "fc16db88fd9267caaedb5cd510ebeeb6c620b268868e5f4561da3c8cf330dec2",
+      "normalization": "ANSI escapes and trailing line whitespace removed.",
+      "exit_record": "checks/r14-browser.exit.txt",
+      "subprocess_exit_code": 0,
+      "wrapper_exit_code": 0,
+      "result": "24passed,8layout-specific skips,9.5min; complete production-server matrix and clean teardown.",
+      "source": "f1dcb5553e2693ee997488e2a3bd4434b2bb4f1e"
+    },
+    "native": {
+      "status": "pass-scoped",
+      "evidence": "native-round14.json",
+      "result": "All4Backup badges13px/no clipping at1280and390; one nav/zero document overflow/no saved theme. Not full acceptance."
+    },
+    "remote_previous": {
+      "head": "7569de314217dd4b161b968dd44a1a8230df1828",
+      "status": "ci-pass-security-pending",
+      "evidence": "checks/r14-remote.json",
+      "note": "Fresh head gates required after evidence commit."
+    }
+  },
+  "retained_checks": "verification-round7.json/checks/r7-remote.json preserve remote CI success54fc13e (including clean browser completion), local assertions22pass6skips with wrapper143, and stale authored securityc976d40. These predate round8 source.",
+  "coverage": "40 distinct originals,28admin-console/12settings, default collapsed and expanded filters. Same coverage as round7; earlier rounds20admin/12settings remain historical.",
+  "limitations": [
+    "Synthetic admin,initial viewport,empty/unpaired Logs/Activity,unconfigured Settings/Backup. Other roles/populated/lower content remain unscored.",
+    "Native Chrome154/DPR2 differs from scored Chromium153/DPR1.",
+    "Warning contrast scoped to Busnes light/dark,not all named themes/states.",
+    "Regex detector reports prescribed Space Grotesk and selected-nav accent border;not accessibility acceptance.",
+    "No merge/deploy;MySlop401 prevents shared-board posting."
+  ],
+  "calibration": {
+    "status": "round14-focused-confirmation-complete",
+    "evidence": "round14-audit.json",
+    "method": "Explicitly unblinded own-R13 carry/reassess,not fresh independent rank.",
+    "next": "Gemini advisory,parent-audited."
+  }
+}
