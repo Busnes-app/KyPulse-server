@@ -1,0 +1,1938 @@
+{
+  "cohorts": {
+    "admin-console": {
+      "displayed_mean": null,
+      "duplicate_files": 4,
+      "exact_mean": null,
+      "fraction": null,
+      "satisfied": null,
+      "status": "no_visual_score",
+      "sum": null,
+      "total_files": 28,
+      "unique_files": 24
+    },
+    "settings": {
+      "displayed_mean": null,
+      "duplicate_files": 0,
+      "exact_mean": null,
+      "fraction": null,
+      "satisfied": null,
+      "status": "no_visual_score",
+      "sum": null,
+      "total_files": 12,
+      "unique_files": 12
+    }
+  },
+  "files": [
+    {
+      "bytes": 49729,
+      "caveat": "Unscored: antigravity-acp file/MCP tools cannot render PNG images into model visual context; binary bytes verified against inventory-v14.json (SHA-256, byte length, PNG IHDR width/height).",
+      "cohort": "admin-console",
+      "confidence": "none",
+      "duplicate_of": null,
+      "file": "screenshots/kypulse-14-after-activity-desktop-dark.png",
+      "height": 900,
+      "ky_fit": {
+        "observations": {
+          "accent_discipline": "No visual brand-fit score: original PNGs and KyNotes reference PNGs cannot be visually displayed in antigravity-acp model context.",
+          "palette_tokens": "No visual brand-fit score: original PNGs and KyNotes reference PNGs cannot be visually displayed in antigravity-acp model context.",
+          "shell": "No visual brand-fit score: original PNGs and KyNotes reference PNGs cannot be visually displayed in antigravity-acp model context.",
+          "suite_cohesion": "No visual brand-fit score: original PNGs and KyNotes reference PNGs cannot be visually displayed in antigravity-acp model context.",
+          "type_geometry": "No visual brand-fit score: original PNGs and KyNotes reference PNGs cannot be visually displayed in antigravity-acp model context."
+        },
+        "scores": {
+          "accent_discipline": null,
+          "palette_tokens": null,
+          "shell": null,
+          "suite_cohesion": null,
+          "type_geometry": null
+        }
+      },
+      "observations": {
+        "coherence": "No visual score: original PNG could not be visually displayed at 1:1 resolution in model context; ratings not inferred from source or metadata.",
+        "color": "No visual score: original PNG could not be visually displayed at 1:1 resolution in model context; ratings not inferred from source or metadata.",
+        "density_layout": "No visual score: original PNG could not be visually displayed at 1:1 resolution in model context; ratings not inferred from source or metadata.",
+        "hierarchy": "No visual score: antigravity-acp tools cannot display original PNG bytes as visual images (view_file/client_view_file return UTF-8 replacement text; MCP image responses are offloaded to disk).",
+        "typography": "No visual score: original PNG could not be visually displayed at 1:1 resolution in model context; ratings not inferred from source or metadata.",
+        "visible_affordances": "No visual score: original PNG could not be visually displayed at 1:1 resolution in model context; ratings not inferred from source or metadata."
+      },
+      "scores": {
+        "coherence": null,
+        "color": null,
+        "density_layout": null,
+        "hierarchy": null,
+        "typography": null,
+        "visible_affordances": null
+      },
+      "sha256": "f3e6e8285c1499631b8b8d3da44aece0273d253dc4a78bbea2e3d0a1a656f45b",
+      "state": "empty/unpaired",
+      "surface": "activity",
+      "theme": "OS dark (prefers-color-scheme), no saved choice",
+      "total": null,
+      "width": 1280
+    },
+    {
+      "bytes": 49609,
+      "caveat": "Unscored: antigravity-acp file/MCP tools cannot render PNG images into model visual context; binary bytes verified against inventory-v14.json (SHA-256, byte length, PNG IHDR width/height).",
+      "cohort": "admin-console",
+      "confidence": "none",
+      "duplicate_of": null,
+      "file": "screenshots/kypulse-14-after-activity-desktop-light.png",
+      "height": 900,
+      "ky_fit": {
+        "observations": {
+          "accent_discipline": "No visual brand-fit score: original PNGs and KyNotes reference PNGs cannot be visually displayed in antigravity-acp model context.",
+          "palette_tokens": "No visual brand-fit score: original PNGs and KyNotes reference PNGs cannot be visually displayed in antigravity-acp model context.",
+          "shell": "No visual brand-fit score: original PNGs and KyNotes reference PNGs cannot be visually displayed in antigravity-acp model context.",
+          "suite_cohesion": "No visual brand-fit score: original PNGs and KyNotes reference PNGs cannot be visually displayed in antigravity-acp model context.",
+          "type_geometry": "No visual brand-fit score: original PNGs and KyNotes reference PNGs cannot be visually displayed in antigravity-acp model context."
+        },
+        "scores": {
+          "accent_discipline": null,
+          "palette_tokens": null,
+          "shell": null,
+          "suite_cohesion": null,
+          "type_geometry": null
+        }
+      },
+      "observations": {
+        "coherence": "No visual score: original PNG could not be visually displayed at 1:1 resolution in model context; ratings not inferred from source or metadata.",
+        "color": "No visual score: original PNG could not be visually displayed at 1:1 resolution in model context; ratings not inferred from source or metadata.",
+        "density_layout": "No visual score: original PNG could not be visually displayed at 1:1 resolution in model context; ratings not inferred from source or metadata.",
+        "hierarchy": "No visual score: antigravity-acp tools cannot display original PNG bytes as visual images (view_file/client_view_file return UTF-8 replacement text; MCP image responses are offloaded to disk).",
+        "typography": "No visual score: original PNG could not be visually displayed at 1:1 resolution in model context; ratings not inferred from source or metadata.",
+        "visible_affordances": "No visual score: original PNG could not be visually displayed at 1:1 resolution in model context; ratings not inferred from source or metadata."
+      },
+      "scores": {
+        "coherence": null,
+        "color": null,
+        "density_layout": null,
+        "hierarchy": null,
+        "typography": null,
+        "visible_affordances": null
+      },
+      "sha256": "6fe4937d2f14de057b7d3f2acce6f27f595127bfdf9c5835b4e437b4bd680d44",
+      "state": "empty/unpaired",
+      "surface": "activity",
+      "theme": "OS light (prefers-color-scheme), no saved choice",
+      "total": null,
+      "width": 1280
+    },
+    {
+      "bytes": 57792,
+      "caveat": "Unscored: antigravity-acp file/MCP tools cannot render PNG images into model visual context; binary bytes verified against inventory-v14.json (SHA-256, byte length, PNG IHDR width/height).",
+      "cohort": "admin-console",
+      "confidence": "none",
+      "duplicate_of": null,
+      "file": "screenshots/kypulse-14-after-activity-filters-desktop-dark.png",
+      "height": 900,
+      "ky_fit": {
+        "observations": {
+          "accent_discipline": "No visual brand-fit score: original PNGs and KyNotes reference PNGs cannot be visually displayed in antigravity-acp model context.",
+          "palette_tokens": "No visual brand-fit score: original PNGs and KyNotes reference PNGs cannot be visually displayed in antigravity-acp model context.",
+          "shell": "No visual brand-fit score: original PNGs and KyNotes reference PNGs cannot be visually displayed in antigravity-acp model context.",
+          "suite_cohesion": "No visual brand-fit score: original PNGs and KyNotes reference PNGs cannot be visually displayed in antigravity-acp model context.",
+          "type_geometry": "No visual brand-fit score: original PNGs and KyNotes reference PNGs cannot be visually displayed in antigravity-acp model context."
+        },
+        "scores": {
+          "accent_discipline": null,
+          "palette_tokens": null,
+          "shell": null,
+          "suite_cohesion": null,
+          "type_geometry": null
+        }
+      },
+      "observations": {
+        "coherence": "No visual score: original PNG could not be visually displayed at 1:1 resolution in model context; ratings not inferred from source or metadata.",
+        "color": "No visual score: original PNG could not be visually displayed at 1:1 resolution in model context; ratings not inferred from source or metadata.",
+        "density_layout": "No visual score: original PNG could not be visually displayed at 1:1 resolution in model context; ratings not inferred from source or metadata.",
+        "hierarchy": "No visual score: antigravity-acp tools cannot display original PNG bytes as visual images (view_file/client_view_file return UTF-8 replacement text; MCP image responses are offloaded to disk).",
+        "typography": "No visual score: original PNG could not be visually displayed at 1:1 resolution in model context; ratings not inferred from source or metadata.",
+        "visible_affordances": "No visual score: original PNG could not be visually displayed at 1:1 resolution in model context; ratings not inferred from source or metadata."
+      },
+      "scores": {
+        "coherence": null,
+        "color": null,
+        "density_layout": null,
+        "hierarchy": null,
+        "typography": null,
+        "visible_affordances": null
+      },
+      "sha256": "b59f20e82144ff39c123f104168d2326f07653a8c7d567d5d1d7fc492fd9014c",
+      "state": "synthetic sparse/default",
+      "surface": "activity-filters",
+      "theme": "OS dark (prefers-color-scheme), no saved choice",
+      "total": null,
+      "width": 1280
+    },
+    {
+      "bytes": 57331,
+      "caveat": "Unscored: antigravity-acp file/MCP tools cannot render PNG images into model visual context; binary bytes verified against inventory-v14.json (SHA-256, byte length, PNG IHDR width/height).",
+      "cohort": "admin-console",
+      "confidence": "none",
+      "duplicate_of": null,
+      "file": "screenshots/kypulse-14-after-activity-filters-desktop-light.png",
+      "height": 900,
+      "ky_fit": {
+        "observations": {
+          "accent_discipline": "No visual brand-fit score: original PNGs and KyNotes reference PNGs cannot be visually displayed in antigravity-acp model context.",
+          "palette_tokens": "No visual brand-fit score: original PNGs and KyNotes reference PNGs cannot be visually displayed in antigravity-acp model context.",
+          "shell": "No visual brand-fit score: original PNGs and KyNotes reference PNGs cannot be visually displayed in antigravity-acp model context.",
+          "suite_cohesion": "No visual brand-fit score: original PNGs and KyNotes reference PNGs cannot be visually displayed in antigravity-acp model context.",
+          "type_geometry": "No visual brand-fit score: original PNGs and KyNotes reference PNGs cannot be visually displayed in antigravity-acp model context."
+        },
+        "scores": {
+          "accent_discipline": null,
+          "palette_tokens": null,
+          "shell": null,
+          "suite_cohesion": null,
+          "type_geometry": null
+        }
+      },
+      "observations": {
+        "coherence": "No visual score: original PNG could not be visually displayed at 1:1 resolution in model context; ratings not inferred from source or metadata.",
+        "color": "No visual score: original PNG could not be visually displayed at 1:1 resolution in model context; ratings not inferred from source or metadata.",
+        "density_layout": "No visual score: original PNG could not be visually displayed at 1:1 resolution in model context; ratings not inferred from source or metadata.",
+        "hierarchy": "No visual score: antigravity-acp tools cannot display original PNG bytes as visual images (view_file/client_view_file return UTF-8 replacement text; MCP image responses are offloaded to disk).",
+        "typography": "No visual score: original PNG could not be visually displayed at 1:1 resolution in model context; ratings not inferred from source or metadata.",
+        "visible_affordances": "No visual score: original PNG could not be visually displayed at 1:1 resolution in model context; ratings not inferred from source or metadata."
+      },
+      "scores": {
+        "coherence": null,
+        "color": null,
+        "density_layout": null,
+        "hierarchy": null,
+        "typography": null,
+        "visible_affordances": null
+      },
+      "sha256": "7909bd307a5fb740e5e6ff12cbe57dec8944b186c35587b97fc3746341e6ed3d",
+      "state": "synthetic sparse/default",
+      "surface": "activity-filters",
+      "theme": "OS light (prefers-color-scheme), no saved choice",
+      "total": null,
+      "width": 1280
+    },
+    {
+      "bytes": 43183,
+      "caveat": "Unscored: antigravity-acp file/MCP tools cannot render PNG images into model visual context; binary bytes verified against inventory-v14.json (SHA-256, byte length, PNG IHDR width/height).",
+      "cohort": "admin-console",
+      "confidence": "none",
+      "duplicate_of": null,
+      "file": "screenshots/kypulse-14-after-activity-filters-mobile-dark.png",
+      "height": 844,
+      "ky_fit": {
+        "observations": {
+          "accent_discipline": "No visual brand-fit score: original PNGs and KyNotes reference PNGs cannot be visually displayed in antigravity-acp model context.",
+          "palette_tokens": "No visual brand-fit score: original PNGs and KyNotes reference PNGs cannot be visually displayed in antigravity-acp model context.",
+          "shell": "No visual brand-fit score: original PNGs and KyNotes reference PNGs cannot be visually displayed in antigravity-acp model context.",
+          "suite_cohesion": "No visual brand-fit score: original PNGs and KyNotes reference PNGs cannot be visually displayed in antigravity-acp model context.",
+          "type_geometry": "No visual brand-fit score: original PNGs and KyNotes reference PNGs cannot be visually displayed in antigravity-acp model context."
+        },
+        "scores": {
+          "accent_discipline": null,
+          "palette_tokens": null,
+          "shell": null,
+          "suite_cohesion": null,
+          "type_geometry": null
+        }
+      },
+      "observations": {
+        "coherence": "No visual score: original PNG could not be visually displayed at 1:1 resolution in model context; ratings not inferred from source or metadata.",
+        "color": "No visual score: original PNG could not be visually displayed at 1:1 resolution in model context; ratings not inferred from source or metadata.",
+        "density_layout": "No visual score: original PNG could not be visually displayed at 1:1 resolution in model context; ratings not inferred from source or metadata.",
+        "hierarchy": "No visual score: antigravity-acp tools cannot display original PNG bytes as visual images (view_file/client_view_file return UTF-8 replacement text; MCP image responses are offloaded to disk).",
+        "typography": "No visual score: original PNG could not be visually displayed at 1:1 resolution in model context; ratings not inferred from source or metadata.",
+        "visible_affordances": "No visual score: original PNG could not be visually displayed at 1:1 resolution in model context; ratings not inferred from source or metadata."
+      },
+      "scores": {
+        "coherence": null,
+        "color": null,
+        "density_layout": null,
+        "hierarchy": null,
+        "typography": null,
+        "visible_affordances": null
+      },
+      "sha256": "0fbc85e62734147977edab461bf98f3f6248f0b9cb68be3c7026efd11710b21b",
+      "state": "synthetic sparse/default",
+      "surface": "activity-filters",
+      "theme": "OS dark (prefers-color-scheme), no saved choice",
+      "total": null,
+      "width": 390
+    },
+    {
+      "bytes": 42726,
+      "caveat": "Unscored: antigravity-acp file/MCP tools cannot render PNG images into model visual context; binary bytes verified against inventory-v14.json (SHA-256, byte length, PNG IHDR width/height).",
+      "cohort": "admin-console",
+      "confidence": "none",
+      "duplicate_of": null,
+      "file": "screenshots/kypulse-14-after-activity-filters-mobile-light.png",
+      "height": 844,
+      "ky_fit": {
+        "observations": {
+          "accent_discipline": "No visual brand-fit score: original PNGs and KyNotes reference PNGs cannot be visually displayed in antigravity-acp model context.",
+          "palette_tokens": "No visual brand-fit score: original PNGs and KyNotes reference PNGs cannot be visually displayed in antigravity-acp model context.",
+          "shell": "No visual brand-fit score: original PNGs and KyNotes reference PNGs cannot be visually displayed in antigravity-acp model context.",
+          "suite_cohesion": "No visual brand-fit score: original PNGs and KyNotes reference PNGs cannot be visually displayed in antigravity-acp model context.",
+          "type_geometry": "No visual brand-fit score: original PNGs and KyNotes reference PNGs cannot be visually displayed in antigravity-acp model context."
+        },
+        "scores": {
+          "accent_discipline": null,
+          "palette_tokens": null,
+          "shell": null,
+          "suite_cohesion": null,
+          "type_geometry": null
+        }
+      },
+      "observations": {
+        "coherence": "No visual score: original PNG could not be visually displayed at 1:1 resolution in model context; ratings not inferred from source or metadata.",
+        "color": "No visual score: original PNG could not be visually displayed at 1:1 resolution in model context; ratings not inferred from source or metadata.",
+        "density_layout": "No visual score: original PNG could not be visually displayed at 1:1 resolution in model context; ratings not inferred from source or metadata.",
+        "hierarchy": "No visual score: antigravity-acp tools cannot display original PNG bytes as visual images (view_file/client_view_file return UTF-8 replacement text; MCP image responses are offloaded to disk).",
+        "typography": "No visual score: original PNG could not be visually displayed at 1:1 resolution in model context; ratings not inferred from source or metadata.",
+        "visible_affordances": "No visual score: original PNG could not be visually displayed at 1:1 resolution in model context; ratings not inferred from source or metadata."
+      },
+      "scores": {
+        "coherence": null,
+        "color": null,
+        "density_layout": null,
+        "hierarchy": null,
+        "typography": null,
+        "visible_affordances": null
+      },
+      "sha256": "d9ca9411f8cd279d332fc9549a7e1e99329a34d60afb8a13dd1198a6640dab94",
+      "state": "synthetic sparse/default",
+      "surface": "activity-filters",
+      "theme": "OS light (prefers-color-scheme), no saved choice",
+      "total": null,
+      "width": 390
+    },
+    {
+      "bytes": 33141,
+      "caveat": "Unscored: antigravity-acp file/MCP tools cannot render PNG images into model visual context; binary bytes verified against inventory-v14.json (SHA-256, byte length, PNG IHDR width/height).",
+      "cohort": "admin-console",
+      "confidence": "none",
+      "duplicate_of": null,
+      "file": "screenshots/kypulse-14-after-activity-mobile-dark.png",
+      "height": 844,
+      "ky_fit": {
+        "observations": {
+          "accent_discipline": "No visual brand-fit score: original PNGs and KyNotes reference PNGs cannot be visually displayed in antigravity-acp model context.",
+          "palette_tokens": "No visual brand-fit score: original PNGs and KyNotes reference PNGs cannot be visually displayed in antigravity-acp model context.",
+          "shell": "No visual brand-fit score: original PNGs and KyNotes reference PNGs cannot be visually displayed in antigravity-acp model context.",
+          "suite_cohesion": "No visual brand-fit score: original PNGs and KyNotes reference PNGs cannot be visually displayed in antigravity-acp model context.",
+          "type_geometry": "No visual brand-fit score: original PNGs and KyNotes reference PNGs cannot be visually displayed in antigravity-acp model context."
+        },
+        "scores": {
+          "accent_discipline": null,
+          "palette_tokens": null,
+          "shell": null,
+          "suite_cohesion": null,
+          "type_geometry": null
+        }
+      },
+      "observations": {
+        "coherence": "No visual score: original PNG could not be visually displayed at 1:1 resolution in model context; ratings not inferred from source or metadata.",
+        "color": "No visual score: original PNG could not be visually displayed at 1:1 resolution in model context; ratings not inferred from source or metadata.",
+        "density_layout": "No visual score: original PNG could not be visually displayed at 1:1 resolution in model context; ratings not inferred from source or metadata.",
+        "hierarchy": "No visual score: antigravity-acp tools cannot display original PNG bytes as visual images (view_file/client_view_file return UTF-8 replacement text; MCP image responses are offloaded to disk).",
+        "typography": "No visual score: original PNG could not be visually displayed at 1:1 resolution in model context; ratings not inferred from source or metadata.",
+        "visible_affordances": "No visual score: original PNG could not be visually displayed at 1:1 resolution in model context; ratings not inferred from source or metadata."
+      },
+      "scores": {
+        "coherence": null,
+        "color": null,
+        "density_layout": null,
+        "hierarchy": null,
+        "typography": null,
+        "visible_affordances": null
+      },
+      "sha256": "17656de55532fc21c6df5d8bd1909e902c3bb4f691bfe727c99271b8a2a6123a",
+      "state": "empty/unpaired",
+      "surface": "activity",
+      "theme": "OS dark (prefers-color-scheme), no saved choice",
+      "total": null,
+      "width": 390
+    },
+    {
+      "bytes": 32599,
+      "caveat": "Unscored: antigravity-acp file/MCP tools cannot render PNG images into model visual context; binary bytes verified against inventory-v14.json (SHA-256, byte length, PNG IHDR width/height).",
+      "cohort": "admin-console",
+      "confidence": "none",
+      "duplicate_of": null,
+      "file": "screenshots/kypulse-14-after-activity-mobile-light.png",
+      "height": 844,
+      "ky_fit": {
+        "observations": {
+          "accent_discipline": "No visual brand-fit score: original PNGs and KyNotes reference PNGs cannot be visually displayed in antigravity-acp model context.",
+          "palette_tokens": "No visual brand-fit score: original PNGs and KyNotes reference PNGs cannot be visually displayed in antigravity-acp model context.",
+          "shell": "No visual brand-fit score: original PNGs and KyNotes reference PNGs cannot be visually displayed in antigravity-acp model context.",
+          "suite_cohesion": "No visual brand-fit score: original PNGs and KyNotes reference PNGs cannot be visually displayed in antigravity-acp model context.",
+          "type_geometry": "No visual brand-fit score: original PNGs and KyNotes reference PNGs cannot be visually displayed in antigravity-acp model context."
+        },
+        "scores": {
+          "accent_discipline": null,
+          "palette_tokens": null,
+          "shell": null,
+          "suite_cohesion": null,
+          "type_geometry": null
+        }
+      },
+      "observations": {
+        "coherence": "No visual score: original PNG could not be visually displayed at 1:1 resolution in model context; ratings not inferred from source or metadata.",
+        "color": "No visual score: original PNG could not be visually displayed at 1:1 resolution in model context; ratings not inferred from source or metadata.",
+        "density_layout": "No visual score: original PNG could not be visually displayed at 1:1 resolution in model context; ratings not inferred from source or metadata.",
+        "hierarchy": "No visual score: antigravity-acp tools cannot display original PNG bytes as visual images (view_file/client_view_file return UTF-8 replacement text; MCP image responses are offloaded to disk).",
+        "typography": "No visual score: original PNG could not be visually displayed at 1:1 resolution in model context; ratings not inferred from source or metadata.",
+        "visible_affordances": "No visual score: original PNG could not be visually displayed at 1:1 resolution in model context; ratings not inferred from source or metadata."
+      },
+      "scores": {
+        "coherence": null,
+        "color": null,
+        "density_layout": null,
+        "hierarchy": null,
+        "typography": null,
+        "visible_affordances": null
+      },
+      "sha256": "d760dbf93d6afbf50db24094945725d59a713f0f924fba48a958d614ff895f3b",
+      "state": "empty/unpaired",
+      "surface": "activity",
+      "theme": "OS light (prefers-color-scheme), no saved choice",
+      "total": null,
+      "width": 390
+    },
+    {
+      "bytes": 53626,
+      "caveat": "Unscored: antigravity-acp file/MCP tools cannot render PNG images into model visual context; binary bytes verified against inventory-v14.json (SHA-256, byte length, PNG IHDR width/height).",
+      "cohort": "admin-console",
+      "confidence": "none",
+      "duplicate_of": null,
+      "file": "screenshots/kypulse-14-after-alerts-desktop-dark.png",
+      "height": 900,
+      "ky_fit": {
+        "observations": {
+          "accent_discipline": "No visual brand-fit score: original PNGs and KyNotes reference PNGs cannot be visually displayed in antigravity-acp model context.",
+          "palette_tokens": "No visual brand-fit score: original PNGs and KyNotes reference PNGs cannot be visually displayed in antigravity-acp model context.",
+          "shell": "No visual brand-fit score: original PNGs and KyNotes reference PNGs cannot be visually displayed in antigravity-acp model context.",
+          "suite_cohesion": "No visual brand-fit score: original PNGs and KyNotes reference PNGs cannot be visually displayed in antigravity-acp model context.",
+          "type_geometry": "No visual brand-fit score: original PNGs and KyNotes reference PNGs cannot be visually displayed in antigravity-acp model context."
+        },
+        "scores": {
+          "accent_discipline": null,
+          "palette_tokens": null,
+          "shell": null,
+          "suite_cohesion": null,
+          "type_geometry": null
+        }
+      },
+      "observations": {
+        "coherence": "No visual score: original PNG could not be visually displayed at 1:1 resolution in model context; ratings not inferred from source or metadata.",
+        "color": "No visual score: original PNG could not be visually displayed at 1:1 resolution in model context; ratings not inferred from source or metadata.",
+        "density_layout": "No visual score: original PNG could not be visually displayed at 1:1 resolution in model context; ratings not inferred from source or metadata.",
+        "hierarchy": "No visual score: antigravity-acp tools cannot display original PNG bytes as visual images (view_file/client_view_file return UTF-8 replacement text; MCP image responses are offloaded to disk).",
+        "typography": "No visual score: original PNG could not be visually displayed at 1:1 resolution in model context; ratings not inferred from source or metadata.",
+        "visible_affordances": "No visual score: original PNG could not be visually displayed at 1:1 resolution in model context; ratings not inferred from source or metadata."
+      },
+      "scores": {
+        "coherence": null,
+        "color": null,
+        "density_layout": null,
+        "hierarchy": null,
+        "typography": null,
+        "visible_affordances": null
+      },
+      "sha256": "45c5933f1ae3fbf1c2e9c05145e04620a0ab6f9842ee799ef33b72e392f745c6",
+      "state": "synthetic sparse/default",
+      "surface": "alerts",
+      "theme": "OS dark (prefers-color-scheme), no saved choice",
+      "total": null,
+      "width": 1280
+    },
+    {
+      "bytes": 53149,
+      "caveat": "Unscored: antigravity-acp file/MCP tools cannot render PNG images into model visual context; binary bytes verified against inventory-v14.json (SHA-256, byte length, PNG IHDR width/height).",
+      "cohort": "admin-console",
+      "confidence": "none",
+      "duplicate_of": null,
+      "file": "screenshots/kypulse-14-after-alerts-desktop-light.png",
+      "height": 900,
+      "ky_fit": {
+        "observations": {
+          "accent_discipline": "No visual brand-fit score: original PNGs and KyNotes reference PNGs cannot be visually displayed in antigravity-acp model context.",
+          "palette_tokens": "No visual brand-fit score: original PNGs and KyNotes reference PNGs cannot be visually displayed in antigravity-acp model context.",
+          "shell": "No visual brand-fit score: original PNGs and KyNotes reference PNGs cannot be visually displayed in antigravity-acp model context.",
+          "suite_cohesion": "No visual brand-fit score: original PNGs and KyNotes reference PNGs cannot be visually displayed in antigravity-acp model context.",
+          "type_geometry": "No visual brand-fit score: original PNGs and KyNotes reference PNGs cannot be visually displayed in antigravity-acp model context."
+        },
+        "scores": {
+          "accent_discipline": null,
+          "palette_tokens": null,
+          "shell": null,
+          "suite_cohesion": null,
+          "type_geometry": null
+        }
+      },
+      "observations": {
+        "coherence": "No visual score: original PNG could not be visually displayed at 1:1 resolution in model context; ratings not inferred from source or metadata.",
+        "color": "No visual score: original PNG could not be visually displayed at 1:1 resolution in model context; ratings not inferred from source or metadata.",
+        "density_layout": "No visual score: original PNG could not be visually displayed at 1:1 resolution in model context; ratings not inferred from source or metadata.",
+        "hierarchy": "No visual score: antigravity-acp tools cannot display original PNG bytes as visual images (view_file/client_view_file return UTF-8 replacement text; MCP image responses are offloaded to disk).",
+        "typography": "No visual score: original PNG could not be visually displayed at 1:1 resolution in model context; ratings not inferred from source or metadata.",
+        "visible_affordances": "No visual score: original PNG could not be visually displayed at 1:1 resolution in model context; ratings not inferred from source or metadata."
+      },
+      "scores": {
+        "coherence": null,
+        "color": null,
+        "density_layout": null,
+        "hierarchy": null,
+        "typography": null,
+        "visible_affordances": null
+      },
+      "sha256": "ec3ce1ddf2b16a7510d42e43d244b7530d52b0f74de5786e0204e8f4dbdd13ce",
+      "state": "synthetic sparse/default",
+      "surface": "alerts",
+      "theme": "OS light (prefers-color-scheme), no saved choice",
+      "total": null,
+      "width": 1280
+    },
+    {
+      "bytes": 42972,
+      "caveat": "Unscored: antigravity-acp file/MCP tools cannot render PNG images into model visual context; binary bytes verified against inventory-v14.json (SHA-256, byte length, PNG IHDR width/height).",
+      "cohort": "admin-console",
+      "confidence": "none",
+      "duplicate_of": null,
+      "file": "screenshots/kypulse-14-after-alerts-mobile-dark.png",
+      "height": 844,
+      "ky_fit": {
+        "observations": {
+          "accent_discipline": "No visual brand-fit score: original PNGs and KyNotes reference PNGs cannot be visually displayed in antigravity-acp model context.",
+          "palette_tokens": "No visual brand-fit score: original PNGs and KyNotes reference PNGs cannot be visually displayed in antigravity-acp model context.",
+          "shell": "No visual brand-fit score: original PNGs and KyNotes reference PNGs cannot be visually displayed in antigravity-acp model context.",
+          "suite_cohesion": "No visual brand-fit score: original PNGs and KyNotes reference PNGs cannot be visually displayed in antigravity-acp model context.",
+          "type_geometry": "No visual brand-fit score: original PNGs and KyNotes reference PNGs cannot be visually displayed in antigravity-acp model context."
+        },
+        "scores": {
+          "accent_discipline": null,
+          "palette_tokens": null,
+          "shell": null,
+          "suite_cohesion": null,
+          "type_geometry": null
+        }
+      },
+      "observations": {
+        "coherence": "No visual score: original PNG could not be visually displayed at 1:1 resolution in model context; ratings not inferred from source or metadata.",
+        "color": "No visual score: original PNG could not be visually displayed at 1:1 resolution in model context; ratings not inferred from source or metadata.",
+        "density_layout": "No visual score: original PNG could not be visually displayed at 1:1 resolution in model context; ratings not inferred from source or metadata.",
+        "hierarchy": "No visual score: antigravity-acp tools cannot display original PNG bytes as visual images (view_file/client_view_file return UTF-8 replacement text; MCP image responses are offloaded to disk).",
+        "typography": "No visual score: original PNG could not be visually displayed at 1:1 resolution in model context; ratings not inferred from source or metadata.",
+        "visible_affordances": "No visual score: original PNG could not be visually displayed at 1:1 resolution in model context; ratings not inferred from source or metadata."
+      },
+      "scores": {
+        "coherence": null,
+        "color": null,
+        "density_layout": null,
+        "hierarchy": null,
+        "typography": null,
+        "visible_affordances": null
+      },
+      "sha256": "9d97b7035e87688edc2c53ee3e91a1cae42b4332b93c7a2fe6022c1a83b49e96",
+      "state": "synthetic sparse/default",
+      "surface": "alerts",
+      "theme": "OS dark (prefers-color-scheme), no saved choice",
+      "total": null,
+      "width": 390
+    },
+    {
+      "bytes": 42081,
+      "caveat": "Unscored: antigravity-acp file/MCP tools cannot render PNG images into model visual context; binary bytes verified against inventory-v14.json (SHA-256, byte length, PNG IHDR width/height).",
+      "cohort": "admin-console",
+      "confidence": "none",
+      "duplicate_of": null,
+      "file": "screenshots/kypulse-14-after-alerts-mobile-light.png",
+      "height": 844,
+      "ky_fit": {
+        "observations": {
+          "accent_discipline": "No visual brand-fit score: original PNGs and KyNotes reference PNGs cannot be visually displayed in antigravity-acp model context.",
+          "palette_tokens": "No visual brand-fit score: original PNGs and KyNotes reference PNGs cannot be visually displayed in antigravity-acp model context.",
+          "shell": "No visual brand-fit score: original PNGs and KyNotes reference PNGs cannot be visually displayed in antigravity-acp model context.",
+          "suite_cohesion": "No visual brand-fit score: original PNGs and KyNotes reference PNGs cannot be visually displayed in antigravity-acp model context.",
+          "type_geometry": "No visual brand-fit score: original PNGs and KyNotes reference PNGs cannot be visually displayed in antigravity-acp model context."
+        },
+        "scores": {
+          "accent_discipline": null,
+          "palette_tokens": null,
+          "shell": null,
+          "suite_cohesion": null,
+          "type_geometry": null
+        }
+      },
+      "observations": {
+        "coherence": "No visual score: original PNG could not be visually displayed at 1:1 resolution in model context; ratings not inferred from source or metadata.",
+        "color": "No visual score: original PNG could not be visually displayed at 1:1 resolution in model context; ratings not inferred from source or metadata.",
+        "density_layout": "No visual score: original PNG could not be visually displayed at 1:1 resolution in model context; ratings not inferred from source or metadata.",
+        "hierarchy": "No visual score: antigravity-acp tools cannot display original PNG bytes as visual images (view_file/client_view_file return UTF-8 replacement text; MCP image responses are offloaded to disk).",
+        "typography": "No visual score: original PNG could not be visually displayed at 1:1 resolution in model context; ratings not inferred from source or metadata.",
+        "visible_affordances": "No visual score: original PNG could not be visually displayed at 1:1 resolution in model context; ratings not inferred from source or metadata."
+      },
+      "scores": {
+        "coherence": null,
+        "color": null,
+        "density_layout": null,
+        "hierarchy": null,
+        "typography": null,
+        "visible_affordances": null
+      },
+      "sha256": "0eb985183d82381f56cfba6e217bf434445e6bedd978d7ba6408afca62aac0d8",
+      "state": "synthetic sparse/default",
+      "surface": "alerts",
+      "theme": "OS light (prefers-color-scheme), no saved choice",
+      "total": null,
+      "width": 390
+    },
+    {
+      "bytes": 81295,
+      "caveat": "Unscored: antigravity-acp file/MCP tools cannot render PNG images into model visual context; binary bytes verified against inventory-v14.json (SHA-256, byte length, PNG IHDR width/height).",
+      "cohort": "admin-console",
+      "confidence": "none",
+      "duplicate_of": null,
+      "file": "screenshots/kypulse-14-after-app-detail-desktop-dark.png",
+      "height": 900,
+      "ky_fit": {
+        "observations": {
+          "accent_discipline": "No visual brand-fit score: original PNGs and KyNotes reference PNGs cannot be visually displayed in antigravity-acp model context.",
+          "palette_tokens": "No visual brand-fit score: original PNGs and KyNotes reference PNGs cannot be visually displayed in antigravity-acp model context.",
+          "shell": "No visual brand-fit score: original PNGs and KyNotes reference PNGs cannot be visually displayed in antigravity-acp model context.",
+          "suite_cohesion": "No visual brand-fit score: original PNGs and KyNotes reference PNGs cannot be visually displayed in antigravity-acp model context.",
+          "type_geometry": "No visual brand-fit score: original PNGs and KyNotes reference PNGs cannot be visually displayed in antigravity-acp model context."
+        },
+        "scores": {
+          "accent_discipline": null,
+          "palette_tokens": null,
+          "shell": null,
+          "suite_cohesion": null,
+          "type_geometry": null
+        }
+      },
+      "observations": {
+        "coherence": "No visual score: original PNG could not be visually displayed at 1:1 resolution in model context; ratings not inferred from source or metadata.",
+        "color": "No visual score: original PNG could not be visually displayed at 1:1 resolution in model context; ratings not inferred from source or metadata.",
+        "density_layout": "No visual score: original PNG could not be visually displayed at 1:1 resolution in model context; ratings not inferred from source or metadata.",
+        "hierarchy": "No visual score: antigravity-acp tools cannot display original PNG bytes as visual images (view_file/client_view_file return UTF-8 replacement text; MCP image responses are offloaded to disk).",
+        "typography": "No visual score: original PNG could not be visually displayed at 1:1 resolution in model context; ratings not inferred from source or metadata.",
+        "visible_affordances": "No visual score: original PNG could not be visually displayed at 1:1 resolution in model context; ratings not inferred from source or metadata."
+      },
+      "scores": {
+        "coherence": null,
+        "color": null,
+        "density_layout": null,
+        "hierarchy": null,
+        "typography": null,
+        "visible_affordances": null
+      },
+      "sha256": "e9a0ee7e2a09718ddb4aa4d435c8cb405b33824cd270f105706abdc3a3603b3b",
+      "state": "synthetic sparse/default",
+      "surface": "app-detail",
+      "theme": "OS dark (prefers-color-scheme), no saved choice",
+      "total": null,
+      "width": 1280
+    },
+    {
+      "bytes": 81040,
+      "caveat": "Unscored: antigravity-acp file/MCP tools cannot render PNG images into model visual context; binary bytes verified against inventory-v14.json (SHA-256, byte length, PNG IHDR width/height).",
+      "cohort": "admin-console",
+      "confidence": "none",
+      "duplicate_of": null,
+      "file": "screenshots/kypulse-14-after-app-detail-desktop-light.png",
+      "height": 900,
+      "ky_fit": {
+        "observations": {
+          "accent_discipline": "No visual brand-fit score: original PNGs and KyNotes reference PNGs cannot be visually displayed in antigravity-acp model context.",
+          "palette_tokens": "No visual brand-fit score: original PNGs and KyNotes reference PNGs cannot be visually displayed in antigravity-acp model context.",
+          "shell": "No visual brand-fit score: original PNGs and KyNotes reference PNGs cannot be visually displayed in antigravity-acp model context.",
+          "suite_cohesion": "No visual brand-fit score: original PNGs and KyNotes reference PNGs cannot be visually displayed in antigravity-acp model context.",
+          "type_geometry": "No visual brand-fit score: original PNGs and KyNotes reference PNGs cannot be visually displayed in antigravity-acp model context."
+        },
+        "scores": {
+          "accent_discipline": null,
+          "palette_tokens": null,
+          "shell": null,
+          "suite_cohesion": null,
+          "type_geometry": null
+        }
+      },
+      "observations": {
+        "coherence": "No visual score: original PNG could not be visually displayed at 1:1 resolution in model context; ratings not inferred from source or metadata.",
+        "color": "No visual score: original PNG could not be visually displayed at 1:1 resolution in model context; ratings not inferred from source or metadata.",
+        "density_layout": "No visual score: original PNG could not be visually displayed at 1:1 resolution in model context; ratings not inferred from source or metadata.",
+        "hierarchy": "No visual score: antigravity-acp tools cannot display original PNG bytes as visual images (view_file/client_view_file return UTF-8 replacement text; MCP image responses are offloaded to disk).",
+        "typography": "No visual score: original PNG could not be visually displayed at 1:1 resolution in model context; ratings not inferred from source or metadata.",
+        "visible_affordances": "No visual score: original PNG could not be visually displayed at 1:1 resolution in model context; ratings not inferred from source or metadata."
+      },
+      "scores": {
+        "coherence": null,
+        "color": null,
+        "density_layout": null,
+        "hierarchy": null,
+        "typography": null,
+        "visible_affordances": null
+      },
+      "sha256": "cf64813b6503708a2716d51dc3da7f77bb2679aa6f8d51ceae8bfce72b97e4f3",
+      "state": "synthetic sparse/default",
+      "surface": "app-detail",
+      "theme": "OS light (prefers-color-scheme), no saved choice",
+      "total": null,
+      "width": 1280
+    },
+    {
+      "bytes": 48972,
+      "caveat": "Unscored: antigravity-acp file/MCP tools cannot render PNG images into model visual context; binary bytes verified against inventory-v14.json (SHA-256, byte length, PNG IHDR width/height).",
+      "cohort": "admin-console",
+      "confidence": "none",
+      "duplicate_of": null,
+      "file": "screenshots/kypulse-14-after-app-detail-mobile-dark.png",
+      "height": 844,
+      "ky_fit": {
+        "observations": {
+          "accent_discipline": "No visual brand-fit score: original PNGs and KyNotes reference PNGs cannot be visually displayed in antigravity-acp model context.",
+          "palette_tokens": "No visual brand-fit score: original PNGs and KyNotes reference PNGs cannot be visually displayed in antigravity-acp model context.",
+          "shell": "No visual brand-fit score: original PNGs and KyNotes reference PNGs cannot be visually displayed in antigravity-acp model context.",
+          "suite_cohesion": "No visual brand-fit score: original PNGs and KyNotes reference PNGs cannot be visually displayed in antigravity-acp model context.",
+          "type_geometry": "No visual brand-fit score: original PNGs and KyNotes reference PNGs cannot be visually displayed in antigravity-acp model context."
+        },
+        "scores": {
+          "accent_discipline": null,
+          "palette_tokens": null,
+          "shell": null,
+          "suite_cohesion": null,
+          "type_geometry": null
+        }
+      },
+      "observations": {
+        "coherence": "No visual score: original PNG could not be visually displayed at 1:1 resolution in model context; ratings not inferred from source or metadata.",
+        "color": "No visual score: original PNG could not be visually displayed at 1:1 resolution in model context; ratings not inferred from source or metadata.",
+        "density_layout": "No visual score: original PNG could not be visually displayed at 1:1 resolution in model context; ratings not inferred from source or metadata.",
+        "hierarchy": "No visual score: antigravity-acp tools cannot display original PNG bytes as visual images (view_file/client_view_file return UTF-8 replacement text; MCP image responses are offloaded to disk).",
+        "typography": "No visual score: original PNG could not be visually displayed at 1:1 resolution in model context; ratings not inferred from source or metadata.",
+        "visible_affordances": "No visual score: original PNG could not be visually displayed at 1:1 resolution in model context; ratings not inferred from source or metadata."
+      },
+      "scores": {
+        "coherence": null,
+        "color": null,
+        "density_layout": null,
+        "hierarchy": null,
+        "typography": null,
+        "visible_affordances": null
+      },
+      "sha256": "46a2ffa85f9a9cc0cd27eacc7c59fb951beaa9bc9f3cdb260bb0e423ce0ef2cd",
+      "state": "synthetic sparse/default",
+      "surface": "app-detail",
+      "theme": "OS dark (prefers-color-scheme), no saved choice",
+      "total": null,
+      "width": 390
+    },
+    {
+      "bytes": 48680,
+      "caveat": "Unscored: antigravity-acp file/MCP tools cannot render PNG images into model visual context; binary bytes verified against inventory-v14.json (SHA-256, byte length, PNG IHDR width/height).",
+      "cohort": "admin-console",
+      "confidence": "none",
+      "duplicate_of": null,
+      "file": "screenshots/kypulse-14-after-app-detail-mobile-light.png",
+      "height": 844,
+      "ky_fit": {
+        "observations": {
+          "accent_discipline": "No visual brand-fit score: original PNGs and KyNotes reference PNGs cannot be visually displayed in antigravity-acp model context.",
+          "palette_tokens": "No visual brand-fit score: original PNGs and KyNotes reference PNGs cannot be visually displayed in antigravity-acp model context.",
+          "shell": "No visual brand-fit score: original PNGs and KyNotes reference PNGs cannot be visually displayed in antigravity-acp model context.",
+          "suite_cohesion": "No visual brand-fit score: original PNGs and KyNotes reference PNGs cannot be visually displayed in antigravity-acp model context.",
+          "type_geometry": "No visual brand-fit score: original PNGs and KyNotes reference PNGs cannot be visually displayed in antigravity-acp model context."
+        },
+        "scores": {
+          "accent_discipline": null,
+          "palette_tokens": null,
+          "shell": null,
+          "suite_cohesion": null,
+          "type_geometry": null
+        }
+      },
+      "observations": {
+        "coherence": "No visual score: original PNG could not be visually displayed at 1:1 resolution in model context; ratings not inferred from source or metadata.",
+        "color": "No visual score: original PNG could not be visually displayed at 1:1 resolution in model context; ratings not inferred from source or metadata.",
+        "density_layout": "No visual score: original PNG could not be visually displayed at 1:1 resolution in model context; ratings not inferred from source or metadata.",
+        "hierarchy": "No visual score: antigravity-acp tools cannot display original PNG bytes as visual images (view_file/client_view_file return UTF-8 replacement text; MCP image responses are offloaded to disk).",
+        "typography": "No visual score: original PNG could not be visually displayed at 1:1 resolution in model context; ratings not inferred from source or metadata.",
+        "visible_affordances": "No visual score: original PNG could not be visually displayed at 1:1 resolution in model context; ratings not inferred from source or metadata."
+      },
+      "scores": {
+        "coherence": null,
+        "color": null,
+        "density_layout": null,
+        "hierarchy": null,
+        "typography": null,
+        "visible_affordances": null
+      },
+      "sha256": "fc179d70e15d420abdc23c2087bb78a20ce6e7d8aaaea0545b4824ca98fd9fab",
+      "state": "synthetic sparse/default",
+      "surface": "app-detail",
+      "theme": "OS light (prefers-color-scheme), no saved choice",
+      "total": null,
+      "width": 390
+    },
+    {
+      "bytes": 80654,
+      "caveat": "Unscored: antigravity-acp file/MCP tools cannot render PNG images into model visual context; binary bytes verified against inventory-v14.json (SHA-256, byte length, PNG IHDR width/height).",
+      "cohort": "settings",
+      "confidence": "none",
+      "duplicate_of": null,
+      "file": "screenshots/kypulse-14-after-appearance-desktop-dark.png",
+      "height": 900,
+      "ky_fit": {
+        "observations": {
+          "accent_discipline": "No visual brand-fit score: original PNGs and KyNotes reference PNGs cannot be visually displayed in antigravity-acp model context.",
+          "palette_tokens": "No visual brand-fit score: original PNGs and KyNotes reference PNGs cannot be visually displayed in antigravity-acp model context.",
+          "shell": "No visual brand-fit score: original PNGs and KyNotes reference PNGs cannot be visually displayed in antigravity-acp model context.",
+          "suite_cohesion": "No visual brand-fit score: original PNGs and KyNotes reference PNGs cannot be visually displayed in antigravity-acp model context.",
+          "type_geometry": "No visual brand-fit score: original PNGs and KyNotes reference PNGs cannot be visually displayed in antigravity-acp model context."
+        },
+        "scores": {
+          "accent_discipline": null,
+          "palette_tokens": null,
+          "shell": null,
+          "suite_cohesion": null,
+          "type_geometry": null
+        }
+      },
+      "observations": {
+        "coherence": "No visual score: original PNG could not be visually displayed at 1:1 resolution in model context; ratings not inferred from source or metadata.",
+        "color": "No visual score: original PNG could not be visually displayed at 1:1 resolution in model context; ratings not inferred from source or metadata.",
+        "density_layout": "No visual score: original PNG could not be visually displayed at 1:1 resolution in model context; ratings not inferred from source or metadata.",
+        "hierarchy": "No visual score: antigravity-acp tools cannot display original PNG bytes as visual images (view_file/client_view_file return UTF-8 replacement text; MCP image responses are offloaded to disk).",
+        "typography": "No visual score: original PNG could not be visually displayed at 1:1 resolution in model context; ratings not inferred from source or metadata.",
+        "visible_affordances": "No visual score: original PNG could not be visually displayed at 1:1 resolution in model context; ratings not inferred from source or metadata."
+      },
+      "scores": {
+        "coherence": null,
+        "color": null,
+        "density_layout": null,
+        "hierarchy": null,
+        "typography": null,
+        "visible_affordances": null
+      },
+      "sha256": "729d178791f59f744d2fbd4405b7cc25ef04d304e286ea17acaeeb2d6a850986",
+      "state": "synthetic sparse/default",
+      "surface": "appearance",
+      "theme": "OS dark (prefers-color-scheme), no saved choice",
+      "total": null,
+      "width": 1280
+    },
+    {
+      "bytes": 79792,
+      "caveat": "Unscored: antigravity-acp file/MCP tools cannot render PNG images into model visual context; binary bytes verified against inventory-v14.json (SHA-256, byte length, PNG IHDR width/height).",
+      "cohort": "settings",
+      "confidence": "none",
+      "duplicate_of": null,
+      "file": "screenshots/kypulse-14-after-appearance-desktop-light.png",
+      "height": 900,
+      "ky_fit": {
+        "observations": {
+          "accent_discipline": "No visual brand-fit score: original PNGs and KyNotes reference PNGs cannot be visually displayed in antigravity-acp model context.",
+          "palette_tokens": "No visual brand-fit score: original PNGs and KyNotes reference PNGs cannot be visually displayed in antigravity-acp model context.",
+          "shell": "No visual brand-fit score: original PNGs and KyNotes reference PNGs cannot be visually displayed in antigravity-acp model context.",
+          "suite_cohesion": "No visual brand-fit score: original PNGs and KyNotes reference PNGs cannot be visually displayed in antigravity-acp model context.",
+          "type_geometry": "No visual brand-fit score: original PNGs and KyNotes reference PNGs cannot be visually displayed in antigravity-acp model context."
+        },
+        "scores": {
+          "accent_discipline": null,
+          "palette_tokens": null,
+          "shell": null,
+          "suite_cohesion": null,
+          "type_geometry": null
+        }
+      },
+      "observations": {
+        "coherence": "No visual score: original PNG could not be visually displayed at 1:1 resolution in model context; ratings not inferred from source or metadata.",
+        "color": "No visual score: original PNG could not be visually displayed at 1:1 resolution in model context; ratings not inferred from source or metadata.",
+        "density_layout": "No visual score: original PNG could not be visually displayed at 1:1 resolution in model context; ratings not inferred from source or metadata.",
+        "hierarchy": "No visual score: antigravity-acp tools cannot display original PNG bytes as visual images (view_file/client_view_file return UTF-8 replacement text; MCP image responses are offloaded to disk).",
+        "typography": "No visual score: original PNG could not be visually displayed at 1:1 resolution in model context; ratings not inferred from source or metadata.",
+        "visible_affordances": "No visual score: original PNG could not be visually displayed at 1:1 resolution in model context; ratings not inferred from source or metadata."
+      },
+      "scores": {
+        "coherence": null,
+        "color": null,
+        "density_layout": null,
+        "hierarchy": null,
+        "typography": null,
+        "visible_affordances": null
+      },
+      "sha256": "6f4a38c52250472cf36c152d149a315190dd32797cb57ee73794beed5502dc59",
+      "state": "synthetic sparse/default",
+      "surface": "appearance",
+      "theme": "OS light (prefers-color-scheme), no saved choice",
+      "total": null,
+      "width": 1280
+    },
+    {
+      "bytes": 42344,
+      "caveat": "Unscored: antigravity-acp file/MCP tools cannot render PNG images into model visual context; binary bytes verified against inventory-v14.json (SHA-256, byte length, PNG IHDR width/height).",
+      "cohort": "settings",
+      "confidence": "none",
+      "duplicate_of": null,
+      "file": "screenshots/kypulse-14-after-appearance-mobile-dark.png",
+      "height": 844,
+      "ky_fit": {
+        "observations": {
+          "accent_discipline": "No visual brand-fit score: original PNGs and KyNotes reference PNGs cannot be visually displayed in antigravity-acp model context.",
+          "palette_tokens": "No visual brand-fit score: original PNGs and KyNotes reference PNGs cannot be visually displayed in antigravity-acp model context.",
+          "shell": "No visual brand-fit score: original PNGs and KyNotes reference PNGs cannot be visually displayed in antigravity-acp model context.",
+          "suite_cohesion": "No visual brand-fit score: original PNGs and KyNotes reference PNGs cannot be visually displayed in antigravity-acp model context.",
+          "type_geometry": "No visual brand-fit score: original PNGs and KyNotes reference PNGs cannot be visually displayed in antigravity-acp model context."
+        },
+        "scores": {
+          "accent_discipline": null,
+          "palette_tokens": null,
+          "shell": null,
+          "suite_cohesion": null,
+          "type_geometry": null
+        }
+      },
+      "observations": {
+        "coherence": "No visual score: original PNG could not be visually displayed at 1:1 resolution in model context; ratings not inferred from source or metadata.",
+        "color": "No visual score: original PNG could not be visually displayed at 1:1 resolution in model context; ratings not inferred from source or metadata.",
+        "density_layout": "No visual score: original PNG could not be visually displayed at 1:1 resolution in model context; ratings not inferred from source or metadata.",
+        "hierarchy": "No visual score: antigravity-acp tools cannot display original PNG bytes as visual images (view_file/client_view_file return UTF-8 replacement text; MCP image responses are offloaded to disk).",
+        "typography": "No visual score: original PNG could not be visually displayed at 1:1 resolution in model context; ratings not inferred from source or metadata.",
+        "visible_affordances": "No visual score: original PNG could not be visually displayed at 1:1 resolution in model context; ratings not inferred from source or metadata."
+      },
+      "scores": {
+        "coherence": null,
+        "color": null,
+        "density_layout": null,
+        "hierarchy": null,
+        "typography": null,
+        "visible_affordances": null
+      },
+      "sha256": "d7016865f2a6974f5bfa74821aced14c6e086221f8e1760dce1cda11fc6aac6c",
+      "state": "synthetic sparse/default",
+      "surface": "appearance",
+      "theme": "OS dark (prefers-color-scheme), no saved choice",
+      "total": null,
+      "width": 390
+    },
+    {
+      "bytes": 41468,
+      "caveat": "Unscored: antigravity-acp file/MCP tools cannot render PNG images into model visual context; binary bytes verified against inventory-v14.json (SHA-256, byte length, PNG IHDR width/height).",
+      "cohort": "settings",
+      "confidence": "none",
+      "duplicate_of": null,
+      "file": "screenshots/kypulse-14-after-appearance-mobile-light.png",
+      "height": 844,
+      "ky_fit": {
+        "observations": {
+          "accent_discipline": "No visual brand-fit score: original PNGs and KyNotes reference PNGs cannot be visually displayed in antigravity-acp model context.",
+          "palette_tokens": "No visual brand-fit score: original PNGs and KyNotes reference PNGs cannot be visually displayed in antigravity-acp model context.",
+          "shell": "No visual brand-fit score: original PNGs and KyNotes reference PNGs cannot be visually displayed in antigravity-acp model context.",
+          "suite_cohesion": "No visual brand-fit score: original PNGs and KyNotes reference PNGs cannot be visually displayed in antigravity-acp model context.",
+          "type_geometry": "No visual brand-fit score: original PNGs and KyNotes reference PNGs cannot be visually displayed in antigravity-acp model context."
+        },
+        "scores": {
+          "accent_discipline": null,
+          "palette_tokens": null,
+          "shell": null,
+          "suite_cohesion": null,
+          "type_geometry": null
+        }
+      },
+      "observations": {
+        "coherence": "No visual score: original PNG could not be visually displayed at 1:1 resolution in model context; ratings not inferred from source or metadata.",
+        "color": "No visual score: original PNG could not be visually displayed at 1:1 resolution in model context; ratings not inferred from source or metadata.",
+        "density_layout": "No visual score: original PNG could not be visually displayed at 1:1 resolution in model context; ratings not inferred from source or metadata.",
+        "hierarchy": "No visual score: antigravity-acp tools cannot display original PNG bytes as visual images (view_file/client_view_file return UTF-8 replacement text; MCP image responses are offloaded to disk).",
+        "typography": "No visual score: original PNG could not be visually displayed at 1:1 resolution in model context; ratings not inferred from source or metadata.",
+        "visible_affordances": "No visual score: original PNG could not be visually displayed at 1:1 resolution in model context; ratings not inferred from source or metadata."
+      },
+      "scores": {
+        "coherence": null,
+        "color": null,
+        "density_layout": null,
+        "hierarchy": null,
+        "typography": null,
+        "visible_affordances": null
+      },
+      "sha256": "7944a9f2f6cff416420f5fe6aa9d50fe9daef58602dc8da26d296b8ea0a9090d",
+      "state": "synthetic sparse/default",
+      "surface": "appearance",
+      "theme": "OS light (prefers-color-scheme), no saved choice",
+      "total": null,
+      "width": 390
+    },
+    {
+      "bytes": 113363,
+      "caveat": "Unscored: antigravity-acp file/MCP tools cannot render PNG images into model visual context; binary bytes verified against inventory-v14.json (SHA-256, byte length, PNG IHDR width/height).",
+      "cohort": "settings",
+      "confidence": "none",
+      "duplicate_of": null,
+      "file": "screenshots/kypulse-14-after-backup-desktop-dark.png",
+      "height": 900,
+      "ky_fit": {
+        "observations": {
+          "accent_discipline": "No visual brand-fit score: original PNGs and KyNotes reference PNGs cannot be visually displayed in antigravity-acp model context.",
+          "palette_tokens": "No visual brand-fit score: original PNGs and KyNotes reference PNGs cannot be visually displayed in antigravity-acp model context.",
+          "shell": "No visual brand-fit score: original PNGs and KyNotes reference PNGs cannot be visually displayed in antigravity-acp model context.",
+          "suite_cohesion": "No visual brand-fit score: original PNGs and KyNotes reference PNGs cannot be visually displayed in antigravity-acp model context.",
+          "type_geometry": "No visual brand-fit score: original PNGs and KyNotes reference PNGs cannot be visually displayed in antigravity-acp model context."
+        },
+        "scores": {
+          "accent_discipline": null,
+          "palette_tokens": null,
+          "shell": null,
+          "suite_cohesion": null,
+          "type_geometry": null
+        }
+      },
+      "observations": {
+        "coherence": "No visual score: original PNG could not be visually displayed at 1:1 resolution in model context; ratings not inferred from source or metadata.",
+        "color": "No visual score: original PNG could not be visually displayed at 1:1 resolution in model context; ratings not inferred from source or metadata.",
+        "density_layout": "No visual score: original PNG could not be visually displayed at 1:1 resolution in model context; ratings not inferred from source or metadata.",
+        "hierarchy": "No visual score: antigravity-acp tools cannot display original PNG bytes as visual images (view_file/client_view_file return UTF-8 replacement text; MCP image responses are offloaded to disk).",
+        "typography": "No visual score: original PNG could not be visually displayed at 1:1 resolution in model context; ratings not inferred from source or metadata.",
+        "visible_affordances": "No visual score: original PNG could not be visually displayed at 1:1 resolution in model context; ratings not inferred from source or metadata."
+      },
+      "scores": {
+        "coherence": null,
+        "color": null,
+        "density_layout": null,
+        "hierarchy": null,
+        "typography": null,
+        "visible_affordances": null
+      },
+      "sha256": "1466cfa8842361238093a96909212d703e05aaa4fc646091d630c26973627ede",
+      "state": "synthetic sparse/default",
+      "surface": "backup",
+      "theme": "OS dark (prefers-color-scheme), no saved choice",
+      "total": null,
+      "width": 1280
+    },
+    {
+      "bytes": 113728,
+      "caveat": "Unscored: antigravity-acp file/MCP tools cannot render PNG images into model visual context; binary bytes verified against inventory-v14.json (SHA-256, byte length, PNG IHDR width/height).",
+      "cohort": "settings",
+      "confidence": "none",
+      "duplicate_of": null,
+      "file": "screenshots/kypulse-14-after-backup-desktop-light.png",
+      "height": 900,
+      "ky_fit": {
+        "observations": {
+          "accent_discipline": "No visual brand-fit score: original PNGs and KyNotes reference PNGs cannot be visually displayed in antigravity-acp model context.",
+          "palette_tokens": "No visual brand-fit score: original PNGs and KyNotes reference PNGs cannot be visually displayed in antigravity-acp model context.",
+          "shell": "No visual brand-fit score: original PNGs and KyNotes reference PNGs cannot be visually displayed in antigravity-acp model context.",
+          "suite_cohesion": "No visual brand-fit score: original PNGs and KyNotes reference PNGs cannot be visually displayed in antigravity-acp model context.",
+          "type_geometry": "No visual brand-fit score: original PNGs and KyNotes reference PNGs cannot be visually displayed in antigravity-acp model context."
+        },
+        "scores": {
+          "accent_discipline": null,
+          "palette_tokens": null,
+          "shell": null,
+          "suite_cohesion": null,
+          "type_geometry": null
+        }
+      },
+      "observations": {
+        "coherence": "No visual score: original PNG could not be visually displayed at 1:1 resolution in model context; ratings not inferred from source or metadata.",
+        "color": "No visual score: original PNG could not be visually displayed at 1:1 resolution in model context; ratings not inferred from source or metadata.",
+        "density_layout": "No visual score: original PNG could not be visually displayed at 1:1 resolution in model context; ratings not inferred from source or metadata.",
+        "hierarchy": "No visual score: antigravity-acp tools cannot display original PNG bytes as visual images (view_file/client_view_file return UTF-8 replacement text; MCP image responses are offloaded to disk).",
+        "typography": "No visual score: original PNG could not be visually displayed at 1:1 resolution in model context; ratings not inferred from source or metadata.",
+        "visible_affordances": "No visual score: original PNG could not be visually displayed at 1:1 resolution in model context; ratings not inferred from source or metadata."
+      },
+      "scores": {
+        "coherence": null,
+        "color": null,
+        "density_layout": null,
+        "hierarchy": null,
+        "typography": null,
+        "visible_affordances": null
+      },
+      "sha256": "32d6d9b55a84e63f1c80f4dc46abd708a671642fe464bdb9f993d4aa1e8ff4a1",
+      "state": "synthetic sparse/default",
+      "surface": "backup",
+      "theme": "OS light (prefers-color-scheme), no saved choice",
+      "total": null,
+      "width": 1280
+    },
+    {
+      "bytes": 53949,
+      "caveat": "Unscored: antigravity-acp file/MCP tools cannot render PNG images into model visual context; binary bytes verified against inventory-v14.json (SHA-256, byte length, PNG IHDR width/height).",
+      "cohort": "settings",
+      "confidence": "none",
+      "duplicate_of": null,
+      "file": "screenshots/kypulse-14-after-backup-mobile-dark.png",
+      "height": 844,
+      "ky_fit": {
+        "observations": {
+          "accent_discipline": "No visual brand-fit score: original PNGs and KyNotes reference PNGs cannot be visually displayed in antigravity-acp model context.",
+          "palette_tokens": "No visual brand-fit score: original PNGs and KyNotes reference PNGs cannot be visually displayed in antigravity-acp model context.",
+          "shell": "No visual brand-fit score: original PNGs and KyNotes reference PNGs cannot be visually displayed in antigravity-acp model context.",
+          "suite_cohesion": "No visual brand-fit score: original PNGs and KyNotes reference PNGs cannot be visually displayed in antigravity-acp model context.",
+          "type_geometry": "No visual brand-fit score: original PNGs and KyNotes reference PNGs cannot be visually displayed in antigravity-acp model context."
+        },
+        "scores": {
+          "accent_discipline": null,
+          "palette_tokens": null,
+          "shell": null,
+          "suite_cohesion": null,
+          "type_geometry": null
+        }
+      },
+      "observations": {
+        "coherence": "No visual score: original PNG could not be visually displayed at 1:1 resolution in model context; ratings not inferred from source or metadata.",
+        "color": "No visual score: original PNG could not be visually displayed at 1:1 resolution in model context; ratings not inferred from source or metadata.",
+        "density_layout": "No visual score: original PNG could not be visually displayed at 1:1 resolution in model context; ratings not inferred from source or metadata.",
+        "hierarchy": "No visual score: antigravity-acp tools cannot display original PNG bytes as visual images (view_file/client_view_file return UTF-8 replacement text; MCP image responses are offloaded to disk).",
+        "typography": "No visual score: original PNG could not be visually displayed at 1:1 resolution in model context; ratings not inferred from source or metadata.",
+        "visible_affordances": "No visual score: original PNG could not be visually displayed at 1:1 resolution in model context; ratings not inferred from source or metadata."
+      },
+      "scores": {
+        "coherence": null,
+        "color": null,
+        "density_layout": null,
+        "hierarchy": null,
+        "typography": null,
+        "visible_affordances": null
+      },
+      "sha256": "400cb3d5fa6107d7b911008884c0d54cb6c6480ab89ab60fd3295a9069baa20a",
+      "state": "synthetic sparse/default",
+      "surface": "backup",
+      "theme": "OS dark (prefers-color-scheme), no saved choice",
+      "total": null,
+      "width": 390
+    },
+    {
+      "bytes": 53187,
+      "caveat": "Unscored: antigravity-acp file/MCP tools cannot render PNG images into model visual context; binary bytes verified against inventory-v14.json (SHA-256, byte length, PNG IHDR width/height).",
+      "cohort": "settings",
+      "confidence": "none",
+      "duplicate_of": null,
+      "file": "screenshots/kypulse-14-after-backup-mobile-light.png",
+      "height": 844,
+      "ky_fit": {
+        "observations": {
+          "accent_discipline": "No visual brand-fit score: original PNGs and KyNotes reference PNGs cannot be visually displayed in antigravity-acp model context.",
+          "palette_tokens": "No visual brand-fit score: original PNGs and KyNotes reference PNGs cannot be visually displayed in antigravity-acp model context.",
+          "shell": "No visual brand-fit score: original PNGs and KyNotes reference PNGs cannot be visually displayed in antigravity-acp model context.",
+          "suite_cohesion": "No visual brand-fit score: original PNGs and KyNotes reference PNGs cannot be visually displayed in antigravity-acp model context.",
+          "type_geometry": "No visual brand-fit score: original PNGs and KyNotes reference PNGs cannot be visually displayed in antigravity-acp model context."
+        },
+        "scores": {
+          "accent_discipline": null,
+          "palette_tokens": null,
+          "shell": null,
+          "suite_cohesion": null,
+          "type_geometry": null
+        }
+      },
+      "observations": {
+        "coherence": "No visual score: original PNG could not be visually displayed at 1:1 resolution in model context; ratings not inferred from source or metadata.",
+        "color": "No visual score: original PNG could not be visually displayed at 1:1 resolution in model context; ratings not inferred from source or metadata.",
+        "density_layout": "No visual score: original PNG could not be visually displayed at 1:1 resolution in model context; ratings not inferred from source or metadata.",
+        "hierarchy": "No visual score: antigravity-acp tools cannot display original PNG bytes as visual images (view_file/client_view_file return UTF-8 replacement text; MCP image responses are offloaded to disk).",
+        "typography": "No visual score: original PNG could not be visually displayed at 1:1 resolution in model context; ratings not inferred from source or metadata.",
+        "visible_affordances": "No visual score: original PNG could not be visually displayed at 1:1 resolution in model context; ratings not inferred from source or metadata."
+      },
+      "scores": {
+        "coherence": null,
+        "color": null,
+        "density_layout": null,
+        "hierarchy": null,
+        "typography": null,
+        "visible_affordances": null
+      },
+      "sha256": "012a3304e0179f72f0dbb4c9cbdb468e00978e8e415549d342b9bafddac1808f",
+      "state": "synthetic sparse/default",
+      "surface": "backup",
+      "theme": "OS light (prefers-color-scheme), no saved choice",
+      "total": null,
+      "width": 390
+    },
+    {
+      "bytes": 74172,
+      "caveat": "Unscored: antigravity-acp file/MCP tools cannot render PNG images into model visual context; binary bytes verified against inventory-v14.json (SHA-256, byte length, PNG IHDR width/height).",
+      "cohort": "admin-console",
+      "confidence": "none",
+      "duplicate_of": null,
+      "file": "screenshots/kypulse-14-after-logs-desktop-dark.png",
+      "height": 900,
+      "ky_fit": {
+        "observations": {
+          "accent_discipline": "No visual brand-fit score: original PNGs and KyNotes reference PNGs cannot be visually displayed in antigravity-acp model context.",
+          "palette_tokens": "No visual brand-fit score: original PNGs and KyNotes reference PNGs cannot be visually displayed in antigravity-acp model context.",
+          "shell": "No visual brand-fit score: original PNGs and KyNotes reference PNGs cannot be visually displayed in antigravity-acp model context.",
+          "suite_cohesion": "No visual brand-fit score: original PNGs and KyNotes reference PNGs cannot be visually displayed in antigravity-acp model context.",
+          "type_geometry": "No visual brand-fit score: original PNGs and KyNotes reference PNGs cannot be visually displayed in antigravity-acp model context."
+        },
+        "scores": {
+          "accent_discipline": null,
+          "palette_tokens": null,
+          "shell": null,
+          "suite_cohesion": null,
+          "type_geometry": null
+        }
+      },
+      "observations": {
+        "coherence": "No visual score: original PNG could not be visually displayed at 1:1 resolution in model context; ratings not inferred from source or metadata.",
+        "color": "No visual score: original PNG could not be visually displayed at 1:1 resolution in model context; ratings not inferred from source or metadata.",
+        "density_layout": "No visual score: original PNG could not be visually displayed at 1:1 resolution in model context; ratings not inferred from source or metadata.",
+        "hierarchy": "No visual score: antigravity-acp tools cannot display original PNG bytes as visual images (view_file/client_view_file return UTF-8 replacement text; MCP image responses are offloaded to disk).",
+        "typography": "No visual score: original PNG could not be visually displayed at 1:1 resolution in model context; ratings not inferred from source or metadata.",
+        "visible_affordances": "No visual score: original PNG could not be visually displayed at 1:1 resolution in model context; ratings not inferred from source or metadata."
+      },
+      "scores": {
+        "coherence": null,
+        "color": null,
+        "density_layout": null,
+        "hierarchy": null,
+        "typography": null,
+        "visible_affordances": null
+      },
+      "sha256": "86c17460dd101f40385367e1d0e7fc9e4c5d2e277f700368448e8d0a14f37adc",
+      "state": "empty/unpaired",
+      "surface": "logs",
+      "theme": "OS dark (prefers-color-scheme), no saved choice",
+      "total": null,
+      "width": 1280
+    },
+    {
+      "bytes": 73858,
+      "caveat": "Unscored: antigravity-acp file/MCP tools cannot render PNG images into model visual context; binary bytes verified against inventory-v14.json (SHA-256, byte length, PNG IHDR width/height).",
+      "cohort": "admin-console",
+      "confidence": "none",
+      "duplicate_of": null,
+      "file": "screenshots/kypulse-14-after-logs-desktop-light.png",
+      "height": 900,
+      "ky_fit": {
+        "observations": {
+          "accent_discipline": "No visual brand-fit score: original PNGs and KyNotes reference PNGs cannot be visually displayed in antigravity-acp model context.",
+          "palette_tokens": "No visual brand-fit score: original PNGs and KyNotes reference PNGs cannot be visually displayed in antigravity-acp model context.",
+          "shell": "No visual brand-fit score: original PNGs and KyNotes reference PNGs cannot be visually displayed in antigravity-acp model context.",
+          "suite_cohesion": "No visual brand-fit score: original PNGs and KyNotes reference PNGs cannot be visually displayed in antigravity-acp model context.",
+          "type_geometry": "No visual brand-fit score: original PNGs and KyNotes reference PNGs cannot be visually displayed in antigravity-acp model context."
+        },
+        "scores": {
+          "accent_discipline": null,
+          "palette_tokens": null,
+          "shell": null,
+          "suite_cohesion": null,
+          "type_geometry": null
+        }
+      },
+      "observations": {
+        "coherence": "No visual score: original PNG could not be visually displayed at 1:1 resolution in model context; ratings not inferred from source or metadata.",
+        "color": "No visual score: original PNG could not be visually displayed at 1:1 resolution in model context; ratings not inferred from source or metadata.",
+        "density_layout": "No visual score: original PNG could not be visually displayed at 1:1 resolution in model context; ratings not inferred from source or metadata.",
+        "hierarchy": "No visual score: antigravity-acp tools cannot display original PNG bytes as visual images (view_file/client_view_file return UTF-8 replacement text; MCP image responses are offloaded to disk).",
+        "typography": "No visual score: original PNG could not be visually displayed at 1:1 resolution in model context; ratings not inferred from source or metadata.",
+        "visible_affordances": "No visual score: original PNG could not be visually displayed at 1:1 resolution in model context; ratings not inferred from source or metadata."
+      },
+      "scores": {
+        "coherence": null,
+        "color": null,
+        "density_layout": null,
+        "hierarchy": null,
+        "typography": null,
+        "visible_affordances": null
+      },
+      "sha256": "0bc80ba30fa9e5b1f5e6b5d95e886643193f4fa4d032ad433a74dbb0409101cd",
+      "state": "empty/unpaired",
+      "surface": "logs",
+      "theme": "OS light (prefers-color-scheme), no saved choice",
+      "total": null,
+      "width": 1280
+    },
+    {
+      "bytes": 81506,
+      "caveat": "Unscored: antigravity-acp file/MCP tools cannot render PNG images into model visual context; binary bytes verified against inventory-v14.json (SHA-256, byte length, PNG IHDR width/height).",
+      "cohort": "admin-console",
+      "confidence": "none",
+      "duplicate_of": null,
+      "file": "screenshots/kypulse-14-after-logs-filters-desktop-dark.png",
+      "height": 900,
+      "ky_fit": {
+        "observations": {
+          "accent_discipline": "No visual brand-fit score: original PNGs and KyNotes reference PNGs cannot be visually displayed in antigravity-acp model context.",
+          "palette_tokens": "No visual brand-fit score: original PNGs and KyNotes reference PNGs cannot be visually displayed in antigravity-acp model context.",
+          "shell": "No visual brand-fit score: original PNGs and KyNotes reference PNGs cannot be visually displayed in antigravity-acp model context.",
+          "suite_cohesion": "No visual brand-fit score: original PNGs and KyNotes reference PNGs cannot be visually displayed in antigravity-acp model context.",
+          "type_geometry": "No visual brand-fit score: original PNGs and KyNotes reference PNGs cannot be visually displayed in antigravity-acp model context."
+        },
+        "scores": {
+          "accent_discipline": null,
+          "palette_tokens": null,
+          "shell": null,
+          "suite_cohesion": null,
+          "type_geometry": null
+        }
+      },
+      "observations": {
+        "coherence": "No visual score: original PNG could not be visually displayed at 1:1 resolution in model context; ratings not inferred from source or metadata.",
+        "color": "No visual score: original PNG could not be visually displayed at 1:1 resolution in model context; ratings not inferred from source or metadata.",
+        "density_layout": "No visual score: original PNG could not be visually displayed at 1:1 resolution in model context; ratings not inferred from source or metadata.",
+        "hierarchy": "No visual score: antigravity-acp tools cannot display original PNG bytes as visual images (view_file/client_view_file return UTF-8 replacement text; MCP image responses are offloaded to disk).",
+        "typography": "No visual score: original PNG could not be visually displayed at 1:1 resolution in model context; ratings not inferred from source or metadata.",
+        "visible_affordances": "No visual score: original PNG could not be visually displayed at 1:1 resolution in model context; ratings not inferred from source or metadata."
+      },
+      "scores": {
+        "coherence": null,
+        "color": null,
+        "density_layout": null,
+        "hierarchy": null,
+        "typography": null,
+        "visible_affordances": null
+      },
+      "sha256": "4139aa4af2d1e82fec73c2570e9a077dc45717a2b4a500a72a163a0a0bc1bde7",
+      "state": "synthetic sparse/default",
+      "surface": "logs-filters",
+      "theme": "OS dark (prefers-color-scheme), no saved choice",
+      "total": null,
+      "width": 1280
+    },
+    {
+      "bytes": 80947,
+      "caveat": "Unscored: antigravity-acp file/MCP tools cannot render PNG images into model visual context; binary bytes verified against inventory-v14.json (SHA-256, byte length, PNG IHDR width/height).",
+      "cohort": "admin-console",
+      "confidence": "none",
+      "duplicate_of": null,
+      "file": "screenshots/kypulse-14-after-logs-filters-desktop-light.png",
+      "height": 900,
+      "ky_fit": {
+        "observations": {
+          "accent_discipline": "No visual brand-fit score: original PNGs and KyNotes reference PNGs cannot be visually displayed in antigravity-acp model context.",
+          "palette_tokens": "No visual brand-fit score: original PNGs and KyNotes reference PNGs cannot be visually displayed in antigravity-acp model context.",
+          "shell": "No visual brand-fit score: original PNGs and KyNotes reference PNGs cannot be visually displayed in antigravity-acp model context.",
+          "suite_cohesion": "No visual brand-fit score: original PNGs and KyNotes reference PNGs cannot be visually displayed in antigravity-acp model context.",
+          "type_geometry": "No visual brand-fit score: original PNGs and KyNotes reference PNGs cannot be visually displayed in antigravity-acp model context."
+        },
+        "scores": {
+          "accent_discipline": null,
+          "palette_tokens": null,
+          "shell": null,
+          "suite_cohesion": null,
+          "type_geometry": null
+        }
+      },
+      "observations": {
+        "coherence": "No visual score: original PNG could not be visually displayed at 1:1 resolution in model context; ratings not inferred from source or metadata.",
+        "color": "No visual score: original PNG could not be visually displayed at 1:1 resolution in model context; ratings not inferred from source or metadata.",
+        "density_layout": "No visual score: original PNG could not be visually displayed at 1:1 resolution in model context; ratings not inferred from source or metadata.",
+        "hierarchy": "No visual score: antigravity-acp tools cannot display original PNG bytes as visual images (view_file/client_view_file return UTF-8 replacement text; MCP image responses are offloaded to disk).",
+        "typography": "No visual score: original PNG could not be visually displayed at 1:1 resolution in model context; ratings not inferred from source or metadata.",
+        "visible_affordances": "No visual score: original PNG could not be visually displayed at 1:1 resolution in model context; ratings not inferred from source or metadata."
+      },
+      "scores": {
+        "coherence": null,
+        "color": null,
+        "density_layout": null,
+        "hierarchy": null,
+        "typography": null,
+        "visible_affordances": null
+      },
+      "sha256": "588e066db2a7ca7a9f99dfd501199db6911605ca4b7ffee42945b470f4ceb6de",
+      "state": "synthetic sparse/default",
+      "surface": "logs-filters",
+      "theme": "OS light (prefers-color-scheme), no saved choice",
+      "total": null,
+      "width": 1280
+    },
+    {
+      "bytes": 39200,
+      "caveat": "Unscored: antigravity-acp file/MCP tools cannot render PNG images into model visual context; binary bytes verified against inventory-v14.json (SHA-256, byte length, PNG IHDR width/height).",
+      "cohort": "admin-console",
+      "confidence": "none",
+      "duplicate_of": null,
+      "file": "screenshots/kypulse-14-after-logs-filters-mobile-dark.png",
+      "height": 844,
+      "ky_fit": {
+        "observations": {
+          "accent_discipline": "No visual brand-fit score: original PNGs and KyNotes reference PNGs cannot be visually displayed in antigravity-acp model context.",
+          "palette_tokens": "No visual brand-fit score: original PNGs and KyNotes reference PNGs cannot be visually displayed in antigravity-acp model context.",
+          "shell": "No visual brand-fit score: original PNGs and KyNotes reference PNGs cannot be visually displayed in antigravity-acp model context.",
+          "suite_cohesion": "No visual brand-fit score: original PNGs and KyNotes reference PNGs cannot be visually displayed in antigravity-acp model context.",
+          "type_geometry": "No visual brand-fit score: original PNGs and KyNotes reference PNGs cannot be visually displayed in antigravity-acp model context."
+        },
+        "scores": {
+          "accent_discipline": null,
+          "palette_tokens": null,
+          "shell": null,
+          "suite_cohesion": null,
+          "type_geometry": null
+        }
+      },
+      "observations": {
+        "coherence": "No visual score: original PNG could not be visually displayed at 1:1 resolution in model context; ratings not inferred from source or metadata.",
+        "color": "No visual score: original PNG could not be visually displayed at 1:1 resolution in model context; ratings not inferred from source or metadata.",
+        "density_layout": "No visual score: original PNG could not be visually displayed at 1:1 resolution in model context; ratings not inferred from source or metadata.",
+        "hierarchy": "No visual score: antigravity-acp tools cannot display original PNG bytes as visual images (view_file/client_view_file return UTF-8 replacement text; MCP image responses are offloaded to disk).",
+        "typography": "No visual score: original PNG could not be visually displayed at 1:1 resolution in model context; ratings not inferred from source or metadata.",
+        "visible_affordances": "No visual score: original PNG could not be visually displayed at 1:1 resolution in model context; ratings not inferred from source or metadata."
+      },
+      "scores": {
+        "coherence": null,
+        "color": null,
+        "density_layout": null,
+        "hierarchy": null,
+        "typography": null,
+        "visible_affordances": null
+      },
+      "sha256": "be073b76840225fe91d8b718e8e4349ec3c689346149b481ea37e2fc903396c1",
+      "state": "synthetic sparse/default",
+      "surface": "logs-filters",
+      "theme": "OS dark (prefers-color-scheme), no saved choice",
+      "total": null,
+      "width": 390
+    },
+    {
+      "bytes": 38904,
+      "caveat": "Unscored: antigravity-acp file/MCP tools cannot render PNG images into model visual context; binary bytes verified against inventory-v14.json (SHA-256, byte length, PNG IHDR width/height).",
+      "cohort": "admin-console",
+      "confidence": "none",
+      "duplicate_of": null,
+      "file": "screenshots/kypulse-14-after-logs-filters-mobile-light.png",
+      "height": 844,
+      "ky_fit": {
+        "observations": {
+          "accent_discipline": "No visual brand-fit score: original PNGs and KyNotes reference PNGs cannot be visually displayed in antigravity-acp model context.",
+          "palette_tokens": "No visual brand-fit score: original PNGs and KyNotes reference PNGs cannot be visually displayed in antigravity-acp model context.",
+          "shell": "No visual brand-fit score: original PNGs and KyNotes reference PNGs cannot be visually displayed in antigravity-acp model context.",
+          "suite_cohesion": "No visual brand-fit score: original PNGs and KyNotes reference PNGs cannot be visually displayed in antigravity-acp model context.",
+          "type_geometry": "No visual brand-fit score: original PNGs and KyNotes reference PNGs cannot be visually displayed in antigravity-acp model context."
+        },
+        "scores": {
+          "accent_discipline": null,
+          "palette_tokens": null,
+          "shell": null,
+          "suite_cohesion": null,
+          "type_geometry": null
+        }
+      },
+      "observations": {
+        "coherence": "No visual score: original PNG could not be visually displayed at 1:1 resolution in model context; ratings not inferred from source or metadata.",
+        "color": "No visual score: original PNG could not be visually displayed at 1:1 resolution in model context; ratings not inferred from source or metadata.",
+        "density_layout": "No visual score: original PNG could not be visually displayed at 1:1 resolution in model context; ratings not inferred from source or metadata.",
+        "hierarchy": "No visual score: antigravity-acp tools cannot display original PNG bytes as visual images (view_file/client_view_file return UTF-8 replacement text; MCP image responses are offloaded to disk).",
+        "typography": "No visual score: original PNG could not be visually displayed at 1:1 resolution in model context; ratings not inferred from source or metadata.",
+        "visible_affordances": "No visual score: original PNG could not be visually displayed at 1:1 resolution in model context; ratings not inferred from source or metadata."
+      },
+      "scores": {
+        "coherence": null,
+        "color": null,
+        "density_layout": null,
+        "hierarchy": null,
+        "typography": null,
+        "visible_affordances": null
+      },
+      "sha256": "af92c90a05aa001430f1abbdb7dd60a6a312dbc24453cf58bab7a20f4b0b59a2",
+      "state": "synthetic sparse/default",
+      "surface": "logs-filters",
+      "theme": "OS light (prefers-color-scheme), no saved choice",
+      "total": null,
+      "width": 390
+    },
+    {
+      "bytes": 49234,
+      "caveat": "Unscored: antigravity-acp file/MCP tools cannot render PNG images into model visual context; binary bytes verified against inventory-v14.json (SHA-256, byte length, PNG IHDR width/height).",
+      "cohort": "admin-console",
+      "confidence": "none",
+      "duplicate_of": null,
+      "file": "screenshots/kypulse-14-after-logs-mobile-dark.png",
+      "height": 844,
+      "ky_fit": {
+        "observations": {
+          "accent_discipline": "No visual brand-fit score: original PNGs and KyNotes reference PNGs cannot be visually displayed in antigravity-acp model context.",
+          "palette_tokens": "No visual brand-fit score: original PNGs and KyNotes reference PNGs cannot be visually displayed in antigravity-acp model context.",
+          "shell": "No visual brand-fit score: original PNGs and KyNotes reference PNGs cannot be visually displayed in antigravity-acp model context.",
+          "suite_cohesion": "No visual brand-fit score: original PNGs and KyNotes reference PNGs cannot be visually displayed in antigravity-acp model context.",
+          "type_geometry": "No visual brand-fit score: original PNGs and KyNotes reference PNGs cannot be visually displayed in antigravity-acp model context."
+        },
+        "scores": {
+          "accent_discipline": null,
+          "palette_tokens": null,
+          "shell": null,
+          "suite_cohesion": null,
+          "type_geometry": null
+        }
+      },
+      "observations": {
+        "coherence": "No visual score: original PNG could not be visually displayed at 1:1 resolution in model context; ratings not inferred from source or metadata.",
+        "color": "No visual score: original PNG could not be visually displayed at 1:1 resolution in model context; ratings not inferred from source or metadata.",
+        "density_layout": "No visual score: original PNG could not be visually displayed at 1:1 resolution in model context; ratings not inferred from source or metadata.",
+        "hierarchy": "No visual score: antigravity-acp tools cannot display original PNG bytes as visual images (view_file/client_view_file return UTF-8 replacement text; MCP image responses are offloaded to disk).",
+        "typography": "No visual score: original PNG could not be visually displayed at 1:1 resolution in model context; ratings not inferred from source or metadata.",
+        "visible_affordances": "No visual score: original PNG could not be visually displayed at 1:1 resolution in model context; ratings not inferred from source or metadata."
+      },
+      "scores": {
+        "coherence": null,
+        "color": null,
+        "density_layout": null,
+        "hierarchy": null,
+        "typography": null,
+        "visible_affordances": null
+      },
+      "sha256": "35e69a117994168a0f0a495a4e37e76d4dcfebcb7595bb8a6b3e06c17f71dde1",
+      "state": "empty/unpaired",
+      "surface": "logs",
+      "theme": "OS dark (prefers-color-scheme), no saved choice",
+      "total": null,
+      "width": 390
+    },
+    {
+      "bytes": 48611,
+      "caveat": "Unscored: antigravity-acp file/MCP tools cannot render PNG images into model visual context; binary bytes verified against inventory-v14.json (SHA-256, byte length, PNG IHDR width/height).",
+      "cohort": "admin-console",
+      "confidence": "none",
+      "duplicate_of": null,
+      "file": "screenshots/kypulse-14-after-logs-mobile-light.png",
+      "height": 844,
+      "ky_fit": {
+        "observations": {
+          "accent_discipline": "No visual brand-fit score: original PNGs and KyNotes reference PNGs cannot be visually displayed in antigravity-acp model context.",
+          "palette_tokens": "No visual brand-fit score: original PNGs and KyNotes reference PNGs cannot be visually displayed in antigravity-acp model context.",
+          "shell": "No visual brand-fit score: original PNGs and KyNotes reference PNGs cannot be visually displayed in antigravity-acp model context.",
+          "suite_cohesion": "No visual brand-fit score: original PNGs and KyNotes reference PNGs cannot be visually displayed in antigravity-acp model context.",
+          "type_geometry": "No visual brand-fit score: original PNGs and KyNotes reference PNGs cannot be visually displayed in antigravity-acp model context."
+        },
+        "scores": {
+          "accent_discipline": null,
+          "palette_tokens": null,
+          "shell": null,
+          "suite_cohesion": null,
+          "type_geometry": null
+        }
+      },
+      "observations": {
+        "coherence": "No visual score: original PNG could not be visually displayed at 1:1 resolution in model context; ratings not inferred from source or metadata.",
+        "color": "No visual score: original PNG could not be visually displayed at 1:1 resolution in model context; ratings not inferred from source or metadata.",
+        "density_layout": "No visual score: original PNG could not be visually displayed at 1:1 resolution in model context; ratings not inferred from source or metadata.",
+        "hierarchy": "No visual score: antigravity-acp tools cannot display original PNG bytes as visual images (view_file/client_view_file return UTF-8 replacement text; MCP image responses are offloaded to disk).",
+        "typography": "No visual score: original PNG could not be visually displayed at 1:1 resolution in model context; ratings not inferred from source or metadata.",
+        "visible_affordances": "No visual score: original PNG could not be visually displayed at 1:1 resolution in model context; ratings not inferred from source or metadata."
+      },
+      "scores": {
+        "coherence": null,
+        "color": null,
+        "density_layout": null,
+        "hierarchy": null,
+        "typography": null,
+        "visible_affordances": null
+      },
+      "sha256": "5ddf70750c0abd4a02a0612e631499c5e692663d2ea1e0c28db34256aee886f8",
+      "state": "empty/unpaired",
+      "surface": "logs",
+      "theme": "OS light (prefers-color-scheme), no saved choice",
+      "total": null,
+      "width": 390
+    },
+    {
+      "bytes": 83542,
+      "caveat": "Unscored: antigravity-acp file/MCP tools cannot render PNG images into model visual context; binary bytes verified against inventory-v14.json (SHA-256, byte length, PNG IHDR width/height).",
+      "cohort": "settings",
+      "confidence": "none",
+      "duplicate_of": null,
+      "file": "screenshots/kypulse-14-after-settings-desktop-dark.png",
+      "height": 900,
+      "ky_fit": {
+        "observations": {
+          "accent_discipline": "No visual brand-fit score: original PNGs and KyNotes reference PNGs cannot be visually displayed in antigravity-acp model context.",
+          "palette_tokens": "No visual brand-fit score: original PNGs and KyNotes reference PNGs cannot be visually displayed in antigravity-acp model context.",
+          "shell": "No visual brand-fit score: original PNGs and KyNotes reference PNGs cannot be visually displayed in antigravity-acp model context.",
+          "suite_cohesion": "No visual brand-fit score: original PNGs and KyNotes reference PNGs cannot be visually displayed in antigravity-acp model context.",
+          "type_geometry": "No visual brand-fit score: original PNGs and KyNotes reference PNGs cannot be visually displayed in antigravity-acp model context."
+        },
+        "scores": {
+          "accent_discipline": null,
+          "palette_tokens": null,
+          "shell": null,
+          "suite_cohesion": null,
+          "type_geometry": null
+        }
+      },
+      "observations": {
+        "coherence": "No visual score: original PNG could not be visually displayed at 1:1 resolution in model context; ratings not inferred from source or metadata.",
+        "color": "No visual score: original PNG could not be visually displayed at 1:1 resolution in model context; ratings not inferred from source or metadata.",
+        "density_layout": "No visual score: original PNG could not be visually displayed at 1:1 resolution in model context; ratings not inferred from source or metadata.",
+        "hierarchy": "No visual score: antigravity-acp tools cannot display original PNG bytes as visual images (view_file/client_view_file return UTF-8 replacement text; MCP image responses are offloaded to disk).",
+        "typography": "No visual score: original PNG could not be visually displayed at 1:1 resolution in model context; ratings not inferred from source or metadata.",
+        "visible_affordances": "No visual score: original PNG could not be visually displayed at 1:1 resolution in model context; ratings not inferred from source or metadata."
+      },
+      "scores": {
+        "coherence": null,
+        "color": null,
+        "density_layout": null,
+        "hierarchy": null,
+        "typography": null,
+        "visible_affordances": null
+      },
+      "sha256": "23489261e2fffdb51b12672e407e68e2ae3e0de7722d979984fd8e33c70e98c0",
+      "state": "synthetic sparse/default",
+      "surface": "settings",
+      "theme": "OS dark (prefers-color-scheme), no saved choice",
+      "total": null,
+      "width": 1280
+    },
+    {
+      "bytes": 83550,
+      "caveat": "Unscored: antigravity-acp file/MCP tools cannot render PNG images into model visual context; binary bytes verified against inventory-v14.json (SHA-256, byte length, PNG IHDR width/height).",
+      "cohort": "settings",
+      "confidence": "none",
+      "duplicate_of": null,
+      "file": "screenshots/kypulse-14-after-settings-desktop-light.png",
+      "height": 900,
+      "ky_fit": {
+        "observations": {
+          "accent_discipline": "No visual brand-fit score: original PNGs and KyNotes reference PNGs cannot be visually displayed in antigravity-acp model context.",
+          "palette_tokens": "No visual brand-fit score: original PNGs and KyNotes reference PNGs cannot be visually displayed in antigravity-acp model context.",
+          "shell": "No visual brand-fit score: original PNGs and KyNotes reference PNGs cannot be visually displayed in antigravity-acp model context.",
+          "suite_cohesion": "No visual brand-fit score: original PNGs and KyNotes reference PNGs cannot be visually displayed in antigravity-acp model context.",
+          "type_geometry": "No visual brand-fit score: original PNGs and KyNotes reference PNGs cannot be visually displayed in antigravity-acp model context."
+        },
+        "scores": {
+          "accent_discipline": null,
+          "palette_tokens": null,
+          "shell": null,
+          "suite_cohesion": null,
+          "type_geometry": null
+        }
+      },
+      "observations": {
+        "coherence": "No visual score: original PNG could not be visually displayed at 1:1 resolution in model context; ratings not inferred from source or metadata.",
+        "color": "No visual score: original PNG could not be visually displayed at 1:1 resolution in model context; ratings not inferred from source or metadata.",
+        "density_layout": "No visual score: original PNG could not be visually displayed at 1:1 resolution in model context; ratings not inferred from source or metadata.",
+        "hierarchy": "No visual score: antigravity-acp tools cannot display original PNG bytes as visual images (view_file/client_view_file return UTF-8 replacement text; MCP image responses are offloaded to disk).",
+        "typography": "No visual score: original PNG could not be visually displayed at 1:1 resolution in model context; ratings not inferred from source or metadata.",
+        "visible_affordances": "No visual score: original PNG could not be visually displayed at 1:1 resolution in model context; ratings not inferred from source or metadata."
+      },
+      "scores": {
+        "coherence": null,
+        "color": null,
+        "density_layout": null,
+        "hierarchy": null,
+        "typography": null,
+        "visible_affordances": null
+      },
+      "sha256": "88997a9a21c35ab6df890320e872439b2037fb0ced52386bc74b7ac747176b2f",
+      "state": "synthetic sparse/default",
+      "surface": "settings",
+      "theme": "OS light (prefers-color-scheme), no saved choice",
+      "total": null,
+      "width": 1280
+    },
+    {
+      "bytes": 46750,
+      "caveat": "Unscored: antigravity-acp file/MCP tools cannot render PNG images into model visual context; binary bytes verified against inventory-v14.json (SHA-256, byte length, PNG IHDR width/height).",
+      "cohort": "settings",
+      "confidence": "none",
+      "duplicate_of": null,
+      "file": "screenshots/kypulse-14-after-settings-mobile-dark.png",
+      "height": 844,
+      "ky_fit": {
+        "observations": {
+          "accent_discipline": "No visual brand-fit score: original PNGs and KyNotes reference PNGs cannot be visually displayed in antigravity-acp model context.",
+          "palette_tokens": "No visual brand-fit score: original PNGs and KyNotes reference PNGs cannot be visually displayed in antigravity-acp model context.",
+          "shell": "No visual brand-fit score: original PNGs and KyNotes reference PNGs cannot be visually displayed in antigravity-acp model context.",
+          "suite_cohesion": "No visual brand-fit score: original PNGs and KyNotes reference PNGs cannot be visually displayed in antigravity-acp model context.",
+          "type_geometry": "No visual brand-fit score: original PNGs and KyNotes reference PNGs cannot be visually displayed in antigravity-acp model context."
+        },
+        "scores": {
+          "accent_discipline": null,
+          "palette_tokens": null,
+          "shell": null,
+          "suite_cohesion": null,
+          "type_geometry": null
+        }
+      },
+      "observations": {
+        "coherence": "No visual score: original PNG could not be visually displayed at 1:1 resolution in model context; ratings not inferred from source or metadata.",
+        "color": "No visual score: original PNG could not be visually displayed at 1:1 resolution in model context; ratings not inferred from source or metadata.",
+        "density_layout": "No visual score: original PNG could not be visually displayed at 1:1 resolution in model context; ratings not inferred from source or metadata.",
+        "hierarchy": "No visual score: antigravity-acp tools cannot display original PNG bytes as visual images (view_file/client_view_file return UTF-8 replacement text; MCP image responses are offloaded to disk).",
+        "typography": "No visual score: original PNG could not be visually displayed at 1:1 resolution in model context; ratings not inferred from source or metadata.",
+        "visible_affordances": "No visual score: original PNG could not be visually displayed at 1:1 resolution in model context; ratings not inferred from source or metadata."
+      },
+      "scores": {
+        "coherence": null,
+        "color": null,
+        "density_layout": null,
+        "hierarchy": null,
+        "typography": null,
+        "visible_affordances": null
+      },
+      "sha256": "388f3eab40c90d6d59fb99e7b0bcc3e3f420e233c48e0da13d24c3a3d9439d26",
+      "state": "synthetic sparse/default",
+      "surface": "settings",
+      "theme": "OS dark (prefers-color-scheme), no saved choice",
+      "total": null,
+      "width": 390
+    },
+    {
+      "bytes": 46419,
+      "caveat": "Unscored: antigravity-acp file/MCP tools cannot render PNG images into model visual context; binary bytes verified against inventory-v14.json (SHA-256, byte length, PNG IHDR width/height).",
+      "cohort": "settings",
+      "confidence": "none",
+      "duplicate_of": null,
+      "file": "screenshots/kypulse-14-after-settings-mobile-light.png",
+      "height": 844,
+      "ky_fit": {
+        "observations": {
+          "accent_discipline": "No visual brand-fit score: original PNGs and KyNotes reference PNGs cannot be visually displayed in antigravity-acp model context.",
+          "palette_tokens": "No visual brand-fit score: original PNGs and KyNotes reference PNGs cannot be visually displayed in antigravity-acp model context.",
+          "shell": "No visual brand-fit score: original PNGs and KyNotes reference PNGs cannot be visually displayed in antigravity-acp model context.",
+          "suite_cohesion": "No visual brand-fit score: original PNGs and KyNotes reference PNGs cannot be visually displayed in antigravity-acp model context.",
+          "type_geometry": "No visual brand-fit score: original PNGs and KyNotes reference PNGs cannot be visually displayed in antigravity-acp model context."
+        },
+        "scores": {
+          "accent_discipline": null,
+          "palette_tokens": null,
+          "shell": null,
+          "suite_cohesion": null,
+          "type_geometry": null
+        }
+      },
+      "observations": {
+        "coherence": "No visual score: original PNG could not be visually displayed at 1:1 resolution in model context; ratings not inferred from source or metadata.",
+        "color": "No visual score: original PNG could not be visually displayed at 1:1 resolution in model context; ratings not inferred from source or metadata.",
+        "density_layout": "No visual score: original PNG could not be visually displayed at 1:1 resolution in model context; ratings not inferred from source or metadata.",
+        "hierarchy": "No visual score: antigravity-acp tools cannot display original PNG bytes as visual images (view_file/client_view_file return UTF-8 replacement text; MCP image responses are offloaded to disk).",
+        "typography": "No visual score: original PNG could not be visually displayed at 1:1 resolution in model context; ratings not inferred from source or metadata.",
+        "visible_affordances": "No visual score: original PNG could not be visually displayed at 1:1 resolution in model context; ratings not inferred from source or metadata."
+      },
+      "scores": {
+        "coherence": null,
+        "color": null,
+        "density_layout": null,
+        "hierarchy": null,
+        "typography": null,
+        "visible_affordances": null
+      },
+      "sha256": "f3ba5f5cf5e16df6d3ee9604caa62ede04283221274330d9ff9e47988669c353",
+      "state": "synthetic sparse/default",
+      "surface": "settings",
+      "theme": "OS light (prefers-color-scheme), no saved choice",
+      "total": null,
+      "width": 390
+    },
+    {
+      "bytes": 70676,
+      "caveat": "Unscored: antigravity-acp file/MCP tools cannot render PNG images into model visual context; binary bytes verified against inventory-v14.json (SHA-256, byte length, PNG IHDR width/height).",
+      "cohort": "admin-console",
+      "confidence": "none",
+      "duplicate_of": null,
+      "file": "screenshots/kypulse-14-after-status-desktop-dark.png",
+      "height": 900,
+      "ky_fit": {
+        "observations": {
+          "accent_discipline": "No visual brand-fit score: original PNGs and KyNotes reference PNGs cannot be visually displayed in antigravity-acp model context.",
+          "palette_tokens": "No visual brand-fit score: original PNGs and KyNotes reference PNGs cannot be visually displayed in antigravity-acp model context.",
+          "shell": "No visual brand-fit score: original PNGs and KyNotes reference PNGs cannot be visually displayed in antigravity-acp model context.",
+          "suite_cohesion": "No visual brand-fit score: original PNGs and KyNotes reference PNGs cannot be visually displayed in antigravity-acp model context.",
+          "type_geometry": "No visual brand-fit score: original PNGs and KyNotes reference PNGs cannot be visually displayed in antigravity-acp model context."
+        },
+        "scores": {
+          "accent_discipline": null,
+          "palette_tokens": null,
+          "shell": null,
+          "suite_cohesion": null,
+          "type_geometry": null
+        }
+      },
+      "observations": {
+        "coherence": "No visual score: original PNG could not be visually displayed at 1:1 resolution in model context; ratings not inferred from source or metadata.",
+        "color": "No visual score: original PNG could not be visually displayed at 1:1 resolution in model context; ratings not inferred from source or metadata.",
+        "density_layout": "No visual score: original PNG could not be visually displayed at 1:1 resolution in model context; ratings not inferred from source or metadata.",
+        "hierarchy": "No visual score: antigravity-acp tools cannot display original PNG bytes as visual images (view_file/client_view_file return UTF-8 replacement text; MCP image responses are offloaded to disk).",
+        "typography": "No visual score: original PNG could not be visually displayed at 1:1 resolution in model context; ratings not inferred from source or metadata.",
+        "visible_affordances": "No visual score: original PNG could not be visually displayed at 1:1 resolution in model context; ratings not inferred from source or metadata."
+      },
+      "scores": {
+        "coherence": null,
+        "color": null,
+        "density_layout": null,
+        "hierarchy": null,
+        "typography": null,
+        "visible_affordances": null
+      },
+      "sha256": "e5e9dcdd77affbcf5f14d0c8199ab86330e68383dd0460a9c051d912d5200fd7",
+      "state": "synthetic sparse/default",
+      "surface": "status",
+      "theme": "OS dark (prefers-color-scheme), no saved choice",
+      "total": null,
+      "width": 1280
+    },
+    {
+      "bytes": 70620,
+      "caveat": "Unscored: antigravity-acp file/MCP tools cannot render PNG images into model visual context; binary bytes verified against inventory-v14.json (SHA-256, byte length, PNG IHDR width/height).",
+      "cohort": "admin-console",
+      "confidence": "none",
+      "duplicate_of": null,
+      "file": "screenshots/kypulse-14-after-status-desktop-light.png",
+      "height": 900,
+      "ky_fit": {
+        "observations": {
+          "accent_discipline": "No visual brand-fit score: original PNGs and KyNotes reference PNGs cannot be visually displayed in antigravity-acp model context.",
+          "palette_tokens": "No visual brand-fit score: original PNGs and KyNotes reference PNGs cannot be visually displayed in antigravity-acp model context.",
+          "shell": "No visual brand-fit score: original PNGs and KyNotes reference PNGs cannot be visually displayed in antigravity-acp model context.",
+          "suite_cohesion": "No visual brand-fit score: original PNGs and KyNotes reference PNGs cannot be visually displayed in antigravity-acp model context.",
+          "type_geometry": "No visual brand-fit score: original PNGs and KyNotes reference PNGs cannot be visually displayed in antigravity-acp model context."
+        },
+        "scores": {
+          "accent_discipline": null,
+          "palette_tokens": null,
+          "shell": null,
+          "suite_cohesion": null,
+          "type_geometry": null
+        }
+      },
+      "observations": {
+        "coherence": "No visual score: original PNG could not be visually displayed at 1:1 resolution in model context; ratings not inferred from source or metadata.",
+        "color": "No visual score: original PNG could not be visually displayed at 1:1 resolution in model context; ratings not inferred from source or metadata.",
+        "density_layout": "No visual score: original PNG could not be visually displayed at 1:1 resolution in model context; ratings not inferred from source or metadata.",
+        "hierarchy": "No visual score: antigravity-acp tools cannot display original PNG bytes as visual images (view_file/client_view_file return UTF-8 replacement text; MCP image responses are offloaded to disk).",
+        "typography": "No visual score: original PNG could not be visually displayed at 1:1 resolution in model context; ratings not inferred from source or metadata.",
+        "visible_affordances": "No visual score: original PNG could not be visually displayed at 1:1 resolution in model context; ratings not inferred from source or metadata."
+      },
+      "scores": {
+        "coherence": null,
+        "color": null,
+        "density_layout": null,
+        "hierarchy": null,
+        "typography": null,
+        "visible_affordances": null
+      },
+      "sha256": "d882ff3bf65a31ffca5a42380a8bc78c6c6f6d49b3e694266e02552f60db0f8b",
+      "state": "synthetic sparse/default",
+      "surface": "status",
+      "theme": "OS light (prefers-color-scheme), no saved choice",
+      "total": null,
+      "width": 1280
+    },
+    {
+      "bytes": 50845,
+      "caveat": "Unscored: antigravity-acp file/MCP tools cannot render PNG images into model visual context; binary bytes verified against inventory-v14.json (SHA-256, byte length, PNG IHDR width/height).",
+      "cohort": "admin-console",
+      "confidence": "none",
+      "duplicate_of": null,
+      "file": "screenshots/kypulse-14-after-status-mobile-dark.png",
+      "height": 844,
+      "ky_fit": {
+        "observations": {
+          "accent_discipline": "No visual brand-fit score: original PNGs and KyNotes reference PNGs cannot be visually displayed in antigravity-acp model context.",
+          "palette_tokens": "No visual brand-fit score: original PNGs and KyNotes reference PNGs cannot be visually displayed in antigravity-acp model context.",
+          "shell": "No visual brand-fit score: original PNGs and KyNotes reference PNGs cannot be visually displayed in antigravity-acp model context.",
+          "suite_cohesion": "No visual brand-fit score: original PNGs and KyNotes reference PNGs cannot be visually displayed in antigravity-acp model context.",
+          "type_geometry": "No visual brand-fit score: original PNGs and KyNotes reference PNGs cannot be visually displayed in antigravity-acp model context."
+        },
+        "scores": {
+          "accent_discipline": null,
+          "palette_tokens": null,
+          "shell": null,
+          "suite_cohesion": null,
+          "type_geometry": null
+        }
+      },
+      "observations": {
+        "coherence": "No visual score: original PNG could not be visually displayed at 1:1 resolution in model context; ratings not inferred from source or metadata.",
+        "color": "No visual score: original PNG could not be visually displayed at 1:1 resolution in model context; ratings not inferred from source or metadata.",
+        "density_layout": "No visual score: original PNG could not be visually displayed at 1:1 resolution in model context; ratings not inferred from source or metadata.",
+        "hierarchy": "No visual score: antigravity-acp tools cannot display original PNG bytes as visual images (view_file/client_view_file return UTF-8 replacement text; MCP image responses are offloaded to disk).",
+        "typography": "No visual score: original PNG could not be visually displayed at 1:1 resolution in model context; ratings not inferred from source or metadata.",
+        "visible_affordances": "No visual score: original PNG could not be visually displayed at 1:1 resolution in model context; ratings not inferred from source or metadata."
+      },
+      "scores": {
+        "coherence": null,
+        "color": null,
+        "density_layout": null,
+        "hierarchy": null,
+        "typography": null,
+        "visible_affordances": null
+      },
+      "sha256": "34c40691614d52d7a7baf1e29a4d9cf2c0d5cd3f29374ce7c79948007f090f6a",
+      "state": "synthetic sparse/default",
+      "surface": "status",
+      "theme": "OS dark (prefers-color-scheme), no saved choice",
+      "total": null,
+      "width": 390
+    },
+    {
+      "bytes": 50304,
+      "caveat": "Unscored: antigravity-acp file/MCP tools cannot render PNG images into model visual context; binary bytes verified against inventory-v14.json (SHA-256, byte length, PNG IHDR width/height).",
+      "cohort": "admin-console",
+      "confidence": "none",
+      "duplicate_of": null,
+      "file": "screenshots/kypulse-14-after-status-mobile-light.png",
+      "height": 844,
+      "ky_fit": {
+        "observations": {
+          "accent_discipline": "No visual brand-fit score: original PNGs and KyNotes reference PNGs cannot be visually displayed in antigravity-acp model context.",
+          "palette_tokens": "No visual brand-fit score: original PNGs and KyNotes reference PNGs cannot be visually displayed in antigravity-acp model context.",
+          "shell": "No visual brand-fit score: original PNGs and KyNotes reference PNGs cannot be visually displayed in antigravity-acp model context.",
+          "suite_cohesion": "No visual brand-fit score: original PNGs and KyNotes reference PNGs cannot be visually displayed in antigravity-acp model context.",
+          "type_geometry": "No visual brand-fit score: original PNGs and KyNotes reference PNGs cannot be visually displayed in antigravity-acp model context."
+        },
+        "scores": {
+          "accent_discipline": null,
+          "palette_tokens": null,
+          "shell": null,
+          "suite_cohesion": null,
+          "type_geometry": null
+        }
+      },
+      "observations": {
+        "coherence": "No visual score: original PNG could not be visually displayed at 1:1 resolution in model context; ratings not inferred from source or metadata.",
+        "color": "No visual score: original PNG could not be visually displayed at 1:1 resolution in model context; ratings not inferred from source or metadata.",
+        "density_layout": "No visual score: original PNG could not be visually displayed at 1:1 resolution in model context; ratings not inferred from source or metadata.",
+        "hierarchy": "No visual score: antigravity-acp tools cannot display original PNG bytes as visual images (view_file/client_view_file return UTF-8 replacement text; MCP image responses are offloaded to disk).",
+        "typography": "No visual score: original PNG could not be visually displayed at 1:1 resolution in model context; ratings not inferred from source or metadata.",
+        "visible_affordances": "No visual score: original PNG could not be visually displayed at 1:1 resolution in model context; ratings not inferred from source or metadata."
+      },
+      "scores": {
+        "coherence": null,
+        "color": null,
+        "density_layout": null,
+        "hierarchy": null,
+        "typography": null,
+        "visible_affordances": null
+      },
+      "sha256": "d019a7c35a473f6ab158defa8d080834cab443c6bfa6141eb64bfc679884884d",
+      "state": "synthetic sparse/default",
+      "surface": "status",
+      "theme": "OS light (prefers-color-scheme), no saved choice",
+      "total": null,
+      "width": 390
+    }
+  ],
+  "frozen_at": "2026-10-27T10:14:16Z",
+  "reviewer": {
+    "ThinkingLevel": "high",
+    "model": "gemini-4-argon-high",
+    "name": "gemini",
+    "provider": "antigravity",
+    "role": "advisory"
+  },
+  "round": 14,
+  "rubric": {
+    "version": "ky-suite-v2",
+    "weights": {
+      "coherence": 0.15,
+      "color": 0.15,
+      "density_layout": 0.2,
+      "hierarchy": 0.2,
+      "typography": 0.15,
+      "visible_affordances": 0.15
+    }
+  },
+  "schema": "ky-ui-council-scores/2",
+  "stage": "stage14-after",
+  "verdict": {
+    "admin_console_mean": null,
+    "satisfied": null,
+    "settings_mean": null,
+    "status": "no_visual_score",
+    "summary": "No visual score reported. In the antigravity-acp runtime, file-reading tools (view_file, client_view_file) decode PNG files as lossy UTF-8 text (\\ufffdPNG...) and MCP browser tools (html_preview, preview_snapshot) offload image/png attachments to local disk paths instead of delivering multimodal image tokens to the model. Per ky-ui reviews/AGENTS.md and Council instructions, no visual ratings are inferred from source code, metadata, live Computer Use, or primary reviewer reports."
+  },
+  "visual_score_status": "no_visual_score"
+}

@@ -54,10 +54,22 @@ for path in sorted(ROOT.glob('*-round[0-9]*.json')):
     assert len({normalized(f['file']) for f in files}) == len(files)
     expected = next(rows for rows in inventories.values() if {normalized(r['file']) for r in rows} == {normalized(f['file']) for f in files})
     pins = {normalized(row['file']):row for row in expected}
+    no_score = report.get('verdict', {}).get('status') == 'no_visual_score_tool_limitation'
+    if no_score:
+        assert report['verdict']['satisfied'] is None
     groups = {}
     for f in files:
         pin = pins[normalized(f['file'])]
         assert all(f[k] == pin[k] for k in ['sha256','width','height']), f['file']
+        if no_score:
+            assert all(f['scores'][k] is None for k in WEIGHTS) and f['total'] is None
+            assert all(f['ky_fit']['scores'][k] is None for k in brand_keys)
+            assert f['ky_fit']['mean'] is None
+            if not f.get('duplicate_of'):
+                groups.setdefault(f['cohort'], []).append(None)
+            score_rows.append([number,reviewer,normalized(f['file']),f['cohort'],*[None]*7,f.get('confidence'),f.get('caveat')])
+            brand_rows.append([number,reviewer,normalized(f['file']),*[None]*6])
+            continue
         assert all(type(f['scores'][k]) is int and 0 <= f['scores'][k] <= 10 for k in WEIGHTS)
         total = rounded(sum(Decimal(WEIGHTS[k])*f['scores'][k] for k in WEIGHTS))
         assert total == Decimal(str(f['total'])), f['file']
@@ -69,8 +81,11 @@ for path in sorted(ROOT.glob('*-round[0-9]*.json')):
         numeric = [Decimal(str(value)) for value in fit_values if isinstance(value, (int,float))]
         brand_rows.append([number,reviewer,normalized(f['file']),*fit_values,float(rounded(sum(numeric)/len(numeric))) if numeric else None])
         score_rows.append([number,reviewer,normalized(f['file']),f['cohort'],*[f['scores'][k] for k in WEIGHTS],float(total),f.get('confidence'),f.get('caveat')])
-    means = {cohort:sum(values)/len(values) for cohort,values in groups.items()}
+    means = {} if no_score else {cohort:sum(values)/len(values) for cohort,values in groups.items()}
     reports[(reviewer,number)] = dict(report=report,means=means,files={normalized(f['file']):f for f in files})
+    if no_score:
+        for cohort,values in groups.items():
+            round_rows.append([number,reviewer,cohort,len(values),None,None,None,'No score',hashlib.sha256(path.read_bytes()).hexdigest()])
     for cohort,mean in means.items():
         round_rows.append([number,reviewer,cohort,len(groups[cohort]),float(mean),float(rounded(mean)),mean>=8,report.get('verdict',{}).get('satisfied'),hashlib.sha256(path.read_bytes()).hexdigest()])
 for number in sorted({number for _,number in reports}):
@@ -84,6 +99,7 @@ for number in sorted({number for _,number in reports}):
 
 notes = [['Topic','Meaning'],['Gate','Every covered cohort must have exact mean >=8 and both primaries satisfied; no cross-cohort or reviewer averaging.'],['Rounding','Per image: exact fixed-weight sum, half-up to one decimal. Means use those totals; displayed mean is half-up to one decimal.'],['Scope','Synthetic admin, initial viewport. Rounds1–6:20admin-console/12settings. Round7 onward adds expanded Logs/Activity filters:28admin-console/12settings. Logs/Activity empty/unpaired; full product acceptance unverified.'],['Sol round1 caveat','All32 originals viewed first; four Status dimension rows transcribed after history. Even setting every Status picture to10 gives admin mean7.82.'],['Spread audit','Round1 has25 views with at least one dimension spread>=2. Parent re-inspected the full contact sheet and representative original Logs/Settings/Alerts/Backup views. Independent judgments retained; supported defects corrected.'],['Gemini','Deferred until both primaries satisfied. Advisory ratings require original image access; parent audits claims.'],['Interim stage01','Frozen after captures show0.4.2. Round2 uses stage02 after the0.4.3 warning fix. Stage01 is unscored iteration evidence.'],['Historical scores','Earlier Pulse6.9 coverage differs; no controlled per-file drift.'],['MySlop','HTTP401 unknown or revoked token; no shared-board handoff posted.']]
 notes.append(['Focused fix confirmation','Explicitly unblinded: each reviewer pins its immediately preceding report, carries unaffected dimensions forward and reassesses actual patch effects/regressions after viewing every current original. This is not a fresh independent ranking; see the report method and baseline pins.'])
+notes.append(['Gemini round14','No visual score: image attachments were unavailable in its ACP harness. Null scores are preserved, never zero-filled or treated as approval. See round14-gemini-audit.json for rejected metadata claims and scoped native verification.'])
 audit_rows = [['Audit','Evidence']]
 for audit_path in sorted(ROOT.glob('round*-audit.json')):
     audit = json.loads(audit_path.read_text())
@@ -103,8 +119,8 @@ latest_round = max([1,*[n for _,n in reports],*[json.loads(path.read_text()).get
 for number in range(1,latest_round+1):
     for name,label in [('opus','Claude Opus5.5'),('sol','GPTSol'),('gemini','Gemini4Argon')]:
         r=reports.get((name,number))
-        vals=[(f"{r['means'][c]:.4f} (<8)" if r['means'][c] < 8 <= rounded(r['means'][c]) else str(rounded(r['means'][c]))) if r and c in r['means'] else ('Deferred' if name=='gemini' else 'Pending') for c in ['admin-console','settings']]
-        satisfied=str(r['report'].get('verdict',{}).get('satisfied')) if r else '—'
+        vals=[(f"{r['means'][c]:.4f} (<8)" if r['means'][c] < 8 <= rounded(r['means'][c]) else str(rounded(r['means'][c]))) if r and c in r['means'] else ('No score' if r else 'Deferred' if name=='gemini' else 'Pending') for c in ['admin-console','settings']]
+        satisfied=('No score' if r['report'].get('verdict',{}).get('satisfied') is None else str(r['report']['verdict']['satisfied'])) if r else '—'
         markdown.append(f'| {number} | {label} | {vals[0]} | {vals[1]} | {satisfied} |')
 markdown += ['', 'Reports labelled focused fix confirmation are explicitly unblinded: unaffected dimensions come from the same reviewer’s pinned immediately preceding round; actual changes and regressions are reassessed. They are not fresh independent rankings.']
 markdown += ['', 'Baseline exact means: Opus6.28/6.95; Sol7.39/8.00. The Sol Status transcription caveat remains in its raw report. Parent reinspection retained independent scores. No provider-level or cross-cohort mean is used.','','See KyPulse-Council.xlsx for dimensions, hashes, evidence, spreads and checks. Original reviewer reports remain unchanged.']
