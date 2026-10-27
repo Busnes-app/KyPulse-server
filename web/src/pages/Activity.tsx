@@ -24,7 +24,6 @@ function AdminActivity() {
       ? 'No audit events match these filters. Within the retained 7-day window; filters may exclude retained events.'
       : 'No audit events found in the retained 7-day window.';
   return <div className="dr-page"><div className="dr-header"><h1>Activity</h1></div><p className="dr-hint">Audit events retained for up to 7 days, subject to the shared size limit. Imported chains are not verified. Times are UTC.</p>
-    <KyYardCollection />
     <details className="log-filter-panel"><summary>Filters{Object.values(appliedFilters).some(Boolean) && <span className="filter-applied"> Applied</span>}</summary>
     <form className="log-filters" onSubmit={event => { event.preventDefault(); apply(); }}>
       <label>Activity app<input value={filters.app} maxLength={256} onChange={e => setFilters({ ...filters, app: e.target.value })} /></label>
@@ -41,6 +40,7 @@ function AdminActivity() {
       <ul>{page.bursts.map(b => <li key={JSON.stringify([b.app, b.actor, b.ip])}>{b.count} failed sign-ins · {b.app || 'Unspecified app'} · {b.actor ? `actor ${b.actor}` : `IP ${b.ip}`} · {b.from} – {b.to}</li>)}</ul>
     </section>}
     {!page.loading && !page.error && !page.items.length && <p className="dr-hint log-empty">{emptyMessage}</p>}
+    <KyYardCollection />
     <ol className="log-lines">{page.items.map(event => <li key={event.id}>
       <div><time>{event.time}</time> · {event.app || 'Unspecified app'} · {event.actor || 'Unknown actor'} · {event.action}</div>
       <div>Target: {event.target || '—'} · Outcome: {event.outcome || '—'} · IP: {event.ip || '—'}</div>

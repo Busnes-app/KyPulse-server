@@ -588,6 +588,8 @@ textarea { border-radius: var(--ky-control-radius); }
 
 /* Subtasks share section type without competing with the page action. */
 .log-sources { margin-top: 32px; padding-top: 24px; border-top: 1px solid var(--line); }
+.log-sources > h2 { margin-bottom: var(--ky-space-2); }
+.log-sources > .dr-hint { margin-bottom: var(--ky-space-3); }
 .status-tile-name { text-decoration: underline; text-underline-offset: 3px; }
 .app-detail-diagnostics:not(:has(.dr-checks)) { grid-template-columns: minmax(0, 1fr); }
 .app-detail-page .dr-section > h3 { display: flex; margin-bottom: var(--ky-space-3); }
