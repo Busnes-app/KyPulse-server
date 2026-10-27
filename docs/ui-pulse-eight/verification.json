@@ -6,57 +6,68 @@
     "make_ci": {
       "evidence": "checks/make_ci.txt",
       "sha256": "9246c76ca4adb7e05d92f92126ff539f69fe6b18f12b2a08a903e64204df4dbf",
-      "status": "pass"
+      "status": "pass",
+      "raw_sha256": "9246c76ca4adb7e05d92f92126ff539f69fe6b18f12b2a08a903e64204df4dbf"
     },
     "sqlite_fips": {
       "evidence": "checks/sqlite_fips.txt",
       "sha256": "d76ef4f88e16e141d522c5e6f9ec780a7c7558c898b2b932e65c763048d1828c",
-      "status": "pass"
+      "status": "pass",
+      "raw_sha256": "d76ef4f88e16e141d522c5e6f9ec780a7c7558c898b2b932e65c763048d1828c"
     },
     "frontend": {
       "evidence": "checks/frontend.txt",
       "sha256": "7ae1e319264fd5ed05eb7d4e0fc030d089fc0c75f8c3941f68ba9d86eb55c629",
-      "status": "pass"
+      "status": "pass",
+      "raw_sha256": "7ae1e319264fd5ed05eb7d4e0fc030d089fc0c75f8c3941f68ba9d86eb55c629"
     },
     "docker_build": {
       "evidence": "checks/docker_build.txt",
-      "sha256": "cc8ffa8b3716627b8d813a72dbcce19636ec301d3cd8f5fc44e1e001d3c47145",
-      "status": "pass"
+      "sha256": "2cfb4b37d4124fec5f616b548d02a7cc8e248c4d640d36452016875c12d7a15b",
+      "status": "pass",
+      "raw_sha256": "cc8ffa8b3716627b8d813a72dbcce19636ec301d3cd8f5fc44e1e001d3c47145"
     },
     "govulncheck": {
       "evidence": "checks/govulncheck.txt",
       "sha256": "b5ae54ddcfa4cb39e85f84ad2d9e43556bd817c480eaab2a71bab63bfc29353b",
-      "status": "pass"
+      "status": "pass",
+      "raw_sha256": "b5ae54ddcfa4cb39e85f84ad2d9e43556bd817c480eaab2a71bab63bfc29353b"
     },
     "fuzz_shellcheck": {
       "evidence": "checks/fuzz_shellcheck.txt",
       "sha256": "4867ac046a4763943ef58774df1a941bb2c5444fda64b99b1b1e0160d8f62064",
-      "status": "pass"
+      "status": "pass",
+      "raw_sha256": "4867ac046a4763943ef58774df1a941bb2c5444fda64b99b1b1e0160d8f62064"
     },
     "coordinates": {
       "evidence": "checks/coordinates.txt",
-      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
-      "status": "pass"
+      "sha256": "01ba4719c80b6fe911b091a7c05124b64eeece964e09c058ef8f9805daca546b",
+      "status": "pass",
+      "raw_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
     },
     "shared_check": {
       "evidence": "checks/shared_check.txt",
       "sha256": "5c4aec9f3160a35f9c4535a2c8a6f09108b6fe336820b7b9dcfb1b07d830ddb3",
-      "status": "pass"
+      "status": "pass",
+      "raw_sha256": "5c4aec9f3160a35f9c4535a2c8a6f09108b6fe336820b7b9dcfb1b07d830ddb3"
     },
     "shared_browser": {
       "evidence": "checks/shared_browser.txt",
       "sha256": "e9a54a595dff735f4c2a09c11ba7d0b358b7ce5c0c262b66ccec1863d9d6be4e",
-      "status": "pass"
+      "status": "pass",
+      "raw_sha256": "e9a54a595dff735f4c2a09c11ba7d0b358b7ce5c0c262b66ccec1863d9d6be4e"
     },
     "shared_regression_red": {
       "evidence": "checks/shared_regression_red.txt",
-      "sha256": "06ffea6d1ba35f55f9fb4e13a3df584390df5a56940a491c49bcbd5629512ead",
-      "status": "expected regression failure before fix"
+      "sha256": "f121c9e4af90235c7e2474614b1c58778527dc7ba7fde435cca01f768e8ff6cd",
+      "status": "expected regression failure before fix",
+      "raw_sha256": "06ffea6d1ba35f55f9fb4e13a3df584390df5a56940a491c49bcbd5629512ead"
     },
     "impeccable": {
       "evidence": "checks/impeccable.txt",
       "sha256": "6a2d1b9c8d8665e08c7471d8f987e29c784f4edb5a7f28595d84f431fa508429",
-      "status": "reported findings"
+      "status": "reported findings",
+      "raw_sha256": "6a2d1b9c8d8665e08c7471d8f987e29c784f4edb5a7f28595d84f431fa508429"
     },
     "docker_runtime": {
       "evidence": "checks/docker_runtime.json",
@@ -86,5 +97,6 @@
     "Normal makeci Go packages with unchanged inputs reused persistent cache; FIPS and PostgreSQL race commands use count1.",
     "Four fuzz counts and shellcheck passed; source parsers unchanged by UI fixes, result retained.",
     "Viewer boundary workflow is included in browser tests; screenshot ratings cover admin only."
-  ]
+  ],
+  "log_export": "Text logs normalize trailing whitespace and CRLF. Original hashes are retained as raw_sha256; reviewer reports and PNGs remain verbatim."
 }

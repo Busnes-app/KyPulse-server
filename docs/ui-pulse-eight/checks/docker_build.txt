@@ -62,15 +62,15 @@
 #17 DONE 0.7s
 
 #18 [frontend-builder 6/6] RUN npm run build
-#18 0.676 
+#18 0.676
 #18 0.676 > prebuild
 #18 0.676 > node src/ky-ui/check-vendor.mjs
-#18 0.676 
+#18 0.676
 #18 0.714 ky-ui 0.4.3: vendor files verified
-#18 0.722 
+#18 0.722
 #18 0.722 > build
 #18 0.722 > tsc -b && vite build
-#18 0.722 
+#18 0.722
 #18 3.901 vite v6.4.5 building for production...
 #18 3.947 transforming...
 #18 5.063 ✓ 1840 modules transformed.

@@ -95,7 +95,7 @@ markdown += ['', 'Baseline exact means: Opus6.28/6.95; Sol7.39/8.00. The Sol Sta
 (ROOT/'COUNCIL.md').write_text('\n'.join(markdown)+'\n')
 for name,rows in [('rounds',round_rows),('scores',score_rows),('spreads',spread_rows)]:
     with (ROOT/f'{name}.csv').open('w',newline='') as out:
-        csv.writer(out).writerows(rows)
+        csv.writer(out, lineterminator='\n').writerows(rows)
 
 def column(index):
     result = ""
