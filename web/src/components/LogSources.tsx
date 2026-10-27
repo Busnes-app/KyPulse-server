@@ -58,7 +58,7 @@ export function LogSources() {
     } catch (err) { if (!controller.signal.aborted) setError(logError(err)); }
     finally { if (!controller.signal.aborted) setBusy(false); }
   };
-  return <section className="dr-section" aria-label="Log sources"><h2>Log sources</h2>
+  return <section className="dr-section log-sources" aria-label="Log sources"><h2>Log sources</h2>
     <p className="dr-hint">Choose an optional watched app before creating a single-use, 15-minute code. The sender supplies its name when it claims the code.</p>
     <p className="dr-hint" id="sender-origin-help">Use this kyPulse instance’s HTTPS address reachable from the sender, with a trusted TLS certificate. Configure TLS first if needed. The sender refuses loopback and link-local destinations.</p>
     <form className="log-filters source-filters" onSubmit={e => { e.preventDefault(); void generate(); }}>
@@ -67,7 +67,7 @@ export function LogSources() {
       </select></label>
       <label>Sender HTTPS origin<input type="url" required aria-describedby="sender-origin-help" placeholder="https://pulse.example.com" value={origin} disabled={busy || !!pairing} onChange={e => setOrigin(e.target.value)} /></label>
       <label>Log source name<input value={name} disabled={busy || !!pairing} required pattern="[A-Za-z0-9][A-Za-z0-9_.\-]{0,63}" maxLength={64} onChange={e => setName(e.target.value)} /></label>
-      <div className="filter-actions"><button type="submit" disabled={busy || loading || !!pairing}>Add source</button>
+      <div className="filter-actions"><button type="submit" className="btn-secondary" disabled={busy || loading || !!pairing}>Add source</button>
       <button type="button" className="btn-secondary" disabled={busy || loading} onClick={() => setRefresh(r => r + 1)}>Refresh sources</button></div>
     </form>
     {pairing && <div role="status">
@@ -77,7 +77,7 @@ export function LogSources() {
     </div>}
     {error && <p className="form-error" role="alert">{error}</p>}
     {loading && <p>Loading sources…</p>}
-    {!loading && !error && !sources.length && <p>No paired sources.</p>}
+    {!loading && !error && !sources.length && <p className="dr-hint">No paired sources.</p>}
     <ul className="log-lines">{sources.map(source => <li key={source.id}>
       <strong>{source.name}</strong> · {targets.find(t => t.id === source.target_id)?.name || (source.target_id ? source.target_id : 'Unbound')} · paired {source.created_at}
       {source.revoked_at ? <span> · Revoked {source.revoked_at}</span> : <button type="button" className="btn-secondary danger-outline" disabled={busy} onClick={() => void revoke(source)}>Revoke {source.name}</button>}

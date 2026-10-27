@@ -331,6 +331,105 @@ export const Backup: React.FC = () => {
   const copies = status?.local_copies ?? [];
   const newestLocal = copies[0];
 
+  const needsSetup = Boolean(status && (!keyPinned || (!paired && !hasLocal)));
+  const recoverySetup = (
+    <div className="dr-two">
+      <div className="panel dr-section">
+        <div className="panel-header">
+          <h3>
+            <Server size={16} /> KyRecovery
+          </h3>
+          <Badge tone={paired ? 'success' : 'muted'}>{paired ? 'Paired' : 'Not paired'}</Badge>
+        </div>
+        <p className="dr-hint">
+          KyRecovery keeps capsules it cannot open, off this host. In its dashboard, generate a pairing code for this service and enter it
+          here. Pairing hands this server the suite recovery key and a deposit credential;
+          {paired ? ' re-pairing is only accepted with the same key.' : ' the key is pinned once and never replaced.'}
+        </p>
+        <form onSubmit={pair} className="dr-stack">
+          <label className="dr-field">
+            <span>Server URL</span>
+            <input type="url" placeholder="https://recovery.example.com" value={remoteUrl} onChange={(e) => setRemoteUrl(e.target.value)} required />
+          </label>
+          <div className="dr-row">
+            <label className="dr-field">
+              <span>Pairing code</span>
+              <input
+                className="dr-mono"
+                type="text"
+                inputMode="numeric"
+                placeholder="123456"
+                value={pairCode}
+                onChange={(e) => setPairCode(e.target.value)}
+                required
+              />
+            </label>
+            <button type="submit" className={needsSetup ? undefined : 'btn-secondary'} disabled={pairing}>
+              {pairing ? <Loader2 size={14} className="animate-spin" /> : <Link2 size={14} />}
+              <span>{paired ? 'Re-pair' : 'Pair'}</span>
+            </button>
+          </div>
+        </form>
+        {paired && (
+          <button type="button" className="btn-secondary" onClick={unpair} disabled={unpairing}>
+            {unpairing ? <Loader2 size={14} className="animate-spin" /> : <Unlink size={14} />}
+            <span>Unpair</span>
+          </button>
+        )}
+        {pairMessage && <Alert kind="success">{pairMessage}</Alert>}
+        {pairError && <Alert kind="error">{pairError}</Alert>}
+      </div>
+
+      <div className="panel dr-section">
+        <div className="panel-header">
+          <h3>
+            <KeyRound size={16} /> Recovery key by hand
+          </h3>
+          <Badge tone={keyPinned ? 'success' : 'danger'}>{keyPinned ? 'Pinned' : 'None'}</Badge>
+        </div>
+        {keyPinned ? (
+          <p className="dr-hint">
+            The key is pinned{paired ? ' by pairing' : ''}. Rotating it means a new ceremony and a fresh data directory; there is no button
+            for that on purpose.
+          </p>
+        ) : (
+          <>
+            <p className="dr-hint">
+              For a server with no KyRecovery. Run the suite ceremony once, keep the custodian cards, and paste the public key it shows, with
+              the split it used. Capsules then go to the local directory.
+            </p>
+            <form onSubmit={pin} className="dr-stack">
+              <label className="dr-field">
+                <span>Suite recovery public key</span>
+                <textarea className="dr-mono" rows={4} value={pinKey} onChange={(e) => setPinKey(e.target.value)} placeholder="base64 from the ceremony page" required />
+              </label>
+              <div className="dr-row">
+                <label className="dr-field dr-narrow">
+                  <span>Needed</span>
+                  <input type="number" min={2} max={255} value={pinK} onChange={(e) => setPinK(e.target.value)} required />
+                </label>
+                <label className="dr-field dr-narrow">
+                  <span>Of</span>
+                  <input type="number" min={2} max={255} value={pinN} onChange={(e) => setPinN(e.target.value)} required />
+                </label>
+                <button type="submit" className="btn-secondary" disabled={pinning}>
+                  {pinning ? <Loader2 size={14} className="animate-spin" /> : <KeyRound size={14} />}
+                  <span>Pin key</span>
+                </button>
+              </div>
+            </form>
+            {pinError && <Alert kind="error">{pinError}</Alert>}
+          </>
+        )}
+        {hasLocal && (
+          <p className="dr-hint">
+            <HardDrive size={12} /> Local copies land in {status?.local_dir}; the newest {status?.local_keep} are kept.
+          </p>
+        )}
+      </div>
+    </div>
+  );
+
   return (
     <div className="dr-page">
       <div className="dr-header">
@@ -354,6 +453,8 @@ export const Backup: React.FC = () => {
         <Alert kind="warn">A key is pinned but capsules have nowhere to go. Pair with KyRecovery, or set KYPULSE_BACKUP_DIR to keep copies on this host.</Alert>
       )}
       {status && keyPinned && !scheduleOn && <Alert kind="warn">Automatic backups are off. Only the button below makes one.</Alert>}
+
+      {needsSetup && recoverySetup}
 
       <div className="dr-facts">
         <div className="dr-fact">
@@ -379,7 +480,7 @@ export const Backup: React.FC = () => {
         <div className="dr-fact">
           <div className="dr-fact-label">
             <span>Local copies</span>
-            <Badge tone={hasLocal ? 'success' : 'muted'}>{hasLocal ? `${copies.length} of ${status?.local_keep}` : 'Off'}</Badge>
+            <Badge tone="muted">{hasLocal ? `${copies.length} of ${status?.local_keep}` : 'Off'}</Badge>
           </div>
           <div className="dr-fact-value dr-mono">{status?.local_dir ?? 'KYPULSE_BACKUP_DIR not set'}</div>
           <div className="dr-fact-note">{status?.local_error ?? (newestLocal ? `Newest ${when(newestLocal.created_at)}` : hasLocal ? 'Nothing written yet' : '')}</div>
@@ -387,7 +488,7 @@ export const Backup: React.FC = () => {
         <div className="dr-fact">
           <div className="dr-fact-label">
             <span>Schedule</span>
-            <Badge tone={scheduleOn ? 'success' : 'danger'}>{every(status?.interval_sec)}</Badge>
+            <Badge tone={scheduleOn ? 'muted' : 'danger'}>{every(status?.interval_sec)}</Badge>
           </div>
           <div className="dr-fact-value">{scheduleOn && status?.next_run_at ? `Next ${when(status.next_run_at)}` : 'Manual only'}</div>
           <div className="dr-fact-note">Counts from the last attempt, successful or not</div>
@@ -472,7 +573,7 @@ export const Backup: React.FC = () => {
               ))}
             </select>
           </label>
-          <button type="submit" disabled={scheduleSaving || scheduleSec === (status?.interval_sec ?? -1)}>
+          <button type="submit" className="btn-secondary" disabled={scheduleSaving || scheduleSec === (status?.interval_sec ?? -1)}>
             {scheduleSaving ? <Loader2 size={14} className="animate-spin" /> : <Clock size={14} />}
             <span>Save</span>
           </button>
@@ -485,101 +586,7 @@ export const Backup: React.FC = () => {
         {scheduleError && <Alert kind="error">{scheduleError}</Alert>}
       </div>
 
-      <div className="dr-two">
-        <div className="panel dr-section">
-          <div className="panel-header">
-            <h3>
-              <Server size={16} /> KyRecovery
-            </h3>
-            <Badge tone={paired ? 'success' : 'muted'}>{paired ? 'Paired' : 'Not paired'}</Badge>
-          </div>
-          <p className="dr-hint">
-            KyRecovery keeps capsules it cannot open, off this host. In its dashboard, generate a pairing code for this service and enter it
-            here. Pairing hands this server the suite recovery key and a deposit credential;
-            {paired ? ' re-pairing is only accepted with the same key.' : ' the key is pinned once and never replaced.'}
-          </p>
-          <form onSubmit={pair} className="dr-stack">
-            <label className="dr-field">
-              <span>Server URL</span>
-              <input type="url" placeholder="https://recovery.example.com" value={remoteUrl} onChange={(e) => setRemoteUrl(e.target.value)} required />
-            </label>
-            <div className="dr-row">
-              <label className="dr-field">
-                <span>Pairing code</span>
-                <input
-                  className="dr-mono"
-                  type="text"
-                  inputMode="numeric"
-                  placeholder="123456"
-                  value={pairCode}
-                  onChange={(e) => setPairCode(e.target.value)}
-                  required
-                />
-              </label>
-              <button type="submit" disabled={pairing}>
-                {pairing ? <Loader2 size={14} className="animate-spin" /> : <Link2 size={14} />}
-                <span>{paired ? 'Re-pair' : 'Pair'}</span>
-              </button>
-            </div>
-          </form>
-          {paired && (
-            <button type="button" className="btn-secondary" onClick={unpair} disabled={unpairing}>
-              {unpairing ? <Loader2 size={14} className="animate-spin" /> : <Unlink size={14} />}
-              <span>Unpair</span>
-            </button>
-          )}
-          {pairMessage && <Alert kind="success">{pairMessage}</Alert>}
-          {pairError && <Alert kind="error">{pairError}</Alert>}
-        </div>
-
-        <div className="panel dr-section">
-          <div className="panel-header">
-            <h3>
-              <KeyRound size={16} /> Recovery key by hand
-            </h3>
-            <Badge tone={keyPinned ? 'success' : 'danger'}>{keyPinned ? 'Pinned' : 'None'}</Badge>
-          </div>
-          {keyPinned ? (
-            <p className="dr-hint">
-              The key is pinned{paired ? ' by pairing' : ''}. Rotating it means a new ceremony and a fresh data directory; there is no button
-              for that on purpose.
-            </p>
-          ) : (
-            <>
-              <p className="dr-hint">
-                For a server with no KyRecovery. Run the suite ceremony once, keep the custodian cards, and paste the public key it shows, with
-                the split it used. Capsules then go to the local directory.
-              </p>
-              <form onSubmit={pin} className="dr-stack">
-                <label className="dr-field">
-                  <span>Suite recovery public key</span>
-                  <textarea className="dr-mono" rows={4} value={pinKey} onChange={(e) => setPinKey(e.target.value)} placeholder="base64 from the ceremony page" required />
-                </label>
-                <div className="dr-row">
-                  <label className="dr-field dr-narrow">
-                    <span>Needed</span>
-                    <input type="number" min={2} max={255} value={pinK} onChange={(e) => setPinK(e.target.value)} required />
-                  </label>
-                  <label className="dr-field dr-narrow">
-                    <span>Of</span>
-                    <input type="number" min={2} max={255} value={pinN} onChange={(e) => setPinN(e.target.value)} required />
-                  </label>
-                  <button type="submit" disabled={pinning}>
-                    {pinning ? <Loader2 size={14} className="animate-spin" /> : <KeyRound size={14} />}
-                    <span>Pin key</span>
-                  </button>
-                </div>
-              </form>
-              {pinError && <Alert kind="error">{pinError}</Alert>}
-            </>
-          )}
-          {hasLocal && (
-            <p className="dr-hint">
-              <HardDrive size={12} /> Local copies land in {status?.local_dir}; the newest {status?.local_keep} are kept.
-            </p>
-          )}
-        </div>
-      </div>
+      {!needsSetup && recoverySetup}
     </div>
   );
 };

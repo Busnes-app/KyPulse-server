@@ -309,7 +309,7 @@ dialog.modal-window::backdrop {
 .dr-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
 .dr-header h1 { font-size: var(--ky-type-title); font-weight: 600; line-height: 1.25; }
 .dr-section { margin-bottom: 20px; }
-.dr-section h3 { font-size: 16px; display: inline-flex; align-items: center; gap: 8px; }
+.dr-section h2, .dr-section h3 { font-size: var(--ky-type-section); font-weight: 600; display: inline-flex; align-items: center; gap: 8px; }
 .dr-mono { font-family: var(--font-mono); }
 .dr-hint { color: var(--ink); font-size: 13px; margin: 0 0 12px; display: flex; gap: 6px; align-items: center; flex-wrap: wrap; }
 .dr-hint a { display: inline-flex; align-items: center; gap: 4px; color: var(--ink-strong); text-underline-offset: 3px; }
@@ -547,7 +547,7 @@ dialog.modal-window::backdrop {
   .events td { display: block; grid-column: 1 / -1; min-width: 0; padding: 0; border: 0; overflow-wrap: anywhere; }
   .events td[data-label="Change"] { grid-row: 1; font-weight: 600; }
   .events td[data-label="Time"] { grid-row: 2; }
-  .events td:not([data-label="App"]):not([data-label="Change"])::before { content: attr(data-label) ": "; color: var(--ink); }
+  .events td:not([data-label="App"]):not([data-label="Change"])::before { content: attr(data-label) ": "; color: var(--ink); font-family: var(--font-sans); }
   .events-with-app tbody tr { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   .events-with-app td[data-label="App"] { grid-column: 1; grid-row: 1; font-weight: 600; }
   .events-with-app td[data-label="Change"] { grid-column: 2; text-align: right; }
@@ -583,3 +583,10 @@ textarea { border-radius: var(--ky-control-radius); }
   .dr-fact-label { grid-row: auto; }
   .dr-fact-note { grid-column: 1; }
 }
+
+/* Subtasks share section type without competing with the page action. */
+.log-sources { margin-top: 32px; padding-top: 24px; border-top: 1px solid var(--line); }
+.status-tile-name { text-decoration: underline; text-underline-offset: 3px; }
+.app-detail-diagnostics:not(:has(.dr-checks)) { grid-template-columns: minmax(0, 1fr); }
+.app-detail-diagnostics:not(:has(.dr-checks)) > :first-child { display: flex; flex-wrap: wrap; align-items: baseline; gap: 8px 16px; }
+.app-detail-diagnostics:not(:has(.dr-checks)) > :first-child .dr-hint { margin: 0; }

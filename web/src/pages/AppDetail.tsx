@@ -155,7 +155,7 @@ export const AppDetail: React.FC<AppDetailProps> = ({ id, user, onChanged }) => 
         </div>
       )}
 
-      <div className="dr-two">
+      <div className="dr-two app-detail-diagnostics">
         <div className="dr-section">
           <h3>Checks</h3>
           {last?.checks && last.checks.length > 0 ? (
