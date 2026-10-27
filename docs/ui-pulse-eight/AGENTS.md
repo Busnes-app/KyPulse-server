@@ -14,6 +14,7 @@
 
 - Use one left navigation region; preserve routes,roles,CSP,CSRF,themes and native semantics.
 - Read original images at full resolution before numeric priors; record hashes,viewport,theme,state and fixedky-suite-v2 arithmetic.
+- Label any explicitly calibrated reassessment of unchanged originals as unblinded; disclose prior reports and classify score differences as review calibration, never product improvement.
 - Keep comparable cohorts separate. Unseen behavior stays unverified; a screenshot target is not an achieved score.
 - Opus5.5 and GPTSol review first; Gemini4Argon is advisory only after both satisfied,then parent-audited. Show every round’s scores including deferred reviewers.
 - Wait for terminal reviews before regenerating shared score artifacts. Keep original reports unchanged; corrections belong in explicit audits.

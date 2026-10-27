@@ -1,0 +1,15 @@
+{
+  "round": 8,
+  "kind": "calibration-advisory-parent-audit",
+  "raw_reports": {
+    "opus-round8-calibration.md": "7535accc6947ebc8469e9131485ed9e593c34945d48a55f947425ae4ff9900f8",
+    "opus-round8-calibration.json": "988816881cc206340cb2f05ca859bb014cd345f84af5e4cc8ea924b126fd07d0",
+    "sol-round8-calibration.md": "83ae379d3147a88dac9c6d070062d2691c20393ac3cb38cba3a031e073312ea5",
+    "sol-round8-calibration.json": "1a6de5dde1ef0388a42393dad6b6eeacb7dd78f22b3979c0259515dbbca167d2"
+  },
+  "runtime_source": "1fac23363f782c09e5b281ccb05b46d19c08455f",
+  "result": "Both primary advisories recommend no required UI implementation changes. Raw round8 numerical gate remains unmet. No score change or threshold waiver.",
+  "contract_provenance": "Sol uses original392afb88 contract at639e5882. Opus calibration uses producer58626b7 contract c191803e. Parent git-object diff establishes the only difference is adding themes-browser.js to generated palette copies; no rating anchor or disputed composition rule differs. Future reassessment uses original392afb88 contract.",
+  "judgment_limit": "Shared conclusion of no required defect does not itself raise subjective quality scores. Measured ring contrast does not establish that dark and light must receive equal ratings. Preserve raw advice and judge actual visible states.",
+  "next": "One explicitly unblinded calibrated reassessment as round9 on the same40 stage08 images by both primaries. Record every delta as review calibration, never a product gain. No UI edit or new capture. Do not force numerical increases or manufacture defects. If disagreement survives, stop repeated scoring and report the unresolved gate. Gemini remains deferred."
+}

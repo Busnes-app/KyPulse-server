@@ -1,7 +1,7 @@
 {
   "product_source": "1fac23363f782c09e5b281ccb05b46d19c08455f",
   "shared_source": "58626b7",
-  "status": "Round8 local frontend96/build/makeci/full-browser22pass6skips/native pass. Authored security clears4128723, but remote browser whole-job timeout prevents full CI readiness. Primary visual threshold unmet; targeted calibration advice pending.",
+  "status": "Round8 local full checks pass; fresh50576c8 remote CI/security pending. Both calibration advisories recommend no required UI edit. Raw round8 gate unmet; one explicitly unblinded same-evidence round9 reassessment commissioned.",
   "checks": {
     "frontend": {
       "status": "pass",
@@ -62,5 +62,11 @@
     "Warning contrast scoped to Busnes light/dark,not all named themes/states.",
     "Regex detector reports prescribed Space Grotesk and selected-nav accent border;not accessibility acceptance.",
     "No merge/deploy;MySlop401 prevents shared-board posting."
-  ]
+  ],
+  "calibration": {
+    "status": "both-terminal",
+    "evidence": "round8-calibration-audit.json",
+    "runtime_unchanged": true,
+    "next": "round9 calibrated reassessment, no product gain claim"
+  }
 }
