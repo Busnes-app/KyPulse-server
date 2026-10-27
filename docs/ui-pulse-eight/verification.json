@@ -1,7 +1,7 @@
 {
   "product_source": "f1dcb5553e2693ee997488e2a3bd4434b2bb4f1e",
   "shared_source": "58626b7",
-  "status": "Round14 both focused confirmations terminal and satisfied; Opus8/8,Sol296/35and253/30. Current runtime local required checks/full browser pass; remote7569allCIpass,security stale; Gemini advisory eligible.",
+  "status": "Round14 primarycapturedvisualgateachieved:Opus8/8,Sol296/35and253/30. Geminiadvisoryterminal:noimageaccess/noscore;parentauditrejectsfalsemetadata,acceptsscopeddomcorroboration. Runtimechecksfullbrowserpass;freshheadCI/securitypending.",
   "checks": {
     "build": {
       "status": "pass",
@@ -30,10 +30,16 @@
       "result": "All4Backup badges13px/no clipping at1280and390; one nav/zero document overflow/no saved theme. Not full acceptance."
     },
     "remote_previous": {
-      "head": "7569de314217dd4b161b968dd44a1a8230df1828",
-      "status": "ci-pass-security-pending",
-      "evidence": "checks/r14-remote.json",
-      "note": "Fresh head gates required after evidence commit."
+      "head": "b64ad231f3608b184bcdd237522d27b981252844",
+      "status": "ci-and-security-pass-merged-externally",
+      "evidence": "checks/r14-merged-remote.json",
+      "limitation": "Securityinputtruncated;omittedchangesnotreviewed.",
+      "note": "Evidence/reporting-onlyfollowuprequiresfreshheadgates;runtimeunchanged."
+    },
+    "gemini_advisory": {
+      "status": "complete-no-visual-score",
+      "evidence": "round14-gemini-audit.json",
+      "product_changes_selected": false
     }
   },
   "retained_checks": "verification-round7.json/checks/r7-remote.json preserve remote CI success54fc13e (including clean browser completion), local assertions22pass6skips with wrapper143, and stale authored securityc976d40. These predate round8 source.",

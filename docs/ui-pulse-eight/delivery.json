@@ -7,7 +7,7 @@
   {
     "repository": "Busnes-app/KyPulse-server",
     "url": "https://github.com/Busnes-app/KyPulse-server/pull/53",
-    "status": "Open; round14 focused confirmations both satisfied,allcoveredcohorts>=8. Local checks/browser and7569remoteCIpass; new-headsecurity and Gemini advisory/audit pending. No merge/deploy."
+    "status": "Merged externally2026-10-27T10:30:48Z atb64ad23;merge6117eb5.AllCIandcurrent-headsecuritycleared,withtruncated-review-inputlimitation.Thisagentdidnotmerge.FinalGeminiadvisory/auditandnull-scoreexportsareaseparatefollow-up."
   },
   {
     "repository": "Busnes-app/ky-ui",

@@ -45,7 +45,7 @@ Independent visual scores; settings and admin-console stay separate. A displayed
 | 13 | Gemini4Argon | Deferred | Deferred | — |
 | 14 | Claude Opus5.5 | 8.0 | 8.0 | True |
 | 14 | GPTSol | 8.5 | 8.4 | True |
-| 14 | Gemini4Argon | Deferred | Deferred | — |
+| 14 | Gemini4Argon | No score | No score | No score |
 
 Reports labelled focused fix confirmation are explicitly unblinded: unaffected dimensions come from the same reviewer’s pinned immediately preceding round; actual changes and regressions are reassessed. They are not fresh independent rankings.
 

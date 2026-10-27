@@ -17,6 +17,7 @@
 - Label any explicitly calibrated reassessment of unchanged originals as unblinded; disclose prior reports and classify score differences as review calibration, never product improvement.
 - A focused fix confirmation prospectively pins the immediately preceding reviewer report. Disclose it as unblinded, inspect all current originals, carry forward that reviewer's unaffected dimensions and reassess dimensions affected by the actual patch, including any layout regression. Log newly noticed pre-existing concerns separately. Preserve baseline reports, weights, exact means and honest satisfaction; label the result a confirmation rather than a fresh independent rating or competitive rerank.
 - Keep comparable cohorts separate. Unseen behavior stays unverified; a screenshot target is not an achieved score.
+- When original images cannot be displayed to a reviewer, retain null ratings as no score in exports, never zero or approval. Audit supplemental claims separately and preserve the raw report.
 - Opus5.5 and GPTSol review first; Gemini4Argon is advisory only after both satisfied,then parent-audited. Show every round’s scores including deferred reviewers.
 - Wait for terminal reviews before regenerating shared score artifacts. Keep original reports unchanged; corrections belong in explicit audits.
 

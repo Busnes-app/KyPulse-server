@@ -1,0 +1,49 @@
+{
+  "round": 14,
+  "reviewer": "gemini-4-argon-high",
+  "raw_reports": {
+    "gemini-round14.md": "015aea403dd9dc84eb1873fac2d31e70d7afdf375c1ad741ea8b13fc1d2e003b",
+    "gemini-round14.json": "5304b70f63b7deb5436d33fe95f6d9f24a7ec5e7fe0b7eb4deee155e50b899e6"
+  },
+  "visual_score": null,
+  "satisfied": null,
+  "progression_gate": false,
+  "decision": "Preserve no score,accept scoped badge corroboration,reject off-base metadata claims; no additional product fix selected.",
+  "integrity": "All40PNGs,membership,bytes,dimensions,nullscores,inputpins,21runtimepins,andfreezehash independently verified.",
+  "served_html": {
+    "manifest": "86d6f2c990d13dac0a9dda8de1f9219a17bfc0b3de4f49e75c9f1478a4e95447",
+    "committed_dist": "86d6f2c990d13dac0a9dda8de1f9219a17bfc0b3de4f49e75c9f1478a4e95447",
+    "live_http_status": 200,
+    "live_body": "86d6f2c990d13dac0a9dda8de1f9219a17bfc0b3de4f49e75c9f1478a4e95447",
+    "parent_computer_use": "Authenticated fetch on owned tab also returns86d6f2c9...; four Backup badges13px/unclipped,onePrimarynav,overflow0,ky_theme null."
+  },
+  "findings": [
+    {
+      "id": "G14-TOOL-1",
+      "decision": "accept limitation",
+      "reason": "No originals displayed to Gemini in its reported ACP tool flow; retain null numeric scores,not a pass/fail or independent visual review. Freeze hash validates; no further Gemini request."
+    },
+    {
+      "id": "G14-VERIFY-1",
+      "decision": "accept scoped corroboration",
+      "reason": "Parent owned-tab measurements and current CSS independently confirm13px/unclippedBackup badges,one nav/zero overflow. This is a DOM/layout check,not a visual rating or whole-product accessibility verdict."
+    },
+    {
+      "id": "G14-ADV-1",
+      "decision": "retain optional preexisting observation",
+      "reason": "Settings.tsx and TwoFactorCard.tsx confirm accent classes. sqlite lies below captured fold; enabledTOTP is unpictured. Already retained by primaries; no new regression or scope expansion."
+    },
+    {
+      "id": "G14-ADV-2",
+      "decision": "decline optional outer-card-border change",
+      "reason": "Whole labeled native-radio tile already has a high-contrast indicator and selected outline. A decorative outer edge alone does not establish a non-text contrast failure; stronger borders are taste,not required fix. No global AAA/accessibility acceptance inferred from computed samples."
+    },
+    {
+      "id": "G14-ADV-3",
+      "decision": "reject both metadata claims",
+      "reason": "Actual delegation specifies28admin-console/12settings; the quoted24unique(+4duplicates) is absent. Manifest served_index_sha256 is86d6f2c9...,matching committed index and live200body;753be1fd...appears only in Gemini prose. Its own source.manifest_served_index_sha256 field is86d6f2c9...,contradicting its note. There is no index mismatch."
+    }
+  ],
+  "scope": "PrimaryR14explicitly unblinded focused confirmations remain8/8Opus,296/35and253/30Sol. No competitive reranking or whole-product approval.",
+  "dox": "ClosestdocsAGENTS adds null-rating export rule. Root/product/webdocs unchanged because product behavior,ownership,index and contracts are unchanged."
+}

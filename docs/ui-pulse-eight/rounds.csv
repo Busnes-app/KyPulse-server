@@ -1,4 +1,6 @@
 Round,Reviewer,Cohort,Unique images,Exact mean,Displayed mean,At least 8,Reviewer satisfied,Report SHA256
+14,gemini,admin-console,28,,,,No score,5304b70f63b7deb5436d33fe95f6d9f24a7ec5e7fe0b7eb4deee155e50b899e6
+14,gemini,settings,12,,,,No score,5304b70f63b7deb5436d33fe95f6d9f24a7ec5e7fe0b7eb4deee155e50b899e6
 1,opus,admin-console,20,6.28,6.3,False,False,8edc670db768df2781a3ec0840b4690ea748e5fef0103ad34ec1f982fd9e5ff3
 1,opus,settings,12,6.95,7.0,False,False,8edc670db768df2781a3ec0840b4690ea748e5fef0103ad34ec1f982fd9e5ff3
 10,opus,admin-console,28,7.921428571428572,7.9,False,False,00a5b03d116383a73abd7ad64f088a643cf2a4b3122f72476d977716b88b566e

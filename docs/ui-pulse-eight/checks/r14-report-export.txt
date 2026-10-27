@@ -1,0 +1,1 @@
+PASS: exporter syntax,allhistoricalprimaryCSVrowsunchanged,2Gemininullcohorts28/12and40nullfilerows,workbookXMLvalidated;isolatedzero-injectionrejectedwithAssertionError. Runtime/dependencies/config unchanged: existingmakeciandfullbrowser24pass8skipsremainapplicable.
