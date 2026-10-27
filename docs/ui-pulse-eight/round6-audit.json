@@ -1,0 +1,16 @@
+{
+  "round": 6,
+  "raw_reports": {
+    "opus-round6.md": "f3ec9e84c87374048c5a9ddb3eaffb28749605dfec23aaaed76d9c6270f69792",
+    "opus-round6.json": "5dc673e196c8ce4364e92523c530080ee665e7a17b915c170aa38843fd9b312b",
+    "sol-round6.md": "8a2c67454322e834420c8fc34fadc64cc972db5c56accdc23490f4de1e0058db",
+    "sol-round6.json": "d8231218604a08c8f9cbd508c7439c68e4f2cb7fdf0875210a58ddd7ca9dd371"
+  },
+  "spreads_at_least2": {},
+  "arithmetic": "Both32-original memberships/hashes and fixed Decimal arithmetic validate. Opus159.2/20=7.96;95.8/12=7.983333333333333. Sol166.4/20=8.32;100.6/12=8.383333333333333. No averaging or threshold rounding.",
+  "findings": "Both confirm complete current phone navigation and stronger result text. Neither identifies an evidence-backed defect. Opus shortfalls are stated retained-layout judgments, not regressions; Sol passes both.",
+  "drift": "Retain frozen reports. Opus moves Backup coherence8->7 and Appearance density9->8 on retained composition. Both reviewers score the retained phone filter stack density7. These shifts describe reviewer variation, not product regressions.",
+  "bounded_next": "Native prototype shows paired datetime controls truncate at390; reject that option. Use one native Filters disclosure with applied-state indication and preserved fields/results; capture closed and expanded states. Remove four Backup panel wrappers to use one flat page surface. No new fields, claims, APIs, roles or routes.",
+  "coverage_change": "Round7 adds8expanded-filter originals to preserve visibility and scoring of the existing filter forms:40total,28admin-console/12settings. Matched expanded-state drift and new collapsed states must be distinguished.",
+  "next": "Fresh round7 primary review. Gemini remains deferred until both satisfied."
+}

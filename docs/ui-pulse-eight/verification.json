@@ -1,49 +1,47 @@
 {
-  "product_source": "447f25ae539f4fe85d043afe3bb2b84ac876de1e",
+  "product_source": "1657c1b68376567eb071048812042e233b74640f",
   "shared_source": "58626b7",
-  "status": "Round6 frontend96/build/makeci and scoped native checks pass. Full browser suite running; fresh full current-head remote CI/security pending. Historical checks remain separate.",
+  "status": "Round7 frontend96/build/makeci and scoped native/affected browser workflow pass. Full local browser aggregate, primary reviews and fresh current-head remote CI/security pending.",
   "checks": {
     "frontend": {
       "status": "pass",
-      "evidence": "checks/r6-frontend.txt",
-      "sha256": "162ef4c1fa6fe8b64d1c48905f540d565c7710698391d1258bf74c1d386c4aab",
-      "raw_sha256": "162ef4c1fa6fe8b64d1c48905f540d565c7710698391d1258bf74c1d386c4aab"
+      "evidence": "checks/r7-frontend.txt",
+      "sha256": "5015dc12f3be18a4c2b83f3f7890bb8b504133687d606ab1732eeb2f66842a1b",
+      "raw_sha256": "5015dc12f3be18a4c2b83f3f7890bb8b504133687d606ab1732eeb2f66842a1b",
+      "normalization": "ANSI escapes and trailing line whitespace removed."
     },
     "make_ci": {
       "status": "pass",
-      "evidence": "checks/r6-make_ci.txt",
-      "sha256": "729ee44435ccc7f70dcdf092902bf1a5555560908b1f6175fd401ca46a5faeb4",
-      "raw_sha256": "729ee44435ccc7f70dcdf092902bf1a5555560908b1f6175fd401ca46a5faeb4"
+      "evidence": "checks/r7-make_ci.txt",
+      "sha256": "43f9a383cb80ca01cd627e9b5b798c6c71f8b07b307f96ee6da56a9784123b5f",
+      "raw_sha256": "43f9a383cb80ca01cd627e9b5b798c6c71f8b07b307f96ee6da56a9784123b5f",
+      "normalization": "ANSI escapes and trailing line whitespace removed."
     },
     "impeccable": {
       "status": "reported2pinned-style findings",
-      "evidence": "checks/r6-impeccable.txt",
+      "evidence": "checks/r7-impeccable.txt",
       "sha256": "6a2d1b9c8d8665e08c7471d8f987e29c784f4edb5a7f28595d84f431fa508429",
-      "raw_sha256": "6a2d1b9c8d8665e08c7471d8f987e29c784f4edb5a7f28595d84f431fa508429"
-    },
-    "nav_before": {
-      "status": "failed-as-expected",
-      "evidence": "checks/r6-nav_before.txt",
-      "sha256": "764590e7f6b91a5f34d6edbb6307b4e1f9a1dd35185a211cd29dcd7992db828c",
-      "raw_sha256": "c3c6a73799ad2034918aa7d6d9b1c9be1a2266f9a33ad9cd40ab1dd3ca2225d2",
-      "normalization": "ANSI escapes and trailing line whitespace removed; raw SHA256 retained."
+      "raw_sha256": "6a2d1b9c8d8665e08c7471d8f987e29c784f4edb5a7f28595d84f431fa508429",
+      "normalization": "ANSI escapes and trailing line whitespace removed."
     },
     "browser": {
       "status": "running",
-      "evidence": "/tmp/kypulse-r6-browser.log",
-      "scoped_result": "Light-phone delayed-font regression and existing deep-link regression passed after the fix; full suite still running."
+      "evidence": "/tmp/kypulse-r7-browser.log",
+      "scoped_result": "Light390 Logs/Activity workflow passed, including native keyboard disclosure, Applied indication and retained field/results. Full aggregate still running."
     },
     "native": {
       "status": "pass-scoped",
-      "evidence": "native-round6.json",
-      "result": "15px strong-ink results; one navigation; fully visible selected Logs tab after route/deep link; no overflow."
+      "evidence": "native-round7.json",
+      "result": "Closed/expanded disclosure, keyboard focus, draft/applied/Clear hints and retained Actor value;40px summary, zero Backup panel wrappers, one nav/no overflow."
     }
   },
-  "retained_checks": "verification-round5.json and checks/r5-remote.json are historical. Remote full CI passed1c13c82; security remained stale at e959112. Fresh round6 remote FIPS/Postgres/Docker/repeatable/security gates still required before hand-back.",
+  "retained_checks": "verification-round6.json/checks/r6-remote.json are historical full browser/remote CI passes atc976d40; authored security marker was stale at1c13c82. Fresh round7 remote gates remain required.",
+  "coverage": "40 distinct initial-viewport originals,28admin-console/12settings. Includes default closed and expanded Logs/Activity filters; changing coverage is not a quality gain. Prior rounds20admin/12settings remain unchanged.",
   "limitations": [
-    "Synthetic admin;32 initial-viewport originals only. Logs/Activity empty/unpaired;Settings/Backup unconfigured.",
+    "Synthetic admin; Logs/Activity empty/unpaired; Settings/Backup unconfigured. Other roles/populated states/lower content remain unscored.",
+    "Expanded phone Activity result extends below the initial viewport; both disclosure states are scored and normal vertical scrolling remains.",
     "Native Chrome154/DPR2 differs from scored Chromium153/DPR1.",
-    "Impeccable regex detector reports prescribed Space Grotesk and selected-navigation accent border; not accessibility acceptance.",
+    "Regex detector reports prescribed Space Grotesk and selected-nav accent border; not accessibility acceptance.",
     "No merge/deploy; MySlop401 prevents shared-board posting."
   ]
 }

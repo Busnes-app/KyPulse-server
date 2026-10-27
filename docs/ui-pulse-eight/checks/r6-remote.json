@@ -1,0 +1,139 @@
+{
+  "head": "c976d404f85d438e824bbd21b8be0c3cdb2a335b",
+  "checks": [
+    {
+      "__typename": "CheckRun",
+      "completedAt": "2026-10-27T06:30:03Z",
+      "conclusion": "SUCCESS",
+      "detailsUrl": "https://github.com/Busnes-app/KyPulse-server/actions/runs/40460637838/job/122044559842",
+      "name": "Go build, vet & tests (SQLite)",
+      "startedAt": "2026-10-27T06:23:04Z",
+      "status": "COMPLETED",
+      "workflowName": "CI"
+    },
+    {
+      "__typename": "CheckRun",
+      "completedAt": "2026-10-27T06:22:26Z",
+      "conclusion": "SUCCESS",
+      "detailsUrl": "https://github.com/Busnes-app/KyPulse-server/actions/runs/40460633788/job/122044127206",
+      "name": "Analyze (actions)",
+      "startedAt": "2026-10-27T06:21:43Z",
+      "status": "COMPLETED",
+      "workflowName": "CodeQL"
+    },
+    {
+      "__typename": "CheckRun",
+      "completedAt": "2026-10-27T06:23:52Z",
+      "conclusion": "SUCCESS",
+      "detailsUrl": "https://github.com/Busnes-app/KyPulse-server/actions/runs/40460633788/job/122044127089",
+      "name": "Analyze (go)",
+      "startedAt": "2026-10-27T06:21:43Z",
+      "status": "COMPLETED",
+      "workflowName": "CodeQL"
+    },
+    {
+      "__typename": "CheckRun",
+      "completedAt": "2026-10-27T06:22:44Z",
+      "conclusion": "SUCCESS",
+      "detailsUrl": "https://github.com/Busnes-app/KyPulse-server/actions/runs/40460633788/job/122044126857",
+      "name": "Analyze (javascript-typescript)",
+      "startedAt": "2026-10-27T06:21:43Z",
+      "status": "COMPLETED",
+      "workflowName": "CodeQL"
+    },
+    {
+      "__typename": "CheckRun",
+      "completedAt": "2026-10-27T06:27:17Z",
+      "conclusion": "SUCCESS",
+      "detailsUrl": "https://github.com/Busnes-app/KyPulse-server/actions/runs/40460637838/job/122044559763",
+      "name": "Go tests (PostgreSQL)",
+      "startedAt": "2026-10-27T06:23:04Z",
+      "status": "COMPLETED",
+      "workflowName": "CI"
+    },
+    {
+      "__typename": "CheckRun",
+      "completedAt": "2026-10-27T06:23:33Z",
+      "conclusion": "SUCCESS",
+      "detailsUrl": "https://github.com/Busnes-app/KyPulse-server/actions/runs/40460637838/job/122044559865",
+      "name": "Frontend typecheck & build",
+      "startedAt": "2026-10-27T06:23:04Z",
+      "status": "COMPLETED",
+      "workflowName": "CI"
+    },
+    {
+      "__typename": "CheckRun",
+      "completedAt": "2026-10-27T06:32:47Z",
+      "conclusion": "SUCCESS",
+      "detailsUrl": "https://github.com/Busnes-app/KyPulse-server/actions/runs/40460637838/job/122044559774",
+      "name": "Browser regressions (production server)",
+      "startedAt": "2026-10-27T06:23:03Z",
+      "status": "COMPLETED",
+      "workflowName": "CI"
+    },
+    {
+      "__typename": "CheckRun",
+      "completedAt": "2026-10-27T06:23:27Z",
+      "conclusion": "SUCCESS",
+      "detailsUrl": "https://github.com/Busnes-app/KyPulse-server/actions/runs/40460637838/job/122044559791",
+      "name": "Vulnerability scan",
+      "startedAt": "2026-10-27T06:23:04Z",
+      "status": "COMPLETED",
+      "workflowName": "CI"
+    },
+    {
+      "__typename": "CheckRun",
+      "completedAt": "2026-10-27T06:24:03Z",
+      "conclusion": "SUCCESS",
+      "detailsUrl": "https://github.com/Busnes-app/KyPulse-server/actions/runs/40460637838/job/122044559614",
+      "name": "End-to-end smoke test",
+      "startedAt": "2026-10-27T06:23:04Z",
+      "status": "COMPLETED",
+      "workflowName": "CI"
+    },
+    {
+      "__typename": "CheckRun",
+      "completedAt": "2026-10-27T06:24:02Z",
+      "conclusion": "SUCCESS",
+      "detailsUrl": "https://github.com/Busnes-app/KyPulse-server/actions/runs/40460637838/job/122044559691",
+      "name": "Docker image build & run",
+      "startedAt": "2026-10-27T06:23:04Z",
+      "status": "COMPLETED",
+      "workflowName": "CI"
+    },
+    {
+      "__typename": "CheckRun",
+      "completedAt": "2026-10-27T06:32:47Z",
+      "conclusion": "SKIPPED",
+      "detailsUrl": "https://github.com/Busnes-app/KyPulse-server/actions/runs/40460637838/job/122047720259",
+      "name": "publish",
+      "startedAt": "2026-10-27T06:32:47Z",
+      "status": "COMPLETED",
+      "workflowName": "CI"
+    },
+    {
+      "__typename": "CheckRun",
+      "completedAt": "2026-10-27T06:32:47Z",
+      "conclusion": "SKIPPED",
+      "detailsUrl": "https://github.com/Busnes-app/KyPulse-server/actions/runs/40460637838/job/122047721203",
+      "name": "promote",
+      "startedAt": "2026-10-27T06:32:48Z",
+      "status": "COMPLETED",
+      "workflowName": "CI"
+    },
+    {
+      "__typename": "CheckRun",
+      "completedAt": "2026-10-27T06:22:18Z",
+      "conclusion": "SUCCESS",
+      "detailsUrl": "https://github.com/Busnes-app/KyPulse-server/runs/122044314141",
+      "name": "CodeQL",
+      "startedAt": "2026-10-27T06:22:16Z",
+      "status": "COMPLETED",
+      "workflowName": ""
+    }
+  ],
+  "security_marker": [
+    "<!-- pr-reviewer persona=security head=1c13c828feec19d004c507dd3e427b0c4e263b89 seen=1970-01-01T00:00:00Z verdict=cleared files=db83b1cae366fcf7cbed4f5505f1b0c0d8bed38c -->"
+  ],
+  "note": "All remote CI passes atc976d40; authored security clearance at1c13c82 remains stale. These runs predate round7 source."
+}

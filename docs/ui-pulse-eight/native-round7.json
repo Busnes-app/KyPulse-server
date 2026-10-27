@@ -1,0 +1,199 @@
+{
+  "source": "1657c1b68376567eb071048812042e233b74640f",
+  "method": "T3 collaborative preview; owned synthetic fixture18430; native keyboard Enter/Tab/ShiftTab, form controls, navigation only",
+  "filters": [
+    {
+      "step": "initial",
+      "open": false,
+      "summary": "Filters",
+      "result": "No audit events found in the retained 7-day window.",
+      "resultBox": {
+        "x": 16,
+        "y": 445.5,
+        "width": 358,
+        "height": 45,
+        "top": 445.5,
+        "right": 374,
+        "bottom": 490.5,
+        "left": 16
+      },
+      "actor": "",
+      "navCount": 1,
+      "overflow": 0,
+      "focus": "BODY",
+      "outline": "rgb(24, 35, 38) none 3px"
+    },
+    {
+      "step": "keyboard-open",
+      "open": true,
+      "summary": "Filters",
+      "result": "No audit events found in the retained 7-day window.",
+      "resultBox": {
+        "x": 16,
+        "y": 819.5,
+        "width": 358,
+        "height": 45,
+        "top": 819.5,
+        "right": 374,
+        "bottom": 864.5,
+        "left": 16
+      },
+      "actor": "",
+      "navCount": 1,
+      "overflow": 0,
+      "focus": "SUMMARY",
+      "outline": "rgb(191, 63, 24) solid 2px"
+    },
+    {
+      "step": "draft",
+      "open": true,
+      "summary": "Filters",
+      "result": "No audit events found in the retained 7-day window.",
+      "resultBox": {
+        "x": 16,
+        "y": 819.5,
+        "width": 358,
+        "height": 45,
+        "top": 819.5,
+        "right": 374,
+        "bottom": 864.5,
+        "left": 16
+      },
+      "actor": "nobody",
+      "navCount": 1,
+      "overflow": 0,
+      "focus": "INPUT",
+      "outline": "rgb(24, 35, 38) none 3px"
+    },
+    {
+      "step": "applied",
+      "open": true,
+      "summary": "Filters Applied",
+      "result": "No audit events match these filters. Within the retained 7-day window; filters may exclude retained events.",
+      "resultBox": {
+        "x": 16,
+        "y": 820,
+        "width": 358,
+        "height": 67.5,
+        "top": 820,
+        "right": 374,
+        "bottom": 887.5,
+        "left": 16
+      },
+      "actor": "nobody",
+      "navCount": 1,
+      "overflow": 0,
+      "focus": "BUTTON",
+      "outline": "rgb(24, 35, 38) none 3px"
+    },
+    {
+      "step": "closed-applied",
+      "open": false,
+      "summary": "Filters Applied",
+      "result": "No audit events match these filters. Within the retained 7-day window; filters may exclude retained events.",
+      "resultBox": {
+        "x": 16,
+        "y": 446,
+        "width": 358,
+        "height": 67.5,
+        "top": 446,
+        "right": 374,
+        "bottom": 513.5,
+        "left": 16
+      },
+      "actor": "nobody",
+      "navCount": 1,
+      "overflow": 0,
+      "focus": "SUMMARY",
+      "outline": "rgb(24, 35, 38) none 3px"
+    },
+    {
+      "step": "reopened-applied",
+      "open": true,
+      "summary": "Filters Applied",
+      "result": "No audit events match these filters. Within the retained 7-day window; filters may exclude retained events.",
+      "resultBox": {
+        "x": 16,
+        "y": 820,
+        "width": 358,
+        "height": 67.5,
+        "top": 820,
+        "right": 374,
+        "bottom": 887.5,
+        "left": 16
+      },
+      "actor": "nobody",
+      "navCount": 1,
+      "overflow": 0,
+      "focus": "SUMMARY",
+      "outline": "rgb(191, 63, 24) solid 2px"
+    },
+    {
+      "step": "clear",
+      "open": true,
+      "summary": "Filters",
+      "result": "No audit events found in the retained 7-day window.",
+      "resultBox": {
+        "x": 16,
+        "y": 819.5,
+        "width": 358,
+        "height": 45,
+        "top": 819.5,
+        "right": 374,
+        "bottom": 864.5,
+        "left": 16
+      },
+      "actor": "",
+      "navCount": 1,
+      "overflow": 0,
+      "focus": "BUTTON",
+      "outline": "rgb(24, 35, 38) none 3px"
+    }
+  ],
+  "backup": {
+    "ua": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/154.0.0.0 Safari/537.36",
+    "dpr": 2,
+    "navCount": 1,
+    "overflow": 0,
+    "panelCount": 0,
+    "sections": 4,
+    "forms": [
+      {
+        "type": "url",
+        "placeholder": "https://recovery.example.com",
+        "value": ""
+      },
+      {
+        "type": "text",
+        "placeholder": "123456",
+        "value": ""
+      },
+      {
+        "type": "textarea",
+        "placeholder": "base64 from the ceremony page",
+        "value": ""
+      },
+      {
+        "type": "number",
+        "placeholder": "",
+        "value": "2"
+      },
+      {
+        "type": "number",
+        "placeholder": "",
+        "value": "3"
+      },
+      {
+        "type": "select-one",
+        "value": "86400"
+      }
+    ],
+    "savedTheme": null
+  },
+  "browser_caveat": "Chrome154/DPR2 differs from scored Chromium153/DPR1 originals.",
+  "limitations": [
+    "No actual pairing/pinning/backup/silence/edit/delete or configuration actions.",
+    "Expanded phone Activity result extends beyond initial viewport; all controls remain full-width and normal vertical scrolling is available. Both disclosure states are scored.",
+    "No theme choice saved. Full-product behavior/all-theme acceptance unverified."
+  ]
+}
