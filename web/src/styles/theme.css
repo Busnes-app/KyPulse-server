@@ -590,3 +590,5 @@ textarea { border-radius: var(--ky-control-radius); }
 .app-detail-diagnostics:not(:has(.dr-checks)) { grid-template-columns: minmax(0, 1fr); }
 .app-detail-diagnostics:not(:has(.dr-checks)) > :first-child { display: flex; flex-wrap: wrap; align-items: baseline; gap: 8px 16px; }
 .app-detail-diagnostics:not(:has(.dr-checks)) > :first-child .dr-hint { margin: 0; }
+
+.backup-setup { align-items: start; }

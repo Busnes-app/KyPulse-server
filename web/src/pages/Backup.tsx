@@ -4,7 +4,6 @@ import {
   CheckCircle2,
   Clock,
   Download,
-  HardDrive,
   KeyRound,
   Link2,
   Loader2,
@@ -333,7 +332,7 @@ export const Backup: React.FC = () => {
 
   const needsSetup = Boolean(status && (!keyPinned || (!paired && !hasLocal)));
   const recoverySetup = (
-    <div className="dr-two">
+    <div className="dr-two backup-setup">
       <div className="panel dr-section">
         <div className="panel-header">
           <h3>
@@ -423,7 +422,7 @@ export const Backup: React.FC = () => {
         )}
         {hasLocal && (
           <p className="dr-hint">
-            <HardDrive size={12} /> Local copies land in {status?.local_dir}; the newest {status?.local_keep} are kept.
+            Local copies land in {status?.local_dir}; the newest {status?.local_keep} are kept.
           </p>
         )}
       </div>
