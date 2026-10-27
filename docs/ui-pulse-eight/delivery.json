@@ -2,11 +2,16 @@
   {
     "repository": "Busnes-app/KyPulse-server",
     "url": "https://github.com/Busnes-app/KyPulse-server/pull/52",
-    "status": "Open/mergeable; round3 primary reviews and current-head CI/security pending"
+    "status": "Merged externally2026-10-27T05:35:06Z atd3c069f; merge b5b193c. This agent did not merge."
+  },
+  {
+    "repository": "Busnes-app/KyPulse-server",
+    "url": "https://github.com/Busnes-app/KyPulse-server/pull/53",
+    "status": "Open follow-up for round4/5 Backup and task-view refinements; round5 reviews/full current-head CI/security pending"
   },
   {
     "repository": "Busnes-app/ky-ui",
     "url": "https://github.com/Busnes-app/ky-ui/pull/26",
-    "status": "Open/mergeable; a7e93b7 CI passed;58626b7 declaration correction needs current-head gates"
+    "status": "Merged externally2026-10-27T05:34:43Z at58626b7; merge b4870e5. This agent did not merge."
   }
 ]

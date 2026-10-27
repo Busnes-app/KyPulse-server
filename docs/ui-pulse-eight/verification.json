@@ -1,37 +1,37 @@
 {
-  "product_source": "1bf757d0e0135a889bf452d4290f3f6e6c118f41",
+  "product_source": "fb2da30970ced6b6a86545bcd1f23a7a43990c26",
   "shared_source": "58626b7",
-  "status": "Round4 frontend/build/makeci and scoped layout verification pass. Fresh full remote CI and security gates will run at the pushed head. Historical round3 full checks are not claimed as fresh round4 executions.",
+  "status": "Round5 frontend96/build/makeci and scoped native checks pass. Fresh full remote current-head CI and security gates pending. Historical checks remain separate.",
   "checks": {
     "frontend": {
       "status": "pass",
-      "evidence": "checks/r4-frontend.txt",
-      "sha256": "4204cb845d40acf58482af3273696ee559ceb992840d6bcdd351f96d8bc0b4a8",
-      "raw_sha256": "4204cb845d40acf58482af3273696ee559ceb992840d6bcdd351f96d8bc0b4a8"
+      "evidence": "checks/r5-frontend.txt",
+      "sha256": "30c0d5e6a284aacbc7bade2365ecc273eb06f9b20de4a7a688e228e1a26c5461",
+      "raw_sha256": "30c0d5e6a284aacbc7bade2365ecc273eb06f9b20de4a7a688e228e1a26c5461"
     },
     "make_ci": {
       "status": "pass",
-      "evidence": "checks/r4-make_ci.txt",
-      "sha256": "b9a8fd47f5f0693be12955649b9cf5caf0af1fd3c0a6a16223bd3e1a4b5b6d13",
-      "raw_sha256": "b9a8fd47f5f0693be12955649b9cf5caf0af1fd3c0a6a16223bd3e1a4b5b6d13"
+      "evidence": "checks/r5-make_ci.txt",
+      "sha256": "9955b45801d2b8bb7ca15db100e5e57a5df3a7902935028544b2beab98ee4ab8",
+      "raw_sha256": "9955b45801d2b8bb7ca15db100e5e57a5df3a7902935028544b2beab98ee4ab8"
     },
     "impeccable": {
       "status": "reported2pinned-style findings",
-      "evidence": "checks/r4-impeccable.txt",
+      "evidence": "checks/r5-impeccable.txt",
       "sha256": "6a2d1b9c8d8665e08c7471d8f987e29c784f4edb5a7f28595d84f431fa508429",
       "raw_sha256": "6a2d1b9c8d8665e08c7471d8f987e29c784f4edb5a7f28595d84f431fa508429"
     },
-    "backup_geometry": {
-      "status": "pass",
-      "evidence": "geometry-round4.json",
-      "result": "334.5px/416px natural-height cards; no detached icon; no overflow; one primary navigation region"
+    "native": {
+      "status": "pass-scoped",
+      "evidence": "native-round5.json",
+      "result": "One primary nav; overflow0; one copy of Backup badges/path; Time166px; Activity initial/draft/applied/Clear; phone silence controls175/175/358px."
     }
   },
-  "retained_checks": "Parsers/dependencies/backend logic unchanged; historical checks are in verification-round3.json. Full FIPS/Postgres/browser/Docker/repeatable gates must pass freshly in remote CI before hand-back.",
+  "retained_checks": "Round3 full runs in verification-round3.json; round4 local runs in verification-round4.json. Neither is claimed as a fresh round5 execution. Remote CI must freshly cover browser/FIPS/Postgres/Docker/repeatable-build gates before hand-back.",
   "limitations": [
-    "Only Backup markup/decorative icon and scoped card alignment changed. No data/route/handler/role changes.",
-    "Normal source detector reports2prescribed-style findings; regex-only, not accessibility acceptance.",
-    "Native T3 browser click/wait calls timed out twice; repository Playwright fallback verified geometry on the owned fixture.",
-    "No merge/deploy; MySlop401 still blocks board posting."
+    "Synthetic admin;32initial-viewport originals only. Logs/Activity empty/unpaired; Settings/Backup unconfigured.",
+    "Native Chrome154/DPR2 differs from scored Chromium153/DPR1. Actionable locator errors and corrections recorded in native-round5.json.",
+    "No merge/deploy. MySlop401 prevents shared-board posting.",
+    "Regex detector reports prescribed Space Grotesk and selected navigation accent-border styling; not accessibility acceptance."
   ]
 }

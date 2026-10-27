@@ -1,0 +1,15 @@
+{
+  "round": 4,
+  "raw_reports": {
+    "opus-round4.md": "66d2379cb588fa778defbbf0087ecaa76f66bb227c8df1207fa25e50560fe39f",
+    "opus-round4.json": "05ddeebebed027217a1fea4d68eba71e4ba8f3793001a8e3eaa8cfb0e4a91f33",
+    "sol-round4.md": "132cf2af449edd0761336d3918daa36366dbadbe70c72b5782024eeaa5b9b665",
+    "sol-round4.json": "1af27f7f67d6de897d67196f3d8b8b20133e7e8cb432ffbf184b7c91beacf984"
+  },
+  "spreads_at_least2": {},
+  "arithmetic": "Fixed weights and32originals per reviewer verified. Opus7.92/95.6div12=7.966666666666667; Sol8.18/8.15. No averaging; no progression.",
+  "drift": "Opus admin fell8.00->7.92 on unchanged composition/timestamp-only images. This is explicitly reviewer variance, not regression. Its prior accepted taste distinctions became lower dimensions; the parent retains both scores rather than rewriting them.",
+  "supported_actions": "Remove duplicated setup-card badges/path because the fact summary already owns all values. Size desktop Time column to intrinsic timestamp. Make Activity empty wording follow the applied filter snapshot; align phone silence buttons.",
+  "bounded_judgment": "Unequal independent-card heights alone are taste; do not reinstate stretching or redesign recovery. No new feature/API/route/role changes.",
+  "next": "Round5fresh capture/review. Gemini deferred until bothprimaries satisfied."
+}

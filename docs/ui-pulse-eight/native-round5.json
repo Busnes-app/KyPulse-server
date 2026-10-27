@@ -1,0 +1,147 @@
+{
+  "source": "fb2da30970ced6b6a86545bcd1f23a7a43990c26",
+  "method": "T3 collaborative preview owned incognito tab; synthetic fixture 18428",
+  "browser_caveat": "Native Chrome154/DPR2 differs from scored Chromium153/DPR1.",
+  "backup": {
+    "ua": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/154.0.0.0 Safari/537.36",
+    "dpr": 2,
+    "viewport": [
+      1280,
+      900
+    ],
+    "nav": 1,
+    "overflow": 0,
+    "badges": [
+      "None",
+      "Not paired",
+      "0 of 7",
+      "Daily"
+    ],
+    "pathOccurrences": 1,
+    "cards": [
+      {
+        "x": 272,
+        "y": 187.5,
+        "width": 478,
+        "height": 334.5,
+        "top": 187.5,
+        "right": 750,
+        "bottom": 522,
+        "left": 272
+      },
+      {
+        "x": 770,
+        "y": 187.5,
+        "width": 478,
+        "height": 367,
+        "top": 187.5,
+        "right": 1248,
+        "bottom": 554.5,
+        "left": 770
+      }
+    ]
+  },
+  "alerts": {
+    "overflow": 0,
+    "nav": 1,
+    "timeCells": [
+      {
+        "text": "Time",
+        "width": 166
+      },
+      {
+        "text": "10/27/2026, 1:56:23 AM",
+        "width": 166
+      },
+      {
+        "text": "10/27/2026, 1:56:08 AM",
+        "width": 166
+      },
+      {
+        "text": "10/27/2026, 1:55:53 AM",
+        "width": 166
+      }
+    ]
+  },
+  "activity": [
+    {
+      "step": "initial",
+      "message": "No audit events found in the retained 7-day window.",
+      "overflow": 0,
+      "nav": 1
+    },
+    {
+      "step": "draft",
+      "message": "No audit events found in the retained 7-day window.",
+      "overflow": 0,
+      "nav": 1
+    },
+    {
+      "step": "applied",
+      "message": "No audit events match these filters. Within the retained 7-day window; filters may exclude retained events.",
+      "overflow": 0,
+      "nav": 1
+    },
+    {
+      "step": "clear",
+      "message": "No audit events found in the retained 7-day window.",
+      "overflow": 0,
+      "nav": 1
+    }
+  ],
+  "phone": {
+    "overflow": 0,
+    "nav": 1,
+    "buttons": [
+      {
+        "text": "Silence 1h",
+        "box": {
+          "x": 16,
+          "y": 571,
+          "width": 175,
+          "height": 40,
+          "top": 571,
+          "right": 191,
+          "bottom": 611,
+          "left": 16
+        }
+      },
+      {
+        "text": "Silence 8h",
+        "box": {
+          "x": 199,
+          "y": 571,
+          "width": 175,
+          "height": 40,
+          "top": 571,
+          "right": 374,
+          "bottom": 611,
+          "left": 199
+        }
+      },
+      {
+        "text": "Silence until fixed",
+        "box": {
+          "x": 16,
+          "y": 619,
+          "width": 358,
+          "height": 40,
+          "top": 619,
+          "right": 374,
+          "bottom": 659,
+          "left": 16
+        }
+      }
+    ],
+    "savedTheme": null
+  },
+  "errors": [
+    "Preview automation type timed out after 15000ms. (nonexistent autocomplete=username selector; fixed using snapshot ref)",
+    "Preview automation waitFor timed out after 15000ms. (empty username prevented login; fixed before navigation)",
+    "Unknown attribute exact in Playwright role selector. (fixed using snapshot hrefs; no product failure)"
+  ],
+  "limitations": [
+    "No pair, pin, backup, silence, edit or delete actions; filters only.",
+    "No theme choice saved. Full keyboard/contrast/state/role acceptance unverified."
+  ]
+}
