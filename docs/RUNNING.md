@@ -66,6 +66,13 @@ Compose used to publish `8080` on every interface. It now binds `127.0.0.1` unle
 directly on `:8080`, set `KYPULSE_BIND=0.0.0.0` in `.env` to restore the old behaviour, or
 better, put a TLS proxy in front.
 
+### Upgrading to back-channel logout: KySignOn users sign in again
+
+The first start of a release with KySignOn back-channel logout signs out every KySignOn
+session, once. Those sessions were issued without the KySignOn login ID that a logout names,
+so signing out of KyIdentity could never end them. Local password sessions are kept. Users
+just sign in again; later starts sign no one out.
+
 ### Upgrading to a non-root container
 
 Images before this change ran as root, so an existing `./data` and `./backups` are root-owned
