@@ -1,0 +1,44 @@
+{
+  "round": 12,
+  "runtime_source": "68bf09f8d3c417bc578665ec9affb7b0405ce05a",
+  "raw_reports": {
+    "opus-round12.md": "c6100337664961272c6ad6b5c7cd5c11c4c5ec2c3b4c87d02e6590de6227cf7f",
+    "opus-round12.json": "4d5bc20e71ddae5cb23bc56558e317bf965b78decbc048ad5d780e3bf9402923",
+    "sol-round12.md": "84535233adc4611f105b3289fe96d49167cd2db6d94786e6c2b987af0002aa55",
+    "sol-round12.json": "b84e2fecf32dd49e1c3c46f0993acf8fafe29555d753a911ac61433727f3edee"
+  },
+  "cohorts": {
+    "opus": {
+      "admin-console": {
+        "n": 28,
+        "sum": "223.6",
+        "exact_mean": "559/70"
+      },
+      "settings": {
+        "n": 12,
+        "sum": "96.8",
+        "exact_mean": "121/15"
+      }
+    },
+    "sol": {
+      "admin-console": {
+        "n": 28,
+        "sum": "239.6",
+        "exact_mean": "599/70"
+      },
+      "settings": {
+        "n": 12,
+        "sum": "102.8",
+        "exact_mean": "257/30"
+      }
+    }
+  },
+  "next": "One supporting-prose max-width72ch rule, consistent with Impeccable65\u201375ch readability guidance and existing Status65ch measure. No copy/handler changes, fresh source/captures required. Gemini deferred.",
+  "spreads_at_least2": [],
+  "criterion_shift": "Both confirm R1/R2 resolved. Opus newly lowers desktop prose typography on retained full-width text; criterion shift, not regression.72ch is independently supported by the design skill, so parent selects a small real readability improvement without changing scores or predicting a pass.",
+  "remote": {
+    "head": "63df86c56e963fb9c74dbad581036000b5ad31d8",
+    "ci": "all11checks pass plus2expected publish/promote skips, including full browser",
+    "security": "pending;last authored clearance b8f8c05"
+  }
+}
