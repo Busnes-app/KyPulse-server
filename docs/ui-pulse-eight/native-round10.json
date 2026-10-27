@@ -1,0 +1,88 @@
+{
+  "round": 10,
+  "runtime_source": "61e4a0c",
+  "method": "Owned T3 Computer Use tab, Chrome154/DPR2 supplements scored Chromium153/DPR1 originals; synthetic admin fixture18432; no recovery/configuration/theme writes.",
+  "mobile": {
+    "viewport": [
+      390,
+      844
+    ],
+    "notice": {
+      "top": 274,
+      "bottom": 335
+    },
+    "first": {
+      "top": 367,
+      "bottom": 655
+    },
+    "second": {
+      "top": 687,
+      "bottom": 1007.5
+    },
+    "pair": {
+      "top": 615,
+      "bottom": 655
+    },
+    "warning_gap": 32,
+    "setup_gap": 32,
+    "description_before_actions": true,
+    "nav_count": 1,
+    "overflow": 0,
+    "theme": null
+  },
+  "desktop": {
+    "viewport": [
+      1280,
+      900
+    ],
+    "actions": {
+      "top": 858.5,
+      "bottom": 898.5,
+      "left": 272,
+      "right": 1248
+    },
+    "description": {
+      "top": 807.5,
+      "bottom": 846.5,
+      "left": 272,
+      "right": 1248
+    },
+    "description_before_actions": true,
+    "buttons": [
+      {
+        "label": "Back up now",
+        "disabled": true,
+        "box": {
+          "top": 858.5,
+          "bottom": 898.5,
+          "left": 272,
+          "right": 414.5
+        }
+      },
+      {
+        "label": "Download capsule",
+        "disabled": true,
+        "box": {
+          "top": 858.5,
+          "bottom": 898.5,
+          "left": 422.5,
+          "right": 601.5
+        }
+      },
+      {
+        "label": "Run restore drill",
+        "disabled": false,
+        "box": {
+          "top": 858.5,
+          "bottom": 898.5,
+          "left": 609.5,
+          "right": 771.5
+        }
+      }
+    ],
+    "nav_count": 1,
+    "overflow": 0,
+    "theme": null
+  },
+  "scope": "Busnes OS-light only. Other themes use scored originals. One navigation/no overflow observed; this does not certify full behavior/contrast gates."
+}

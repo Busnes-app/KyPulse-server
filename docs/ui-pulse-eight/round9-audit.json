@@ -1,0 +1,40 @@
+{
+  "round": 9,
+  "kind": "unblinded-same-evidence-calibration",
+  "raw_reports": {
+    "opus-round9.md": "b435d9f74643c5e072c103c823a507c53de66eda0133a676388b9d66e422ba58",
+    "opus-round9.json": "7ed23072a9b131147ef0202bff18cb3973282c2063d41998154b2d4d4c47ef53",
+    "sol-round9.md": "778f86ca75a8fc25bf60ecb6de15266b5309b27b7869840892e1c5f546436604",
+    "sol-round9.json": "688bcb84d8e051f00966f388e89614607ccfa0e704e404744b74df6af0de5a0b"
+  },
+  "runtime_source": "1fac23363f782c09e5b281ccb05b46d19c08455f",
+  "cohorts": {
+    "opus": {
+      "admin-console": {
+        "n": 28,
+        "sum": "224.4",
+        "exact_mean": "561/70"
+      },
+      "settings": {
+        "n": 12,
+        "sum": "95.6",
+        "exact_mean": "239/30"
+      }
+    },
+    "sol": {
+      "admin-console": {
+        "n": 28,
+        "sum": "240.0",
+        "exact_mean": "60/7"
+      },
+      "settings": {
+        "n": 12,
+        "sum": "101.8",
+        "exact_mean": "509/60"
+      }
+    }
+  },
+  "product_gain_claim": false,
+  "next": "No further unchanged-image scoring. Select bounded actual Backup polish P1/P2: equal phone warning/setup gaps and description before operational actions. Preserve natural column heights/copy/semantics. New source/captures/review required. Gemini deferred.",
+  "spreads_at_least2": []
+}

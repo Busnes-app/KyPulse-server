@@ -1,0 +1,7 @@
+# Round9 parent audit
+
+Both primary tasks are terminal. Every raw report is pinned in round9-audit.json. Opus admin224.4/28=561/70 passes; settings95.6/12=239/30 remains below8. Sol admin240/28=60/7 and settings101.8/12=509/60 pass. No averaging, rounding into8 or Gemini call. Both reports reassess the same stage08 originals unblinded; all changes are review calibration, not product improvement. No dimension spread reaches2. Round8 and calibration advisories stay frozen.
+
+No further scoring of these unchanged images is selected. The parent reviewed the Backup originals and native phone geometry: the notice ends335px, first setup begins347px, Pair ends635px, and the second setup begins679px. Nested form/row bottom margins compound the grid gap. Select bounded product polish P1/P2: use a consistent32px notice/setup gap on phones, remove compounded terminal form/row margins in that scope, and place operational guidance before its buttons. Keep natural desktop form heights and all wording, routes, keys and actions. These optional visual improvements are authorized by the original polish task; they are not fabricated behavior blockers or a predicted numerical pass. All other optional changes remain unselected.
+
+Current50576c8 remote CI passes including the complete browser suite after the job-budget correction. Current-head security remains pending;4128723 is historical. New source and captures require new checks and review.
