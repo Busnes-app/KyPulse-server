@@ -592,6 +592,7 @@ textarea { border-radius: var(--ky-control-radius); }
 .app-detail-diagnostics:not(:has(.dr-checks)) > :first-child .dr-hint { margin: 0; }
 
 .backup-setup { align-items: start; }
+.log-empty { font-size: var(--ky-type-body); color: var(--ink-strong); }
 
 @media (min-width: 481px) {
   .events th:first-child, .events td:first-child { width: 1%; white-space: nowrap; }

@@ -22,6 +22,7 @@
 
 - Use Computer Use on an owned fixture/tab with synthetic data only. No deployment or merge is authorized.
 - Capture1280x900/390x844,light/dark with normal service-worker behavior. Logs/Activity baseline are empty/unpaired; do not imply populated-state coverage.
+- Capture only after fonts settle and the current primary navigation item is fully visible; the driver waits for geometry, without scrolling or altering the page to repair a capture.
 
 ## Verification
 

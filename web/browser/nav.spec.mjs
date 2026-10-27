@@ -1,5 +1,40 @@
 import { test, expect } from '@playwright/test';
 
+test('phone navigation keeps the current row visible after the font loads', async ({ page, browser }, testInfo) => {
+  test.skip(testInfo.project.use.viewport.width > 390, 'phone layout only');
+  await page.goto('/');
+  await page.getByPlaceholder('admin', { exact: true }).fill('admin');
+  await page.locator('input[type=password]').fill('BrowserUpdated456!');
+  await page.getByRole('button', { name: 'Sign In', exact: true }).click();
+  await expect(page.getByRole('navigation', { name: 'Primary' })).toBeVisible();
+  const context = await browser.newContext({
+    storageState: await page.context().storageState(),
+    viewport: testInfo.project.use.viewport,
+    colorScheme: testInfo.project.use.colorScheme,
+  });
+  let releaseFont;
+  const fontGate = new Promise(resolve => { releaseFont = resolve; });
+  try {
+    const coldPage = await context.newPage();
+    await coldPage.route('**/fonts/Space_Grotesk/*.ttf', async route => { await fontGate; await route.continue(); });
+    await coldPage.goto('http://127.0.0.1:5391/#/logs', { waitUntil: 'domcontentloaded' });
+    const nav = coldPage.getByRole('navigation', { name: 'Primary' });
+    await expect(nav.locator('[aria-current="page"]')).toHaveText('Logs');
+    await expect.poll(() => coldPage.evaluate(() => document.fonts.status)).toBe('loading');
+    releaseFont();
+    await coldPage.evaluate(() => document.fonts.ready);
+    await expect.poll(() => nav.evaluate(el => {
+      const box = el.getBoundingClientRect();
+      const item = el.querySelector('[aria-current="page"]').getBoundingClientRect();
+      return item.left >= box.left - 1 && item.right <= box.right + 1;
+    })).toBe(true);
+    expect(await coldPage.evaluate(() => scrollY)).toBe(0);
+  } finally {
+    releaseFont();
+    await context.close();
+  }
+});
+
 // Phones scroll the Primary navigation sideways. Loading a deep link (here a reload of
 // #/appearance) must bring the current row into view, without moving the page or focus.
 test('phone navigation reveals the current row on a deep link', async ({ page }, testInfo) => {

@@ -30,7 +30,7 @@ function AdminLogs() {
     </form>
     {rangeError && <p role="alert">{rangeError}</p>}
     <PageControls page={page} />
-    {!page.loading && !page.error && !page.items.length && <p className="dr-hint">No logs found.</p>}
+    {!page.loading && !page.error && !page.items.length && <p className="dr-hint log-empty">No logs found.</p>}
     <LogLines items={page.items} />
     <LogSources />
   </div>;

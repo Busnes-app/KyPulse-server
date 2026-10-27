@@ -135,6 +135,13 @@ try {
         await page.evaluate(() => document.fonts.ready);
         fonts ||= await page.evaluate(() => `Space Grotesk loaded: ${document.fonts.check('15px "Space Grotesk"')}`);
         await page.waitForTimeout(300);
+        await page.waitForFunction(() => {
+          const nav = document.querySelector('nav[aria-label="Primary"]');
+          const current = nav?.querySelector('[aria-current="page"]');
+          if (!nav || !current) return false;
+          const box = nav.getBoundingClientRect(), item = current.getBoundingClientRect();
+          return item.left >= box.left - 1 && item.right <= box.right + 1;
+        });
         const file = `kypulse-${stage}-${phase}-${surface}-${device}-${theme}.png`;
         const bytes = await page.screenshot({ path: join(out, file), fullPage: false });
         const geometry = await page.evaluate(() => ({ viewport: { width: innerWidth, height: innerHeight }, overflow: document.documentElement.scrollWidth - document.documentElement.clientWidth }));

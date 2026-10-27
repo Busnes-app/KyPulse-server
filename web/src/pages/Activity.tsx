@@ -39,7 +39,7 @@ function AdminActivity() {
       <p>Screen-only triage hint: 5 or more known failed sign-ins for the same app and actor or IP within 5 minutes. This is not a security verdict and sends no webhook.</p>
       <ul>{page.bursts.map(b => <li key={JSON.stringify([b.app, b.actor, b.ip])}>{b.count} failed sign-ins · {b.app || 'Unspecified app'} · {b.actor ? `actor ${b.actor}` : `IP ${b.ip}`} · {b.from} – {b.to}</li>)}</ul>
     </section>}
-    {!page.loading && !page.error && !page.items.length && <p className="dr-hint">{emptyMessage}</p>}
+    {!page.loading && !page.error && !page.items.length && <p className="dr-hint log-empty">{emptyMessage}</p>}
     <ol className="log-lines">{page.items.map(event => <li key={event.id}>
       <div><time>{event.time}</time> · {event.app || 'Unspecified app'} · {event.actor || 'Unknown actor'} · {event.action}</div>
       <div>Target: {event.target || '—'} · Outcome: {event.outcome || '—'} · IP: {event.ip || '—'}</div>
