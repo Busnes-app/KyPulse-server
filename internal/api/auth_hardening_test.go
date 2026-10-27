@@ -206,11 +206,12 @@ func TestIngestLimitsClientsBeforeAuthentication(t *testing.T) {
 }
 
 // fakeIdP is a minimal OpenID provider: discovery, JWKS and a token endpoint that either
-// fails with a body or returns an RS256 ID token for sub.
+// fails with a body or returns an RS256 ID token for sub (and sid when set).
 type fakeIdP struct {
 	*httptest.Server
 	key  *rsa.PrivateKey
 	sub  string
+	sid  string
 	fail string
 }
 
@@ -239,7 +240,7 @@ func newFakeIdP(t *testing.T) *fakeIdP {
 				return
 			}
 			header, _ := json.Marshal(map[string]string{"alg": "RS256", "kid": "k1", "typ": "JWT"})
-			claims, _ := json.Marshal(map[string]any{"iss": issuer, "aud": "pulse", "sub": idp.sub, "nonce": "n1",
+			claims, _ := json.Marshal(map[string]any{"iss": issuer, "aud": "pulse", "sub": idp.sub, "sid": idp.sid, "nonce": "n1",
 				"preferred_username": idp.sub, "iat": time.Now().Unix(), "exp": time.Now().Add(time.Minute).Unix()})
 			input := b64(header) + "." + b64(claims)
 			digest := sha256.Sum256([]byte(input))

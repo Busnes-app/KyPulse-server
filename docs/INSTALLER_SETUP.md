@@ -19,6 +19,9 @@ monitoring target or source is an error. It is not a dry run; run it after apply
 
 The SSO section names HTTPS `issuerUrl`, `clientId`, `clientSecretFile`, the exact
 `redirectUri` (`KYPULSE_APP_URL/api/sso/kysignon/callback`) and `directorySecretFile`.
+Register `KYPULSE_APP_URL/api/sso/kysignon/backchannel-logout` as the client's back-channel
+logout URI in KyIdentity, so signing out there, or an administrator ending the login, ends the
+session here too; without it the session lasts until it expires.
 Every credential is an absolute private runtime-owned regular file on the target.
 Generic OIDC/SAML or differing existing KyIdentity settings are refused. A new
 installer configuration disables the default auto-provisioning; explicit existing

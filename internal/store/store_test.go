@@ -267,3 +267,45 @@ func TestConcurrentOpenMigratesOnce(t *testing.T) {
 		}
 	}
 }
+
+func TestEndSSOSessionFencesTheSID(t *testing.T) {
+	ctx := context.Background()
+	st := newTestStore(t)
+	user := &store.User{ID: uuid.NewString(), Username: "carol", Role: store.RoleViewer, Status: "active"}
+	if err := st.Users().CreateUser(ctx, user); err != nil {
+		t.Fatal(err)
+	}
+	create := func(hash, sid string) error {
+		now := time.Now().UTC()
+		return st.Sessions().CreateSession(ctx, &store.Session{TokenHash: hash, UserID: user.ID, CreatedAt: now, ExpiresAt: now.Add(time.Hour), SSOSID: sid}, user.Credentials())
+	}
+	if err := create("ended", "sid-1"); err != nil {
+		t.Fatal(err)
+	}
+	if err := create("kept", "sid-2"); err != nil {
+		t.Fatal(err)
+	}
+	if err := st.Sessions().EndSSOSession(ctx, "sid-1", time.Now().Add(time.Minute)); err != nil {
+		t.Fatal(err)
+	}
+	if _, err := st.Sessions().GetSession(ctx, "ended"); !errors.Is(err, store.ErrNotFound) {
+		t.Fatalf("ended session: %v", err)
+	}
+	if _, err := st.Sessions().GetSession(ctx, "kept"); err != nil {
+		t.Fatalf("other sid's session: %v", err)
+	}
+	// A login for a fenced sid fails and leaves no session row behind.
+	if err := create("late", "sid-1"); !errors.Is(err, store.ErrSSOSessionEnded) {
+		t.Fatalf("fenced create: %v", err)
+	}
+	if _, err := st.Sessions().GetSession(ctx, "late"); !errors.Is(err, store.ErrNotFound) {
+		t.Fatalf("fenced create left its row: %v", err)
+	}
+	// An expired fence no longer refuses.
+	if err := st.Sessions().EndSSOSession(ctx, "sid-3", time.Now().Add(-time.Second)); err != nil {
+		t.Fatal(err)
+	}
+	if err := create("after", "sid-3"); err != nil {
+		t.Fatalf("expired fence: %v", err)
+	}
+}

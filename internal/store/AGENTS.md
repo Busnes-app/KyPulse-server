@@ -51,6 +51,7 @@ Owns data models, store interfaces (`UserStore`, `SessionStore`, `AuditStore`, `
   Target deletion removes the events and alert scope; subsequent writes refuse rather than
   silently omit alerts. Health tracks are unchanged. `NextOffboardingAlert` reads the oldest
   pending event through a partial index; the monitor owns delivery and terminal reasons.
+- Migration 12 adds `sessions.sso_sid` and `sso_logouts`. `EndSSOSession` commits the `sid` fence before deleting its sessions, and `CreateSession` checks the fence only after its insert commits, so under read committed a logout racing a login always ends it; a fenced create deletes its row and returns `ErrSSOSessionEnded`. Expired fences are pruned on the next `EndSSOSession`. Capsules carry both; a restored fence only refuses a login KySignOn already ended. `TestEndSSOSessionFencesTheSID` pins the fence, the own-row delete and fence expiry.
 
 ## Verification
 - `go test -v ./internal/store/...`
