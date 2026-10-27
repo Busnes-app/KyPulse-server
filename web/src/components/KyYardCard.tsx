@@ -59,7 +59,7 @@ export const KyYardCard: React.FC<{ onChanged: () => void }> = ({ onChanged }) =
   return (
     <div className="panel">
       <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 12 }}>
-        <Database size={20} style={{ color: 'var(--accent)' }} />
+        <Database size={20} style={{ color: 'var(--ink)' }} />
         <h3 style={{ fontSize: 16 }}>KyYard</h3>
       </div>
       {status?.paired ? (
@@ -82,7 +82,7 @@ export const KyYardCard: React.FC<{ onChanged: () => void }> = ({ onChanged }) =
             <label>KyYard URL<input type="url" value={url} onChange={(e) => setUrl(e.target.value)} required placeholder="https://kyyard.lan" /></label>
             <label>Pairing code<input inputMode="numeric" pattern="[0-9]{6}" maxLength={6} value={code} onChange={(e) => setCode(e.target.value)} required autoComplete="one-time-code" /></label>
           </div>
-          <div className="dr-actions"><button type="submit" disabled={busy}><Link2 size={14} />Pair</button></div>
+          <div className="dr-actions"><button type="submit" className="btn-secondary" disabled={busy}><Link2 size={14} />Pair</button></div>
         </form>
       )}
       {message && <p className={message.kind === 'ok' ? 'form-ok' : 'form-error'} role={message.kind === 'ok' ? 'status' : 'alert'}>{message.text}</p>}

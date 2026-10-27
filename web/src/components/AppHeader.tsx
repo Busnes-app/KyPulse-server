@@ -1,5 +1,5 @@
 import React, { useEffect, useRef } from 'react';
-import { LogOut, Settings as SettingsIcon, Activity, Bell, Archive, Palette } from 'lucide-react';
+import { LogOut, Settings as SettingsIcon, Activity, Bell, Archive, Palette, History, HardDrive } from 'lucide-react';
 import { hrefFor } from '../router';
 
 interface AppHeaderProps {
@@ -12,9 +12,9 @@ interface AppHeaderProps {
 export const navItems = [
   { path: '/status', label: 'Status', icon: Activity, admin: false },
   { path: '/alerts', label: 'Alerts', icon: Bell, admin: false },
-  { path: '/activity', label: 'Activity', icon: Activity, admin: true },
+  { path: '/activity', label: 'Activity', icon: History, admin: true },
   { path: '/logs', label: 'Logs', icon: Archive, admin: true },
-  { path: '/backup', label: 'Backup', icon: Archive, admin: true },
+  { path: '/backup', label: 'Backup', icon: HardDrive, admin: true },
   { path: '/settings', label: 'Settings & DB', icon: SettingsIcon, admin: false },
   { path: '/appearance', label: 'Appearance', icon: Palette, admin: false },
 ];

@@ -78,9 +78,9 @@ export function TwoFactorCard({ enabled: initial, onEnabledChange }: TwoFactorCa
   return (
     <div className="panel">
       <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '12px' }}>
-        <KeyRound size={20} style={{ color: 'var(--accent)' }} />
+        <KeyRound size={20} style={{ color: 'var(--ink)' }} />
         <h3 style={{ fontSize: '16px' }}>Two-factor authentication</h3>
-        <span className={enabled ? 'badge badge-accent' : 'badge'}>{enabled ? 'On' : 'Off'}</span>
+        <span className={enabled ? 'badge badge-accent' : 'badge dr-badge-muted'}>{enabled ? 'On' : 'Off'}</span>
       </div>
 
       {recovery && (
@@ -100,7 +100,7 @@ export function TwoFactorCard({ enabled: initial, onEnabledChange }: TwoFactorCa
           <p style={{ color: 'var(--ink)', fontSize: '13px', marginBottom: '16px' }}>
             Ask for a code from an authenticator app after your password when you sign in.
           </p>
-          <button type="button" disabled={busy} onClick={() => void start()}>Set up two-factor authentication</button>
+          <button type="button" className="btn-secondary" disabled={busy} onClick={() => void start()}>Set up two-factor authentication</button>
         </>
       )}
 

@@ -79,7 +79,7 @@ export const WebhookForm: React.FC<WebhookFormProps> = ({ onChanged }) => {
   return (
     <form className="panel" onSubmit={save} aria-label="Alert webhook">
       <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 12 }}>
-        <Send size={20} style={{ color: 'var(--accent)' }} />
+        <Send size={20} style={{ color: 'var(--ink)' }} />
         <h3 style={{ fontSize: 16 }}>Alert webhook</h3>
       </div>
       {info && !info.configured && <p className="dr-hint">No webhook configured. Alerts show here but are not delivered anywhere.</p>}

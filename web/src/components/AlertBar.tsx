@@ -44,10 +44,12 @@ export const AlertBar: React.FC<AlertBarProps> = ({ status, loading, isAdmin }) 
     return (
       <div role="alert" className="alert-bar alert-bar-down">
         {problems.map((p) => (
-          <div key={p.id} className="alert-bar-line">
+          <div key={p.id} className={`alert-bar-line state-${p.state}`}>
             <AlertTriangle size={16} />
-            <a href={hrefFor(`/apps/${p.id}`)}>
-              {p.name} {p.state} since {timeLabel(p.since)} ({sinceLabel(p.since)}{p.cause ? `, ${p.cause}` : ''})
+            <a href={hrefFor(`/apps/${p.id}`)} title={`Since ${timeLabel(p.since)}`}>
+              {p.name} {p.state}
+              <span className="alert-bar-since"> since {timeLabel(p.since)} ({sinceLabel(p.since)}{p.cause ? `, ${p.cause}` : ''})</span>
+              <span className="alert-bar-compact" aria-hidden="true"> · {sinceLabel(p.since)}{p.cause ? ` · ${p.cause}` : ''}</span>
             </a>
           </div>
         ))}

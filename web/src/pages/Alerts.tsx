@@ -53,18 +53,18 @@ export const Alerts: React.FC<AlertsProps> = () => {
       {events && events.length === 0 && <p className="dr-hint">No alerts yet. State changes and reminders will show here.</p>}
       {events && events.length > 0 && (
         <div className="panel" style={{ overflowX: 'auto', padding: 0 }}>
-          <table className="events">
-            <thead><tr><th>Time</th><th>App</th><th>Change</th><th>Reason</th><th>Delivery</th></tr></thead>
-            <tbody>
+          <table className="events events-with-app" role="table" aria-label="Recent alerts">
+            <thead role="rowgroup"><tr role="row"><th scope="col">Time</th><th scope="col">App</th><th scope="col">Change</th><th scope="col">Reason</th><th scope="col">Delivery</th></tr></thead>
+            <tbody role="rowgroup">
               {events.map((e) => {
                 const t = targets[e.target_id];
                 return (
-                  <tr key={e.id}>
-                    <td>{timeLabel(e.at)}</td>
-                    <td>{t ? <a href={hrefFor(`/apps/${t.id}`)}>{t.name}</a> : <span className="dr-mono">{e.target_id}</span>}</td>
-                    <td className={`state-${e.to}`}>{e.reminder ? `still ${e.to} (reminder)` : `${e.from} → ${e.to}`}</td>
-                    <td className="dr-mono">{e.cause || ''}</td>
-                    <td>{delivery(e)}</td>
+                  <tr key={e.id} role="row">
+                    <td role="cell" data-label="Time">{timeLabel(e.at)}</td>
+                    <td role="cell" data-label="App">{t ? <a href={hrefFor(`/apps/${t.id}`)}>{t.name}</a> : <span className="dr-mono">{e.target_id}</span>}</td>
+                    <td role="cell" data-label="Change" className={`state-${e.to}`}>{e.reminder ? `still ${e.to} (reminder)` : `${e.from} → ${e.to}`}</td>
+                    <td role="cell" data-label="Reason" className="dr-mono">{e.cause || '—'}</td>
+                    <td role="cell" data-label="Delivery">{delivery(e)}</td>
                   </tr>
                 );
               })}

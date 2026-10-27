@@ -7,6 +7,9 @@ React 19 + TypeScript + Vite PWA frontend using the shared ky-ui theme catalog (
 Owns user interface components, service worker caching, PWA installation manifests, and frontend theme switching.
 
 ## Local Contracts
+- Logs/Activity use the shared page-title geometry, responsive full-width filters and secondary Clear/Refresh actions. Phone alert tables retain explicit table/row/cell roles with visible field labels; all delivery/reason/time data remains available.
+- The phone AlertBar shows relative age and cause compactly; each link retains the complete chronology in its accessible name and on desktop. Degraded states consume the shared warning alias, including named palettes.
+- Disabled buttons use neutral surfaces and ink; panel headers wrap before squeezing headings.
 - Newly added suite palettes tint error/success text toward their ink for readable status text on light and dark surfaces; the five shipped base palettes retain their original status values. Browser regressions measure all six new light palettes against both page and panel surfaces. The filled `.btn-danger` takes the page colour (`--bg`) as its label under the same 15 suite palettes, because the tint makes the fill too dark for a dark `--button-text`. Busnes and the five base palettes keep `--button-text`. `browser/danger-button.spec.mjs` measures the rendered label on the real Delete button at rest, hover and focus.
 - Web themes default to the Busnes.app cream/light and charcoal/dark palettes with orange accents, following the OS until a browser-local choice is saved. Preserve existing named themes and saved choices.
 - A signed-in user with `must_change_password` sees only password replacement and sign-out. Replacement uses `secureFetch`, returns to login after session revocation, and never exposes the normal navigation before completion.

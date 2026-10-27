@@ -144,13 +144,13 @@ try {
   }
   const checks = []; // Capture provenance only; behavioral acceptance comes from the existing browser suite.
   const manifest = {
-    product: 'kyPulse-server', stage, phase, councilRound: Number(stage) + 1, captured_at: new Date().toISOString(),
+    product: 'kyPulse-server', stage, phase, councilRound: Number(process.env.KYPULSE_COUNCIL_REVIEW_ROUND ?? Number(stage) + 1), captured_at: new Date().toISOString(),
     source_commit: git('rev-parse', 'HEAD').toString().trim(), uncommitted_source_sha256: worktreeHash(),
     os: `${type()} ${release()}`, driver: `Playwright ${createRequire(join(root, 'web/package.json'))('@playwright/test/package.json').version} Chromium ${browser.version()}, device scale 1, normal service worker behavior`,
     fonts: `self-hosted Space Grotesk bundled in web/dist; ${fonts}`,
     server: 'disposable .browser/server embedding this web/dist; owned temporary SQLite data; KEEP_FIXTURE=1 retains it for Computer Use until SIGTERM',
     served_index_sha256: sha(Buffer.from(await (await fetch(base + '/')).arrayBuffer())),
-    source_files: Object.fromEntries(['web/src/App.tsx', 'web/src/pages/Status.tsx', 'web/src/pages/AppDetail.tsx', 'web/src/pages/Alerts.tsx', 'web/src/pages/Appearance.tsx', 'web/src/styles/theme.css', 'web/src/ky-ui/VERSION', 'web/package-lock.json', 'web/dist/index.html'].map(file => [file, sha(execFileSync('cat', [join(root, file)]))])),
+    source_files: Object.fromEntries(['web/src/App.tsx', 'web/src/components/AlertBar.tsx', 'web/src/components/AppHeader.tsx', 'web/src/components/LogSources.tsx', 'web/src/components/TwoFactorCard.tsx', 'web/src/components/WebhookForm.tsx', 'web/src/components/KyYardCard.tsx', 'web/src/pages/Logs.tsx', 'web/src/pages/Activity.tsx', 'web/src/pages/Settings.tsx', 'web/src/pages/Backup.tsx', 'web/src/pages/Status.tsx', 'web/src/pages/AppDetail.tsx', 'web/src/pages/Alerts.tsx', 'web/src/pages/Appearance.tsx', 'web/src/styles/theme.css', 'web/src/ky-ui/VERSION', 'web/package-lock.json', 'web/dist/index.html'].map(file => [file, sha(execFileSync('cat', [join(root, file)]))])),
     fixture: 'synthetic: admin account; three watched apps (Billing API ok, Mail relay degraded, Backup agent down) served by a capture-owned fake health endpoint on a private bridge address. Durations and timestamps are live and differ between runs',
     shots,
     checks,
