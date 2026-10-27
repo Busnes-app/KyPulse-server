@@ -25,7 +25,7 @@ Owns the application adapters around OAuth/OIDC login, KySignOn HMAC-SHA256 sign
 - `VerifyLogoutToken` (`backchannel.go`) reuses the ID-token verifier, then requires
   `iat`, `sub` or `sid`, the back-channel logout event as a JSON object and no `nonce`;
   a present `typ` must be `logout+jwt`. Every failure is `ErrInvalidLogoutToken`.
-  `IdentityClaims.SessionID` carries the ID token `sid` so sessions can be ended by it.
+  `IdentityClaims.SessionID` and `IssuedAt` carry the ID token `sid` and `iat` so sessions can be ended by them.
   Only KySignOn has a login route, so `sid` values come from one issuer.
 - Provider-asserted roles pass through `RoleFor`: exactly `admin` grants admin, everything else is a viewer.
 

@@ -309,3 +309,44 @@ func TestEndSSOSessionFencesTheSID(t *testing.T) {
 		t.Fatalf("expired fence: %v", err)
 	}
 }
+
+func TestEndSSOSubjectFencesTheSubject(t *testing.T) {
+	ctx := context.Background()
+	st := newTestStore(t)
+	user := &store.User{ID: uuid.NewString(), Username: "dave", Role: store.RoleViewer, Status: "active", SSOProvider: "kysignon", SSOSubject: "dave"}
+	if err := st.Users().CreateUser(ctx, user); err != nil {
+		t.Fatal(err)
+	}
+	now := time.Now().UTC().Truncate(time.Second)
+	create := func(hash string, issued time.Time) error {
+		return st.Sessions().CreateSession(ctx, &store.Session{TokenHash: hash, UserID: user.ID, CreatedAt: issued, ExpiresAt: now.Add(time.Hour), SSOSID: hash}, user.Credentials())
+	}
+	if err := create("old", now.Add(-2*time.Minute)); err != nil {
+		t.Fatal(err)
+	}
+	if err := create("new", now); err != nil {
+		t.Fatal(err)
+	}
+	if err := st.Sessions().EndSSOSubject(ctx, "kysignon", "dave", now.Add(-time.Minute), now.Add(time.Minute)); err != nil {
+		t.Fatal(err)
+	}
+	if _, err := st.Sessions().GetSession(ctx, "old"); !errors.Is(err, store.ErrNotFound) {
+		t.Fatalf("session issued before the cutoff: %v", err)
+	}
+	if _, err := st.Sessions().GetSession(ctx, "new"); err != nil {
+		t.Fatalf("session issued after the cutoff: %v", err)
+	}
+	// An earlier cutoff never moves the fence back.
+	if err := st.Sessions().EndSSOSubject(ctx, "kysignon", "dave", now.Add(-5*time.Minute), now.Add(time.Minute)); err != nil {
+		t.Fatal(err)
+	}
+	if err := create("late", now.Add(-90*time.Second)); !errors.Is(err, store.ErrSSOSessionEnded) {
+		t.Fatalf("fenced create: %v", err)
+	}
+	if _, err := st.Sessions().GetSession(ctx, "late"); !errors.Is(err, store.ErrNotFound) {
+		t.Fatalf("fenced create left its row: %v", err)
+	}
+	if err := create("fresh", now); err != nil {
+		t.Fatalf("login after the cutoff: %v", err)
+	}
+}

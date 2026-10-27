@@ -23,7 +23,10 @@ import (
 func (idp *fakeIdP) jwt(t *testing.T, typ string, claims map[string]any) string {
 	t.Helper()
 	claims["iss"], claims["aud"] = idp.URL, "pulse"
-	claims["iat"], claims["exp"] = time.Now().Unix(), time.Now().Add(2*time.Minute).Unix()
+	claims["exp"] = time.Now().Add(2 * time.Minute).Unix()
+	if _, ok := claims["iat"]; !ok {
+		claims["iat"] = time.Now().Unix()
+	}
 	h, _ := json.Marshal(map[string]string{"alg": "RS256", "kid": "k1", "typ": typ})
 	c, _ := json.Marshal(claims)
 	input := base64.RawURLEncoding.EncodeToString(h) + "." + base64.RawURLEncoding.EncodeToString(c)
@@ -44,7 +47,12 @@ func (idp *fakeIdP) logoutToken(t *testing.T, sub, sid string) string {
 }
 
 func ssoLogin(srv *api.Server, idp *fakeIdP, sub, sid string) *httptest.ResponseRecorder {
-	idp.sub, idp.sid = sub, sid
+	return ssoLoginAt(srv, idp, sub, sid, time.Time{})
+}
+
+// ssoLoginAt is ssoLogin with an ID token the provider issued at iat.
+func ssoLoginAt(srv *api.Server, idp *fakeIdP, sub, sid string, iat time.Time) *httptest.ResponseRecorder {
+	idp.sub, idp.sid, idp.iat = sub, sid, iat
 	return ssoCallback(srv, idp.Client())
 }
 
@@ -119,6 +127,20 @@ func TestBackchannelLogoutEndsTheSSOLogin(t *testing.T) {
 		t.Fatalf("logout for an unknown subject: got %d", w.Code)
 	}
 
+	// A subject-wide logout fences a callback already holding an ID token issued before
+	// it, even for a subject not yet provisioned here; a later login still works.
+	carolLogout := idp.jwt(t, "logout+jwt", map[string]any{"sub": "carol", "jti": "carol", "iat": time.Now().Add(-30 * time.Second).Unix(),
+		"events": map[string]any{"http://schemas.openid.net/event/backchannel-logout": map[string]any{}}})
+	if w := postLogout(srv, idp, carolLogout); w.Code != http.StatusOK {
+		t.Fatalf("subject-wide logout of an unprovisioned subject: got %d", w.Code)
+	}
+	if w := ssoLoginAt(srv, idp, "carol", "sid-c1", time.Now().Add(-time.Minute)); w.Code != http.StatusUnauthorized || hasSession(w) {
+		t.Fatalf("pending callback survived a subject-wide logout: %d", w.Code)
+	}
+	if w := ssoLoginAt(srv, idp, "carol", "sid-c2", time.Now().Add(5*time.Second)); w.Code != http.StatusFound || !signedIn(srv, sessionCookie(t, w)) {
+		t.Fatalf("login issued after the subject-wide logout was refused: %d", w.Code)
+	}
+
 	recs, _, err := st.Audit().ListAuditRecords(context.Background(), 0, 100)
 	if err != nil {
 		t.Fatal(err)
@@ -129,8 +151,9 @@ func TestBackchannelLogoutEndsTheSSOLogin(t *testing.T) {
 			audits++
 		}
 	}
-	// sid-a1, its replay, sid-late and alice's subject-wide logout; not the unknown subject.
-	if audits != 4 {
-		t.Fatalf("back-channel logout audit rows: got %d, want 4", audits)
+	// sid-a1, its replay, sid-late, and the subject-wide logouts of alice, the unknown
+	// subject and carol: a subject-wide logout is fenced and audited even with no user.
+	if audits != 6 {
+		t.Fatalf("back-channel logout audit rows: got %d, want 6", audits)
 	}
 }

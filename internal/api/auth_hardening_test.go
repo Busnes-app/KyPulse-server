@@ -212,6 +212,7 @@ type fakeIdP struct {
 	key  *rsa.PrivateKey
 	sub  string
 	sid  string
+	iat  time.Time // the ID token's iat; zero means now
 	fail string
 }
 
@@ -239,9 +240,13 @@ func newFakeIdP(t *testing.T) *fakeIdP {
 				_, _ = w.Write([]byte(`{"error":"invalid_grant","error_description":"` + idp.fail + `"}`))
 				return
 			}
+			iat := idp.iat
+			if iat.IsZero() {
+				iat = time.Now()
+			}
 			header, _ := json.Marshal(map[string]string{"alg": "RS256", "kid": "k1", "typ": "JWT"})
 			claims, _ := json.Marshal(map[string]any{"iss": issuer, "aud": "pulse", "sub": idp.sub, "sid": idp.sid, "nonce": "n1",
-				"preferred_username": idp.sub, "iat": time.Now().Unix(), "exp": time.Now().Add(time.Minute).Unix()})
+				"preferred_username": idp.sub, "iat": iat.Unix(), "exp": time.Now().Add(time.Minute).Unix()})
 			input := b64(header) + "." + b64(claims)
 			digest := sha256.Sum256([]byte(input))
 			sig, _ := rsa.SignPKCS1v15(rand.Reader, key, crypto.SHA256, digest[:])
