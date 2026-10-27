@@ -1,0 +1,105 @@
+{
+  "round": 2,
+  "raw_reports": {
+    "opus-round2.md": "f62b18f961f559dcab1d9f5cb90e9ad6276bd12d8463ef78611393958927b2c5",
+    "opus-round2.json": "c1c4b759c7990c1277bc0209d40de75efc6bc4c9238374990e640c617fd6f0d0",
+    "sol-round2.md": "c3d0aac7a149c0d585198b853f634559d6535205663cbf6b1c2d77acd993663d",
+    "sol-round2.json": "44e73eb9fb9df3f6fc3f006de4e1438ee80d0d214512a4904daed700f4ce00c4"
+  },
+  "arithmetic": "Fixed weights,32 rows each, inventory membership, PNG hashes and exact means verified by build-report.py. Opus7.61/7.866666666666667; Sol8.29/8.30. Both primaries must independently satisfy8; progression remains blocked.",
+  "spread_reinspection": [
+    {
+      "file": "screenshots/kypulse-02-after-alerts-desktop-dark.png",
+      "dimensions": {
+        "density_layout": [
+          7,
+          9
+        ],
+        "coherence": [
+          7,
+          9
+        ]
+      },
+      "resolution": "Parent re-viewed this original at original resolution. Logs has an oversized subheading and two filled actions; Alerts is complete but table sizing/mono-label coherence remain valid polish points. Preserve independent scores; fix supported issues, do not average."
+    },
+    {
+      "file": "screenshots/kypulse-02-after-alerts-desktop-light.png",
+      "dimensions": {
+        "density_layout": [
+          7,
+          9
+        ],
+        "coherence": [
+          7,
+          9
+        ]
+      },
+      "resolution": "Parent re-viewed this original at original resolution. Logs has an oversized subheading and two filled actions; Alerts is complete but table sizing/mono-label coherence remain valid polish points. Preserve independent scores; fix supported issues, do not average."
+    },
+    {
+      "file": "screenshots/kypulse-02-after-alerts-mobile-dark.png",
+      "dimensions": {
+        "coherence": [
+          7,
+          9
+        ]
+      },
+      "resolution": "Parent re-viewed this original at original resolution. Logs has an oversized subheading and two filled actions; Alerts is complete but table sizing/mono-label coherence remain valid polish points. Preserve independent scores; fix supported issues, do not average."
+    },
+    {
+      "file": "screenshots/kypulse-02-after-alerts-mobile-light.png",
+      "dimensions": {
+        "coherence": [
+          7,
+          9
+        ]
+      },
+      "resolution": "Parent re-viewed this original at original resolution. Logs has an oversized subheading and two filled actions; Alerts is complete but table sizing/mono-label coherence remain valid polish points. Preserve independent scores; fix supported issues, do not average."
+    },
+    {
+      "file": "screenshots/kypulse-02-after-logs-desktop-dark.png",
+      "dimensions": {
+        "hierarchy": [
+          6,
+          8
+        ],
+        "color": [
+          7,
+          9
+        ]
+      },
+      "resolution": "Parent re-viewed this original at original resolution. Logs has an oversized subheading and two filled actions; Alerts is complete but table sizing/mono-label coherence remain valid polish points. Preserve independent scores; fix supported issues, do not average."
+    },
+    {
+      "file": "screenshots/kypulse-02-after-logs-desktop-light.png",
+      "dimensions": {
+        "hierarchy": [
+          6,
+          8
+        ],
+        "color": [
+          7,
+          9
+        ]
+      },
+      "resolution": "Parent re-viewed this original at original resolution. Logs has an oversized subheading and two filled actions; Alerts is complete but table sizing/mono-label coherence remain valid polish points. Preserve independent scores; fix supported issues, do not average."
+    }
+  ],
+  "provenance": {
+    "base": "d3e823db6e6ace4f081f9eb3a089c27d8d6ad24d",
+    "product_commit": "f4fa42268b06db30bcc584846586f604912b2889",
+    "new_assets": [
+      "web/dist/assets/index-DiSI-D03.css",
+      "web/dist/assets/index-DvzOEJtN.js"
+    ],
+    "method": "SHA256(git diff --binary base product excluding evidence and newly added files; then each newly added path and product blob bytes in sorted order). This reconstructs the capture-time tracked diff plus untracked-assets hashing in worktreeHash().",
+    "expected": "178f377bbfbdf076db86a5b604aee6b7f817b375cbb1f2265b94554200a10125",
+    "reconstructed": "178f377bbfbdf076db86a5b604aee6b7f817b375cbb1f2265b94554200a10125",
+    "status": "exact match; the historical base-plus-uncommitted label is valid.13 changed source pins do not indicate a content mismatch."
+  },
+  "responses": {
+    "accepted": "Section title/body-label type, secondary source action, visible app links, consistent hints and setup-first Backup layout.",
+    "design_judgment": "Neutral configuration badge styling preserves values and factual copy; configured retention/schedule are not deposit-success indicators. Pairing/pinning semantics unchanged.",
+    "deferred": "Activity wording, extra features, populated-state design and full behavioral acceptance. No Gemini until both primaries satisfied."
+  }
+}

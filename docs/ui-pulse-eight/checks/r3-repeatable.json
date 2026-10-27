@@ -1,0 +1,17 @@
+{
+  "source_commit": "39840441429f2f8f336f1046a07d908e7b301722",
+  "source_tree": "86c2dd38cb1d98a64c7fc161d068d37eb4921ff2",
+  "builds": [
+    {
+      "directory": "a",
+      "sha256": "bab3fe2d7c8d30cf5023b757ea2a2f7086e65d9fac6906668d07f4b94a74a9c2",
+      "bytes": 20975776
+    },
+    {
+      "directory": "elsewhere/b",
+      "sha256": "bab3fe2d7c8d30cf5023b757ea2a2f7086e65d9fac6906668d07f4b94a74a9c2",
+      "bytes": 20975776
+    }
+  ],
+  "identical": true
+}

@@ -1,5 +1,9 @@
 Round,Reviewer,Cohort,Unique images,Exact mean,Displayed mean,At least 8,Reviewer satisfied,Report SHA256
 1,opus,admin-console,20,6.28,6.3,False,False,8edc670db768df2781a3ec0840b4690ea748e5fef0103ad34ec1f982fd9e5ff3
 1,opus,settings,12,6.95,7.0,False,False,8edc670db768df2781a3ec0840b4690ea748e5fef0103ad34ec1f982fd9e5ff3
+2,opus,admin-console,20,7.61,7.6,False,False,c1c4b759c7990c1277bc0209d40de75efc6bc4c9238374990e640c617fd6f0d0
+2,opus,settings,12,7.866666666666666,7.9,False,False,c1c4b759c7990c1277bc0209d40de75efc6bc4c9238374990e640c617fd6f0d0
 1,sol,admin-console,20,7.39,7.4,False,False,ba9a59e195d78ef8305e70507a80a1c0c04990a06782f48c39c7c5b72cf0946f
 1,sol,settings,12,8.0,8.0,True,False,ba9a59e195d78ef8305e70507a80a1c0c04990a06782f48c39c7c5b72cf0946f
+2,sol,admin-console,20,8.29,8.3,True,True,44e73eb9fb9df3f6fc3f006de4e1438ee80d0d214512a4904daed700f4ce00c4
+2,sol,settings,12,8.3,8.3,True,True,44e73eb9fb9df3f6fc3f006de4e1438ee80d0d214512a4904daed700f4ce00c4

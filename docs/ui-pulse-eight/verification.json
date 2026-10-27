@@ -1,107 +1,75 @@
 {
-  "product_source": "f4fa42268b06db30bcc584846586f604912b2889",
-  "shared_source": "a7e93b7",
-  "status": "Final browser run:19passed,4intentional skips,1afterAll fixture teardown timeout. Owned fake-server connection cleanup fixed; verification rerun pending.",
+  "product_source": "39840441429f2f8f336f1046a07d908e7b301722",
+  "shared_source": "58626b7",
+  "status": "Round3 browser,SQLite FIPS and PostgreSQL FIPS in flight; frontend/makeci/Docker/repeatable builds pass. No visual8 progression yet.",
   "checks": {
-    "make_ci": {
-      "evidence": "checks/make_ci.txt",
-      "sha256": "9246c76ca4adb7e05d92f92126ff539f69fe6b18f12b2a08a903e64204df4dbf",
-      "status": "pass",
-      "raw_sha256": "9246c76ca4adb7e05d92f92126ff539f69fe6b18f12b2a08a903e64204df4dbf"
-    },
-    "sqlite_fips": {
-      "evidence": "checks/sqlite_fips.txt",
-      "sha256": "d76ef4f88e16e141d522c5e6f9ec780a7c7558c898b2b932e65c763048d1828c",
-      "status": "pass",
-      "raw_sha256": "d76ef4f88e16e141d522c5e6f9ec780a7c7558c898b2b932e65c763048d1828c"
-    },
     "frontend": {
-      "evidence": "checks/frontend.txt",
-      "sha256": "7ae1e319264fd5ed05eb7d4e0fc030d089fc0c75f8c3941f68ba9d86eb55c629",
       "status": "pass",
-      "raw_sha256": "7ae1e319264fd5ed05eb7d4e0fc030d089fc0c75f8c3941f68ba9d86eb55c629"
+      "evidence": "checks/r3-frontend.txt",
+      "raw_sha256": "b2e8be8bea20a628acef3433cb0848511cfbabe6ca279310dd379f94f3024af4",
+      "sha256": "b2e8be8bea20a628acef3433cb0848511cfbabe6ca279310dd379f94f3024af4"
+    },
+    "make_ci": {
+      "status": "pass",
+      "evidence": "checks/r3-make_ci.txt",
+      "raw_sha256": "51221af4b19cdd5bd088ed426e7590b1940a1b572a1721c8a86249df3e033248",
+      "sha256": "51221af4b19cdd5bd088ed426e7590b1940a1b572a1721c8a86249df3e033248"
     },
     "docker_build": {
-      "evidence": "checks/docker_build.txt",
-      "sha256": "2cfb4b37d4124fec5f616b548d02a7cc8e248c4d640d36452016875c12d7a15b",
       "status": "pass",
-      "raw_sha256": "cc8ffa8b3716627b8d813a72dbcce19636ec301d3cd8f5fc44e1e001d3c47145"
-    },
-    "govulncheck": {
-      "evidence": "checks/govulncheck.txt",
-      "sha256": "b5ae54ddcfa4cb39e85f84ad2d9e43556bd817c480eaab2a71bab63bfc29353b",
-      "status": "pass",
-      "raw_sha256": "b5ae54ddcfa4cb39e85f84ad2d9e43556bd817c480eaab2a71bab63bfc29353b"
-    },
-    "fuzz_shellcheck": {
-      "evidence": "checks/fuzz_shellcheck.txt",
-      "sha256": "4867ac046a4763943ef58774df1a941bb2c5444fda64b99b1b1e0160d8f62064",
-      "status": "pass",
-      "raw_sha256": "4867ac046a4763943ef58774df1a941bb2c5444fda64b99b1b1e0160d8f62064"
-    },
-    "coordinates": {
-      "evidence": "checks/coordinates.txt",
-      "sha256": "01ba4719c80b6fe911b091a7c05124b64eeece964e09c058ef8f9805daca546b",
-      "status": "pass",
-      "raw_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
-    },
-    "shared_check": {
-      "evidence": "checks/shared_check.txt",
-      "sha256": "5c4aec9f3160a35f9c4535a2c8a6f09108b6fe336820b7b9dcfb1b07d830ddb3",
-      "status": "pass",
-      "raw_sha256": "5c4aec9f3160a35f9c4535a2c8a6f09108b6fe336820b7b9dcfb1b07d830ddb3"
-    },
-    "shared_browser": {
-      "evidence": "checks/shared_browser.txt",
-      "sha256": "e9a54a595dff735f4c2a09c11ba7d0b358b7ce5c0c262b66ccec1863d9d6be4e",
-      "status": "pass",
-      "raw_sha256": "e9a54a595dff735f4c2a09c11ba7d0b358b7ce5c0c262b66ccec1863d9d6be4e"
-    },
-    "shared_regression_red": {
-      "evidence": "checks/shared_regression_red.txt",
-      "sha256": "f121c9e4af90235c7e2474614b1c58778527dc7ba7fde435cca01f768e8ff6cd",
-      "status": "expected regression failure before fix",
-      "raw_sha256": "06ffea6d1ba35f55f9fb4e13a3df584390df5a56940a491c49bcbd5629512ead"
+      "evidence": "checks/r3-docker_build.txt",
+      "raw_sha256": "0c081411381d34f66038498fefbfd21d615633e35c2d15c2a9055a6d9008ec09",
+      "sha256": "20edb4804b888cdac2e07940f4c4b2e458628c373b5ddfe834950149824f9ea9"
     },
     "impeccable": {
-      "evidence": "checks/impeccable.txt",
-      "sha256": "6a2d1b9c8d8665e08c7471d8f987e29c784f4edb5a7f28595d84f431fa508429",
-      "status": "reported findings",
-      "raw_sha256": "6a2d1b9c8d8665e08c7471d8f987e29c784f4edb5a7f28595d84f431fa508429"
+      "status": "reported2pinned-style findings; regex-only scan",
+      "evidence": "checks/r3-impeccable.txt",
+      "raw_sha256": "6a2d1b9c8d8665e08c7471d8f987e29c784f4edb5a7f28595d84f431fa508429",
+      "sha256": "6a2d1b9c8d8665e08c7471d8f987e29c784f4edb5a7f28595d84f431fa508429"
     },
-    "docker_runtime": {
-      "evidence": "checks/docker_runtime.json",
-      "sha256": "b11b230f8905a0423341f9870d6a120d7ed52fe13125de60ff5ac19a7fee42e5",
-      "status": "pass"
+    "shared_check": {
+      "status": "pass",
+      "evidence": "checks/r3-shared_check.txt",
+      "raw_sha256": "8d2bb06e052e6800efbc514d9ae2a10af940a6bec2f5cb761011a05e2392af1b",
+      "sha256": "8d2bb06e052e6800efbc514d9ae2a10af940a6bec2f5cb761011a05e2392af1b"
     },
-    "repeatable_build": {
-      "evidence": "checks/repeatable_build.json",
-      "sha256": "3ec05811c6e669bf4eb4b2ab3c264b98eb18d13566afac37fb4e0112fe177052",
-      "status": "pass"
+    "shared_browser": {
+      "status": "pass",
+      "evidence": "checks/r3-shared_browser.txt",
+      "raw_sha256": "8bed49fdb063695206666c652d970bc4438a0d2b9655894925ae45a6787924e5",
+      "sha256": "8bed49fdb063695206666c652d970bc4438a0d2b9655894925ae45a6787924e5"
+    },
+    "runtime": {
+      "status": "pass",
+      "evidence": "checks/r3-runtime.json",
+      "sha256": "75b386cd896e41c59b45dc4d3e53c0572d0fc3d644039c3d987d6cf574234b91"
+    },
+    "repeatable": {
+      "status": "pass",
+      "evidence": "checks/r3-repeatable.json",
+      "sha256": "8db88dccd95e75f29a1145c24561dc5b4f3341d62d524f7b324586a6b889e0de"
+    },
+    "fips": {
+      "status": "in flight",
+      "log": "/tmp/kypulse-eight-r3-fips.log"
     },
     "postgres": {
-      "status": "pass",
-      "evidence": "checks/postgres.txt",
-      "raw_sha256": "85f600ece186f7e768febb5e56c01f584386b6da938b1ac7cf759ff1d91b8114",
-      "sha256": "85f600ece186f7e768febb5e56c01f584386b6da938b1ac7cf759ff1d91b8114",
-      "commands": "go test -race -count=1 ./... against PostgreSQL17, repeated with GODEBUG=fips140=on; owned container removed"
+      "status": "in flight",
+      "log": "/tmp/kypulse-eight-r3-postgres.log"
     },
     "browser": {
-      "status": "failed in fixture teardown; correction under verification",
-      "evidence": "checks/browser-teardown-failed.txt",
-      "sha256": "b50bd5f0552a84f8605da20a45c932e1841c6de902e0fb3184de2ce30dbb8547",
-      "raw_sha256": "e3e4eeb0bf3eab328948af183020d019d5c54e5b43238f3c9229af40186dd3e2",
-      "failure": "dark-390 logs afterAll:server.close callback timed out45s; UI workflow assertions completed",
-      "reproduction": "Owned local HTTP server with partial request holds close callback; closeAllConnections releases it. No application behavior changed."
+      "status": "in flight",
+      "log": "/tmp/kypulse-eight-r3-browser.log"
     }
   },
+  "retained_checks": {
+    "fuzz_shellcheck": "Round2 pass retained: parser and shell inputs unchanged. See verification-round2.json.",
+    "govulncheck_npm_audit_module_verification": "Round2 pass retained: dependencies/backend imports unchanged. CI runs fresh on the pushed head."
+  },
   "limitations": [
-    "Impeccable source scan regex only:2 findings, prescribed Space Grotesk and existing navigation selection border; no rendered contrast certification.",
-    "NO_COLOR/FORCE_COLOR warning is emitted by Playwright tooling, no product compiler warnings.",
-    "govulncheck:0 reachable advisories,1 module-only advisory.",
-    "Normal makeci Go packages with unchanged inputs reused persistent cache; FIPS and PostgreSQL race commands use count1.",
-    "Four fuzz counts and shellcheck passed; source parsers unchanged by UI fixes, result retained.",
-    "Viewer boundary workflow is included in browser tests; screenshot ratings cover admin only."
-  ],
-  "log_export": "Text logs normalize trailing whitespace and CRLF. Original hashes are retained as raw_sha256; reviewer reports and PNGs remain verbatim."
+    "Admin initial-viewport screenshot coverage only, no full behavior acceptance.",
+    "Native Chrome152 differs from scored Chromium153.",
+    "No merge/deployment.",
+    "MySlop401 unknown/revoked token; board posting unavailable."
+  ]
 }

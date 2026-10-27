@@ -7,6 +7,7 @@
 ## Ownership
 
 - capture.mjs owns the disposable synthetic capture fixture; screenshots and manifests remain frozen by stage.
+- build-inventory.py owns per-stage PNG hashing and near-duplicate checks (Python3 with Pillow); build-report.py validates fixed-rubric reports and exports the workbook/CSVs using the standard library.
 - Each delegate writes only its own report. The parent owns inventories,score tables,spreadsheet and audits.
 
 ## Local Contracts
@@ -25,6 +26,7 @@
 ## Verification
 
 - Build .browser/server from this tree,then node docs/ui-pulse-eight/capture.mjs <nn> before|after. It refuses an existing manifest. KEEP_FIXTURE=1 retains its owned server for native review until SIGTERM; otherwise cleanup runs after capture.
+- Run python3 docs/ui-pulse-eight/build-report.py only after every review in the round is terminal. It validates original hashes, inventory membership, arithmetic, audit input pins and workbook XML.
 - Run the existing product/browser checks required by parent AGENTS for implementation changes. Capture-only runs establish provenance,not behavioral acceptance.
 
 ## Child DOX Index

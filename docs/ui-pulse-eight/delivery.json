@@ -1,0 +1,12 @@
+[
+  {
+    "repository": "Busnes-app/KyPulse-server",
+    "url": "https://github.com/Busnes-app/KyPulse-server/pull/52",
+    "status": "Open/mergeable; round3 primary reviews and current-head CI/security pending"
+  },
+  {
+    "repository": "Busnes-app/ky-ui",
+    "url": "https://github.com/Busnes-app/ky-ui/pull/26",
+    "status": "Open/mergeable; a7e93b7 CI passed;58626b7 declaration correction needs current-head gates"
+  }
+]

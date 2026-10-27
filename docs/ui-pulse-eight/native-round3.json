@@ -1,0 +1,36 @@
+{
+  "fixture": "http://127.0.0.1:18426",
+  "backup": {
+    "browser": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) T3CodeBeta/0.1.0 Chrome/152.0.7977.130 Electron/44.4.5 Safari/537.36",
+    "factsTop": 1286.5,
+    "oneFormEach": {
+      "pair": 1,
+      "pin": 1
+    },
+    "order": 4,
+    "overflow": 0,
+    "pair": {
+      "background": "rgb(191, 63, 24)",
+      "bottom": 710,
+      "top": 670
+    },
+    "theme": "busnes-light",
+    "viewport": {
+      "height": 844,
+      "width": 390
+    }
+  },
+  "labels": {
+    "overflow": 0,
+    "reasonLabelFamily": "\"Space Grotesk\", -apple-system, BlinkMacSystemFont, \"Segoe UI\", Roboto, sans-serif",
+    "reasonValueFamily": "\"IBM Plex Mono\", ui-monospace, monospace"
+  },
+  "logs": {
+    "addSourceBackground": "rgba(0, 0, 0, 0)",
+    "overflow": 0,
+    "sectionSize": "17px",
+    "sectionWeight": "600",
+    "settingsLink": "#/settings"
+  },
+  "limitations": "Native T3 Chrome152 at390x844 differs from scored Chromium153/scale1. These are scoped geometry/type checks, not full behavior acceptance. No fixture content or theme changes."
+}
