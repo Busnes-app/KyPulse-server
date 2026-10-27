@@ -1,0 +1,17 @@
+{
+  "image": "sha256:ceadc9f350ea5b0aa8802d9c4c758112ba9605b639bd76103c30ccfdc498f55a",
+  "uid": 10001,
+  "health": "healthy",
+  "routes": [
+    "/",
+    "/api/settings",
+    "/healthz"
+  ],
+  "login": true,
+  "hardening": [
+    "read-only",
+    "tmpfs /tmp",
+    "cap-drop ALL",
+    "no-new-privileges"
+  ]
+}

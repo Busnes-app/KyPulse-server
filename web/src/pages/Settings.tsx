@@ -25,7 +25,7 @@ export const Settings: React.FC<SettingsProps> = ({ settings, user, onChanged, o
         {/* Storage Card */}
         <div className="panel">
           <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '12px' }}>
-            <Database size={20} style={{ color: 'var(--accent)' }} />
+            <Database size={20} style={{ color: 'var(--ink)' }} />
             <h3 style={{ fontSize: '16px' }}>Storage</h3>
           </div>
           <p style={{ color: 'var(--ink)', fontSize: '13px', marginBottom: '16px' }}>

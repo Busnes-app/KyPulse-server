@@ -1,0 +1,1613 @@
+{
+  "schema": "ky-ui-council-scores/2",
+  "reviewer": {
+    "name": "Claude Opus 5.5",
+    "model": "claude-opus-5-5",
+    "role": "independent Council UI reviewer (primary)"
+  },
+  "round": 1,
+  "stage": "00-before",
+  "rubric": {
+    "version": "ky-suite-v2",
+    "path": "/home/yoshi/.codex-cpa/skills/ky-suite-ui/references/rubric.md",
+    "weights": {
+      "hierarchy": 0.2,
+      "typography": 0.15,
+      "density_layout": 0.2,
+      "color": 0.15,
+      "visible_affordances": 0.15,
+      "coherence": 0.15
+    },
+    "rounding": "Decimal(str(x)).quantize(Decimal('0.1'), ROUND_HALF_UP) per file total; cohort mean = same rounding over unique rounded file totals",
+    "ky_fit": "five dimensions weight 0.20 each, mean rounded half-up to 1 decimal; never added to total"
+  },
+  "inputs": {
+    "worktree_head": "d3e823db6e6ace4f081f9eb3a089c27d8d6ad24d",
+    "product_source": "fef7b670a36d48792137f56d839e49a86d44eadc",
+    "web_src_dist_diff_bytes": 0,
+    "inventory": {
+      "path": "docs/ui-pulse-eight/inventory-v1.json",
+      "sha256": "4808fbe8194c89560623f636a6b607fecb4d8de5a9d4a667893e97eabc553136"
+    },
+    "manifest": {
+      "path": "docs/ui-pulse-eight/manifest-00-before.json",
+      "sha256": "1d5fe6fc2b668bae968857b771d64809bdb8768e8e29a69a168d29c8b5acbfd8"
+    },
+    "served_index_sha256": "d45283dff4c3b67ea620708230919e7cfe20edfacc09b4d1a18517b8fb859a37",
+    "served_index_live_match": true,
+    "ky_ui_vendor": "0.4.1",
+    "capture": "Playwright 1.63.0 Chromium 153.0.8010.12, scale 1, 1280x900 and 390x844, OS light/dark, no saved theme, normal service workers, manifest overflow 0 for all 32"
+  },
+  "inventory": {
+    "files": 32,
+    "unique_sha256": 32,
+    "exact_duplicates": 0,
+    "near_duplicates": 0,
+    "near_duplicate_rule": "same dims, <0.1% pixels differ, max channel delta <=8",
+    "closest_pair": {
+      "a": "kypulse-00-before-activity-desktop-light.png",
+      "b": "kypulse-00-before-logs-desktop-light.png",
+      "pixels_differing": 0.0473,
+      "max_channel_delta": 224
+    },
+    "hash_size_dims_match_inventory_and_manifest": true,
+    "source_pins_match_fef7b67_and_worktree": true
+  },
+  "verdict": {
+    "score": 6.3,
+    "admin_console_mean": 6.3,
+    "settings_mean": 7.0,
+    "satisfied": false,
+    "scope": "visual quality of 32 initial-viewport captures at fef7b67, synthetic admin only; separate cohort means, no pooled score",
+    "reason": "Neither covered cohort reaches 8.0 (admin-console 6.3, settings 7.0). Blocking: Logs/Activity button and title vocabulary, Alerts browser-default links and phone table, Settings multiple primaries and decorative accent, Backup disabled-primary treatment and phone panel header, phone AlertBar height."
+  },
+  "files": [
+    {
+      "file": "docs/ui-pulse-eight/screenshots/kypulse-00-before-activity-desktop-dark.png",
+      "sha256": "4727ad4f0b1f05bd4f732bb74e6d9af7558091b91029150f4028be9988fc2b49",
+      "bytes": 53122,
+      "width": 1280,
+      "height": 900,
+      "observed_product": "kyPulse",
+      "observed_surface": "activity",
+      "filename_matches_content": true,
+      "cohort": "admin-console",
+      "state": "empty/unpaired",
+      "theme": "dark (OS prefers-color-scheme, Busnes, no saved choice)",
+      "viewport": "desktop 1280x900 scale 1",
+      "artifacts": "none",
+      "scores": {
+        "hierarchy": 6,
+        "typography": 6,
+        "density_layout": 6,
+        "color": 6,
+        "visible_affordances": 6,
+        "coherence": 5
+      },
+      "total": 5.9,
+      "observations": {
+        "hierarchy": "Two filled accent buttons (Apply, Clear) with equal weight; title clear.",
+        "typography": "Same 30px/700 browser-default h1 as Logs.",
+        "density_layout": "Same orphan 'To (UTC)' row; empty message runs as one 790px line.",
+        "color": "Accent on both Apply and Clear.",
+        "visible_affordances": "Clear indistinguishable from Apply; empty copy says filters may exclude events when none are set; 'Pair it in Settings' is plain text, not a link.",
+        "coherence": "Title scale/button vocabulary diverge from the rest of the shell."
+      },
+      "duplicate_of": null,
+      "confidence": "high",
+      "caveat": "Empty/unpaired state only.",
+      "ky_fit": {
+        "palette_tokens": 7,
+        "type_geometry": 6,
+        "shell": 8,
+        "accent_discipline": 5,
+        "suite_cohesion": 6,
+        "mean": 6.4
+      }
+    },
+    {
+      "file": "docs/ui-pulse-eight/screenshots/kypulse-00-before-activity-desktop-light.png",
+      "sha256": "f0025cb6e9851ea712764f11d07d016c7970da23a41493fc963ce9edd4cabf80",
+      "bytes": 53317,
+      "width": 1280,
+      "height": 900,
+      "observed_product": "kyPulse",
+      "observed_surface": "activity",
+      "filename_matches_content": true,
+      "cohort": "admin-console",
+      "state": "empty/unpaired",
+      "theme": "light (OS prefers-color-scheme, Busnes, no saved choice)",
+      "viewport": "desktop 1280x900 scale 1",
+      "artifacts": "none",
+      "scores": {
+        "hierarchy": 6,
+        "typography": 6,
+        "density_layout": 6,
+        "color": 6,
+        "visible_affordances": 6,
+        "coherence": 5
+      },
+      "total": 5.9,
+      "observations": {
+        "hierarchy": "Two filled accent buttons (Apply, Clear) with equal weight; title clear.",
+        "typography": "Same 30px/700 browser-default h1 as Logs.",
+        "density_layout": "Same orphan 'To (UTC)' row; empty message runs as one 790px line.",
+        "color": "Accent on both Apply and Clear.",
+        "visible_affordances": "Clear indistinguishable from Apply; empty copy says filters may exclude events when none are set; 'Pair it in Settings' is plain text, not a link.",
+        "coherence": "Title scale/button vocabulary diverge from the rest of the shell."
+      },
+      "duplicate_of": null,
+      "confidence": "high",
+      "caveat": "Empty/unpaired state only.",
+      "ky_fit": {
+        "palette_tokens": 7,
+        "type_geometry": 6,
+        "shell": 8,
+        "accent_discipline": 5,
+        "suite_cohesion": 6,
+        "mean": 6.4
+      }
+    },
+    {
+      "file": "docs/ui-pulse-eight/screenshots/kypulse-00-before-activity-mobile-dark.png",
+      "sha256": "058a58c5403a46d3cb53f9905220c290f4970381fc5e4ca7028bd797301f59bb",
+      "bytes": 43024,
+      "width": 390,
+      "height": 844,
+      "observed_product": "kyPulse",
+      "observed_surface": "activity",
+      "filename_matches_content": true,
+      "cohort": "admin-console",
+      "state": "empty/unpaired",
+      "theme": "dark (OS prefers-color-scheme, Busnes, no saved choice)",
+      "viewport": "mobile 390x844 scale 1",
+      "artifacts": "none",
+      "scores": {
+        "hierarchy": 6,
+        "typography": 6,
+        "density_layout": 5,
+        "color": 6,
+        "visible_affordances": 6,
+        "coherence": 5
+      },
+      "total": 5.7,
+      "observations": {
+        "hierarchy": "Title and hints clear; Apply filled beside To; Clear below fold.",
+        "typography": "30px/700 title.",
+        "density_layout": "Narrow ~196px inputs, ragged edge; empty-state message below fold.",
+        "color": "Filled accent on non-primary actions.",
+        "visible_affordances": "Fields legible; Clear vs Apply ambiguous.",
+        "coherence": "Same divergence as desktop."
+      },
+      "duplicate_of": null,
+      "confidence": "high",
+      "caveat": "Empty/unpaired; below-fold content outside coverage.",
+      "ky_fit": {
+        "palette_tokens": 7,
+        "type_geometry": 6,
+        "shell": 8,
+        "accent_discipline": 5,
+        "suite_cohesion": 6,
+        "mean": 6.4
+      }
+    },
+    {
+      "file": "docs/ui-pulse-eight/screenshots/kypulse-00-before-activity-mobile-light.png",
+      "sha256": "3c130990c644ce98498fb04107faaf5c2150488f3b053d5906524c7b967feeaa",
+      "bytes": 42325,
+      "width": 390,
+      "height": 844,
+      "observed_product": "kyPulse",
+      "observed_surface": "activity",
+      "filename_matches_content": true,
+      "cohort": "admin-console",
+      "state": "empty/unpaired",
+      "theme": "light (OS prefers-color-scheme, Busnes, no saved choice)",
+      "viewport": "mobile 390x844 scale 1",
+      "artifacts": "none",
+      "scores": {
+        "hierarchy": 6,
+        "typography": 6,
+        "density_layout": 5,
+        "color": 6,
+        "visible_affordances": 6,
+        "coherence": 5
+      },
+      "total": 5.7,
+      "observations": {
+        "hierarchy": "Title and hints clear; Apply filled beside To; Clear below fold.",
+        "typography": "30px/700 title.",
+        "density_layout": "Narrow ~196px inputs, ragged edge; empty-state message below fold.",
+        "color": "Filled accent on non-primary actions.",
+        "visible_affordances": "Fields legible; Clear vs Apply ambiguous.",
+        "coherence": "Same divergence as desktop."
+      },
+      "duplicate_of": null,
+      "confidence": "high",
+      "caveat": "Empty/unpaired; below-fold content outside coverage.",
+      "ky_fit": {
+        "palette_tokens": 7,
+        "type_geometry": 6,
+        "shell": 8,
+        "accent_discipline": 5,
+        "suite_cohesion": 6,
+        "mean": 6.4
+      }
+    },
+    {
+      "file": "docs/ui-pulse-eight/screenshots/kypulse-00-before-alerts-desktop-dark.png",
+      "sha256": "40c38837e646a567996a5bdc71bbb0474b2aba88ded179cd35ef2678f31cf95b",
+      "bytes": 49676,
+      "width": 1280,
+      "height": 900,
+      "observed_product": "kyPulse",
+      "observed_surface": "alerts",
+      "filename_matches_content": true,
+      "cohort": "admin-console",
+      "state": "sparse: 3 synthetic alert transitions",
+      "theme": "dark (OS prefers-color-scheme, Busnes, no saved choice)",
+      "viewport": "desktop 1280x900 scale 1",
+      "artifacts": "none",
+      "scores": {
+        "hierarchy": 7,
+        "typography": 6,
+        "density_layout": 7,
+        "color": 5,
+        "visible_affordances": 6,
+        "coherence": 5
+      },
+      "total": 6.1,
+      "observations": {
+        "hierarchy": "'Alerts' h1 then one events table; no intro sentence unlike Status/Settings; no primary needed.",
+        "typography": "Table headings are 12px uppercase with 0.48px tracking (live computed) \u2014 the label style the contract forbids and Status does not use.",
+        "density_layout": "Compact 36px rows, five columns aligned; Reason empty for two rows leaves a ragged middle.",
+        "color": "App links render user-agent lavender rgb(158,158,255) (live computed), off the Busnes palette; 'pending \u2192 degraded' 2.9:1 on dark panel.",
+        "visible_affordances": "App names are recognisable links only through browser-default styling; no row affordance.",
+        "coherence": "Second table vocabulary (uppercase tracked, dense) versus Status list (sentence case, roomy); browser-default links are stray styles."
+      },
+      "duplicate_of": null,
+      "confidence": "high",
+      "caveat": "Initial viewport only; 3 synthetic alert rows; delivery 'not sent' because no webhook configured.",
+      "ky_fit": {
+        "palette_tokens": 5,
+        "type_geometry": 6,
+        "shell": 8,
+        "accent_discipline": 8,
+        "suite_cohesion": 6,
+        "mean": 6.6
+      }
+    },
+    {
+      "file": "docs/ui-pulse-eight/screenshots/kypulse-00-before-alerts-desktop-light.png",
+      "sha256": "dc5539ac285b56cf653be9df6ce0aa7c1009acc93d5ed7672aa0f1bb87fa52b5",
+      "bytes": 49176,
+      "width": 1280,
+      "height": 900,
+      "observed_product": "kyPulse",
+      "observed_surface": "alerts",
+      "filename_matches_content": true,
+      "cohort": "admin-console",
+      "state": "sparse: 3 synthetic alert transitions",
+      "theme": "light (OS prefers-color-scheme, Busnes, no saved choice)",
+      "viewport": "desktop 1280x900 scale 1",
+      "artifacts": "none",
+      "scores": {
+        "hierarchy": 7,
+        "typography": 6,
+        "density_layout": 7,
+        "color": 5,
+        "visible_affordances": 6,
+        "coherence": 5
+      },
+      "total": 6.1,
+      "observations": {
+        "hierarchy": "'Alerts' h1 then one events table; no intro sentence unlike Status/Settings; no primary needed.",
+        "typography": "Table headings are 12px uppercase with 0.48px tracking (live computed) \u2014 the label style the contract forbids and Status does not use.",
+        "density_layout": "Compact 36px rows, five columns aligned; Reason empty for two rows leaves a ragged middle.",
+        "color": "App links render user-agent blue rgb(0,0,238) (live computed), off the Busnes palette.",
+        "visible_affordances": "App names are recognisable links only through browser-default styling; no row affordance.",
+        "coherence": "Second table vocabulary (uppercase tracked, dense) versus Status list (sentence case, roomy); browser-default links are stray styles."
+      },
+      "duplicate_of": null,
+      "confidence": "high",
+      "caveat": "Initial viewport only; 3 synthetic alert rows; delivery 'not sent' because no webhook configured.",
+      "ky_fit": {
+        "palette_tokens": 5,
+        "type_geometry": 6,
+        "shell": 8,
+        "accent_discipline": 8,
+        "suite_cohesion": 6,
+        "mean": 6.6
+      }
+    },
+    {
+      "file": "docs/ui-pulse-eight/screenshots/kypulse-00-before-alerts-mobile-dark.png",
+      "sha256": "af56b9d4f5cbc5942f9415374f1586e413034f59334a5feff2d72e3cd389496b",
+      "bytes": 39141,
+      "width": 390,
+      "height": 844,
+      "observed_product": "kyPulse",
+      "observed_surface": "alerts",
+      "filename_matches_content": true,
+      "cohort": "admin-console",
+      "state": "sparse: 3 synthetic alert transitions",
+      "theme": "dark (OS prefers-color-scheme, Busnes, no saved choice)",
+      "viewport": "mobile 390x844 scale 1",
+      "artifacts": "none",
+      "scores": {
+        "hierarchy": 6,
+        "typography": 6,
+        "density_layout": 4,
+        "color": 5,
+        "visible_affordances": 5,
+        "coherence": 5
+      },
+      "total": 5.2,
+      "observations": {
+        "hierarchy": "Title clear but the table competes with the 134px AlertBar for the first viewport.",
+        "typography": "Uppercase tracked headers; time and change cells wrap to 2\u20133 lines ('pending / \u2192 / degraded').",
+        "density_layout": "Desktop table squeezed into 356px panel: table is 421px wide inside an overflow-x:auto panel (live measured), so the Delivery column is cut at the viewport edge.",
+        "color": "Browser-default lavender app links.",
+        "visible_affordances": "Horizontal table scroll exists but has no visible cue; the cut column reads as clipped at a glance.",
+        "coherence": "Status converts to cards at this width while Alerts keeps a cramped table."
+      },
+      "duplicate_of": null,
+      "confidence": "high",
+      "caveat": "Inner horizontal scroll is reachable (live scrollWidth 421 > clientWidth 356); page overflow 0.",
+      "ky_fit": {
+        "palette_tokens": 5,
+        "type_geometry": 6,
+        "shell": 8,
+        "accent_discipline": 8,
+        "suite_cohesion": 6,
+        "mean": 6.6
+      }
+    },
+    {
+      "file": "docs/ui-pulse-eight/screenshots/kypulse-00-before-alerts-mobile-light.png",
+      "sha256": "5e4d3ac2859aad370fb6db2c93531e6f322e932751f66dd3b36412885fc63110",
+      "bytes": 39172,
+      "width": 390,
+      "height": 844,
+      "observed_product": "kyPulse",
+      "observed_surface": "alerts",
+      "filename_matches_content": true,
+      "cohort": "admin-console",
+      "state": "sparse: 3 synthetic alert transitions",
+      "theme": "light (OS prefers-color-scheme, Busnes, no saved choice)",
+      "viewport": "mobile 390x844 scale 1",
+      "artifacts": "none",
+      "scores": {
+        "hierarchy": 6,
+        "typography": 6,
+        "density_layout": 4,
+        "color": 5,
+        "visible_affordances": 5,
+        "coherence": 5
+      },
+      "total": 5.2,
+      "observations": {
+        "hierarchy": "Title clear but the table competes with the 134px AlertBar for the first viewport.",
+        "typography": "Uppercase tracked headers; time and change cells wrap to 2\u20133 lines ('pending / \u2192 / degraded').",
+        "density_layout": "Desktop table squeezed into 356px panel: table is 421px wide inside an overflow-x:auto panel (live measured), so the Delivery column is cut at the viewport edge.",
+        "color": "Browser-default blue app links.",
+        "visible_affordances": "Horizontal table scroll exists but has no visible cue; the cut column reads as clipped at a glance.",
+        "coherence": "Status converts to cards at this width while Alerts keeps a cramped table."
+      },
+      "duplicate_of": null,
+      "confidence": "high",
+      "caveat": "Inner horizontal scroll is reachable (live scrollWidth 421 > clientWidth 356); page overflow 0.",
+      "ky_fit": {
+        "palette_tokens": 5,
+        "type_geometry": 6,
+        "shell": 8,
+        "accent_discipline": 8,
+        "suite_cohesion": 6,
+        "mean": 6.6
+      }
+    },
+    {
+      "file": "docs/ui-pulse-eight/screenshots/kypulse-00-before-app-detail-desktop-dark.png",
+      "sha256": "f4426e10a61574e550da69a1151238bbee25a24ed021e068e6c975e4f25d11aa",
+      "bytes": 86761,
+      "width": 1280,
+      "height": 900,
+      "observed_product": "kyPulse",
+      "observed_surface": "app-detail",
+      "filename_matches_content": true,
+      "cohort": "admin-console",
+      "state": "sparse: down synthetic app, no checks, no logs, 1 alert",
+      "theme": "dark (OS prefers-color-scheme, Busnes, no saved choice)",
+      "viewport": "desktop 1280x900 scale 1",
+      "artifacts": "none",
+      "scores": {
+        "hierarchy": 8,
+        "typography": 7,
+        "density_layout": 7,
+        "color": 8,
+        "visible_affordances": 8,
+        "coherence": 7
+      },
+      "total": 7.5,
+      "observations": {
+        "hierarchy": "Back link, 24px app title with Edit as only header action, then a tinted Down banner with the failing request; sections follow in task order.",
+        "typography": "Section headings 16px/600; empty notes mix sizes ('No checks reported yet.' 13px vs 'No retained logs for this app.' 15px); events table keeps uppercase tracked headers.",
+        "density_layout": "Checks/Settings two-column row leaves the Checks half empty; Recent logs \u2192 Alert history spacing is tighter than other section gaps.",
+        "color": "Down banner tint and red state word are semantic; neutral silence buttons; no stray hues.",
+        "visible_affordances": "Silence 1h/8h/until fixed read as equal secondary buttons; Edit outlined with icon; facts read as label/value rows.",
+        "coherence": "Flat .dr-facts rows match Backup; the uppercase events table is the one stray style."
+      },
+      "duplicate_of": null,
+      "confidence": "high",
+      "caveat": "Stop watching/Delete section below fold; live durations change.",
+      "ky_fit": {
+        "palette_tokens": 8,
+        "type_geometry": 7,
+        "shell": 8,
+        "accent_discipline": 8,
+        "suite_cohesion": 7,
+        "mean": 7.6
+      }
+    },
+    {
+      "file": "docs/ui-pulse-eight/screenshots/kypulse-00-before-app-detail-desktop-light.png",
+      "sha256": "26ba9f4fdcc2fff7a0a841910cb04f70699dd84d9f6977af5c6781850582e5c2",
+      "bytes": 86861,
+      "width": 1280,
+      "height": 900,
+      "observed_product": "kyPulse",
+      "observed_surface": "app-detail",
+      "filename_matches_content": true,
+      "cohort": "admin-console",
+      "state": "sparse: down synthetic app, no checks, no logs, 1 alert",
+      "theme": "light (OS prefers-color-scheme, Busnes, no saved choice)",
+      "viewport": "desktop 1280x900 scale 1",
+      "artifacts": "none",
+      "scores": {
+        "hierarchy": 8,
+        "typography": 7,
+        "density_layout": 7,
+        "color": 8,
+        "visible_affordances": 8,
+        "coherence": 7
+      },
+      "total": 7.5,
+      "observations": {
+        "hierarchy": "Back link, 24px app title with Edit as only header action, then a tinted Down banner with the failing request; sections follow in task order.",
+        "typography": "Section headings 16px/600; empty notes mix sizes ('No checks reported yet.' 13px vs 'No retained logs for this app.' 15px); events table keeps uppercase tracked headers.",
+        "density_layout": "Checks/Settings two-column row leaves the Checks half empty; Recent logs \u2192 Alert history spacing is tighter than other section gaps.",
+        "color": "Down banner tint and red state word are semantic; neutral silence buttons; no stray hues.",
+        "visible_affordances": "Silence 1h/8h/until fixed read as equal secondary buttons; Edit outlined with icon; facts read as label/value rows.",
+        "coherence": "Flat .dr-facts rows match Backup; the uppercase events table is the one stray style."
+      },
+      "duplicate_of": null,
+      "confidence": "high",
+      "caveat": "Stop watching/Delete section below fold; live durations change.",
+      "ky_fit": {
+        "palette_tokens": 8,
+        "type_geometry": 7,
+        "shell": 8,
+        "accent_discipline": 8,
+        "suite_cohesion": 7,
+        "mean": 7.6
+      }
+    },
+    {
+      "file": "docs/ui-pulse-eight/screenshots/kypulse-00-before-app-detail-mobile-dark.png",
+      "sha256": "6e22f244f59eee25680d1604b9c338aeaf153bdd99f25530ef627616056de831",
+      "bytes": 51725,
+      "width": 390,
+      "height": 844,
+      "observed_product": "kyPulse",
+      "observed_surface": "app-detail",
+      "filename_matches_content": true,
+      "cohort": "admin-console",
+      "state": "sparse: down synthetic app",
+      "theme": "dark (OS prefers-color-scheme, Busnes, no saved choice)",
+      "viewport": "mobile 390x844 scale 1",
+      "artifacts": "none",
+      "scores": {
+        "hierarchy": 7,
+        "typography": 7,
+        "density_layout": 6,
+        "color": 7,
+        "visible_affordances": 8,
+        "coherence": 7
+      },
+      "total": 7.0,
+      "observations": {
+        "hierarchy": "The same 'Backup agent down' problem appears twice before any action: AlertBar (to y\u2248258) then the page Down banner (bottom at y=544 live).",
+        "typography": "Mono request line wraps across three lines inside the banner; rest matches desktop.",
+        "density_layout": "64% of the 844px viewport is red status chrome before the Silence controls; silence buttons wrap 2+1.",
+        "color": "Two stacked red-tinted blocks dilute the alert emphasis.",
+        "visible_affordances": "Edit and silence buttons are 40px outlined controls, clearly tappable.",
+        "coherence": "Same vocabulary as desktop."
+      },
+      "duplicate_of": null,
+      "confidence": "high",
+      "caveat": "Initial viewport only; content below Checks outside coverage.",
+      "ky_fit": {
+        "palette_tokens": 8,
+        "type_geometry": 7,
+        "shell": 8,
+        "accent_discipline": 8,
+        "suite_cohesion": 7,
+        "mean": 7.6
+      }
+    },
+    {
+      "file": "docs/ui-pulse-eight/screenshots/kypulse-00-before-app-detail-mobile-light.png",
+      "sha256": "ee69b58d34415a9426defbb7f9654987da1f8d4c70bb1fff08c415e57a3f8d77",
+      "bytes": 51719,
+      "width": 390,
+      "height": 844,
+      "observed_product": "kyPulse",
+      "observed_surface": "app-detail",
+      "filename_matches_content": true,
+      "cohort": "admin-console",
+      "state": "sparse: down synthetic app",
+      "theme": "light (OS prefers-color-scheme, Busnes, no saved choice)",
+      "viewport": "mobile 390x844 scale 1",
+      "artifacts": "none",
+      "scores": {
+        "hierarchy": 7,
+        "typography": 7,
+        "density_layout": 6,
+        "color": 7,
+        "visible_affordances": 8,
+        "coherence": 7
+      },
+      "total": 7.0,
+      "observations": {
+        "hierarchy": "The same 'Backup agent down' problem appears twice before any action: AlertBar (to y\u2248258) then the page Down banner (bottom at y=544 live).",
+        "typography": "Mono request line wraps across three lines inside the banner; rest matches desktop.",
+        "density_layout": "64% of the 844px viewport is red status chrome before the Silence controls; silence buttons wrap 2+1.",
+        "color": "Two stacked red-tinted blocks dilute the alert emphasis.",
+        "visible_affordances": "Edit and silence buttons are 40px outlined controls, clearly tappable.",
+        "coherence": "Same vocabulary as desktop."
+      },
+      "duplicate_of": null,
+      "confidence": "high",
+      "caveat": "Initial viewport only; content below Checks outside coverage.",
+      "ky_fit": {
+        "palette_tokens": 8,
+        "type_geometry": 7,
+        "shell": 8,
+        "accent_discipline": 8,
+        "suite_cohesion": 7,
+        "mean": 7.6
+      }
+    },
+    {
+      "file": "docs/ui-pulse-eight/screenshots/kypulse-00-before-appearance-desktop-dark.png",
+      "sha256": "7d788212492a76f7cded8cd2be90967a3d6f50c56a09acecf5f72fb3e69f52cb",
+      "bytes": 76747,
+      "width": 1280,
+      "height": 900,
+      "observed_product": "kyPulse",
+      "observed_surface": "appearance",
+      "filename_matches_content": true,
+      "cohort": "settings",
+      "state": "system theme, no saved choice",
+      "theme": "dark (OS prefers-color-scheme, Busnes, no saved choice)",
+      "viewport": "desktop 1280x900 scale 1",
+      "artifacts": "none",
+      "scores": {
+        "hierarchy": 8,
+        "typography": 8,
+        "density_layout": 8,
+        "color": 8,
+        "visible_affordances": 7,
+        "coherence": 8
+      },
+      "total": 7.9,
+      "observations": {
+        "hierarchy": "Title, one description, 'Theme' label and an even 5-column card grid; selected Match system card carries accent border and radio.",
+        "typography": "Theme names 14px/500 with 12px Light/Dark meta; consistent wrapping.",
+        "density_layout": "23 cards on an even 12px grid fit the viewport; last row left-aligned.",
+        "color": "Accent only on the selection; previews are user-data palettes.",
+        "visible_affordances": "Unselected native radios render as filled grey discs on dark cards, weaker than the light theme's open circles.",
+        "coherence": "Shared ky-ui picker identical in structure to the KyNotes reference."
+      },
+      "duplicate_of": null,
+      "confidence": "high",
+      "caveat": "Selection/save not exercised; native radio rendering is Chromium-specific.",
+      "ky_fit": {
+        "palette_tokens": 8,
+        "type_geometry": 8,
+        "shell": 8,
+        "accent_discipline": 8,
+        "suite_cohesion": 9,
+        "mean": 8.2
+      }
+    },
+    {
+      "file": "docs/ui-pulse-eight/screenshots/kypulse-00-before-appearance-desktop-light.png",
+      "sha256": "741b6690c9be27e5e7864f12c6c6ae2cbb4289b7f44a7eab368a61206ffdfaf7",
+      "bytes": 75700,
+      "width": 1280,
+      "height": 900,
+      "observed_product": "kyPulse",
+      "observed_surface": "appearance",
+      "filename_matches_content": true,
+      "cohort": "settings",
+      "state": "system theme, no saved choice",
+      "theme": "light (OS prefers-color-scheme, Busnes, no saved choice)",
+      "viewport": "desktop 1280x900 scale 1",
+      "artifacts": "none",
+      "scores": {
+        "hierarchy": 8,
+        "typography": 8,
+        "density_layout": 8,
+        "color": 8,
+        "visible_affordances": 8,
+        "coherence": 8
+      },
+      "total": 8.0,
+      "observations": {
+        "hierarchy": "Title, one description, 'Theme' label and an even 5-column card grid; selected Match system card carries accent border and radio.",
+        "typography": "Theme names 14px/500 with 12px Light/Dark meta; consistent wrapping.",
+        "density_layout": "23 cards on an even 12px grid fit the viewport; last row left-aligned.",
+        "color": "Accent only on the selection; previews are user-data palettes.",
+        "visible_affordances": "Native radios plus accent card border make selection unambiguous.",
+        "coherence": "Shared ky-ui picker identical in structure to the KyNotes reference."
+      },
+      "duplicate_of": null,
+      "confidence": "high",
+      "caveat": "Selection/save not exercised; native radio rendering is Chromium-specific.",
+      "ky_fit": {
+        "palette_tokens": 8,
+        "type_geometry": 8,
+        "shell": 8,
+        "accent_discipline": 8,
+        "suite_cohesion": 9,
+        "mean": 8.2
+      }
+    },
+    {
+      "file": "docs/ui-pulse-eight/screenshots/kypulse-00-before-appearance-mobile-dark.png",
+      "sha256": "08c84a2cec52d41e3d30eacd3eacff18015ceb0b1896610da2c53390b22c249f",
+      "bytes": 45120,
+      "width": 390,
+      "height": 844,
+      "observed_product": "kyPulse",
+      "observed_surface": "appearance",
+      "filename_matches_content": true,
+      "cohort": "settings",
+      "state": "system theme, no saved choice",
+      "theme": "dark (OS prefers-color-scheme, Busnes, no saved choice)",
+      "viewport": "mobile 390x844 scale 1",
+      "artifacts": "none",
+      "scores": {
+        "hierarchy": 8,
+        "typography": 8,
+        "density_layout": 7,
+        "color": 8,
+        "visible_affordances": 7,
+        "coherence": 8
+      },
+      "total": 7.7,
+      "observations": {
+        "hierarchy": "Two-column cards with the selected card first.",
+        "typography": "Description wraps to 3 lines at 16px; names/meta legible.",
+        "density_layout": "Global AlertBar (134px tall at 390px) repeats both live problems above every page; cards keep an even two-column rhythm.",
+        "color": "Accent only on selection.",
+        "visible_affordances": "Unselected dark radios are filled grey discs.",
+        "coherence": "Matches the KyNotes mobile Appearance reference."
+      },
+      "duplicate_of": null,
+      "confidence": "high",
+      "caveat": "Initial viewport only.",
+      "ky_fit": {
+        "palette_tokens": 8,
+        "type_geometry": 8,
+        "shell": 8,
+        "accent_discipline": 8,
+        "suite_cohesion": 9,
+        "mean": 8.2
+      }
+    },
+    {
+      "file": "docs/ui-pulse-eight/screenshots/kypulse-00-before-appearance-mobile-light.png",
+      "sha256": "10d37a5d6f998f0b07cece94b4f08c377502285bcbd4de58c70a006c4ea9ed20",
+      "bytes": 44657,
+      "width": 390,
+      "height": 844,
+      "observed_product": "kyPulse",
+      "observed_surface": "appearance",
+      "filename_matches_content": true,
+      "cohort": "settings",
+      "state": "system theme, no saved choice",
+      "theme": "light (OS prefers-color-scheme, Busnes, no saved choice)",
+      "viewport": "mobile 390x844 scale 1",
+      "artifacts": "none",
+      "scores": {
+        "hierarchy": 8,
+        "typography": 8,
+        "density_layout": 7,
+        "color": 8,
+        "visible_affordances": 8,
+        "coherence": 8
+      },
+      "total": 7.8,
+      "observations": {
+        "hierarchy": "Two-column cards with the selected card first.",
+        "typography": "Description wraps to 3 lines at 16px; names/meta legible.",
+        "density_layout": "Global AlertBar (134px tall at 390px) repeats both live problems above every page; cards keep an even two-column rhythm.",
+        "color": "Accent only on selection.",
+        "visible_affordances": "Clear radio/card selection.",
+        "coherence": "Matches the KyNotes mobile Appearance reference."
+      },
+      "duplicate_of": null,
+      "confidence": "high",
+      "caveat": "Initial viewport only.",
+      "ky_fit": {
+        "palette_tokens": 8,
+        "type_geometry": 8,
+        "shell": 8,
+        "accent_discipline": 8,
+        "suite_cohesion": 9,
+        "mean": 8.2
+      }
+    },
+    {
+      "file": "docs/ui-pulse-eight/screenshots/kypulse-00-before-backup-desktop-dark.png",
+      "sha256": "3744324bdc567c3d6df80c360fe1fef0b73dedd985c87e9360bf82392b1d255f",
+      "bytes": 98817,
+      "width": 1280,
+      "height": 900,
+      "observed_product": "kyPulse",
+      "observed_surface": "backup",
+      "filename_matches_content": true,
+      "cohort": "settings",
+      "state": "unconfigured synthetic defaults",
+      "theme": "dark (OS prefers-color-scheme, Busnes, no saved choice)",
+      "viewport": "desktop 1280x900 scale 1",
+      "artifacts": "none",
+      "scores": {
+        "hierarchy": 8,
+        "typography": 7,
+        "density_layout": 8,
+        "color": 6,
+        "visible_affordances": 6,
+        "coherence": 7
+      },
+      "total": 7.1,
+      "observations": {
+        "hierarchy": "'Backup & recovery' title with Refresh, a warning callout 'No backups are being made', then facts and a Back up now panel.",
+        "typography": "Facts labels 13px with badges, values 15px, mono path; panel headings 16px.",
+        "density_layout": "Facts share one label column; panels aligned; capsule chips wrap on one line.",
+        "color": "Green success chips on 'Local copies 0 of 7' and 'Schedule Daily' sit under a callout saying no backups are being made; disabled primaries are faded orange.",
+        "visible_affordances": "Disabled 'Back up now' and 'Save' are 50%-opacity accent fills (label ~2.2:1 pixel-sampled), reading like weak primaries rather than disabled controls; Download capsule disabled outline is clearer.",
+        "coherence": "Flat facts rows plus bordered panels; badges shared with Settings DB panel."
+      },
+      "duplicate_of": null,
+      "confidence": "high",
+      "caveat": "Unconfigured synthetic defaults; KyRecovery/key panels below fold.",
+      "ky_fit": {
+        "palette_tokens": 7,
+        "type_geometry": 8,
+        "shell": 8,
+        "accent_discipline": 6,
+        "suite_cohesion": 7,
+        "mean": 7.2
+      }
+    },
+    {
+      "file": "docs/ui-pulse-eight/screenshots/kypulse-00-before-backup-desktop-light.png",
+      "sha256": "7d471478b8317d5c87c4a7f8ff638df2dae09c51949ad36f35fe9fb573179e7e",
+      "bytes": 98421,
+      "width": 1280,
+      "height": 900,
+      "observed_product": "kyPulse",
+      "observed_surface": "backup",
+      "filename_matches_content": true,
+      "cohort": "settings",
+      "state": "unconfigured synthetic defaults",
+      "theme": "light (OS prefers-color-scheme, Busnes, no saved choice)",
+      "viewport": "desktop 1280x900 scale 1",
+      "artifacts": "none",
+      "scores": {
+        "hierarchy": 8,
+        "typography": 7,
+        "density_layout": 8,
+        "color": 6,
+        "visible_affordances": 6,
+        "coherence": 7
+      },
+      "total": 7.1,
+      "observations": {
+        "hierarchy": "'Backup & recovery' title with Refresh, a warning callout 'No backups are being made', then facts and a Back up now panel.",
+        "typography": "Facts labels 13px with badges, values 15px, mono path; panel headings 16px.",
+        "density_layout": "Facts share one label column; panels aligned; capsule chips wrap on one line.",
+        "color": "Green success chips on 'Local copies 0 of 7' and 'Schedule Daily' sit under a callout saying no backups are being made; disabled primaries are faded orange.",
+        "visible_affordances": "Disabled 'Back up now' and 'Save' are 50%-opacity accent fills (label ~2.2:1 pixel-sampled), reading like weak primaries rather than disabled controls; Download capsule disabled outline is clearer.",
+        "coherence": "Flat facts rows plus bordered panels; badges shared with Settings DB panel."
+      },
+      "duplicate_of": null,
+      "confidence": "high",
+      "caveat": "Unconfigured synthetic defaults; KyRecovery/key panels below fold.",
+      "ky_fit": {
+        "palette_tokens": 7,
+        "type_geometry": 8,
+        "shell": 8,
+        "accent_discipline": 6,
+        "suite_cohesion": 7,
+        "mean": 7.2
+      }
+    },
+    {
+      "file": "docs/ui-pulse-eight/screenshots/kypulse-00-before-backup-mobile-dark.png",
+      "sha256": "4c846b6f40d390df10b1fa03a384f78f6c40a0a194bd564564ceaa47031f1b6b",
+      "bytes": 54654,
+      "width": 390,
+      "height": 844,
+      "observed_product": "kyPulse",
+      "observed_surface": "backup",
+      "filename_matches_content": true,
+      "cohort": "settings",
+      "state": "unconfigured synthetic defaults",
+      "theme": "dark (OS prefers-color-scheme, Busnes, no saved choice)",
+      "viewport": "mobile 390x844 scale 1",
+      "artifacts": "none",
+      "scores": {
+        "hierarchy": 7,
+        "typography": 7,
+        "density_layout": 5,
+        "color": 6,
+        "visible_affordances": 6,
+        "coherence": 7
+      },
+      "total": 6.3,
+      "observations": {
+        "hierarchy": "Title + Refresh row and warning callout first; facts stack.",
+        "typography": "Facts readable; mono path fits.",
+        "density_layout": "'Back up now' panel heading squeezes to a 52px column wrapping onto 3 lines beside the button stack (live measured 52x72px).",
+        "color": "Same green 0-of-7/Daily chips and faded disabled primary.",
+        "visible_affordances": "Disabled faded-orange 'Back up now' as on desktop.",
+        "coherence": "Panel header pattern breaks at this width while Settings panels stack correctly."
+      },
+      "duplicate_of": null,
+      "confidence": "high",
+      "caveat": "Initial viewport only.",
+      "ky_fit": {
+        "palette_tokens": 7,
+        "type_geometry": 8,
+        "shell": 8,
+        "accent_discipline": 6,
+        "suite_cohesion": 7,
+        "mean": 7.2
+      }
+    },
+    {
+      "file": "docs/ui-pulse-eight/screenshots/kypulse-00-before-backup-mobile-light.png",
+      "sha256": "1d778c3ce18cc6a7d686cdae0dd48e1e9bf66b75ab83642b2718c2107d0a077d",
+      "bytes": 54487,
+      "width": 390,
+      "height": 844,
+      "observed_product": "kyPulse",
+      "observed_surface": "backup",
+      "filename_matches_content": true,
+      "cohort": "settings",
+      "state": "unconfigured synthetic defaults",
+      "theme": "light (OS prefers-color-scheme, Busnes, no saved choice)",
+      "viewport": "mobile 390x844 scale 1",
+      "artifacts": "none",
+      "scores": {
+        "hierarchy": 7,
+        "typography": 7,
+        "density_layout": 5,
+        "color": 6,
+        "visible_affordances": 6,
+        "coherence": 7
+      },
+      "total": 6.3,
+      "observations": {
+        "hierarchy": "Title + Refresh row and warning callout first; facts stack.",
+        "typography": "Facts readable; mono path fits.",
+        "density_layout": "'Back up now' panel heading squeezes to a 52px column wrapping onto 3 lines beside the button stack (live measured 52x72px).",
+        "color": "Same green 0-of-7/Daily chips and faded disabled primary.",
+        "visible_affordances": "Disabled faded-orange 'Back up now' as on desktop.",
+        "coherence": "Panel header pattern breaks at this width while Settings panels stack correctly."
+      },
+      "duplicate_of": null,
+      "confidence": "high",
+      "caveat": "Initial viewport only.",
+      "ky_fit": {
+        "palette_tokens": 7,
+        "type_geometry": 8,
+        "shell": 8,
+        "accent_discipline": 6,
+        "suite_cohesion": 7,
+        "mean": 7.2
+      }
+    },
+    {
+      "file": "docs/ui-pulse-eight/screenshots/kypulse-00-before-logs-desktop-dark.png",
+      "sha256": "7dd45a837ca76bb698cdd65db67c6a8850a4482dd6b3d3c26fcac289e4c9db52",
+      "bytes": 75621,
+      "width": 1280,
+      "height": 900,
+      "observed_product": "kyPulse",
+      "observed_surface": "logs",
+      "filename_matches_content": true,
+      "cohort": "admin-console",
+      "state": "empty/unpaired",
+      "theme": "dark (OS prefers-color-scheme, Busnes, no saved choice)",
+      "viewport": "desktop 1280x900 scale 1",
+      "artifacts": "none",
+      "scores": {
+        "hierarchy": 5,
+        "typography": 6,
+        "density_layout": 5,
+        "color": 5,
+        "visible_affordances": 6,
+        "coherence": 5
+      },
+      "total": 5.3,
+      "observations": {
+        "hierarchy": "Four filled accent buttons (Apply, Clear, Add source, Refresh sources \u2014 all rgb fill live computed) compete; no single primary.",
+        "typography": "h1 renders 30px/700 (browser default, live computed) versus 24px/600 on Status/Alerts/Settings/Backup; 'Log sources' section heading also oversized.",
+        "density_layout": "Filter grid wraps 'To (UTC)' onto an orphan second row beside Apply/Clear; empty 'No logs found.' sits between forms with little separation.",
+        "color": "Accent used on four non-primary actions; otherwise neutral.",
+        "visible_affordances": "Clear and Refresh look identical to the submit actions; 'Sender HTTPS origin' placeholder truncated ('https://pulse.example.cor').",
+        "coherence": "Title scale and button vocabulary differ from Status/App detail on the same shell."
+      },
+      "duplicate_of": null,
+      "confidence": "high",
+      "caveat": "Empty/unpaired state only; populated log rows not covered.",
+      "ky_fit": {
+        "palette_tokens": 7,
+        "type_geometry": 6,
+        "shell": 8,
+        "accent_discipline": 4,
+        "suite_cohesion": 6,
+        "mean": 6.2
+      }
+    },
+    {
+      "file": "docs/ui-pulse-eight/screenshots/kypulse-00-before-logs-desktop-light.png",
+      "sha256": "8f189045cd6875746f8e983d289be6a6c5040d5e58d33381dba10699739575f2",
+      "bytes": 75518,
+      "width": 1280,
+      "height": 900,
+      "observed_product": "kyPulse",
+      "observed_surface": "logs",
+      "filename_matches_content": true,
+      "cohort": "admin-console",
+      "state": "empty/unpaired",
+      "theme": "light (OS prefers-color-scheme, Busnes, no saved choice)",
+      "viewport": "desktop 1280x900 scale 1",
+      "artifacts": "none",
+      "scores": {
+        "hierarchy": 5,
+        "typography": 6,
+        "density_layout": 5,
+        "color": 5,
+        "visible_affordances": 6,
+        "coherence": 5
+      },
+      "total": 5.3,
+      "observations": {
+        "hierarchy": "Four filled accent buttons (Apply, Clear, Add source, Refresh sources \u2014 all rgb fill live computed) compete; no single primary.",
+        "typography": "h1 renders 30px/700 (browser default, live computed) versus 24px/600 on Status/Alerts/Settings/Backup; 'Log sources' section heading also oversized.",
+        "density_layout": "Filter grid wraps 'To (UTC)' onto an orphan second row beside Apply/Clear; empty 'No logs found.' sits between forms with little separation.",
+        "color": "Accent used on four non-primary actions; otherwise neutral.",
+        "visible_affordances": "Clear and Refresh look identical to the submit actions; 'Sender HTTPS origin' placeholder truncated ('https://pulse.example.cor').",
+        "coherence": "Title scale and button vocabulary differ from Status/App detail on the same shell."
+      },
+      "duplicate_of": null,
+      "confidence": "high",
+      "caveat": "Empty/unpaired state only; populated log rows not covered.",
+      "ky_fit": {
+        "palette_tokens": 7,
+        "type_geometry": 6,
+        "shell": 8,
+        "accent_discipline": 4,
+        "suite_cohesion": 6,
+        "mean": 6.2
+      }
+    },
+    {
+      "file": "docs/ui-pulse-eight/screenshots/kypulse-00-before-logs-mobile-dark.png",
+      "sha256": "3f9bfc8b9f88981eb9dac7c02af30c750a579fe4f3b3833dd51815f1793d6e33",
+      "bytes": 40456,
+      "width": 390,
+      "height": 844,
+      "observed_product": "kyPulse",
+      "observed_surface": "logs",
+      "filename_matches_content": true,
+      "cohort": "admin-console",
+      "state": "empty/unpaired",
+      "theme": "dark (OS prefers-color-scheme, Busnes, no saved choice)",
+      "viewport": "mobile 390x844 scale 1",
+      "artifacts": "none",
+      "scores": {
+        "hierarchy": 5,
+        "typography": 6,
+        "density_layout": 5,
+        "color": 5,
+        "visible_affordances": 6,
+        "coherence": 5
+      },
+      "total": 5.3,
+      "observations": {
+        "hierarchy": "Oversized title; Apply filled orange beside To field, Clear wraps below the fold.",
+        "typography": "30px/700 title persists; field labels 15px.",
+        "density_layout": "Inputs stay ~196px wide (date ~224px) instead of full width, leaving a ragged right edge; empty result and Log sources fall below the fold.",
+        "color": "Filled orange Apply plus a second filled button wrapping below.",
+        "visible_affordances": "Fields are clear 40px controls; Clear/Apply visually equal.",
+        "coherence": "Nav scrolled so 'Status' tab is partly clipped at left; form geometry unlike Settings' full-width fields."
+      },
+      "duplicate_of": null,
+      "confidence": "high",
+      "caveat": "Empty/unpaired; below-fold content outside coverage.",
+      "ky_fit": {
+        "palette_tokens": 7,
+        "type_geometry": 6,
+        "shell": 8,
+        "accent_discipline": 4,
+        "suite_cohesion": 6,
+        "mean": 6.2
+      }
+    },
+    {
+      "file": "docs/ui-pulse-eight/screenshots/kypulse-00-before-logs-mobile-light.png",
+      "sha256": "087bd03c3f92338e410f7304817bded25b2fbd0f2309016a9623c5978d8d97ed",
+      "bytes": 39811,
+      "width": 390,
+      "height": 844,
+      "observed_product": "kyPulse",
+      "observed_surface": "logs",
+      "filename_matches_content": true,
+      "cohort": "admin-console",
+      "state": "empty/unpaired",
+      "theme": "light (OS prefers-color-scheme, Busnes, no saved choice)",
+      "viewport": "mobile 390x844 scale 1",
+      "artifacts": "none",
+      "scores": {
+        "hierarchy": 5,
+        "typography": 6,
+        "density_layout": 5,
+        "color": 5,
+        "visible_affordances": 6,
+        "coherence": 5
+      },
+      "total": 5.3,
+      "observations": {
+        "hierarchy": "Oversized title; Apply filled orange beside To field, Clear wraps below the fold.",
+        "typography": "30px/700 title persists; field labels 15px.",
+        "density_layout": "Inputs stay ~196px wide (date ~224px) instead of full width, leaving a ragged right edge; empty result and Log sources fall below the fold.",
+        "color": "Filled orange Apply plus a second filled button wrapping below.",
+        "visible_affordances": "Fields are clear 40px controls; Clear/Apply visually equal.",
+        "coherence": "Nav scrolled so 'Status' tab is partly clipped at left; form geometry unlike Settings' full-width fields."
+      },
+      "duplicate_of": null,
+      "confidence": "high",
+      "caveat": "Empty/unpaired; below-fold content outside coverage.",
+      "ky_fit": {
+        "palette_tokens": 7,
+        "type_geometry": 6,
+        "shell": 8,
+        "accent_discipline": 4,
+        "suite_cohesion": 6,
+        "mean": 6.2
+      }
+    },
+    {
+      "file": "docs/ui-pulse-eight/screenshots/kypulse-00-before-settings-desktop-dark.png",
+      "sha256": "c0ce040038e405440561b3ba9139e38de818e25fbe69b1064ad525872a57a596",
+      "bytes": 77698,
+      "width": 1280,
+      "height": 900,
+      "observed_product": "kyPulse",
+      "observed_surface": "settings",
+      "filename_matches_content": true,
+      "cohort": "settings",
+      "state": "unconfigured synthetic defaults",
+      "theme": "dark (OS prefers-color-scheme, Busnes, no saved choice)",
+      "viewport": "desktop 1280x900 scale 1",
+      "artifacts": "none",
+      "scores": {
+        "hierarchy": 6,
+        "typography": 7,
+        "density_layout": 7,
+        "color": 5,
+        "visible_affordances": 7,
+        "coherence": 6
+      },
+      "total": 6.4,
+      "observations": {
+        "hierarchy": "Three stacked panels each with a filled accent primary (Set up two-factor, Save webhook, Pair): no single page primary.",
+        "typography": "24px/600 title; 16px panel headings; 13px helper text; labels small but legible.",
+        "density_layout": "Panels with 20px padding, aligned three-up webhook fields, two-up KyYard fields; consistent 20px gaps.",
+        "color": "Decorative accent icons on every panel heading; 'Appearance' link renders browser-default lavender; three filled accents.",
+        "visible_affordances": "Inputs 40px with visible borders; '2FA Off' status is bare bold text with no chip treatment.",
+        "coherence": "Bordered card stack differs from flat facts on Backup/App detail; title 'Settings' vs nav label 'Settings & DB'."
+      },
+      "duplicate_of": null,
+      "confidence": "high",
+      "caveat": "Unconfigured synthetic defaults; lower panels below fold.",
+      "ky_fit": {
+        "palette_tokens": 6,
+        "type_geometry": 7,
+        "shell": 8,
+        "accent_discipline": 4,
+        "suite_cohesion": 6,
+        "mean": 6.2
+      }
+    },
+    {
+      "file": "docs/ui-pulse-eight/screenshots/kypulse-00-before-settings-desktop-light.png",
+      "sha256": "8bcc76304322c737cc2ad8e89e68c1c14b84ac80d719706eea6168bcd050d6da",
+      "bytes": 77826,
+      "width": 1280,
+      "height": 900,
+      "observed_product": "kyPulse",
+      "observed_surface": "settings",
+      "filename_matches_content": true,
+      "cohort": "settings",
+      "state": "unconfigured synthetic defaults",
+      "theme": "light (OS prefers-color-scheme, Busnes, no saved choice)",
+      "viewport": "desktop 1280x900 scale 1",
+      "artifacts": "none",
+      "scores": {
+        "hierarchy": 6,
+        "typography": 7,
+        "density_layout": 7,
+        "color": 5,
+        "visible_affordances": 7,
+        "coherence": 6
+      },
+      "total": 6.4,
+      "observations": {
+        "hierarchy": "Three stacked panels each with a filled accent primary (Set up two-factor, Save webhook, Pair): no single page primary.",
+        "typography": "24px/600 title; 16px panel headings; 13px helper text; labels small but legible.",
+        "density_layout": "Panels with 20px padding, aligned three-up webhook fields, two-up KyYard fields; consistent 20px gaps.",
+        "color": "Decorative accent icons on every panel heading; 'Appearance' link renders browser-default blue; three filled accents.",
+        "visible_affordances": "Inputs 40px with visible borders; '2FA Off' status is bare bold text with no chip treatment.",
+        "coherence": "Bordered card stack differs from flat facts on Backup/App detail; title 'Settings' vs nav label 'Settings & DB'."
+      },
+      "duplicate_of": null,
+      "confidence": "high",
+      "caveat": "Unconfigured synthetic defaults; lower panels below fold.",
+      "ky_fit": {
+        "palette_tokens": 6,
+        "type_geometry": 7,
+        "shell": 8,
+        "accent_discipline": 4,
+        "suite_cohesion": 6,
+        "mean": 6.2
+      }
+    },
+    {
+      "file": "docs/ui-pulse-eight/screenshots/kypulse-00-before-settings-mobile-dark.png",
+      "sha256": "171c084ceed68f4e18352405423801cfc5cafdd398290ef2ff3210ec6e9fef2d",
+      "bytes": 47770,
+      "width": 390,
+      "height": 844,
+      "observed_product": "kyPulse",
+      "observed_surface": "settings",
+      "filename_matches_content": true,
+      "cohort": "settings",
+      "state": "unconfigured synthetic defaults",
+      "theme": "dark (OS prefers-color-scheme, Busnes, no saved choice)",
+      "viewport": "mobile 390x844 scale 1",
+      "artifacts": "none",
+      "scores": {
+        "hierarchy": 6,
+        "typography": 7,
+        "density_layout": 6,
+        "color": 5,
+        "visible_affordances": 7,
+        "coherence": 6
+      },
+      "total": 6.2,
+      "observations": {
+        "hierarchy": "Filled two-factor primary first; more filled primaries follow below.",
+        "typography": "Same as desktop; panel headings and helper text wrap cleanly.",
+        "density_layout": "Global AlertBar (134px tall at 390px) repeats both live problems above every page; webhook fields stack full width correctly.",
+        "color": "Accent icons and browser-default link persist.",
+        "visible_affordances": "Full-width 40px inputs and select read clearly.",
+        "coherence": "Nav scrolled so 'Activity' shows as 'ty' at the left edge; card stack as desktop."
+      },
+      "duplicate_of": null,
+      "confidence": "high",
+      "caveat": "Initial viewport only.",
+      "ky_fit": {
+        "palette_tokens": 6,
+        "type_geometry": 7,
+        "shell": 8,
+        "accent_discipline": 4,
+        "suite_cohesion": 6,
+        "mean": 6.2
+      }
+    },
+    {
+      "file": "docs/ui-pulse-eight/screenshots/kypulse-00-before-settings-mobile-light.png",
+      "sha256": "68db7ecb827d3b9e973456c61e75a54f339f3bf34b47b330aab521caedceb972",
+      "bytes": 47453,
+      "width": 390,
+      "height": 844,
+      "observed_product": "kyPulse",
+      "observed_surface": "settings",
+      "filename_matches_content": true,
+      "cohort": "settings",
+      "state": "unconfigured synthetic defaults",
+      "theme": "light (OS prefers-color-scheme, Busnes, no saved choice)",
+      "viewport": "mobile 390x844 scale 1",
+      "artifacts": "none",
+      "scores": {
+        "hierarchy": 6,
+        "typography": 7,
+        "density_layout": 6,
+        "color": 5,
+        "visible_affordances": 7,
+        "coherence": 6
+      },
+      "total": 6.2,
+      "observations": {
+        "hierarchy": "Filled two-factor primary first; more filled primaries follow below.",
+        "typography": "Same as desktop; panel headings and helper text wrap cleanly.",
+        "density_layout": "Global AlertBar (134px tall at 390px) repeats both live problems above every page; webhook fields stack full width correctly.",
+        "color": "Accent icons and browser-default link persist.",
+        "visible_affordances": "Full-width 40px inputs and select read clearly.",
+        "coherence": "Nav scrolled so 'Activity' shows as 'ty' at the left edge; card stack as desktop."
+      },
+      "duplicate_of": null,
+      "confidence": "high",
+      "caveat": "Initial viewport only.",
+      "ky_fit": {
+        "palette_tokens": 6,
+        "type_geometry": 7,
+        "shell": 8,
+        "accent_discipline": 4,
+        "suite_cohesion": 6,
+        "mean": 6.2
+      }
+    },
+    {
+      "file": "docs/ui-pulse-eight/screenshots/kypulse-00-before-status-desktop-dark.png",
+      "sha256": "cf070b3fc986bf24cbae7a2fc3f0650090c2762da9d99202c6887be49d0cbc1a",
+      "bytes": 65008,
+      "width": 1280,
+      "height": 900,
+      "observed_product": "kyPulse",
+      "observed_surface": "status",
+      "filename_matches_content": true,
+      "cohort": "admin-console",
+      "state": "sparse: 3 synthetic watched apps (down, degraded, ok)",
+      "theme": "dark (OS prefers-color-scheme, Busnes, no saved choice)",
+      "viewport": "desktop 1280x900 scale 1",
+      "artifacts": "none",
+      "scores": {
+        "hierarchy": 8,
+        "typography": 8,
+        "density_layout": 8,
+        "color": 6,
+        "visible_affordances": 7,
+        "coherence": 7
+      },
+      "total": 7.4,
+      "observations": {
+        "hierarchy": "24px/600 'Status' h1 with single filled 'Add app' primary at right; failure-first rows (Backup agent down, Mail relay degraded, Billing API ok).",
+        "typography": "Clear steps: 15px/600 app names, 12px endpoint/check meta, sentence-case 12px column headings; intro wraps to a short orphan line ('controls.').",
+        "density_layout": "Three-column grid (Application/Status/Latest check) with even 16px row padding; rows align; empty space below is honest for a 3-row sparse state.",
+        "color": "Degraded text #b45309 on charcoal panel samples 2.9:1 (pixel and live computed); AlertBar paints the degraded Mail relay item in the same danger red as the down item, so warning vs failure is not separated there.",
+        "visible_affordances": "Add app reads as primary; whole rows are links but show no chevron/underline or other at-rest link cue.",
+        "coherence": "One shell and list vocabulary; sidebar repeats identical icons for Status/Activity (pulse line) and Logs/Backup (archive box)."
+      },
+      "duplicate_of": null,
+      "confidence": "high",
+      "caveat": "Initial viewport only; live durations/timestamps differ between captures; hover/focus not visible.",
+      "ky_fit": {
+        "palette_tokens": 7,
+        "type_geometry": 8,
+        "shell": 8,
+        "accent_discipline": 8,
+        "suite_cohesion": 8,
+        "mean": 7.8
+      }
+    },
+    {
+      "file": "docs/ui-pulse-eight/screenshots/kypulse-00-before-status-desktop-light.png",
+      "sha256": "6630c65ea972d0d9dfdebb3c02d9f3ca73b69ed92235422a460f945287ef2c95",
+      "bytes": 65367,
+      "width": 1280,
+      "height": 900,
+      "observed_product": "kyPulse",
+      "observed_surface": "status",
+      "filename_matches_content": true,
+      "cohort": "admin-console",
+      "state": "sparse: 3 synthetic watched apps (down, degraded, ok)",
+      "theme": "light (OS prefers-color-scheme, Busnes, no saved choice)",
+      "viewport": "desktop 1280x900 scale 1",
+      "artifacts": "none",
+      "scores": {
+        "hierarchy": 8,
+        "typography": 8,
+        "density_layout": 8,
+        "color": 7,
+        "visible_affordances": 7,
+        "coherence": 7
+      },
+      "total": 7.6,
+      "observations": {
+        "hierarchy": "24px/600 'Status' h1 with single filled 'Add app' primary at right; failure-first rows (Backup agent down, Mail relay degraded, Billing API ok).",
+        "typography": "Clear steps: 15px/600 app names, 12px endpoint/check meta, sentence-case 12px column headings; intro wraps to a short orphan line ('controls.').",
+        "density_layout": "Three-column grid (Application/Status/Latest check) with even 16px row padding; rows align; empty space below is honest for a 3-row sparse state.",
+        "color": "Status dots/text are semantic; AlertBar paints the degraded Mail relay item in the same danger red as the down item, so warning vs failure is not separated there.",
+        "visible_affordances": "Add app reads as primary; whole rows are links but show no chevron/underline or other at-rest link cue.",
+        "coherence": "One shell and list vocabulary; sidebar repeats identical icons for Status/Activity (pulse line) and Logs/Backup (archive box)."
+      },
+      "duplicate_of": null,
+      "confidence": "high",
+      "caveat": "Initial viewport only; live durations/timestamps differ between captures; hover/focus not visible.",
+      "ky_fit": {
+        "palette_tokens": 7,
+        "type_geometry": 8,
+        "shell": 8,
+        "accent_discipline": 8,
+        "suite_cohesion": 8,
+        "mean": 7.8
+      }
+    },
+    {
+      "file": "docs/ui-pulse-eight/screenshots/kypulse-00-before-status-mobile-dark.png",
+      "sha256": "716996b2d84ab484dc8378f0a11d5b45a5c0311dd59a18a552bf686bf2c7694b",
+      "bytes": 50374,
+      "width": 390,
+      "height": 844,
+      "observed_product": "kyPulse",
+      "observed_surface": "status",
+      "filename_matches_content": true,
+      "cohort": "admin-console",
+      "state": "sparse: 3 synthetic watched apps (down, degraded, ok)",
+      "theme": "dark (OS prefers-color-scheme, Busnes, no saved choice)",
+      "viewport": "mobile 390x844 scale 1",
+      "artifacts": "none",
+      "scores": {
+        "hierarchy": 8,
+        "typography": 8,
+        "density_layout": 7,
+        "color": 6,
+        "visible_affordances": 7,
+        "coherence": 7
+      },
+      "total": 7.2,
+      "observations": {
+        "hierarchy": "Title and Add app primary share a row; failure-first cards keep the down app first.",
+        "typography": "Same scale as desktop; card meta 12px remains legible; AlertBar timestamps wrap to two lines each.",
+        "density_layout": "Global AlertBar (134px tall at 390px) repeats both live problems above every page, pushing the page title to y\u2248300 of 844; status list stacks to single-column cards cleanly.",
+        "color": "Degraded text 2.9:1 on dark panel; AlertBar renders degraded in danger red, same as down.",
+        "visible_affordances": "Horizontal primary nav: selected tab has surface + accent underline; 'Logs' cut at the right edge with no scroll cue; cards have no at-rest link cue.",
+        "coherence": "Same vocabulary as desktop; duplicate nav icons persist."
+      },
+      "duplicate_of": null,
+      "confidence": "high",
+      "caveat": "Initial viewport only; third card cut by viewport; horizontal nav scroll not exercised in capture.",
+      "ky_fit": {
+        "palette_tokens": 7,
+        "type_geometry": 8,
+        "shell": 8,
+        "accent_discipline": 8,
+        "suite_cohesion": 8,
+        "mean": 7.8
+      }
+    },
+    {
+      "file": "docs/ui-pulse-eight/screenshots/kypulse-00-before-status-mobile-light.png",
+      "sha256": "48c1d9d296134a967b06926ffe0f85b0118ff56e0570bf4c08331525fc00bb05",
+      "bytes": 50393,
+      "width": 390,
+      "height": 844,
+      "observed_product": "kyPulse",
+      "observed_surface": "status",
+      "filename_matches_content": true,
+      "cohort": "admin-console",
+      "state": "sparse: 3 synthetic watched apps (down, degraded, ok)",
+      "theme": "light (OS prefers-color-scheme, Busnes, no saved choice)",
+      "viewport": "mobile 390x844 scale 1",
+      "artifacts": "none",
+      "scores": {
+        "hierarchy": 8,
+        "typography": 8,
+        "density_layout": 7,
+        "color": 7,
+        "visible_affordances": 7,
+        "coherence": 7
+      },
+      "total": 7.4,
+      "observations": {
+        "hierarchy": "Title and Add app primary share a row; failure-first cards keep the down app first.",
+        "typography": "Same scale as desktop; card meta 12px remains legible; AlertBar timestamps wrap to two lines each.",
+        "density_layout": "Global AlertBar (134px tall at 390px) repeats both live problems above every page, pushing the page title to y\u2248300 of 844; status list stacks to single-column cards cleanly.",
+        "color": "AlertBar renders degraded in danger red, same as down.",
+        "visible_affordances": "Horizontal primary nav: selected tab has surface + accent underline; 'Logs' cut at the right edge with no scroll cue; cards have no at-rest link cue.",
+        "coherence": "Same vocabulary as desktop; duplicate nav icons persist."
+      },
+      "duplicate_of": null,
+      "confidence": "high",
+      "caveat": "Initial viewport only; third card cut by viewport; horizontal nav scroll not exercised in capture.",
+      "ky_fit": {
+        "palette_tokens": 7,
+        "type_geometry": 8,
+        "shell": 8,
+        "accent_discipline": 8,
+        "suite_cohesion": 8,
+        "mean": 7.8
+      }
+    }
+  ],
+  "arithmetic": {
+    "admin-console": {
+      "n": 20,
+      "sum": 125.6,
+      "mean": 6.3,
+      "min": 5.2,
+      "max": 7.6,
+      "ky_fit_mean": 6.9
+    },
+    "settings": {
+      "n": 12,
+      "sum": 83.4,
+      "mean": 7.0,
+      "min": 6.2,
+      "max": 8.0,
+      "ky_fit_mean": 7.2
+    },
+    "pooled": "not computed by design"
+  },
+  "cohort_rankings": {
+    "admin-console": {
+      "products": [
+        {
+          "product": "kyPulse",
+          "n": 20,
+          "mean": 6.3,
+          "matched": true
+        }
+      ],
+      "ky_gap": "N/A (no competitor in this round)"
+    },
+    "settings": {
+      "products": [
+        {
+          "product": "kyPulse",
+          "n": 12,
+          "mean": 7.0,
+          "matched": true
+        }
+      ],
+      "ky_gap": "N/A (no competitor in this round)"
+    },
+    "surface_diagnostics": [
+      {
+        "cohort": "admin-console",
+        "surface": "status",
+        "n": 4,
+        "mean": 7.4,
+        "note": "within-cohort diagnostic, not a product ranking"
+      },
+      {
+        "cohort": "admin-console",
+        "surface": "app-detail",
+        "n": 4,
+        "mean": 7.3,
+        "note": "within-cohort diagnostic, not a product ranking"
+      },
+      {
+        "cohort": "admin-console",
+        "surface": "activity",
+        "n": 4,
+        "mean": 5.8,
+        "note": "within-cohort diagnostic, not a product ranking"
+      },
+      {
+        "cohort": "admin-console",
+        "surface": "alerts",
+        "n": 4,
+        "mean": 5.7,
+        "note": "within-cohort diagnostic, not a product ranking"
+      },
+      {
+        "cohort": "admin-console",
+        "surface": "logs",
+        "n": 4,
+        "mean": 5.3,
+        "note": "within-cohort diagnostic, not a product ranking"
+      },
+      {
+        "cohort": "settings",
+        "surface": "appearance",
+        "n": 4,
+        "mean": 7.9,
+        "note": "within-cohort diagnostic, not a product ranking"
+      },
+      {
+        "cohort": "settings",
+        "surface": "backup",
+        "n": 4,
+        "mean": 6.7,
+        "note": "within-cohort diagnostic, not a product ranking"
+      },
+      {
+        "cohort": "settings",
+        "surface": "settings",
+        "n": 4,
+        "mean": 6.3,
+        "note": "within-cohort diagnostic, not a product ranking"
+      }
+    ]
+  },
+  "ky_fit": {
+    "suite_cohesion_basis": "KyNotes brand references at 1ab04e6 (4 files, hashes verified) plus this KyPulse set; two products only, not a fleet claim",
+    "admin_console_mean": 6.9,
+    "settings_mean": 7.2
+  },
+  "drift": {
+    "prior": "HANDOFF.md lists KyPulse 5.6 (before refinement) and 6.9 (latest scored views) from 2026-10-26",
+    "comparable": false,
+    "reason": "Historical sets covered app-detail (and backup in follow-up) full-page captures at different commits, saved-palette variants and blocked service workers; no file hash overlaps this round, so no per-file prior_total/delta exists. Score differences are not controlled product change.",
+    "per_file": []
+  },
+  "gates": {
+    "keyboard": "untested",
+    "focus": "untested",
+    "contrast": "untested (two screenshot/computed-colour samples noted as findings, not a gate measurement)",
+    "states": "untested (loading/error not captured; Logs/Activity empty only)",
+    "responsive": "untested as a gate; captures show page overflow 0 and reachable nav at 390/1280, but no target-size or inner-scroll acceptance"
+  },
+  "native_supplemental": {
+    "browser": "T3 Computer Use Chromium (native, differs from scored Chromium 153/scale 1)",
+    "tab": "own incognito tab, closed after use",
+    "measured": {
+      "desktop_nav_regions": 1,
+      "nav_x_w": [
+        16,
+        207
+      ],
+      "ky_theme": null,
+      "service_worker_controller": true,
+      "titles_px": {
+        "status": "24/600",
+        "alerts": "24/600",
+        "logs": "30/700",
+        "activity": "30/700",
+        "settings": "24/600",
+        "appearance": "24/600",
+        "backup": "24/600"
+      },
+      "degraded_dark_contrast": 2.9,
+      "alerts_link_light": "rgb(0,0,238)",
+      "alerts_link_dark": "rgb(158,158,255)",
+      "logs_buttons_all_accent_fill": 4,
+      "alerts_phone_table": {
+        "table_w": 421,
+        "panel_client_w": 356,
+        "overflow_x": "auto"
+      },
+      "backup_phone_heading": {
+        "text": "Back up now",
+        "w": 52,
+        "h": 72
+      },
+      "app_detail_phone_banner_bottom": 544,
+      "page_overflow": 0
+    },
+    "actions": "login, hash navigation, emulated light/dark, resize only; no writes"
+  },
+  "unscored": [
+    {
+      "file": "KyNotes brand references (4)",
+      "reason": "brand references only; not quality inputs"
+    }
+  ],
+  "limitations": [
+    "Admin role only; viewer role and existing role tests not rerun",
+    "Initial viewport only; below-fold content outside coverage",
+    "Logs/Activity empty/unpaired; Settings/Backup unconfigured defaults",
+    "No keyboard, focus, named-theme contrast, WebKit, soft keyboard, dense log or multi-team coverage",
+    "Live timestamps/durations differ between captures"
+  ]
+}

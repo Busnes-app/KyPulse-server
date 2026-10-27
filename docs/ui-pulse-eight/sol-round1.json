@@ -1,0 +1,2719 @@
+{
+  "schema": "ky-ui-council-scores/2",
+  "reviewer": {
+    "name": "GPT Sol",
+    "model": "gpt-6.1-sol",
+    "role": "Independent Council UI reviewer; no subdelegation"
+  },
+  "model": "gpt-6.1-sol",
+  "round": 1,
+  "review_name": "KYPULSE BASELINE ROUND1",
+  "rubric": {
+    "version": "ky-suite-v2",
+    "weights": {
+      "hierarchy": 0.2,
+      "typography": 0.15,
+      "density_layout": 0.2,
+      "color": 0.15,
+      "visible_affordances": 0.15,
+      "coherence": 0.15
+    },
+    "rounding": "Decimal exact weighted sum; ROUND_HALF_UP to1 decimal per unique file. Cohort means use those rounded totals, without rounding before the8 threshold.",
+    "ky_fit_weights": {
+      "palette_tokens": 0.2,
+      "type_geometry": 0.2,
+      "shell": 0.2,
+      "accent_discipline": 0.2,
+      "suite_cohesion": 0.2
+    }
+  },
+  "input_hashes": {
+    "docs/ui-pulse-eight/inventory-v1.json": "4808fbe8194c89560623f636a6b607fecb4d8de5a9d4a667893e97eabc553136",
+    "docs/ui-pulse-eight/manifest-00-before.json": "1d5fe6fc2b668bae968857b771d64809bdb8768e8e29a69a168d29c8b5acbfd8",
+    "docs/ui-pulse-eight/brand-references.json": "947645397875278d9f168d2e4bab46d4d40788f3074f30efc8695f69bb8912de",
+    "docs/ui-pulse-eight/native-baseline.json": "a9b99b5f64b3136975612836b9608cbc242a713073a735d4647cc959dfdb5f37",
+    "/home/yoshi/.codex-cpa/skills/ky-suite-ui/references/rubric.md": "ad3516620420fbdc30f5273f82b7c72c76e1365d1b6296fcaa56be3cbebf2c41"
+  },
+  "inventory": {
+    "file": "docs/ui-pulse-eight/inventory-v1.json",
+    "n": 32,
+    "unique": 32,
+    "admin_console_n": 20,
+    "settings_n": 12,
+    "sha256": "4808fbe8194c89560623f636a6b607fecb4d8de5a9d4a667893e97eabc553136",
+    "all_hash_bytes_dimensions_match_inventory_and_manifest": true,
+    "all_manifest_document_overflows_zero": true,
+    "same_dimension_pairs_compared": 240,
+    "near_duplicate_candidates_max_channel_delta_at_most8": [],
+    "minimum_different_pixel_fraction_across_pairs": 0.04726649305555555,
+    "unscored_count": 0
+  },
+  "provenance": {
+    "review_head": "d3e823db6e6ace4f081f9eb3a089c27d8d6ad24d",
+    "product_source_commit": "fef7b670a36d48792137f56d839e49a86d44eadc",
+    "committed_web_src_dist_diff_empty": true,
+    "working_web_src_dist_diff_empty": true,
+    "source_files": {
+      "web/src/App.tsx": "757c2f492879db18e8de427faeb1fd648b55ab9a4db9a961dba76038aa0bf82c",
+      "web/src/pages/Status.tsx": "fbf3cb89ae0e99996d1f608b897fa26fa523596dac903f8e18639bd99db2053c",
+      "web/src/pages/AppDetail.tsx": "cb8c3c13d2f85c6980fdfa5b1c3f025c4685a251d99d2fdb18be90755cbeb027",
+      "web/src/pages/Alerts.tsx": "ab9275f44086e6759dcf54a329a35f1411fe7f1061e841a0ab45da3ac06dd8ce",
+      "web/src/pages/Appearance.tsx": "7adef8d399d7ccd688af1aa5b0dae9a187b3a426dd434e9033756358e55fd00a",
+      "web/src/styles/theme.css": "aae25bd19ac27dbfe688ccf6b64cbe164db5ed0f08c08f4dde4f69bd7969adbf",
+      "web/src/ky-ui/VERSION": "a9415a1a35f65940ec546a7782a87ac7d0961770ccff87ce6f6cbb994247e3a9",
+      "web/package-lock.json": "9a307408bab1bfeb55c3be91e0e87464db37d4ede8c1f4a4f38273be99d836d9",
+      "web/dist/index.html": "d45283dff4c3b67ea620708230919e7cfe20edfacc09b4d1a18517b8fb859a37"
+    },
+    "source_pins_verified": 9,
+    "served_index_sha256": "d45283dff4c3b67ea620708230919e7cfe20edfacc09b4d1a18517b8fb859a37",
+    "served_index_matches_manifest_and_dist": true,
+    "vendor_version": "0.4.1",
+    "vendor_all12_file_pins_verified": true,
+    "capture": {
+      "captured_at": "2026-10-27T03:54:23.447Z",
+      "os": "Linux 7.2.10-1-cachyos",
+      "driver": "Playwright 1.63.0 Chromium 153.0.8010.12, device scale 1, normal service worker behavior",
+      "fonts": "self-hosted Space Grotesk bundled in web/dist; Space Grotesk loaded: true",
+      "server": "disposable .browser/server embedding this web/dist; owned temporary SQLite data; KEEP_FIXTURE=1 retains it for Computer Use until SIGTERM",
+      "fixture": "synthetic: admin account; three watched apps (Billing API ok, Mail relay degraded, Backup agent down) served by a capture-owned fake health endpoint on a private bridge address. Durations and timestamps are live and differ between runs"
+    },
+    "capture_history": "Initial helper failed to locate Backup; corrected to Backup & recovery before successful32 captures. No UI/source change. Parent logs /tmp/kypulse-eight-baseline-capture.log and /tmp/kypulse-eight-baseline-capture-final.log; these logs were not independently read."
+  },
+  "verdict": {
+    "score": 7.39,
+    "admin_console_mean": 7.39,
+    "settings_mean": 8.0,
+    "satisfied": false,
+    "scope": "Visual8 progression for20 admin-console and12 settings unique initial-viewport synthetic admin captures; separate cohorts; no full-product behavioral acceptance.",
+    "reason": "Admin-console remains below8, driven by phone alert/event/filter composition and competing action emphasis. Settings meets8 on its covered-cohort mean; no pooled score can clear the other cohort. Four Status dimension rows carry the disclosed blind-transcription limitation."
+  },
+  "files": [
+    {
+      "file": "screenshots/kypulse-00-before-activity-desktop-dark.png",
+      "source_path": "docs/ui-pulse-eight/screenshots/kypulse-00-before-activity-desktop-dark.png",
+      "sha256": "4727ad4f0b1f05bd4f732bb74e6d9af7558091b91029150f4028be9988fc2b49",
+      "bytes": 53122,
+      "width": 1280,
+      "height": 900,
+      "observed_product": "kyPulse",
+      "observed_surface": "activity",
+      "filename_matches_content": true,
+      "cohort": "admin-console",
+      "state": "empty",
+      "state_detail": "empty/unpaired",
+      "theme": "dark",
+      "theme_source": "OS dark (prefers-color-scheme), no saved choice",
+      "viewport": {
+        "kind": "desktop",
+        "width": 1280,
+        "height": 900,
+        "scale": 1
+      },
+      "artifacts": [],
+      "scores": {
+        "hierarchy": 7,
+        "typography": 8,
+        "density_layout": 7,
+        "color": 7,
+        "visible_affordances": 7,
+        "coherence": 8
+      },
+      "total": 7.3,
+      "observations": {
+        "hierarchy": "Activity title and retention guidance are clear; Apply and Clear receive identical primary emphasis.",
+        "typography": "Large title, regular field labels and smaller helper text make a legible three-level scale.",
+        "density_layout": "The first four fields share a row but the To date and actions wrap to a short second row; ample empty canvas is appropriate to no events.",
+        "color": "The red global warning is stronger than the quiet filter form; two orange buttons compete. Captured dark OS-following Busnes theme; apparent appearance only, no contrast ratio acceptance.",
+        "visible_affordances": "All five fields have visible labels and borders; Apply and Clear are distinguishable by text but not emphasis.",
+        "coherence": "One sidebar, consistent field corners and a flat empty-state sentence avoid nested chrome."
+      },
+      "confidence": "high",
+      "caveat": "Initial viewport only; lower content is outside coverage. Synthetic admin; no keyboard, focus, contrast, performance or full-role acceptance. Live timestamps are not fixed data. Empty/unpaired only; no populated-log or dense-activity proof.",
+      "duplicate_of": null,
+      "ky_fit": {
+        "scores": {
+          "palette_tokens": 8,
+          "type_geometry": 8,
+          "shell": 9,
+          "accent_discipline": 7,
+          "suite_cohesion": 8
+        },
+        "weights": {
+          "palette_tokens": 0.2,
+          "type_geometry": 0.2,
+          "shell": 0.2,
+          "accent_discipline": 0.2,
+          "suite_cohesion": 0.2
+        },
+        "total": 8.0,
+        "observations": {
+          "palette_tokens": "Busnes dark surfaces and orange current navigation are visible; status hues and occasional default link hues limit complete token uniformity.",
+          "type_geometry": "Space Grotesk is visible with rounded, consistent-height controls; type, control corners and spacing share the Busnes vocabulary.",
+          "shell": "One 240px left region with brand, selected route and account footer.",
+          "accent_discipline": "Orange marks the selected navigation and task controls; equally filled query/reset/refresh buttons reduce restraint.",
+          "suite_cohesion": "Compared only with four pinned KyNotes brand references: shared family, Busnes surfaces and single navigation region; Pulse retains its operator layout."
+        },
+        "scope": "Separate brand fit; suite cohesion compares Pulse and the four KyNotes references only, never whole fleet."
+      },
+      "prior_total": null,
+      "delta": null,
+      "drift_cause": null,
+      "drift_note": "No same-hash historical quality input identified; unmatched prior coverage."
+    },
+    {
+      "file": "screenshots/kypulse-00-before-activity-desktop-light.png",
+      "source_path": "docs/ui-pulse-eight/screenshots/kypulse-00-before-activity-desktop-light.png",
+      "sha256": "f0025cb6e9851ea712764f11d07d016c7970da23a41493fc963ce9edd4cabf80",
+      "bytes": 53317,
+      "width": 1280,
+      "height": 900,
+      "observed_product": "kyPulse",
+      "observed_surface": "activity",
+      "filename_matches_content": true,
+      "cohort": "admin-console",
+      "state": "empty",
+      "state_detail": "empty/unpaired",
+      "theme": "light",
+      "theme_source": "OS light (prefers-color-scheme), no saved choice",
+      "viewport": {
+        "kind": "desktop",
+        "width": 1280,
+        "height": 900,
+        "scale": 1
+      },
+      "artifacts": [],
+      "scores": {
+        "hierarchy": 7,
+        "typography": 8,
+        "density_layout": 7,
+        "color": 7,
+        "visible_affordances": 7,
+        "coherence": 8
+      },
+      "total": 7.3,
+      "observations": {
+        "hierarchy": "Activity title and retention guidance are clear; Apply and Clear receive identical primary emphasis.",
+        "typography": "Large title, regular field labels and smaller helper text make a legible three-level scale.",
+        "density_layout": "The first four fields share a row but the To date and actions wrap to a short second row; ample empty canvas is appropriate to no events.",
+        "color": "The red global warning is stronger than the quiet filter form; two orange buttons compete. Captured light OS-following Busnes theme; apparent appearance only, no contrast ratio acceptance.",
+        "visible_affordances": "All five fields have visible labels and borders; Apply and Clear are distinguishable by text but not emphasis.",
+        "coherence": "One sidebar, consistent field corners and a flat empty-state sentence avoid nested chrome."
+      },
+      "confidence": "high",
+      "caveat": "Initial viewport only; lower content is outside coverage. Synthetic admin; no keyboard, focus, contrast, performance or full-role acceptance. Live timestamps are not fixed data. Empty/unpaired only; no populated-log or dense-activity proof.",
+      "duplicate_of": null,
+      "ky_fit": {
+        "scores": {
+          "palette_tokens": 8,
+          "type_geometry": 8,
+          "shell": 9,
+          "accent_discipline": 7,
+          "suite_cohesion": 8
+        },
+        "weights": {
+          "palette_tokens": 0.2,
+          "type_geometry": 0.2,
+          "shell": 0.2,
+          "accent_discipline": 0.2,
+          "suite_cohesion": 0.2
+        },
+        "total": 8.0,
+        "observations": {
+          "palette_tokens": "Busnes light surfaces and orange current navigation are visible; status hues and occasional default link hues limit complete token uniformity.",
+          "type_geometry": "Space Grotesk is visible with rounded, consistent-height controls; type, control corners and spacing share the Busnes vocabulary.",
+          "shell": "One 240px left region with brand, selected route and account footer.",
+          "accent_discipline": "Orange marks the selected navigation and task controls; equally filled query/reset/refresh buttons reduce restraint.",
+          "suite_cohesion": "Compared only with four pinned KyNotes brand references: shared family, Busnes surfaces and single navigation region; Pulse retains its operator layout."
+        },
+        "scope": "Separate brand fit; suite cohesion compares Pulse and the four KyNotes references only, never whole fleet."
+      },
+      "prior_total": null,
+      "delta": null,
+      "drift_cause": null,
+      "drift_note": "No same-hash historical quality input identified; unmatched prior coverage."
+    },
+    {
+      "file": "screenshots/kypulse-00-before-activity-mobile-dark.png",
+      "source_path": "docs/ui-pulse-eight/screenshots/kypulse-00-before-activity-mobile-dark.png",
+      "sha256": "058a58c5403a46d3cb53f9905220c290f4970381fc5e4ca7028bd797301f59bb",
+      "bytes": 43024,
+      "width": 390,
+      "height": 844,
+      "observed_product": "kyPulse",
+      "observed_surface": "activity",
+      "filename_matches_content": true,
+      "cohort": "admin-console",
+      "state": "empty",
+      "state_detail": "empty/unpaired",
+      "theme": "dark",
+      "theme_source": "OS dark (prefers-color-scheme), no saved choice",
+      "viewport": {
+        "kind": "mobile",
+        "width": 390,
+        "height": 844,
+        "scale": 1
+      },
+      "artifacts": [],
+      "scores": {
+        "hierarchy": 6,
+        "typography": 8,
+        "density_layout": 6,
+        "color": 7,
+        "visible_affordances": 7,
+        "coherence": 8
+      },
+      "total": 6.9,
+      "observations": {
+        "hierarchy": "The page heading starts beneath a long global alert; five filter rows dominate the captured task area.",
+        "typography": "Title, labels and retention text remain legible with no visible text overlap.",
+        "density_layout": "App, Actor and Outcome fields occupy roughly half the available row width while each consumes its own row; this creates an unnecessarily tall filter stack.",
+        "color": "Restrained page surfaces and semantic alert text remain distinct; the large red band dominates the upper view. Captured dark OS-following Busnes theme; apparent appearance only, no contrast ratio acceptance.",
+        "visible_affordances": "Visible fields and Apply are recognizable; result and Clear are below this initial viewport, with reachability unproven by this image.",
+        "coherence": "The same control shapes and selected navigation treatment persist from desktop without an adjacent sidebar."
+      },
+      "confidence": "high",
+      "caveat": "Initial viewport only; lower content is outside coverage. Synthetic admin; no keyboard, focus, contrast, performance or full-role acceptance. Live timestamps are not fixed data. Empty/unpaired only; no populated-log or dense-activity proof.",
+      "duplicate_of": null,
+      "ky_fit": {
+        "scores": {
+          "palette_tokens": 8,
+          "type_geometry": 7,
+          "shell": 8,
+          "accent_discipline": 7,
+          "suite_cohesion": 8
+        },
+        "weights": {
+          "palette_tokens": 0.2,
+          "type_geometry": 0.2,
+          "shell": 0.2,
+          "accent_discipline": 0.2,
+          "suite_cohesion": 0.2
+        },
+        "total": 7.6,
+        "observations": {
+          "palette_tokens": "Busnes dark surfaces and orange current navigation are visible; status hues and occasional default link hues limit complete token uniformity.",
+          "type_geometry": "Space Grotesk is visible with rounded, consistent-height controls; narrow fields leave unused phone row width.",
+          "shell": "One primary navigation strip below the brand row; the selected route remains visible.",
+          "accent_discipline": "Orange marks the selected navigation and task controls; equally filled query/reset/refresh buttons reduce restraint.",
+          "suite_cohesion": "Compared only with four pinned KyNotes brand references: shared family, Busnes surfaces and single navigation region; Pulse retains its operator layout."
+        },
+        "scope": "Separate brand fit; suite cohesion compares Pulse and the four KyNotes references only, never whole fleet."
+      },
+      "prior_total": null,
+      "delta": null,
+      "drift_cause": null,
+      "drift_note": "No same-hash historical quality input identified; unmatched prior coverage."
+    },
+    {
+      "file": "screenshots/kypulse-00-before-activity-mobile-light.png",
+      "source_path": "docs/ui-pulse-eight/screenshots/kypulse-00-before-activity-mobile-light.png",
+      "sha256": "3c130990c644ce98498fb04107faaf5c2150488f3b053d5906524c7b967feeaa",
+      "bytes": 42325,
+      "width": 390,
+      "height": 844,
+      "observed_product": "kyPulse",
+      "observed_surface": "activity",
+      "filename_matches_content": true,
+      "cohort": "admin-console",
+      "state": "empty",
+      "state_detail": "empty/unpaired",
+      "theme": "light",
+      "theme_source": "OS light (prefers-color-scheme), no saved choice",
+      "viewport": {
+        "kind": "mobile",
+        "width": 390,
+        "height": 844,
+        "scale": 1
+      },
+      "artifacts": [],
+      "scores": {
+        "hierarchy": 6,
+        "typography": 8,
+        "density_layout": 6,
+        "color": 7,
+        "visible_affordances": 7,
+        "coherence": 8
+      },
+      "total": 6.9,
+      "observations": {
+        "hierarchy": "The page heading starts beneath a long global alert; five filter rows dominate the captured task area.",
+        "typography": "Title, labels and retention text remain legible with no visible text overlap.",
+        "density_layout": "App, Actor and Outcome fields occupy roughly half the available row width while each consumes its own row; this creates an unnecessarily tall filter stack.",
+        "color": "Restrained page surfaces and semantic alert text remain distinct; the large red band dominates the upper view. Captured light OS-following Busnes theme; apparent appearance only, no contrast ratio acceptance.",
+        "visible_affordances": "Visible fields and Apply are recognizable; result and Clear are below this initial viewport, with reachability unproven by this image.",
+        "coherence": "The same control shapes and selected navigation treatment persist from desktop without an adjacent sidebar."
+      },
+      "confidence": "high",
+      "caveat": "Initial viewport only; lower content is outside coverage. Synthetic admin; no keyboard, focus, contrast, performance or full-role acceptance. Live timestamps are not fixed data. Empty/unpaired only; no populated-log or dense-activity proof.",
+      "duplicate_of": null,
+      "ky_fit": {
+        "scores": {
+          "palette_tokens": 8,
+          "type_geometry": 7,
+          "shell": 8,
+          "accent_discipline": 7,
+          "suite_cohesion": 8
+        },
+        "weights": {
+          "palette_tokens": 0.2,
+          "type_geometry": 0.2,
+          "shell": 0.2,
+          "accent_discipline": 0.2,
+          "suite_cohesion": 0.2
+        },
+        "total": 7.6,
+        "observations": {
+          "palette_tokens": "Busnes light surfaces and orange current navigation are visible; status hues and occasional default link hues limit complete token uniformity.",
+          "type_geometry": "Space Grotesk is visible with rounded, consistent-height controls; narrow fields leave unused phone row width.",
+          "shell": "One primary navigation strip below the brand row; the selected route remains visible.",
+          "accent_discipline": "Orange marks the selected navigation and task controls; equally filled query/reset/refresh buttons reduce restraint.",
+          "suite_cohesion": "Compared only with four pinned KyNotes brand references: shared family, Busnes surfaces and single navigation region; Pulse retains its operator layout."
+        },
+        "scope": "Separate brand fit; suite cohesion compares Pulse and the four KyNotes references only, never whole fleet."
+      },
+      "prior_total": null,
+      "delta": null,
+      "drift_cause": null,
+      "drift_note": "No same-hash historical quality input identified; unmatched prior coverage."
+    },
+    {
+      "file": "screenshots/kypulse-00-before-alerts-desktop-dark.png",
+      "source_path": "docs/ui-pulse-eight/screenshots/kypulse-00-before-alerts-desktop-dark.png",
+      "sha256": "40c38837e646a567996a5bdc71bbb0474b2aba88ded179cd35ef2678f31cf95b",
+      "bytes": 49676,
+      "width": 1280,
+      "height": 900,
+      "observed_product": "kyPulse",
+      "observed_surface": "alerts",
+      "filename_matches_content": true,
+      "cohort": "admin-console",
+      "state": "sparse",
+      "state_detail": "three synthetic transition rows, not a dense history",
+      "theme": "dark",
+      "theme_source": "OS dark (prefers-color-scheme), no saved choice",
+      "viewport": {
+        "kind": "desktop",
+        "width": 1280,
+        "height": 900,
+        "scale": 1
+      },
+      "artifacts": [],
+      "scores": {
+        "hierarchy": 8,
+        "typography": 8,
+        "density_layout": 8,
+        "color": 7,
+        "visible_affordances": 7,
+        "coherence": 7
+      },
+      "total": 7.6,
+      "observations": {
+        "hierarchy": "Alerts heading leads directly into a compact chronological table with clearly separated columns.",
+        "typography": "Small table text is consistent and legible; uppercase headers add a slightly different voice from sentence-case navigation.",
+        "density_layout": "Three event rows align cleanly in a single low table; empty space below suits this sparse fixture.",
+        "color": "Red, amber and green changes communicate state, while blue or violet app links introduce an extra visual vocabulary. Captured dark OS-following Busnes theme; apparent appearance only, no contrast ratio acceptance.",
+        "visible_affordances": "Underlined app links read as links; the current navigation item is clear.",
+        "coherence": "Sidebar and panel geometry agree, but default-colored table links differ from the ink-colored Status return link seen on detail."
+      },
+      "confidence": "high",
+      "caveat": "Initial viewport only; lower content is outside coverage. Synthetic admin; no keyboard, focus, contrast, performance or full-role acceptance. Live timestamps are not fixed data.",
+      "duplicate_of": null,
+      "ky_fit": {
+        "scores": {
+          "palette_tokens": 8,
+          "type_geometry": 8,
+          "shell": 9,
+          "accent_discipline": 8,
+          "suite_cohesion": 8
+        },
+        "weights": {
+          "palette_tokens": 0.2,
+          "type_geometry": 0.2,
+          "shell": 0.2,
+          "accent_discipline": 0.2,
+          "suite_cohesion": 0.2
+        },
+        "total": 8.2,
+        "observations": {
+          "palette_tokens": "Busnes dark surfaces and orange current navigation are visible; status hues and occasional default link hues limit complete token uniformity.",
+          "type_geometry": "Space Grotesk is visible with rounded, consistent-height controls; type, control corners and spacing share the Busnes vocabulary.",
+          "shell": "One 240px left region with brand, selected route and account footer.",
+          "accent_discipline": "Orange marks the selected navigation and configuration or task actions, with semantic warnings separate.",
+          "suite_cohesion": "Compared only with four pinned KyNotes brand references: shared family, Busnes surfaces and single navigation region; Pulse retains its operator layout."
+        },
+        "scope": "Separate brand fit; suite cohesion compares Pulse and the four KyNotes references only, never whole fleet."
+      },
+      "prior_total": null,
+      "delta": null,
+      "drift_cause": null,
+      "drift_note": "No same-hash historical quality input identified; unmatched prior coverage."
+    },
+    {
+      "file": "screenshots/kypulse-00-before-alerts-desktop-light.png",
+      "source_path": "docs/ui-pulse-eight/screenshots/kypulse-00-before-alerts-desktop-light.png",
+      "sha256": "dc5539ac285b56cf653be9df6ce0aa7c1009acc93d5ed7672aa0f1bb87fa52b5",
+      "bytes": 49176,
+      "width": 1280,
+      "height": 900,
+      "observed_product": "kyPulse",
+      "observed_surface": "alerts",
+      "filename_matches_content": true,
+      "cohort": "admin-console",
+      "state": "sparse",
+      "state_detail": "three synthetic transition rows, not a dense history",
+      "theme": "light",
+      "theme_source": "OS light (prefers-color-scheme), no saved choice",
+      "viewport": {
+        "kind": "desktop",
+        "width": 1280,
+        "height": 900,
+        "scale": 1
+      },
+      "artifacts": [],
+      "scores": {
+        "hierarchy": 8,
+        "typography": 8,
+        "density_layout": 8,
+        "color": 7,
+        "visible_affordances": 7,
+        "coherence": 7
+      },
+      "total": 7.6,
+      "observations": {
+        "hierarchy": "Alerts heading leads directly into a compact chronological table with clearly separated columns.",
+        "typography": "Small table text is consistent and legible; uppercase headers add a slightly different voice from sentence-case navigation.",
+        "density_layout": "Three event rows align cleanly in a single low table; empty space below suits this sparse fixture.",
+        "color": "Red, amber and green changes communicate state, while blue or violet app links introduce an extra visual vocabulary. Captured light OS-following Busnes theme; apparent appearance only, no contrast ratio acceptance.",
+        "visible_affordances": "Underlined app links read as links; the current navigation item is clear.",
+        "coherence": "Sidebar and panel geometry agree, but default-colored table links differ from the ink-colored Status return link seen on detail."
+      },
+      "confidence": "high",
+      "caveat": "Initial viewport only; lower content is outside coverage. Synthetic admin; no keyboard, focus, contrast, performance or full-role acceptance. Live timestamps are not fixed data.",
+      "duplicate_of": null,
+      "ky_fit": {
+        "scores": {
+          "palette_tokens": 8,
+          "type_geometry": 8,
+          "shell": 9,
+          "accent_discipline": 8,
+          "suite_cohesion": 8
+        },
+        "weights": {
+          "palette_tokens": 0.2,
+          "type_geometry": 0.2,
+          "shell": 0.2,
+          "accent_discipline": 0.2,
+          "suite_cohesion": 0.2
+        },
+        "total": 8.2,
+        "observations": {
+          "palette_tokens": "Busnes light surfaces and orange current navigation are visible; status hues and occasional default link hues limit complete token uniformity.",
+          "type_geometry": "Space Grotesk is visible with rounded, consistent-height controls; type, control corners and spacing share the Busnes vocabulary.",
+          "shell": "One 240px left region with brand, selected route and account footer.",
+          "accent_discipline": "Orange marks the selected navigation and configuration or task actions, with semantic warnings separate.",
+          "suite_cohesion": "Compared only with four pinned KyNotes brand references: shared family, Busnes surfaces and single navigation region; Pulse retains its operator layout."
+        },
+        "scope": "Separate brand fit; suite cohesion compares Pulse and the four KyNotes references only, never whole fleet."
+      },
+      "prior_total": null,
+      "delta": null,
+      "drift_cause": null,
+      "drift_note": "No same-hash historical quality input identified; unmatched prior coverage."
+    },
+    {
+      "file": "screenshots/kypulse-00-before-alerts-mobile-dark.png",
+      "source_path": "docs/ui-pulse-eight/screenshots/kypulse-00-before-alerts-mobile-dark.png",
+      "sha256": "af56b9d4f5cbc5942f9415374f1586e413034f59334a5feff2d72e3cd389496b",
+      "bytes": 39141,
+      "width": 390,
+      "height": 844,
+      "observed_product": "kyPulse",
+      "observed_surface": "alerts",
+      "filename_matches_content": true,
+      "cohort": "admin-console",
+      "state": "sparse",
+      "state_detail": "three synthetic transition rows, not a dense history",
+      "theme": "dark",
+      "theme_source": "OS dark (prefers-color-scheme), no saved choice",
+      "viewport": {
+        "kind": "mobile",
+        "width": 390,
+        "height": 844,
+        "scale": 1
+      },
+      "artifacts": [],
+      "scores": {
+        "hierarchy": 7,
+        "typography": 7,
+        "density_layout": 6,
+        "color": 7,
+        "visible_affordances": 6,
+        "coherence": 7
+      },
+      "total": 6.7,
+      "observations": {
+        "hierarchy": "The Alerts title is visible, but wrapped table cells compete with the long global warning for quick triage.",
+        "typography": "Time and app text wrap to two lines and the degraded transition to three, slowing row comparison.",
+        "density_layout": "The Delivery column lies beyond the table viewport and state changes break across lines; this is a scrollable container rather than page overflow.",
+        "color": "State text retains semantic red/amber/green distinctions; default link color remains visually separate from the Busnes shell. Captured dark OS-following Busnes theme; apparent appearance only, no contrast ratio acceptance.",
+        "visible_affordances": "App links are recognizable, but the right-edge cut-off gives only a weak cue that Delivery can be reached by horizontal scrolling.",
+        "coherence": "There is one horizontal primary navigation region; the compressed desktop table does not adapt as coherently as the Status list."
+      },
+      "confidence": "high",
+      "caveat": "Initial viewport only; lower content is outside coverage. Synthetic admin; no keyboard, focus, contrast, performance or full-role acceptance. Live timestamps are not fixed data.",
+      "duplicate_of": null,
+      "ky_fit": {
+        "scores": {
+          "palette_tokens": 8,
+          "type_geometry": 8,
+          "shell": 8,
+          "accent_discipline": 8,
+          "suite_cohesion": 8
+        },
+        "weights": {
+          "palette_tokens": 0.2,
+          "type_geometry": 0.2,
+          "shell": 0.2,
+          "accent_discipline": 0.2,
+          "suite_cohesion": 0.2
+        },
+        "total": 8.0,
+        "observations": {
+          "palette_tokens": "Busnes dark surfaces and orange current navigation are visible; status hues and occasional default link hues limit complete token uniformity.",
+          "type_geometry": "Space Grotesk is visible with rounded, consistent-height controls; type, control corners and spacing share the Busnes vocabulary.",
+          "shell": "One primary navigation strip below the brand row; the selected route remains visible.",
+          "accent_discipline": "Orange marks the selected navigation and configuration or task actions, with semantic warnings separate.",
+          "suite_cohesion": "Compared only with four pinned KyNotes brand references: shared family, Busnes surfaces and single navigation region; Pulse retains its operator layout."
+        },
+        "scope": "Separate brand fit; suite cohesion compares Pulse and the four KyNotes references only, never whole fleet."
+      },
+      "prior_total": null,
+      "delta": null,
+      "drift_cause": null,
+      "drift_note": "No same-hash historical quality input identified; unmatched prior coverage."
+    },
+    {
+      "file": "screenshots/kypulse-00-before-alerts-mobile-light.png",
+      "source_path": "docs/ui-pulse-eight/screenshots/kypulse-00-before-alerts-mobile-light.png",
+      "sha256": "5e4d3ac2859aad370fb6db2c93531e6f322e932751f66dd3b36412885fc63110",
+      "bytes": 39172,
+      "width": 390,
+      "height": 844,
+      "observed_product": "kyPulse",
+      "observed_surface": "alerts",
+      "filename_matches_content": true,
+      "cohort": "admin-console",
+      "state": "sparse",
+      "state_detail": "three synthetic transition rows, not a dense history",
+      "theme": "light",
+      "theme_source": "OS light (prefers-color-scheme), no saved choice",
+      "viewport": {
+        "kind": "mobile",
+        "width": 390,
+        "height": 844,
+        "scale": 1
+      },
+      "artifacts": [],
+      "scores": {
+        "hierarchy": 7,
+        "typography": 7,
+        "density_layout": 6,
+        "color": 7,
+        "visible_affordances": 6,
+        "coherence": 7
+      },
+      "total": 6.7,
+      "observations": {
+        "hierarchy": "The Alerts title is visible, but wrapped table cells compete with the long global warning for quick triage.",
+        "typography": "Time and app text wrap to two lines and the degraded transition to three, slowing row comparison.",
+        "density_layout": "The Delivery column lies beyond the table viewport and state changes break across lines; this is a scrollable container rather than page overflow.",
+        "color": "State text retains semantic red/amber/green distinctions; default link color remains visually separate from the Busnes shell. Captured light OS-following Busnes theme; apparent appearance only, no contrast ratio acceptance.",
+        "visible_affordances": "App links are recognizable, but the right-edge cut-off gives only a weak cue that Delivery can be reached by horizontal scrolling.",
+        "coherence": "There is one horizontal primary navigation region; the compressed desktop table does not adapt as coherently as the Status list."
+      },
+      "confidence": "high",
+      "caveat": "Initial viewport only; lower content is outside coverage. Synthetic admin; no keyboard, focus, contrast, performance or full-role acceptance. Live timestamps are not fixed data.",
+      "duplicate_of": null,
+      "ky_fit": {
+        "scores": {
+          "palette_tokens": 8,
+          "type_geometry": 8,
+          "shell": 8,
+          "accent_discipline": 8,
+          "suite_cohesion": 8
+        },
+        "weights": {
+          "palette_tokens": 0.2,
+          "type_geometry": 0.2,
+          "shell": 0.2,
+          "accent_discipline": 0.2,
+          "suite_cohesion": 0.2
+        },
+        "total": 8.0,
+        "observations": {
+          "palette_tokens": "Busnes light surfaces and orange current navigation are visible; status hues and occasional default link hues limit complete token uniformity.",
+          "type_geometry": "Space Grotesk is visible with rounded, consistent-height controls; type, control corners and spacing share the Busnes vocabulary.",
+          "shell": "One primary navigation strip below the brand row; the selected route remains visible.",
+          "accent_discipline": "Orange marks the selected navigation and configuration or task actions, with semantic warnings separate.",
+          "suite_cohesion": "Compared only with four pinned KyNotes brand references: shared family, Busnes surfaces and single navigation region; Pulse retains its operator layout."
+        },
+        "scope": "Separate brand fit; suite cohesion compares Pulse and the four KyNotes references only, never whole fleet."
+      },
+      "prior_total": null,
+      "delta": null,
+      "drift_cause": null,
+      "drift_note": "No same-hash historical quality input identified; unmatched prior coverage."
+    },
+    {
+      "file": "screenshots/kypulse-00-before-app-detail-desktop-dark.png",
+      "source_path": "docs/ui-pulse-eight/screenshots/kypulse-00-before-app-detail-desktop-dark.png",
+      "sha256": "f4426e10a61574e550da69a1151238bbee25a24ed021e068e6c975e4f25d11aa",
+      "bytes": 86761,
+      "width": 1280,
+      "height": 900,
+      "observed_product": "kyPulse",
+      "observed_surface": "app-detail",
+      "filename_matches_content": true,
+      "cohort": "admin-console",
+      "state": "sparse",
+      "state_detail": "one synthetic down Backup agent; no checks, no retained logs and no linked KyYard container",
+      "theme": "dark",
+      "theme_source": "OS dark (prefers-color-scheme), no saved choice",
+      "viewport": {
+        "kind": "desktop",
+        "width": 1280,
+        "height": 900,
+        "scale": 1
+      },
+      "artifacts": [],
+      "scores": {
+        "hierarchy": 8,
+        "typography": 8,
+        "density_layout": 8,
+        "color": 8,
+        "visible_affordances": 9,
+        "coherence": 8
+      },
+      "total": 8.2,
+      "observations": {
+        "hierarchy": "Backup agent and the Down health block establish the task; Edit is isolated and silence controls form their own subordinate group.",
+        "typography": "Title, bold section names, small hints and monospace endpoint data have distinct roles.",
+        "density_layout": "Checks and Settings use two aligned columns, followed by clear KyYard, recent-log and history sections.",
+        "color": "The red Down block is appropriate diagnostic emphasis and is separate from the global AlertBar. Captured dark OS-following Busnes theme; apparent appearance only, no contrast ratio acceptance.",
+        "visible_affordances": "Edit and three outlined silence buttons read as controls; the Status return is an underlined ink link.",
+        "coherence": "Flat settings rows, matching corners and one left sidebar form a consistent screen."
+      },
+      "confidence": "high",
+      "caveat": "Initial viewport only; lower content is outside coverage. Synthetic admin; no keyboard, focus, contrast, performance or full-role acceptance. Live timestamps are not fixed data.",
+      "duplicate_of": null,
+      "ky_fit": {
+        "scores": {
+          "palette_tokens": 8,
+          "type_geometry": 8,
+          "shell": 9,
+          "accent_discipline": 8,
+          "suite_cohesion": 8
+        },
+        "weights": {
+          "palette_tokens": 0.2,
+          "type_geometry": 0.2,
+          "shell": 0.2,
+          "accent_discipline": 0.2,
+          "suite_cohesion": 0.2
+        },
+        "total": 8.2,
+        "observations": {
+          "palette_tokens": "Busnes dark surfaces and orange current navigation are visible; status hues and occasional default link hues limit complete token uniformity.",
+          "type_geometry": "Space Grotesk is visible with rounded, consistent-height controls; type, control corners and spacing share the Busnes vocabulary.",
+          "shell": "One 240px left region with brand, selected route and account footer.",
+          "accent_discipline": "Orange marks the selected navigation and configuration or task actions, with semantic warnings separate.",
+          "suite_cohesion": "Compared only with four pinned KyNotes brand references: shared family, Busnes surfaces and single navigation region; Pulse retains its operator layout."
+        },
+        "scope": "Separate brand fit; suite cohesion compares Pulse and the four KyNotes references only, never whole fleet."
+      },
+      "prior_total": null,
+      "delta": null,
+      "drift_cause": null,
+      "drift_note": "No same-hash historical quality input identified; unmatched prior coverage."
+    },
+    {
+      "file": "screenshots/kypulse-00-before-app-detail-desktop-light.png",
+      "source_path": "docs/ui-pulse-eight/screenshots/kypulse-00-before-app-detail-desktop-light.png",
+      "sha256": "26ba9f4fdcc2fff7a0a841910cb04f70699dd84d9f6977af5c6781850582e5c2",
+      "bytes": 86861,
+      "width": 1280,
+      "height": 900,
+      "observed_product": "kyPulse",
+      "observed_surface": "app-detail",
+      "filename_matches_content": true,
+      "cohort": "admin-console",
+      "state": "sparse",
+      "state_detail": "one synthetic down Backup agent; no checks, no retained logs and no linked KyYard container",
+      "theme": "light",
+      "theme_source": "OS light (prefers-color-scheme), no saved choice",
+      "viewport": {
+        "kind": "desktop",
+        "width": 1280,
+        "height": 900,
+        "scale": 1
+      },
+      "artifacts": [],
+      "scores": {
+        "hierarchy": 8,
+        "typography": 8,
+        "density_layout": 8,
+        "color": 8,
+        "visible_affordances": 9,
+        "coherence": 8
+      },
+      "total": 8.2,
+      "observations": {
+        "hierarchy": "Backup agent and the Down health block establish the task; Edit is isolated and silence controls form their own subordinate group.",
+        "typography": "Title, bold section names, small hints and monospace endpoint data have distinct roles.",
+        "density_layout": "Checks and Settings use two aligned columns, followed by clear KyYard, recent-log and history sections.",
+        "color": "The red Down block is appropriate diagnostic emphasis and is separate from the global AlertBar. Captured light OS-following Busnes theme; apparent appearance only, no contrast ratio acceptance.",
+        "visible_affordances": "Edit and three outlined silence buttons read as controls; the Status return is an underlined ink link.",
+        "coherence": "Flat settings rows, matching corners and one left sidebar form a consistent screen."
+      },
+      "confidence": "high",
+      "caveat": "Initial viewport only; lower content is outside coverage. Synthetic admin; no keyboard, focus, contrast, performance or full-role acceptance. Live timestamps are not fixed data.",
+      "duplicate_of": null,
+      "ky_fit": {
+        "scores": {
+          "palette_tokens": 8,
+          "type_geometry": 8,
+          "shell": 9,
+          "accent_discipline": 8,
+          "suite_cohesion": 8
+        },
+        "weights": {
+          "palette_tokens": 0.2,
+          "type_geometry": 0.2,
+          "shell": 0.2,
+          "accent_discipline": 0.2,
+          "suite_cohesion": 0.2
+        },
+        "total": 8.2,
+        "observations": {
+          "palette_tokens": "Busnes light surfaces and orange current navigation are visible; status hues and occasional default link hues limit complete token uniformity.",
+          "type_geometry": "Space Grotesk is visible with rounded, consistent-height controls; type, control corners and spacing share the Busnes vocabulary.",
+          "shell": "One 240px left region with brand, selected route and account footer.",
+          "accent_discipline": "Orange marks the selected navigation and configuration or task actions, with semantic warnings separate.",
+          "suite_cohesion": "Compared only with four pinned KyNotes brand references: shared family, Busnes surfaces and single navigation region; Pulse retains its operator layout."
+        },
+        "scope": "Separate brand fit; suite cohesion compares Pulse and the four KyNotes references only, never whole fleet."
+      },
+      "prior_total": null,
+      "delta": null,
+      "drift_cause": null,
+      "drift_note": "No same-hash historical quality input identified; unmatched prior coverage."
+    },
+    {
+      "file": "screenshots/kypulse-00-before-app-detail-mobile-dark.png",
+      "source_path": "docs/ui-pulse-eight/screenshots/kypulse-00-before-app-detail-mobile-dark.png",
+      "sha256": "6e22f244f59eee25680d1604b9c338aeaf153bdd99f25530ef627616056de831",
+      "bytes": 51725,
+      "width": 390,
+      "height": 844,
+      "observed_product": "kyPulse",
+      "observed_surface": "app-detail",
+      "filename_matches_content": true,
+      "cohort": "admin-console",
+      "state": "sparse",
+      "state_detail": "one synthetic down Backup agent; no checks, no retained logs and no linked KyYard container",
+      "theme": "dark",
+      "theme_source": "OS dark (prefers-color-scheme), no saved choice",
+      "viewport": {
+        "kind": "mobile",
+        "width": 390,
+        "height": 844,
+        "scale": 1
+      },
+      "artifacts": [],
+      "scores": {
+        "hierarchy": 7,
+        "typography": 8,
+        "density_layout": 7,
+        "color": 8,
+        "visible_affordances": 8,
+        "coherence": 8
+      },
+      "total": 7.6,
+      "observations": {
+        "hierarchy": "The app-specific Down block is clear, but the separate global AlertBar repeats the same app problem above it with equal urgent color.",
+        "typography": "The app title and Down label retain hierarchy; the endpoint wraps legibly in monospace.",
+        "density_layout": "Health details wrap within the phone width and silence buttons wrap predictably; the repeated global chronology adds vertical weight.",
+        "color": "The red diagnostic panel is warranted for this down app and should remain prominent even if the global bar is compacted. Captured dark OS-following Busnes theme; apparent appearance only, no contrast ratio acceptance.",
+        "visible_affordances": "Edit and silence duration buttons have visible boundaries and clear labels.",
+        "coherence": "Single horizontal navigation and matching control vocabulary survive the stacked layout."
+      },
+      "confidence": "high",
+      "caveat": "Initial viewport only; lower content is outside coverage. Synthetic admin; no keyboard, focus, contrast, performance or full-role acceptance. Live timestamps are not fixed data.",
+      "duplicate_of": null,
+      "ky_fit": {
+        "scores": {
+          "palette_tokens": 8,
+          "type_geometry": 8,
+          "shell": 8,
+          "accent_discipline": 8,
+          "suite_cohesion": 8
+        },
+        "weights": {
+          "palette_tokens": 0.2,
+          "type_geometry": 0.2,
+          "shell": 0.2,
+          "accent_discipline": 0.2,
+          "suite_cohesion": 0.2
+        },
+        "total": 8.0,
+        "observations": {
+          "palette_tokens": "Busnes dark surfaces and orange current navigation are visible; status hues and occasional default link hues limit complete token uniformity.",
+          "type_geometry": "Space Grotesk is visible with rounded, consistent-height controls; type, control corners and spacing share the Busnes vocabulary.",
+          "shell": "One primary navigation strip below the brand row; the selected route remains visible.",
+          "accent_discipline": "Orange marks the selected navigation and configuration or task actions, with semantic warnings separate.",
+          "suite_cohesion": "Compared only with four pinned KyNotes brand references: shared family, Busnes surfaces and single navigation region; Pulse retains its operator layout."
+        },
+        "scope": "Separate brand fit; suite cohesion compares Pulse and the four KyNotes references only, never whole fleet."
+      },
+      "prior_total": null,
+      "delta": null,
+      "drift_cause": null,
+      "drift_note": "No same-hash historical quality input identified; unmatched prior coverage."
+    },
+    {
+      "file": "screenshots/kypulse-00-before-app-detail-mobile-light.png",
+      "source_path": "docs/ui-pulse-eight/screenshots/kypulse-00-before-app-detail-mobile-light.png",
+      "sha256": "ee69b58d34415a9426defbb7f9654987da1f8d4c70bb1fff08c415e57a3f8d77",
+      "bytes": 51719,
+      "width": 390,
+      "height": 844,
+      "observed_product": "kyPulse",
+      "observed_surface": "app-detail",
+      "filename_matches_content": true,
+      "cohort": "admin-console",
+      "state": "sparse",
+      "state_detail": "one synthetic down Backup agent; no checks, no retained logs and no linked KyYard container",
+      "theme": "light",
+      "theme_source": "OS light (prefers-color-scheme), no saved choice",
+      "viewport": {
+        "kind": "mobile",
+        "width": 390,
+        "height": 844,
+        "scale": 1
+      },
+      "artifacts": [],
+      "scores": {
+        "hierarchy": 7,
+        "typography": 8,
+        "density_layout": 7,
+        "color": 8,
+        "visible_affordances": 8,
+        "coherence": 8
+      },
+      "total": 7.6,
+      "observations": {
+        "hierarchy": "The app-specific Down block is clear, but the separate global AlertBar repeats the same app problem above it with equal urgent color.",
+        "typography": "The app title and Down label retain hierarchy; the endpoint wraps legibly in monospace.",
+        "density_layout": "Health details wrap within the phone width and silence buttons wrap predictably; the repeated global chronology adds vertical weight.",
+        "color": "The red diagnostic panel is warranted for this down app and should remain prominent even if the global bar is compacted. Captured light OS-following Busnes theme; apparent appearance only, no contrast ratio acceptance.",
+        "visible_affordances": "Edit and silence duration buttons have visible boundaries and clear labels.",
+        "coherence": "Single horizontal navigation and matching control vocabulary survive the stacked layout."
+      },
+      "confidence": "high",
+      "caveat": "Initial viewport only; lower content is outside coverage. Synthetic admin; no keyboard, focus, contrast, performance or full-role acceptance. Live timestamps are not fixed data.",
+      "duplicate_of": null,
+      "ky_fit": {
+        "scores": {
+          "palette_tokens": 8,
+          "type_geometry": 8,
+          "shell": 8,
+          "accent_discipline": 8,
+          "suite_cohesion": 8
+        },
+        "weights": {
+          "palette_tokens": 0.2,
+          "type_geometry": 0.2,
+          "shell": 0.2,
+          "accent_discipline": 0.2,
+          "suite_cohesion": 0.2
+        },
+        "total": 8.0,
+        "observations": {
+          "palette_tokens": "Busnes light surfaces and orange current navigation are visible; status hues and occasional default link hues limit complete token uniformity.",
+          "type_geometry": "Space Grotesk is visible with rounded, consistent-height controls; type, control corners and spacing share the Busnes vocabulary.",
+          "shell": "One primary navigation strip below the brand row; the selected route remains visible.",
+          "accent_discipline": "Orange marks the selected navigation and configuration or task actions, with semantic warnings separate.",
+          "suite_cohesion": "Compared only with four pinned KyNotes brand references: shared family, Busnes surfaces and single navigation region; Pulse retains its operator layout."
+        },
+        "scope": "Separate brand fit; suite cohesion compares Pulse and the four KyNotes references only, never whole fleet."
+      },
+      "prior_total": null,
+      "delta": null,
+      "drift_cause": null,
+      "drift_note": "No same-hash historical quality input identified; unmatched prior coverage."
+    },
+    {
+      "file": "screenshots/kypulse-00-before-appearance-desktop-dark.png",
+      "source_path": "docs/ui-pulse-eight/screenshots/kypulse-00-before-appearance-desktop-dark.png",
+      "sha256": "7d788212492a76f7cded8cd2be90967a3d6f50c56a09acecf5f72fb3e69f52cb",
+      "bytes": 76747,
+      "width": 1280,
+      "height": 900,
+      "observed_product": "kyPulse",
+      "observed_surface": "appearance",
+      "filename_matches_content": true,
+      "cohort": "settings",
+      "state": "empty",
+      "state_detail": "unconfigured synthetic configuration defaults; configuration",
+      "theme": "dark",
+      "theme_source": "OS dark (prefers-color-scheme), no saved choice",
+      "viewport": {
+        "kind": "desktop",
+        "width": 1280,
+        "height": 900,
+        "scale": 1
+      },
+      "artifacts": [],
+      "scores": {
+        "hierarchy": 9,
+        "typography": 8,
+        "density_layout": 9,
+        "color": 8,
+        "visible_affordances": 9,
+        "coherence": 9
+      },
+      "total": 8.7,
+      "observations": {
+        "hierarchy": "Appearance, the explanation and Theme legend lead directly into the selected Match system card.",
+        "typography": "Card names, descriptions and page copy use a restrained and readable scale.",
+        "density_layout": "Five evenly spaced columns present all 23 preview cards with aligned names and descriptions.",
+        "color": "Cream or charcoal shell, orange selection and actual theme swatches have distinct purposes; the unrelated red AlertBar is the main extra emphasis. Captured dark OS-following Busnes theme; apparent appearance only, no contrast ratio acceptance.",
+        "visible_affordances": "Selected border plus native radio make Match system unambiguous, with no competing compact theme dropdown.",
+        "coherence": "Preview geometry, card radius and spacing repeat consistently across the grid."
+      },
+      "confidence": "high",
+      "caveat": "Initial viewport only; lower content is outside coverage. Synthetic admin; no keyboard, focus, contrast, performance or full-role acceptance. Live timestamps are not fixed data.",
+      "duplicate_of": null,
+      "ky_fit": {
+        "scores": {
+          "palette_tokens": 9,
+          "type_geometry": 8,
+          "shell": 9,
+          "accent_discipline": 9,
+          "suite_cohesion": 9
+        },
+        "weights": {
+          "palette_tokens": 0.2,
+          "type_geometry": 0.2,
+          "shell": 0.2,
+          "accent_discipline": 0.2,
+          "suite_cohesion": 0.2
+        },
+        "total": 8.8,
+        "observations": {
+          "palette_tokens": "Busnes dark surfaces and orange current navigation are visible; alternate palette swatches are intentional catalog previews.",
+          "type_geometry": "Space Grotesk is visible with rounded, consistent-height controls; type, control corners and spacing share the Busnes vocabulary.",
+          "shell": "One 240px left region with brand, selected route and account footer.",
+          "accent_discipline": "Orange marks the selected navigation and the selected theme card.",
+          "suite_cohesion": "Compared only with four pinned KyNotes brand references: same preview-card geometry, copy and radios."
+        },
+        "scope": "Separate brand fit; suite cohesion compares Pulse and the four KyNotes references only, never whole fleet."
+      },
+      "prior_total": null,
+      "delta": null,
+      "drift_cause": null,
+      "drift_note": "No same-hash historical quality input identified; unmatched prior coverage."
+    },
+    {
+      "file": "screenshots/kypulse-00-before-appearance-desktop-light.png",
+      "source_path": "docs/ui-pulse-eight/screenshots/kypulse-00-before-appearance-desktop-light.png",
+      "sha256": "741b6690c9be27e5e7864f12c6c6ae2cbb4289b7f44a7eab368a61206ffdfaf7",
+      "bytes": 75700,
+      "width": 1280,
+      "height": 900,
+      "observed_product": "kyPulse",
+      "observed_surface": "appearance",
+      "filename_matches_content": true,
+      "cohort": "settings",
+      "state": "empty",
+      "state_detail": "unconfigured synthetic configuration defaults; configuration",
+      "theme": "light",
+      "theme_source": "OS light (prefers-color-scheme), no saved choice",
+      "viewport": {
+        "kind": "desktop",
+        "width": 1280,
+        "height": 900,
+        "scale": 1
+      },
+      "artifacts": [],
+      "scores": {
+        "hierarchy": 9,
+        "typography": 8,
+        "density_layout": 9,
+        "color": 8,
+        "visible_affordances": 9,
+        "coherence": 9
+      },
+      "total": 8.7,
+      "observations": {
+        "hierarchy": "Appearance, the explanation and Theme legend lead directly into the selected Match system card.",
+        "typography": "Card names, descriptions and page copy use a restrained and readable scale.",
+        "density_layout": "Five evenly spaced columns present all 23 preview cards with aligned names and descriptions.",
+        "color": "Cream or charcoal shell, orange selection and actual theme swatches have distinct purposes; the unrelated red AlertBar is the main extra emphasis. Captured light OS-following Busnes theme; apparent appearance only, no contrast ratio acceptance.",
+        "visible_affordances": "Selected border plus native radio make Match system unambiguous, with no competing compact theme dropdown.",
+        "coherence": "Preview geometry, card radius and spacing repeat consistently across the grid."
+      },
+      "confidence": "high",
+      "caveat": "Initial viewport only; lower content is outside coverage. Synthetic admin; no keyboard, focus, contrast, performance or full-role acceptance. Live timestamps are not fixed data.",
+      "duplicate_of": null,
+      "ky_fit": {
+        "scores": {
+          "palette_tokens": 9,
+          "type_geometry": 8,
+          "shell": 9,
+          "accent_discipline": 9,
+          "suite_cohesion": 9
+        },
+        "weights": {
+          "palette_tokens": 0.2,
+          "type_geometry": 0.2,
+          "shell": 0.2,
+          "accent_discipline": 0.2,
+          "suite_cohesion": 0.2
+        },
+        "total": 8.8,
+        "observations": {
+          "palette_tokens": "Busnes light surfaces and orange current navigation are visible; alternate palette swatches are intentional catalog previews.",
+          "type_geometry": "Space Grotesk is visible with rounded, consistent-height controls; type, control corners and spacing share the Busnes vocabulary.",
+          "shell": "One 240px left region with brand, selected route and account footer.",
+          "accent_discipline": "Orange marks the selected navigation and the selected theme card.",
+          "suite_cohesion": "Compared only with four pinned KyNotes brand references: same preview-card geometry, copy and radios."
+        },
+        "scope": "Separate brand fit; suite cohesion compares Pulse and the four KyNotes references only, never whole fleet."
+      },
+      "prior_total": null,
+      "delta": null,
+      "drift_cause": null,
+      "drift_note": "No same-hash historical quality input identified; unmatched prior coverage."
+    },
+    {
+      "file": "screenshots/kypulse-00-before-appearance-mobile-dark.png",
+      "source_path": "docs/ui-pulse-eight/screenshots/kypulse-00-before-appearance-mobile-dark.png",
+      "sha256": "08c84a2cec52d41e3d30eacd3eacff18015ceb0b1896610da2c53390b22c249f",
+      "bytes": 45120,
+      "width": 390,
+      "height": 844,
+      "observed_product": "kyPulse",
+      "observed_surface": "appearance",
+      "filename_matches_content": true,
+      "cohort": "settings",
+      "state": "empty",
+      "state_detail": "unconfigured synthetic configuration defaults; configuration",
+      "theme": "dark",
+      "theme_source": "OS dark (prefers-color-scheme), no saved choice",
+      "viewport": {
+        "kind": "mobile",
+        "width": 390,
+        "height": 844,
+        "scale": 1
+      },
+      "artifacts": [],
+      "scores": {
+        "hierarchy": 8,
+        "typography": 8,
+        "density_layout": 8,
+        "color": 8,
+        "visible_affordances": 9,
+        "coherence": 9
+      },
+      "total": 8.3,
+      "observations": {
+        "hierarchy": "The Appearance heading and explanatory copy lead to a clear Theme group despite the global warning above.",
+        "typography": "Names and light/dark descriptions fit the captured two-column cards without crowding.",
+        "density_layout": "Two equal card columns use the phone width well; lower catalog rows simply continue below the initial capture.",
+        "color": "The orange selected card remains distinct against either shell theme; alternate swatches describe choices rather than decorate chrome. Captured dark OS-following Busnes theme; apparent appearance only, no contrast ratio acceptance.",
+        "visible_affordances": "Native radio circles and the outlined selected card make the current system choice readable.",
+        "coherence": "Card geometry and explanatory text match the approved KyNotes Appearance references."
+      },
+      "confidence": "high",
+      "caveat": "Initial viewport only; lower content is outside coverage. Synthetic admin; no keyboard, focus, contrast, performance or full-role acceptance. Live timestamps are not fixed data.",
+      "duplicate_of": null,
+      "ky_fit": {
+        "scores": {
+          "palette_tokens": 9,
+          "type_geometry": 8,
+          "shell": 8,
+          "accent_discipline": 9,
+          "suite_cohesion": 9
+        },
+        "weights": {
+          "palette_tokens": 0.2,
+          "type_geometry": 0.2,
+          "shell": 0.2,
+          "accent_discipline": 0.2,
+          "suite_cohesion": 0.2
+        },
+        "total": 8.6,
+        "observations": {
+          "palette_tokens": "Busnes dark surfaces and orange current navigation are visible; alternate palette swatches are intentional catalog previews.",
+          "type_geometry": "Space Grotesk is visible with rounded, consistent-height controls; type, control corners and spacing share the Busnes vocabulary.",
+          "shell": "One primary navigation strip below the brand row; the selected route remains visible.",
+          "accent_discipline": "Orange marks the selected navigation and the selected theme card.",
+          "suite_cohesion": "Compared only with four pinned KyNotes brand references: same preview-card geometry, copy and radios."
+        },
+        "scope": "Separate brand fit; suite cohesion compares Pulse and the four KyNotes references only, never whole fleet."
+      },
+      "prior_total": null,
+      "delta": null,
+      "drift_cause": null,
+      "drift_note": "No same-hash historical quality input identified; unmatched prior coverage."
+    },
+    {
+      "file": "screenshots/kypulse-00-before-appearance-mobile-light.png",
+      "source_path": "docs/ui-pulse-eight/screenshots/kypulse-00-before-appearance-mobile-light.png",
+      "sha256": "10d37a5d6f998f0b07cece94b4f08c377502285bcbd4de58c70a006c4ea9ed20",
+      "bytes": 44657,
+      "width": 390,
+      "height": 844,
+      "observed_product": "kyPulse",
+      "observed_surface": "appearance",
+      "filename_matches_content": true,
+      "cohort": "settings",
+      "state": "empty",
+      "state_detail": "unconfigured synthetic configuration defaults; configuration",
+      "theme": "light",
+      "theme_source": "OS light (prefers-color-scheme), no saved choice",
+      "viewport": {
+        "kind": "mobile",
+        "width": 390,
+        "height": 844,
+        "scale": 1
+      },
+      "artifacts": [],
+      "scores": {
+        "hierarchy": 8,
+        "typography": 8,
+        "density_layout": 8,
+        "color": 8,
+        "visible_affordances": 9,
+        "coherence": 9
+      },
+      "total": 8.3,
+      "observations": {
+        "hierarchy": "The Appearance heading and explanatory copy lead to a clear Theme group despite the global warning above.",
+        "typography": "Names and light/dark descriptions fit the captured two-column cards without crowding.",
+        "density_layout": "Two equal card columns use the phone width well; lower catalog rows simply continue below the initial capture.",
+        "color": "The orange selected card remains distinct against either shell theme; alternate swatches describe choices rather than decorate chrome. Captured light OS-following Busnes theme; apparent appearance only, no contrast ratio acceptance.",
+        "visible_affordances": "Native radio circles and the outlined selected card make the current system choice readable.",
+        "coherence": "Card geometry and explanatory text match the approved KyNotes Appearance references."
+      },
+      "confidence": "high",
+      "caveat": "Initial viewport only; lower content is outside coverage. Synthetic admin; no keyboard, focus, contrast, performance or full-role acceptance. Live timestamps are not fixed data.",
+      "duplicate_of": null,
+      "ky_fit": {
+        "scores": {
+          "palette_tokens": 9,
+          "type_geometry": 8,
+          "shell": 8,
+          "accent_discipline": 9,
+          "suite_cohesion": 9
+        },
+        "weights": {
+          "palette_tokens": 0.2,
+          "type_geometry": 0.2,
+          "shell": 0.2,
+          "accent_discipline": 0.2,
+          "suite_cohesion": 0.2
+        },
+        "total": 8.6,
+        "observations": {
+          "palette_tokens": "Busnes light surfaces and orange current navigation are visible; alternate palette swatches are intentional catalog previews.",
+          "type_geometry": "Space Grotesk is visible with rounded, consistent-height controls; type, control corners and spacing share the Busnes vocabulary.",
+          "shell": "One primary navigation strip below the brand row; the selected route remains visible.",
+          "accent_discipline": "Orange marks the selected navigation and the selected theme card.",
+          "suite_cohesion": "Compared only with four pinned KyNotes brand references: same preview-card geometry, copy and radios."
+        },
+        "scope": "Separate brand fit; suite cohesion compares Pulse and the four KyNotes references only, never whole fleet."
+      },
+      "prior_total": null,
+      "delta": null,
+      "drift_cause": null,
+      "drift_note": "No same-hash historical quality input identified; unmatched prior coverage."
+    },
+    {
+      "file": "screenshots/kypulse-00-before-backup-desktop-dark.png",
+      "source_path": "docs/ui-pulse-eight/screenshots/kypulse-00-before-backup-desktop-dark.png",
+      "sha256": "3744324bdc567c3d6df80c360fe1fef0b73dedd985c87e9360bf82392b1d255f",
+      "bytes": 98817,
+      "width": 1280,
+      "height": 900,
+      "observed_product": "kyPulse",
+      "observed_surface": "backup",
+      "filename_matches_content": true,
+      "cohort": "settings",
+      "state": "empty",
+      "state_detail": "unconfigured synthetic configuration defaults; configuration",
+      "theme": "dark",
+      "theme_source": "OS dark (prefers-color-scheme), no saved choice",
+      "viewport": {
+        "kind": "desktop",
+        "width": 1280,
+        "height": 900,
+        "scale": 1
+      },
+      "artifacts": [],
+      "scores": {
+        "hierarchy": 8,
+        "typography": 8,
+        "density_layout": 8,
+        "color": 7,
+        "visible_affordances": 8,
+        "coherence": 8
+      },
+      "total": 7.9,
+      "observations": {
+        "hierarchy": "Backup & recovery and the no-backups warning precede destination facts; the warning explains the setup prerequisite.",
+        "typography": "Section names, small fact labels and monospace paths provide clear levels, though supporting prose is dense.",
+        "density_layout": "Recovery-key and destination badges sit beside their labels and values share a left edge; two large lower panels add vertical weight.",
+        "color": "Green 0 of 7 and Daily badges can look reassuring beside the actual no-key/no-backups warning; literal labels prevent a false factual claim. Captured dark OS-following Busnes theme; apparent appearance only, no contrast ratio acceptance.",
+        "visible_affordances": "Refresh, disabled backup/download actions and outlined restore drill are visually differentiated.",
+        "coherence": "Flat facts, consistent panels and one sidebar keep the configuration surface orderly."
+      },
+      "confidence": "high",
+      "caveat": "Initial viewport only; lower content is outside coverage. Synthetic admin; no keyboard, focus, contrast, performance or full-role acceptance. Live timestamps are not fixed data. Unconfigured synthetic defaults only; setup, saves and backup actions were not exercised.",
+      "duplicate_of": null,
+      "ky_fit": {
+        "scores": {
+          "palette_tokens": 8,
+          "type_geometry": 8,
+          "shell": 9,
+          "accent_discipline": 8,
+          "suite_cohesion": 8
+        },
+        "weights": {
+          "palette_tokens": 0.2,
+          "type_geometry": 0.2,
+          "shell": 0.2,
+          "accent_discipline": 0.2,
+          "suite_cohesion": 0.2
+        },
+        "total": 8.2,
+        "observations": {
+          "palette_tokens": "Busnes dark surfaces and orange current navigation are visible; status hues and occasional default link hues limit complete token uniformity.",
+          "type_geometry": "Space Grotesk is visible with rounded, consistent-height controls; type, control corners and spacing share the Busnes vocabulary.",
+          "shell": "One 240px left region with brand, selected route and account footer.",
+          "accent_discipline": "Orange marks the selected navigation and configuration or task actions, with semantic warnings separate.",
+          "suite_cohesion": "Compared only with four pinned KyNotes brand references: shared family, Busnes surfaces and single navigation region; Pulse retains its operator layout."
+        },
+        "scope": "Separate brand fit; suite cohesion compares Pulse and the four KyNotes references only, never whole fleet."
+      },
+      "prior_total": null,
+      "delta": null,
+      "drift_cause": null,
+      "drift_note": "No same-hash historical quality input identified; unmatched prior coverage."
+    },
+    {
+      "file": "screenshots/kypulse-00-before-backup-desktop-light.png",
+      "source_path": "docs/ui-pulse-eight/screenshots/kypulse-00-before-backup-desktop-light.png",
+      "sha256": "7d471478b8317d5c87c4a7f8ff638df2dae09c51949ad36f35fe9fb573179e7e",
+      "bytes": 98421,
+      "width": 1280,
+      "height": 900,
+      "observed_product": "kyPulse",
+      "observed_surface": "backup",
+      "filename_matches_content": true,
+      "cohort": "settings",
+      "state": "empty",
+      "state_detail": "unconfigured synthetic configuration defaults; configuration",
+      "theme": "light",
+      "theme_source": "OS light (prefers-color-scheme), no saved choice",
+      "viewport": {
+        "kind": "desktop",
+        "width": 1280,
+        "height": 900,
+        "scale": 1
+      },
+      "artifacts": [],
+      "scores": {
+        "hierarchy": 8,
+        "typography": 8,
+        "density_layout": 8,
+        "color": 7,
+        "visible_affordances": 8,
+        "coherence": 8
+      },
+      "total": 7.9,
+      "observations": {
+        "hierarchy": "Backup & recovery and the no-backups warning precede destination facts; the warning explains the setup prerequisite.",
+        "typography": "Section names, small fact labels and monospace paths provide clear levels, though supporting prose is dense.",
+        "density_layout": "Recovery-key and destination badges sit beside their labels and values share a left edge; two large lower panels add vertical weight.",
+        "color": "Green 0 of 7 and Daily badges can look reassuring beside the actual no-key/no-backups warning; literal labels prevent a false factual claim. Captured light OS-following Busnes theme; apparent appearance only, no contrast ratio acceptance.",
+        "visible_affordances": "Refresh, disabled backup/download actions and outlined restore drill are visually differentiated.",
+        "coherence": "Flat facts, consistent panels and one sidebar keep the configuration surface orderly."
+      },
+      "confidence": "high",
+      "caveat": "Initial viewport only; lower content is outside coverage. Synthetic admin; no keyboard, focus, contrast, performance or full-role acceptance. Live timestamps are not fixed data. Unconfigured synthetic defaults only; setup, saves and backup actions were not exercised.",
+      "duplicate_of": null,
+      "ky_fit": {
+        "scores": {
+          "palette_tokens": 8,
+          "type_geometry": 8,
+          "shell": 9,
+          "accent_discipline": 8,
+          "suite_cohesion": 8
+        },
+        "weights": {
+          "palette_tokens": 0.2,
+          "type_geometry": 0.2,
+          "shell": 0.2,
+          "accent_discipline": 0.2,
+          "suite_cohesion": 0.2
+        },
+        "total": 8.2,
+        "observations": {
+          "palette_tokens": "Busnes light surfaces and orange current navigation are visible; status hues and occasional default link hues limit complete token uniformity.",
+          "type_geometry": "Space Grotesk is visible with rounded, consistent-height controls; type, control corners and spacing share the Busnes vocabulary.",
+          "shell": "One 240px left region with brand, selected route and account footer.",
+          "accent_discipline": "Orange marks the selected navigation and configuration or task actions, with semantic warnings separate.",
+          "suite_cohesion": "Compared only with four pinned KyNotes brand references: shared family, Busnes surfaces and single navigation region; Pulse retains its operator layout."
+        },
+        "scope": "Separate brand fit; suite cohesion compares Pulse and the four KyNotes references only, never whole fleet."
+      },
+      "prior_total": null,
+      "delta": null,
+      "drift_cause": null,
+      "drift_note": "No same-hash historical quality input identified; unmatched prior coverage."
+    },
+    {
+      "file": "screenshots/kypulse-00-before-backup-mobile-dark.png",
+      "source_path": "docs/ui-pulse-eight/screenshots/kypulse-00-before-backup-mobile-dark.png",
+      "sha256": "4c846b6f40d390df10b1fa03a384f78f6c40a0a194bd564564ceaa47031f1b6b",
+      "bytes": 54654,
+      "width": 390,
+      "height": 844,
+      "observed_product": "kyPulse",
+      "observed_surface": "backup",
+      "filename_matches_content": true,
+      "cohort": "settings",
+      "state": "empty",
+      "state_detail": "unconfigured synthetic configuration defaults; configuration",
+      "theme": "dark",
+      "theme_source": "OS dark (prefers-color-scheme), no saved choice",
+      "viewport": {
+        "kind": "mobile",
+        "width": 390,
+        "height": 844,
+        "scale": 1
+      },
+      "artifacts": [],
+      "scores": {
+        "hierarchy": 7,
+        "typography": 8,
+        "density_layout": 7,
+        "color": 7,
+        "visible_affordances": 8,
+        "coherence": 8
+      },
+      "total": 7.5,
+      "observations": {
+        "hierarchy": "Backup & recovery and the explicit no-backups warning are clear, with repeated global alert content competing above.",
+        "typography": "Fact labels and notes remain readable; the local path wraps within the available width.",
+        "density_layout": "Stacked facts are coherent but the schedule, repeated warning and tall header push the action panel toward the capture edge; lower content is outside coverage.",
+        "color": "Green local-count and schedule badges carry more positive emphasis than their unconfigured context deserves. Captured dark OS-following Busnes theme; apparent appearance only, no contrast ratio acceptance.",
+        "visible_affordances": "Refresh is clearly outlined and the disabled backup action is faded at the lower edge.",
+        "coherence": "The same badge, line and panel vocabulary is retained in a single column."
+      },
+      "confidence": "high",
+      "caveat": "Initial viewport only; lower content is outside coverage. Synthetic admin; no keyboard, focus, contrast, performance or full-role acceptance. Live timestamps are not fixed data. Unconfigured synthetic defaults only; setup, saves and backup actions were not exercised.",
+      "duplicate_of": null,
+      "ky_fit": {
+        "scores": {
+          "palette_tokens": 8,
+          "type_geometry": 8,
+          "shell": 8,
+          "accent_discipline": 8,
+          "suite_cohesion": 8
+        },
+        "weights": {
+          "palette_tokens": 0.2,
+          "type_geometry": 0.2,
+          "shell": 0.2,
+          "accent_discipline": 0.2,
+          "suite_cohesion": 0.2
+        },
+        "total": 8.0,
+        "observations": {
+          "palette_tokens": "Busnes dark surfaces and orange current navigation are visible; status hues and occasional default link hues limit complete token uniformity.",
+          "type_geometry": "Space Grotesk is visible with rounded, consistent-height controls; type, control corners and spacing share the Busnes vocabulary.",
+          "shell": "One primary navigation strip below the brand row; the selected route remains visible.",
+          "accent_discipline": "Orange marks the selected navigation and configuration or task actions, with semantic warnings separate.",
+          "suite_cohesion": "Compared only with four pinned KyNotes brand references: shared family, Busnes surfaces and single navigation region; Pulse retains its operator layout."
+        },
+        "scope": "Separate brand fit; suite cohesion compares Pulse and the four KyNotes references only, never whole fleet."
+      },
+      "prior_total": null,
+      "delta": null,
+      "drift_cause": null,
+      "drift_note": "No same-hash historical quality input identified; unmatched prior coverage."
+    },
+    {
+      "file": "screenshots/kypulse-00-before-backup-mobile-light.png",
+      "source_path": "docs/ui-pulse-eight/screenshots/kypulse-00-before-backup-mobile-light.png",
+      "sha256": "1d778c3ce18cc6a7d686cdae0dd48e1e9bf66b75ab83642b2718c2107d0a077d",
+      "bytes": 54487,
+      "width": 390,
+      "height": 844,
+      "observed_product": "kyPulse",
+      "observed_surface": "backup",
+      "filename_matches_content": true,
+      "cohort": "settings",
+      "state": "empty",
+      "state_detail": "unconfigured synthetic configuration defaults; configuration",
+      "theme": "light",
+      "theme_source": "OS light (prefers-color-scheme), no saved choice",
+      "viewport": {
+        "kind": "mobile",
+        "width": 390,
+        "height": 844,
+        "scale": 1
+      },
+      "artifacts": [],
+      "scores": {
+        "hierarchy": 7,
+        "typography": 8,
+        "density_layout": 7,
+        "color": 7,
+        "visible_affordances": 8,
+        "coherence": 8
+      },
+      "total": 7.5,
+      "observations": {
+        "hierarchy": "Backup & recovery and the explicit no-backups warning are clear, with repeated global alert content competing above.",
+        "typography": "Fact labels and notes remain readable; the local path wraps within the available width.",
+        "density_layout": "Stacked facts are coherent but the schedule, repeated warning and tall header push the action panel toward the capture edge; lower content is outside coverage.",
+        "color": "Green local-count and schedule badges carry more positive emphasis than their unconfigured context deserves. Captured light OS-following Busnes theme; apparent appearance only, no contrast ratio acceptance.",
+        "visible_affordances": "Refresh is clearly outlined and the disabled backup action is faded at the lower edge.",
+        "coherence": "The same badge, line and panel vocabulary is retained in a single column."
+      },
+      "confidence": "high",
+      "caveat": "Initial viewport only; lower content is outside coverage. Synthetic admin; no keyboard, focus, contrast, performance or full-role acceptance. Live timestamps are not fixed data. Unconfigured synthetic defaults only; setup, saves and backup actions were not exercised.",
+      "duplicate_of": null,
+      "ky_fit": {
+        "scores": {
+          "palette_tokens": 8,
+          "type_geometry": 8,
+          "shell": 8,
+          "accent_discipline": 8,
+          "suite_cohesion": 8
+        },
+        "weights": {
+          "palette_tokens": 0.2,
+          "type_geometry": 0.2,
+          "shell": 0.2,
+          "accent_discipline": 0.2,
+          "suite_cohesion": 0.2
+        },
+        "total": 8.0,
+        "observations": {
+          "palette_tokens": "Busnes light surfaces and orange current navigation are visible; status hues and occasional default link hues limit complete token uniformity.",
+          "type_geometry": "Space Grotesk is visible with rounded, consistent-height controls; type, control corners and spacing share the Busnes vocabulary.",
+          "shell": "One primary navigation strip below the brand row; the selected route remains visible.",
+          "accent_discipline": "Orange marks the selected navigation and configuration or task actions, with semantic warnings separate.",
+          "suite_cohesion": "Compared only with four pinned KyNotes brand references: shared family, Busnes surfaces and single navigation region; Pulse retains its operator layout."
+        },
+        "scope": "Separate brand fit; suite cohesion compares Pulse and the four KyNotes references only, never whole fleet."
+      },
+      "prior_total": null,
+      "delta": null,
+      "drift_cause": null,
+      "drift_note": "No same-hash historical quality input identified; unmatched prior coverage."
+    },
+    {
+      "file": "screenshots/kypulse-00-before-logs-desktop-dark.png",
+      "source_path": "docs/ui-pulse-eight/screenshots/kypulse-00-before-logs-desktop-dark.png",
+      "sha256": "7dd45a837ca76bb698cdd65db67c6a8850a4482dd6b3d3c26fcac289e4c9db52",
+      "bytes": 75621,
+      "width": 1280,
+      "height": 900,
+      "observed_product": "kyPulse",
+      "observed_surface": "logs",
+      "filename_matches_content": true,
+      "cohort": "admin-console",
+      "state": "empty",
+      "state_detail": "empty/unpaired",
+      "theme": "dark",
+      "theme_source": "OS dark (prefers-color-scheme), no saved choice",
+      "viewport": {
+        "kind": "desktop",
+        "width": 1280,
+        "height": 900,
+        "scale": 1
+      },
+      "artifacts": [],
+      "scores": {
+        "hierarchy": 6,
+        "typography": 8,
+        "density_layout": 7,
+        "color": 7,
+        "visible_affordances": 7,
+        "coherence": 7
+      },
+      "total": 7.0,
+      "observations": {
+        "hierarchy": "Logs has a clear title, but Apply, Clear, Add source and Refresh sources all look primary across two visible tasks.",
+        "typography": "Title, Log sources section heading and smaller help text form readable levels.",
+        "density_layout": "Filters wrap the To date to a second row, and the source form squeezes the HTTPS placeholder into a narrow field despite wide surrounding canvas.",
+        "color": "Four orange buttons compete, while the red global warning stays visually separate from empty-log guidance. Captured dark OS-following Busnes theme; apparent appearance only, no contrast ratio acceptance.",
+        "visible_affordances": "Fields are labeled and bordered; identical button fills weaken the distinction between applying, clearing, creating and refreshing.",
+        "coherence": "The shared field geometry is consistent, but query and source-management groups need a clearer action hierarchy."
+      },
+      "confidence": "high",
+      "caveat": "Initial viewport only; lower content is outside coverage. Synthetic admin; no keyboard, focus, contrast, performance or full-role acceptance. Live timestamps are not fixed data. Empty/unpaired only; no populated-log or dense-activity proof.",
+      "duplicate_of": null,
+      "ky_fit": {
+        "scores": {
+          "palette_tokens": 8,
+          "type_geometry": 8,
+          "shell": 9,
+          "accent_discipline": 6,
+          "suite_cohesion": 8
+        },
+        "weights": {
+          "palette_tokens": 0.2,
+          "type_geometry": 0.2,
+          "shell": 0.2,
+          "accent_discipline": 0.2,
+          "suite_cohesion": 0.2
+        },
+        "total": 7.8,
+        "observations": {
+          "palette_tokens": "Busnes dark surfaces and orange current navigation are visible; status hues and occasional default link hues limit complete token uniformity.",
+          "type_geometry": "Space Grotesk is visible with rounded, consistent-height controls; type, control corners and spacing share the Busnes vocabulary.",
+          "shell": "One 240px left region with brand, selected route and account footer.",
+          "accent_discipline": "Orange marks the selected navigation and task controls; equally filled query/reset/refresh buttons reduce restraint.",
+          "suite_cohesion": "Compared only with four pinned KyNotes brand references: shared family, Busnes surfaces and single navigation region; Pulse retains its operator layout."
+        },
+        "scope": "Separate brand fit; suite cohesion compares Pulse and the four KyNotes references only, never whole fleet."
+      },
+      "prior_total": null,
+      "delta": null,
+      "drift_cause": null,
+      "drift_note": "No same-hash historical quality input identified; unmatched prior coverage."
+    },
+    {
+      "file": "screenshots/kypulse-00-before-logs-desktop-light.png",
+      "source_path": "docs/ui-pulse-eight/screenshots/kypulse-00-before-logs-desktop-light.png",
+      "sha256": "8f189045cd6875746f8e983d289be6a6c5040d5e58d33381dba10699739575f2",
+      "bytes": 75518,
+      "width": 1280,
+      "height": 900,
+      "observed_product": "kyPulse",
+      "observed_surface": "logs",
+      "filename_matches_content": true,
+      "cohort": "admin-console",
+      "state": "empty",
+      "state_detail": "empty/unpaired",
+      "theme": "light",
+      "theme_source": "OS light (prefers-color-scheme), no saved choice",
+      "viewport": {
+        "kind": "desktop",
+        "width": 1280,
+        "height": 900,
+        "scale": 1
+      },
+      "artifacts": [],
+      "scores": {
+        "hierarchy": 6,
+        "typography": 8,
+        "density_layout": 7,
+        "color": 7,
+        "visible_affordances": 7,
+        "coherence": 7
+      },
+      "total": 7.0,
+      "observations": {
+        "hierarchy": "Logs has a clear title, but Apply, Clear, Add source and Refresh sources all look primary across two visible tasks.",
+        "typography": "Title, Log sources section heading and smaller help text form readable levels.",
+        "density_layout": "Filters wrap the To date to a second row, and the source form squeezes the HTTPS placeholder into a narrow field despite wide surrounding canvas.",
+        "color": "Four orange buttons compete, while the red global warning stays visually separate from empty-log guidance. Captured light OS-following Busnes theme; apparent appearance only, no contrast ratio acceptance.",
+        "visible_affordances": "Fields are labeled and bordered; identical button fills weaken the distinction between applying, clearing, creating and refreshing.",
+        "coherence": "The shared field geometry is consistent, but query and source-management groups need a clearer action hierarchy."
+      },
+      "confidence": "high",
+      "caveat": "Initial viewport only; lower content is outside coverage. Synthetic admin; no keyboard, focus, contrast, performance or full-role acceptance. Live timestamps are not fixed data. Empty/unpaired only; no populated-log or dense-activity proof.",
+      "duplicate_of": null,
+      "ky_fit": {
+        "scores": {
+          "palette_tokens": 8,
+          "type_geometry": 8,
+          "shell": 9,
+          "accent_discipline": 6,
+          "suite_cohesion": 8
+        },
+        "weights": {
+          "palette_tokens": 0.2,
+          "type_geometry": 0.2,
+          "shell": 0.2,
+          "accent_discipline": 0.2,
+          "suite_cohesion": 0.2
+        },
+        "total": 7.8,
+        "observations": {
+          "palette_tokens": "Busnes light surfaces and orange current navigation are visible; status hues and occasional default link hues limit complete token uniformity.",
+          "type_geometry": "Space Grotesk is visible with rounded, consistent-height controls; type, control corners and spacing share the Busnes vocabulary.",
+          "shell": "One 240px left region with brand, selected route and account footer.",
+          "accent_discipline": "Orange marks the selected navigation and task controls; equally filled query/reset/refresh buttons reduce restraint.",
+          "suite_cohesion": "Compared only with four pinned KyNotes brand references: shared family, Busnes surfaces and single navigation region; Pulse retains its operator layout."
+        },
+        "scope": "Separate brand fit; suite cohesion compares Pulse and the four KyNotes references only, never whole fleet."
+      },
+      "prior_total": null,
+      "delta": null,
+      "drift_cause": null,
+      "drift_note": "No same-hash historical quality input identified; unmatched prior coverage."
+    },
+    {
+      "file": "screenshots/kypulse-00-before-logs-mobile-dark.png",
+      "source_path": "docs/ui-pulse-eight/screenshots/kypulse-00-before-logs-mobile-dark.png",
+      "sha256": "3f9bfc8b9f88981eb9dac7c02af30c750a579fe4f3b3833dd51815f1793d6e33",
+      "bytes": 40456,
+      "width": 390,
+      "height": 844,
+      "observed_product": "kyPulse",
+      "observed_surface": "logs",
+      "filename_matches_content": true,
+      "cohort": "admin-console",
+      "state": "empty",
+      "state_detail": "empty/unpaired",
+      "theme": "dark",
+      "theme_source": "OS dark (prefers-color-scheme), no saved choice",
+      "viewport": {
+        "kind": "mobile",
+        "width": 390,
+        "height": 844,
+        "scale": 1
+      },
+      "artifacts": [],
+      "scores": {
+        "hierarchy": 6,
+        "typography": 8,
+        "density_layout": 6,
+        "color": 7,
+        "visible_affordances": 7,
+        "coherence": 8
+      },
+      "total": 6.9,
+      "observations": {
+        "hierarchy": "The Logs heading is clear, but the upper viewport is largely global warnings, help and filters rather than empty-state feedback.",
+        "typography": "Labels and UTC help remain readable and appropriately smaller than the title.",
+        "density_layout": "App, level and text fields each take a row while leaving substantial unused row width; Apply appears near the viewport bottom after five filter rows.",
+        "color": "Neutral fields and semantic red warnings are restrained individually, but the warning band consumes a large upper share. Captured dark OS-following Busnes theme; apparent appearance only, no contrast ratio acceptance.",
+        "visible_affordances": "Visible inputs and Apply are recognizable; later results and source controls are outside the initial capture rather than proven inaccessible.",
+        "coherence": "The same rounded fields, horizontal navigation and body type provide a coherent base."
+      },
+      "confidence": "high",
+      "caveat": "Initial viewport only; lower content is outside coverage. Synthetic admin; no keyboard, focus, contrast, performance or full-role acceptance. Live timestamps are not fixed data. Empty/unpaired only; no populated-log or dense-activity proof.",
+      "duplicate_of": null,
+      "ky_fit": {
+        "scores": {
+          "palette_tokens": 8,
+          "type_geometry": 7,
+          "shell": 8,
+          "accent_discipline": 7,
+          "suite_cohesion": 8
+        },
+        "weights": {
+          "palette_tokens": 0.2,
+          "type_geometry": 0.2,
+          "shell": 0.2,
+          "accent_discipline": 0.2,
+          "suite_cohesion": 0.2
+        },
+        "total": 7.6,
+        "observations": {
+          "palette_tokens": "Busnes dark surfaces and orange current navigation are visible; status hues and occasional default link hues limit complete token uniformity.",
+          "type_geometry": "Space Grotesk is visible with rounded, consistent-height controls; narrow fields leave unused phone row width.",
+          "shell": "One primary navigation strip below the brand row; the selected route remains visible.",
+          "accent_discipline": "Orange marks the selected navigation and task controls; equally filled query/reset/refresh buttons reduce restraint.",
+          "suite_cohesion": "Compared only with four pinned KyNotes brand references: shared family, Busnes surfaces and single navigation region; Pulse retains its operator layout."
+        },
+        "scope": "Separate brand fit; suite cohesion compares Pulse and the four KyNotes references only, never whole fleet."
+      },
+      "prior_total": null,
+      "delta": null,
+      "drift_cause": null,
+      "drift_note": "No same-hash historical quality input identified; unmatched prior coverage."
+    },
+    {
+      "file": "screenshots/kypulse-00-before-logs-mobile-light.png",
+      "source_path": "docs/ui-pulse-eight/screenshots/kypulse-00-before-logs-mobile-light.png",
+      "sha256": "087bd03c3f92338e410f7304817bded25b2fbd0f2309016a9623c5978d8d97ed",
+      "bytes": 39811,
+      "width": 390,
+      "height": 844,
+      "observed_product": "kyPulse",
+      "observed_surface": "logs",
+      "filename_matches_content": true,
+      "cohort": "admin-console",
+      "state": "empty",
+      "state_detail": "empty/unpaired",
+      "theme": "light",
+      "theme_source": "OS light (prefers-color-scheme), no saved choice",
+      "viewport": {
+        "kind": "mobile",
+        "width": 390,
+        "height": 844,
+        "scale": 1
+      },
+      "artifacts": [],
+      "scores": {
+        "hierarchy": 6,
+        "typography": 8,
+        "density_layout": 6,
+        "color": 7,
+        "visible_affordances": 7,
+        "coherence": 8
+      },
+      "total": 6.9,
+      "observations": {
+        "hierarchy": "The Logs heading is clear, but the upper viewport is largely global warnings, help and filters rather than empty-state feedback.",
+        "typography": "Labels and UTC help remain readable and appropriately smaller than the title.",
+        "density_layout": "App, level and text fields each take a row while leaving substantial unused row width; Apply appears near the viewport bottom after five filter rows.",
+        "color": "Neutral fields and semantic red warnings are restrained individually, but the warning band consumes a large upper share. Captured light OS-following Busnes theme; apparent appearance only, no contrast ratio acceptance.",
+        "visible_affordances": "Visible inputs and Apply are recognizable; later results and source controls are outside the initial capture rather than proven inaccessible.",
+        "coherence": "The same rounded fields, horizontal navigation and body type provide a coherent base."
+      },
+      "confidence": "high",
+      "caveat": "Initial viewport only; lower content is outside coverage. Synthetic admin; no keyboard, focus, contrast, performance or full-role acceptance. Live timestamps are not fixed data. Empty/unpaired only; no populated-log or dense-activity proof.",
+      "duplicate_of": null,
+      "ky_fit": {
+        "scores": {
+          "palette_tokens": 8,
+          "type_geometry": 7,
+          "shell": 8,
+          "accent_discipline": 7,
+          "suite_cohesion": 8
+        },
+        "weights": {
+          "palette_tokens": 0.2,
+          "type_geometry": 0.2,
+          "shell": 0.2,
+          "accent_discipline": 0.2,
+          "suite_cohesion": 0.2
+        },
+        "total": 7.6,
+        "observations": {
+          "palette_tokens": "Busnes light surfaces and orange current navigation are visible; status hues and occasional default link hues limit complete token uniformity.",
+          "type_geometry": "Space Grotesk is visible with rounded, consistent-height controls; narrow fields leave unused phone row width.",
+          "shell": "One primary navigation strip below the brand row; the selected route remains visible.",
+          "accent_discipline": "Orange marks the selected navigation and task controls; equally filled query/reset/refresh buttons reduce restraint.",
+          "suite_cohesion": "Compared only with four pinned KyNotes brand references: shared family, Busnes surfaces and single navigation region; Pulse retains its operator layout."
+        },
+        "scope": "Separate brand fit; suite cohesion compares Pulse and the four KyNotes references only, never whole fleet."
+      },
+      "prior_total": null,
+      "delta": null,
+      "drift_cause": null,
+      "drift_note": "No same-hash historical quality input identified; unmatched prior coverage."
+    },
+    {
+      "file": "screenshots/kypulse-00-before-settings-desktop-dark.png",
+      "source_path": "docs/ui-pulse-eight/screenshots/kypulse-00-before-settings-desktop-dark.png",
+      "sha256": "c0ce040038e405440561b3ba9139e38de818e25fbe69b1064ad525872a57a596",
+      "bytes": 77698,
+      "width": 1280,
+      "height": 900,
+      "observed_product": "kyPulse",
+      "observed_surface": "settings",
+      "filename_matches_content": true,
+      "cohort": "settings",
+      "state": "empty",
+      "state_detail": "unconfigured synthetic configuration defaults; configuration",
+      "theme": "dark",
+      "theme_source": "OS dark (prefers-color-scheme), no saved choice",
+      "viewport": {
+        "kind": "desktop",
+        "width": 1280,
+        "height": 900,
+        "scale": 1
+      },
+      "artifacts": [],
+      "scores": {
+        "hierarchy": 8,
+        "typography": 8,
+        "density_layout": 8,
+        "color": 8,
+        "visible_affordances": 8,
+        "coherence": 8
+      },
+      "total": 8.0,
+      "observations": {
+        "hierarchy": "Settings introduces the task; distinct Two-factor authentication, Alert webhook and KyYard cards separate responsibilities.",
+        "typography": "Bold card titles, small status labels and supporting copy form readable levels.",
+        "density_layout": "Cards align to one content width, and webhook fields share a balanced row.",
+        "color": "The neutral cards support the orange section actions; a blue/violet Appearance link is a small palette inconsistency. Captured dark OS-following Busnes theme; apparent appearance only, no contrast ratio acceptance.",
+        "visible_affordances": "Setup, Save webhook and Pair are explicit labeled actions with visible field borders.",
+        "coherence": "One sidebar and a repeated card/field system give the admin configuration screen a coherent structure."
+      },
+      "confidence": "high",
+      "caveat": "Initial viewport only; lower content is outside coverage. Synthetic admin; no keyboard, focus, contrast, performance or full-role acceptance. Live timestamps are not fixed data. Unconfigured synthetic defaults only; setup, saves and backup actions were not exercised.",
+      "duplicate_of": null,
+      "ky_fit": {
+        "scores": {
+          "palette_tokens": 8,
+          "type_geometry": 8,
+          "shell": 9,
+          "accent_discipline": 8,
+          "suite_cohesion": 8
+        },
+        "weights": {
+          "palette_tokens": 0.2,
+          "type_geometry": 0.2,
+          "shell": 0.2,
+          "accent_discipline": 0.2,
+          "suite_cohesion": 0.2
+        },
+        "total": 8.2,
+        "observations": {
+          "palette_tokens": "Busnes dark surfaces and orange current navigation are visible; status hues and occasional default link hues limit complete token uniformity.",
+          "type_geometry": "Space Grotesk is visible with rounded, consistent-height controls; type, control corners and spacing share the Busnes vocabulary.",
+          "shell": "One 240px left region with brand, selected route and account footer.",
+          "accent_discipline": "Orange marks the selected navigation and configuration or task actions, with semantic warnings separate.",
+          "suite_cohesion": "Compared only with four pinned KyNotes brand references: shared family, Busnes surfaces and single navigation region; Pulse retains its operator layout."
+        },
+        "scope": "Separate brand fit; suite cohesion compares Pulse and the four KyNotes references only, never whole fleet."
+      },
+      "prior_total": null,
+      "delta": null,
+      "drift_cause": null,
+      "drift_note": "No same-hash historical quality input identified; unmatched prior coverage."
+    },
+    {
+      "file": "screenshots/kypulse-00-before-settings-desktop-light.png",
+      "source_path": "docs/ui-pulse-eight/screenshots/kypulse-00-before-settings-desktop-light.png",
+      "sha256": "8bcc76304322c737cc2ad8e89e68c1c14b84ac80d719706eea6168bcd050d6da",
+      "bytes": 77826,
+      "width": 1280,
+      "height": 900,
+      "observed_product": "kyPulse",
+      "observed_surface": "settings",
+      "filename_matches_content": true,
+      "cohort": "settings",
+      "state": "empty",
+      "state_detail": "unconfigured synthetic configuration defaults; configuration",
+      "theme": "light",
+      "theme_source": "OS light (prefers-color-scheme), no saved choice",
+      "viewport": {
+        "kind": "desktop",
+        "width": 1280,
+        "height": 900,
+        "scale": 1
+      },
+      "artifacts": [],
+      "scores": {
+        "hierarchy": 8,
+        "typography": 8,
+        "density_layout": 8,
+        "color": 8,
+        "visible_affordances": 8,
+        "coherence": 8
+      },
+      "total": 8.0,
+      "observations": {
+        "hierarchy": "Settings introduces the task; distinct Two-factor authentication, Alert webhook and KyYard cards separate responsibilities.",
+        "typography": "Bold card titles, small status labels and supporting copy form readable levels.",
+        "density_layout": "Cards align to one content width, and webhook fields share a balanced row.",
+        "color": "The neutral cards support the orange section actions; a blue/violet Appearance link is a small palette inconsistency. Captured light OS-following Busnes theme; apparent appearance only, no contrast ratio acceptance.",
+        "visible_affordances": "Setup, Save webhook and Pair are explicit labeled actions with visible field borders.",
+        "coherence": "One sidebar and a repeated card/field system give the admin configuration screen a coherent structure."
+      },
+      "confidence": "high",
+      "caveat": "Initial viewport only; lower content is outside coverage. Synthetic admin; no keyboard, focus, contrast, performance or full-role acceptance. Live timestamps are not fixed data. Unconfigured synthetic defaults only; setup, saves and backup actions were not exercised.",
+      "duplicate_of": null,
+      "ky_fit": {
+        "scores": {
+          "palette_tokens": 8,
+          "type_geometry": 8,
+          "shell": 9,
+          "accent_discipline": 8,
+          "suite_cohesion": 8
+        },
+        "weights": {
+          "palette_tokens": 0.2,
+          "type_geometry": 0.2,
+          "shell": 0.2,
+          "accent_discipline": 0.2,
+          "suite_cohesion": 0.2
+        },
+        "total": 8.2,
+        "observations": {
+          "palette_tokens": "Busnes light surfaces and orange current navigation are visible; status hues and occasional default link hues limit complete token uniformity.",
+          "type_geometry": "Space Grotesk is visible with rounded, consistent-height controls; type, control corners and spacing share the Busnes vocabulary.",
+          "shell": "One 240px left region with brand, selected route and account footer.",
+          "accent_discipline": "Orange marks the selected navigation and configuration or task actions, with semantic warnings separate.",
+          "suite_cohesion": "Compared only with four pinned KyNotes brand references: shared family, Busnes surfaces and single navigation region; Pulse retains its operator layout."
+        },
+        "scope": "Separate brand fit; suite cohesion compares Pulse and the four KyNotes references only, never whole fleet."
+      },
+      "prior_total": null,
+      "delta": null,
+      "drift_cause": null,
+      "drift_note": "No same-hash historical quality input identified; unmatched prior coverage."
+    },
+    {
+      "file": "screenshots/kypulse-00-before-settings-mobile-dark.png",
+      "source_path": "docs/ui-pulse-eight/screenshots/kypulse-00-before-settings-mobile-dark.png",
+      "sha256": "171c084ceed68f4e18352405423801cfc5cafdd398290ef2ff3210ec6e9fef2d",
+      "bytes": 47770,
+      "width": 390,
+      "height": 844,
+      "observed_product": "kyPulse",
+      "observed_surface": "settings",
+      "filename_matches_content": true,
+      "cohort": "settings",
+      "state": "empty",
+      "state_detail": "unconfigured synthetic configuration defaults; configuration",
+      "theme": "dark",
+      "theme_source": "OS dark (prefers-color-scheme), no saved choice",
+      "viewport": {
+        "kind": "mobile",
+        "width": 390,
+        "height": 844,
+        "scale": 1
+      },
+      "artifacts": [],
+      "scores": {
+        "hierarchy": 7,
+        "typography": 8,
+        "density_layout": 7,
+        "color": 8,
+        "visible_affordances": 8,
+        "coherence": 8
+      },
+      "total": 7.6,
+      "observations": {
+        "hierarchy": "The Settings heading and first security card are clear; the global alert competes above the configuration task.",
+        "typography": "The two-factor title and Off state fit on one line; smaller descriptions remain readable.",
+        "density_layout": "Cards and fields use the available width, although the header and global alert leave only the security card and part of webhook in the first view.",
+        "color": "Cream or charcoal surfaces and orange task actions are consistent, with the Appearance text link an extra hue. Captured dark OS-following Busnes theme; apparent appearance only, no contrast ratio acceptance.",
+        "visible_affordances": "The security setup action is clearly labeled and the visible webhook inputs have clear boundaries.",
+        "coherence": "The single navigation strip, rounded panels and field vocabulary agree with the desktop screen."
+      },
+      "confidence": "high",
+      "caveat": "Initial viewport only; lower content is outside coverage. Synthetic admin; no keyboard, focus, contrast, performance or full-role acceptance. Live timestamps are not fixed data. Unconfigured synthetic defaults only; setup, saves and backup actions were not exercised.",
+      "duplicate_of": null,
+      "ky_fit": {
+        "scores": {
+          "palette_tokens": 8,
+          "type_geometry": 8,
+          "shell": 8,
+          "accent_discipline": 8,
+          "suite_cohesion": 8
+        },
+        "weights": {
+          "palette_tokens": 0.2,
+          "type_geometry": 0.2,
+          "shell": 0.2,
+          "accent_discipline": 0.2,
+          "suite_cohesion": 0.2
+        },
+        "total": 8.0,
+        "observations": {
+          "palette_tokens": "Busnes dark surfaces and orange current navigation are visible; status hues and occasional default link hues limit complete token uniformity.",
+          "type_geometry": "Space Grotesk is visible with rounded, consistent-height controls; type, control corners and spacing share the Busnes vocabulary.",
+          "shell": "One primary navigation strip below the brand row; the selected route remains visible.",
+          "accent_discipline": "Orange marks the selected navigation and configuration or task actions, with semantic warnings separate.",
+          "suite_cohesion": "Compared only with four pinned KyNotes brand references: shared family, Busnes surfaces and single navigation region; Pulse retains its operator layout."
+        },
+        "scope": "Separate brand fit; suite cohesion compares Pulse and the four KyNotes references only, never whole fleet."
+      },
+      "prior_total": null,
+      "delta": null,
+      "drift_cause": null,
+      "drift_note": "No same-hash historical quality input identified; unmatched prior coverage."
+    },
+    {
+      "file": "screenshots/kypulse-00-before-settings-mobile-light.png",
+      "source_path": "docs/ui-pulse-eight/screenshots/kypulse-00-before-settings-mobile-light.png",
+      "sha256": "68db7ecb827d3b9e973456c61e75a54f339f3bf34b47b330aab521caedceb972",
+      "bytes": 47453,
+      "width": 390,
+      "height": 844,
+      "observed_product": "kyPulse",
+      "observed_surface": "settings",
+      "filename_matches_content": true,
+      "cohort": "settings",
+      "state": "empty",
+      "state_detail": "unconfigured synthetic configuration defaults; configuration",
+      "theme": "light",
+      "theme_source": "OS light (prefers-color-scheme), no saved choice",
+      "viewport": {
+        "kind": "mobile",
+        "width": 390,
+        "height": 844,
+        "scale": 1
+      },
+      "artifacts": [],
+      "scores": {
+        "hierarchy": 7,
+        "typography": 8,
+        "density_layout": 7,
+        "color": 8,
+        "visible_affordances": 8,
+        "coherence": 8
+      },
+      "total": 7.6,
+      "observations": {
+        "hierarchy": "The Settings heading and first security card are clear; the global alert competes above the configuration task.",
+        "typography": "The two-factor title and Off state fit on one line; smaller descriptions remain readable.",
+        "density_layout": "Cards and fields use the available width, although the header and global alert leave only the security card and part of webhook in the first view.",
+        "color": "Cream or charcoal surfaces and orange task actions are consistent, with the Appearance text link an extra hue. Captured light OS-following Busnes theme; apparent appearance only, no contrast ratio acceptance.",
+        "visible_affordances": "The security setup action is clearly labeled and the visible webhook inputs have clear boundaries.",
+        "coherence": "The single navigation strip, rounded panels and field vocabulary agree with the desktop screen."
+      },
+      "confidence": "high",
+      "caveat": "Initial viewport only; lower content is outside coverage. Synthetic admin; no keyboard, focus, contrast, performance or full-role acceptance. Live timestamps are not fixed data. Unconfigured synthetic defaults only; setup, saves and backup actions were not exercised.",
+      "duplicate_of": null,
+      "ky_fit": {
+        "scores": {
+          "palette_tokens": 8,
+          "type_geometry": 8,
+          "shell": 8,
+          "accent_discipline": 8,
+          "suite_cohesion": 8
+        },
+        "weights": {
+          "palette_tokens": 0.2,
+          "type_geometry": 0.2,
+          "shell": 0.2,
+          "accent_discipline": 0.2,
+          "suite_cohesion": 0.2
+        },
+        "total": 8.0,
+        "observations": {
+          "palette_tokens": "Busnes light surfaces and orange current navigation are visible; status hues and occasional default link hues limit complete token uniformity.",
+          "type_geometry": "Space Grotesk is visible with rounded, consistent-height controls; type, control corners and spacing share the Busnes vocabulary.",
+          "shell": "One primary navigation strip below the brand row; the selected route remains visible.",
+          "accent_discipline": "Orange marks the selected navigation and configuration or task actions, with semantic warnings separate.",
+          "suite_cohesion": "Compared only with four pinned KyNotes brand references: shared family, Busnes surfaces and single navigation region; Pulse retains its operator layout."
+        },
+        "scope": "Separate brand fit; suite cohesion compares Pulse and the four KyNotes references only, never whole fleet."
+      },
+      "prior_total": null,
+      "delta": null,
+      "drift_cause": null,
+      "drift_note": "No same-hash historical quality input identified; unmatched prior coverage."
+    },
+    {
+      "file": "screenshots/kypulse-00-before-status-desktop-dark.png",
+      "source_path": "docs/ui-pulse-eight/screenshots/kypulse-00-before-status-desktop-dark.png",
+      "sha256": "cf070b3fc986bf24cbae7a2fc3f0650090c2762da9d99202c6887be49d0cbc1a",
+      "bytes": 65008,
+      "width": 1280,
+      "height": 900,
+      "observed_product": "kyPulse",
+      "observed_surface": "status",
+      "filename_matches_content": true,
+      "cohort": "admin-console",
+      "state": "sparse",
+      "state_detail": "three watched synthetic apps: Backup agent down, Mail relay degraded, Billing API ok",
+      "theme": "dark",
+      "theme_source": "OS dark (prefers-color-scheme), no saved choice",
+      "viewport": {
+        "kind": "desktop",
+        "width": 1280,
+        "height": 900,
+        "scale": 1
+      },
+      "artifacts": [],
+      "scores": {
+        "hierarchy": 8,
+        "typography": 8,
+        "density_layout": 8,
+        "color": 8,
+        "visible_affordances": 9,
+        "coherence": 8
+      },
+      "total": 8.2,
+      "observations": {
+        "hierarchy": "Status presents problems first in the order Down, Degraded, OK, with Add app as the single filled page action.",
+        "typography": "Bold app names, regular states and smaller endpoint/check text produce a clear scan order.",
+        "density_layout": "Application, Status and Latest check share stable aligned columns in a restrained three-row list.",
+        "color": "Red, amber and green dots plus written states communicate health; the dark amber text is visually less emphatic than its bright dot. Captured dark OS-following Busnes theme; apparent appearance only, no contrast ratio acceptance.",
+        "visible_affordances": "The prominent Add app control and large app rows read as action destinations; selected Status is clear.",
+        "coherence": "One sidebar, one simple list and consistent control corners make a unified operator screen."
+      },
+      "confidence": "high",
+      "caveat": "Initial viewport only; lower content is outside coverage. Synthetic admin; no keyboard, focus, contrast, performance or full-role acceptance. Live timestamps are not fixed data. Procedural limitation: pre-history overall totals were noted, but these four dimension rows were transcribed after historical context; parent should not call them fully machine-frozen blind rows.",
+      "duplicate_of": null,
+      "ky_fit": {
+        "scores": {
+          "palette_tokens": 8,
+          "type_geometry": 8,
+          "shell": 9,
+          "accent_discipline": 8,
+          "suite_cohesion": 8
+        },
+        "weights": {
+          "palette_tokens": 0.2,
+          "type_geometry": 0.2,
+          "shell": 0.2,
+          "accent_discipline": 0.2,
+          "suite_cohesion": 0.2
+        },
+        "total": 8.2,
+        "observations": {
+          "palette_tokens": "Busnes dark surfaces and orange current navigation are visible; status hues and occasional default link hues limit complete token uniformity.",
+          "type_geometry": "Space Grotesk is visible with rounded, consistent-height controls; type, control corners and spacing share the Busnes vocabulary.",
+          "shell": "One 240px left region with brand, selected route and account footer.",
+          "accent_discipline": "Orange marks the selected navigation and configuration or task actions, with semantic warnings separate.",
+          "suite_cohesion": "Compared only with four pinned KyNotes brand references: shared family, Busnes surfaces and single navigation region; Pulse retains its operator layout."
+        },
+        "scope": "Separate brand fit; suite cohesion compares Pulse and the four KyNotes references only, never whole fleet."
+      },
+      "prior_total": null,
+      "delta": null,
+      "drift_cause": null,
+      "drift_note": "No same-hash historical quality input identified; unmatched prior coverage."
+    },
+    {
+      "file": "screenshots/kypulse-00-before-status-desktop-light.png",
+      "source_path": "docs/ui-pulse-eight/screenshots/kypulse-00-before-status-desktop-light.png",
+      "sha256": "6630c65ea972d0d9dfdebb3c02d9f3ca73b69ed92235422a460f945287ef2c95",
+      "bytes": 65367,
+      "width": 1280,
+      "height": 900,
+      "observed_product": "kyPulse",
+      "observed_surface": "status",
+      "filename_matches_content": true,
+      "cohort": "admin-console",
+      "state": "sparse",
+      "state_detail": "three watched synthetic apps: Backup agent down, Mail relay degraded, Billing API ok",
+      "theme": "light",
+      "theme_source": "OS light (prefers-color-scheme), no saved choice",
+      "viewport": {
+        "kind": "desktop",
+        "width": 1280,
+        "height": 900,
+        "scale": 1
+      },
+      "artifacts": [],
+      "scores": {
+        "hierarchy": 8,
+        "typography": 8,
+        "density_layout": 8,
+        "color": 8,
+        "visible_affordances": 9,
+        "coherence": 8
+      },
+      "total": 8.2,
+      "observations": {
+        "hierarchy": "Status presents problems first in the order Down, Degraded, OK, with Add app as the single filled page action.",
+        "typography": "Bold app names, regular states and smaller endpoint/check text produce a clear scan order.",
+        "density_layout": "Application, Status and Latest check share stable aligned columns in a restrained three-row list.",
+        "color": "Red, amber and green dots plus written states communicate health; the dark amber text is visually less emphatic than its bright dot. Captured light OS-following Busnes theme; apparent appearance only, no contrast ratio acceptance.",
+        "visible_affordances": "The prominent Add app control and large app rows read as action destinations; selected Status is clear.",
+        "coherence": "One sidebar, one simple list and consistent control corners make a unified operator screen."
+      },
+      "confidence": "high",
+      "caveat": "Initial viewport only; lower content is outside coverage. Synthetic admin; no keyboard, focus, contrast, performance or full-role acceptance. Live timestamps are not fixed data. Procedural limitation: pre-history overall totals were noted, but these four dimension rows were transcribed after historical context; parent should not call them fully machine-frozen blind rows.",
+      "duplicate_of": null,
+      "ky_fit": {
+        "scores": {
+          "palette_tokens": 8,
+          "type_geometry": 8,
+          "shell": 9,
+          "accent_discipline": 8,
+          "suite_cohesion": 8
+        },
+        "weights": {
+          "palette_tokens": 0.2,
+          "type_geometry": 0.2,
+          "shell": 0.2,
+          "accent_discipline": 0.2,
+          "suite_cohesion": 0.2
+        },
+        "total": 8.2,
+        "observations": {
+          "palette_tokens": "Busnes light surfaces and orange current navigation are visible; status hues and occasional default link hues limit complete token uniformity.",
+          "type_geometry": "Space Grotesk is visible with rounded, consistent-height controls; type, control corners and spacing share the Busnes vocabulary.",
+          "shell": "One 240px left region with brand, selected route and account footer.",
+          "accent_discipline": "Orange marks the selected navigation and configuration or task actions, with semantic warnings separate.",
+          "suite_cohesion": "Compared only with four pinned KyNotes brand references: shared family, Busnes surfaces and single navigation region; Pulse retains its operator layout."
+        },
+        "scope": "Separate brand fit; suite cohesion compares Pulse and the four KyNotes references only, never whole fleet."
+      },
+      "prior_total": null,
+      "delta": null,
+      "drift_cause": null,
+      "drift_note": "No same-hash historical quality input identified; unmatched prior coverage."
+    },
+    {
+      "file": "screenshots/kypulse-00-before-status-mobile-dark.png",
+      "source_path": "docs/ui-pulse-eight/screenshots/kypulse-00-before-status-mobile-dark.png",
+      "sha256": "716996b2d84ab484dc8378f0a11d5b45a5c0311dd59a18a552bf686bf2c7694b",
+      "bytes": 50374,
+      "width": 390,
+      "height": 844,
+      "observed_product": "kyPulse",
+      "observed_surface": "status",
+      "filename_matches_content": true,
+      "cohort": "admin-console",
+      "state": "sparse",
+      "state_detail": "three watched synthetic apps: Backup agent down, Mail relay degraded, Billing API ok",
+      "theme": "dark",
+      "theme_source": "OS dark (prefers-color-scheme), no saved choice",
+      "viewport": {
+        "kind": "mobile",
+        "width": 390,
+        "height": 844,
+        "scale": 1
+      },
+      "artifacts": [],
+      "scores": {
+        "hierarchy": 7,
+        "typography": 8,
+        "density_layout": 7,
+        "color": 8,
+        "visible_affordances": 7,
+        "coherence": 8
+      },
+      "total": 7.5,
+      "observations": {
+        "hierarchy": "Status and Add app are clear, but the long global warning repeats problems already ordered in the list.",
+        "typography": "Bold app names and written state labels remain distinct from smaller endpoints and check metadata.",
+        "density_layout": "Each app stacks into a readable block; repeated global chronology reduces the number of blocks seen initially without implying lower rows are unreachable.",
+        "color": "Written health states reinforce semantic dots; the degraded brown text in dark mode appears quieter than the dot. Captured dark OS-following Busnes theme; apparent appearance only, no contrast ratio acceptance.",
+        "visible_affordances": "Add app reads clearly as a button; whole-row links have less explicit visible link treatment than the underlined app links on Alerts.",
+        "coherence": "The stacked list and selected horizontal navigation preserve the desktop component vocabulary."
+      },
+      "confidence": "high",
+      "caveat": "Initial viewport only; lower content is outside coverage. Synthetic admin; no keyboard, focus, contrast, performance or full-role acceptance. Live timestamps are not fixed data. Procedural limitation: pre-history overall totals were noted, but these four dimension rows were transcribed after historical context; parent should not call them fully machine-frozen blind rows.",
+      "duplicate_of": null,
+      "ky_fit": {
+        "scores": {
+          "palette_tokens": 8,
+          "type_geometry": 8,
+          "shell": 8,
+          "accent_discipline": 8,
+          "suite_cohesion": 8
+        },
+        "weights": {
+          "palette_tokens": 0.2,
+          "type_geometry": 0.2,
+          "shell": 0.2,
+          "accent_discipline": 0.2,
+          "suite_cohesion": 0.2
+        },
+        "total": 8.0,
+        "observations": {
+          "palette_tokens": "Busnes dark surfaces and orange current navigation are visible; status hues and occasional default link hues limit complete token uniformity.",
+          "type_geometry": "Space Grotesk is visible with rounded, consistent-height controls; type, control corners and spacing share the Busnes vocabulary.",
+          "shell": "One primary navigation strip below the brand row; the selected route remains visible.",
+          "accent_discipline": "Orange marks the selected navigation and configuration or task actions, with semantic warnings separate.",
+          "suite_cohesion": "Compared only with four pinned KyNotes brand references: shared family, Busnes surfaces and single navigation region; Pulse retains its operator layout."
+        },
+        "scope": "Separate brand fit; suite cohesion compares Pulse and the four KyNotes references only, never whole fleet."
+      },
+      "prior_total": null,
+      "delta": null,
+      "drift_cause": null,
+      "drift_note": "No same-hash historical quality input identified; unmatched prior coverage."
+    },
+    {
+      "file": "screenshots/kypulse-00-before-status-mobile-light.png",
+      "source_path": "docs/ui-pulse-eight/screenshots/kypulse-00-before-status-mobile-light.png",
+      "sha256": "48c1d9d296134a967b06926ffe0f85b0118ff56e0570bf4c08331525fc00bb05",
+      "bytes": 50393,
+      "width": 390,
+      "height": 844,
+      "observed_product": "kyPulse",
+      "observed_surface": "status",
+      "filename_matches_content": true,
+      "cohort": "admin-console",
+      "state": "sparse",
+      "state_detail": "three watched synthetic apps: Backup agent down, Mail relay degraded, Billing API ok",
+      "theme": "light",
+      "theme_source": "OS light (prefers-color-scheme), no saved choice",
+      "viewport": {
+        "kind": "mobile",
+        "width": 390,
+        "height": 844,
+        "scale": 1
+      },
+      "artifacts": [],
+      "scores": {
+        "hierarchy": 7,
+        "typography": 8,
+        "density_layout": 7,
+        "color": 8,
+        "visible_affordances": 7,
+        "coherence": 8
+      },
+      "total": 7.5,
+      "observations": {
+        "hierarchy": "Status and Add app are clear, but the long global warning repeats problems already ordered in the list.",
+        "typography": "Bold app names and written state labels remain distinct from smaller endpoints and check metadata.",
+        "density_layout": "Each app stacks into a readable block; repeated global chronology reduces the number of blocks seen initially without implying lower rows are unreachable.",
+        "color": "Written health states reinforce semantic dots; the degraded brown text in dark mode appears quieter than the dot. Captured light OS-following Busnes theme; apparent appearance only, no contrast ratio acceptance.",
+        "visible_affordances": "Add app reads clearly as a button; whole-row links have less explicit visible link treatment than the underlined app links on Alerts.",
+        "coherence": "The stacked list and selected horizontal navigation preserve the desktop component vocabulary."
+      },
+      "confidence": "high",
+      "caveat": "Initial viewport only; lower content is outside coverage. Synthetic admin; no keyboard, focus, contrast, performance or full-role acceptance. Live timestamps are not fixed data. Procedural limitation: pre-history overall totals were noted, but these four dimension rows were transcribed after historical context; parent should not call them fully machine-frozen blind rows.",
+      "duplicate_of": null,
+      "ky_fit": {
+        "scores": {
+          "palette_tokens": 8,
+          "type_geometry": 8,
+          "shell": 8,
+          "accent_discipline": 8,
+          "suite_cohesion": 8
+        },
+        "weights": {
+          "palette_tokens": 0.2,
+          "type_geometry": 0.2,
+          "shell": 0.2,
+          "accent_discipline": 0.2,
+          "suite_cohesion": 0.2
+        },
+        "total": 8.0,
+        "observations": {
+          "palette_tokens": "Busnes light surfaces and orange current navigation are visible; status hues and occasional default link hues limit complete token uniformity.",
+          "type_geometry": "Space Grotesk is visible with rounded, consistent-height controls; type, control corners and spacing share the Busnes vocabulary.",
+          "shell": "One primary navigation strip below the brand row; the selected route remains visible.",
+          "accent_discipline": "Orange marks the selected navigation and configuration or task actions, with semantic warnings separate.",
+          "suite_cohesion": "Compared only with four pinned KyNotes brand references: shared family, Busnes surfaces and single navigation region; Pulse retains its operator layout."
+        },
+        "scope": "Separate brand fit; suite cohesion compares Pulse and the four KyNotes references only, never whole fleet."
+      },
+      "prior_total": null,
+      "delta": null,
+      "drift_cause": null,
+      "drift_note": "No same-hash historical quality input identified; unmatched prior coverage."
+    }
+  ],
+  "arithmetic": {
+    "file_formula": "SUM(scores[dimension]*rubric.weights[dimension]); decimal half-up1dp",
+    "cohorts": {
+      "admin-console": {
+        "n": 20,
+        "sum": 147.8,
+        "mean": 7.39,
+        "display_1dp": 7.4
+      },
+      "settings": {
+        "n": 12,
+        "sum": 96.0,
+        "mean": 8.0,
+        "display_1dp": 8.0
+      }
+    },
+    "threshold": "both unrounded cohort means of rounded unique file totals >=8",
+    "no_pooled_quality_mean": true,
+    "observation_context": "Each dimension observation inherits file SHA256, cohort, state, theme, viewport, confidence and caveat from its enclosing file row."
+  },
+  "cohort_rankings": {
+    "admin-console": {
+      "products": [
+        {
+          "rank": 1,
+          "product": "kyPulse",
+          "n": 20,
+          "mean": 7.39
+        }
+      ],
+      "matched": false,
+      "ky_gap": null,
+      "note": "Only Pulse in current quality input set. Singleton row is not a competitive win; no cross-cohort ranking."
+    },
+    "settings": {
+      "products": [
+        {
+          "rank": 1,
+          "product": "kyPulse",
+          "n": 12,
+          "mean": 8.0
+        }
+      ],
+      "matched": false,
+      "ky_gap": null,
+      "note": "Only Pulse in current quality input set. Singleton row is not a competitive win; no cross-cohort ranking."
+    }
+  },
+  "brand_references": {
+    "file": "docs/ui-pulse-eight/brand-references.json",
+    "role": "Brand fit only; not quality inputs",
+    "files": [
+      {
+        "repository": "Busnes-app/KyNotes-server",
+        "commit": "1ab04e64de747f409d88b98f02682e85862defe1",
+        "path": "docs/ui-notes-eight/screenshots/kynotes-13-after-editor-desktop-light.png",
+        "sha256": "ff94b5e57447ea81cb8346ffc28e9bd80002715029499914b3bc9611027c6154",
+        "width": 1280,
+        "height": 900,
+        "role": "Approved Busnes brand reference only; not a KyPulse quality or cohort input"
+      },
+      {
+        "repository": "Busnes-app/KyNotes-server",
+        "commit": "1ab04e64de747f409d88b98f02682e85862defe1",
+        "path": "docs/ui-notes-eight/screenshots/kynotes-13-after-editor-desktop-dark.png",
+        "sha256": "e1585cc65bdba3dcd62c8c4caed04471c64dbf25395a24283025fb3459d6b568",
+        "width": 1280,
+        "height": 900,
+        "role": "Approved Busnes brand reference only; not a KyPulse quality or cohort input"
+      },
+      {
+        "repository": "Busnes-app/KyNotes-server",
+        "commit": "1ab04e64de747f409d88b98f02682e85862defe1",
+        "path": "docs/ui-notes-eight/screenshots/kynotes-13-after-appearance-mobile-light.png",
+        "sha256": "43accf28ed4061ec3747d6df7aca86e11f15813cb78f27d1511f8a979bfb9488",
+        "width": 390,
+        "height": 844,
+        "role": "Approved Busnes brand reference only; not a KyPulse quality or cohort input"
+      },
+      {
+        "repository": "Busnes-app/KyNotes-server",
+        "commit": "1ab04e64de747f409d88b98f02682e85862defe1",
+        "path": "docs/ui-notes-eight/screenshots/kynotes-13-after-appearance-mobile-dark.png",
+        "sha256": "f77379a3fcef8de6ad3a2debef934f700605e9b398ca1d2268bf0bf89dc6c15b",
+        "width": 390,
+        "height": 844,
+        "role": "Approved Busnes brand reference only; not a KyPulse quality or cohort input"
+      }
+    ],
+    "all_four_sha256_and_dimensions_verified": true,
+    "products_compared": [
+      "kyPulse",
+      "KyNotes"
+    ],
+    "whole_fleet_cohesion_claimed": false
+  },
+  "findings": [
+    {
+      "id": "F1",
+      "severity": "P2",
+      "kind": "factual visual density and emphasis",
+      "title": "Compact the global AlertBar chronology on phones while keeping every problem represented",
+      "evidence": [
+        "screenshots/kypulse-00-before-status-mobile-light.png",
+        "screenshots/kypulse-00-before-app-detail-mobile-dark.png",
+        "screenshots/kypulse-00-before-appearance-mobile-light.png"
+      ],
+      "observation": "The 125px phone header is followed by a roughly134px global band for only two problems: long underlined absolute-date links and a separate Alerts line. This repeats app-specific Down content on detail and takes priority above every configuration view.",
+      "fix": "Give each global problem a short app/state/age lead, with the full since/cause information in subordinate wrapping metadata; keep problem links and the Alerts destination. Arrange Alerts alongside the summary rather than as a separate full-width line where space permits. Preserve problem meaning, delivery/stale notices, roles and the rule that silencing outbound messages never hides the problem. Keep the app-detail health panel diagnostic and prominent; it is a different component.",
+      "locations": [
+        "web/src/components/AlertBar.tsx:45",
+        "web/src/styles/theme.css:458",
+        "web/src/styles/theme.css:511"
+      ]
+    },
+    {
+      "id": "F2",
+      "severity": "P2",
+      "kind": "factual responsive geometry",
+      "title": "Make Logs and Activity filters a deliberate responsive grid",
+      "evidence": [
+        "screenshots/kypulse-00-before-activity-mobile-light.png",
+        "screenshots/kypulse-00-before-logs-mobile-dark.png",
+        "screenshots/kypulse-00-before-logs-desktop-light.png"
+      ],
+      "observation": "Three short inputs each occupy a separate phone row at about196px width inside a358px content column; both date bounds follow. Desktop wraps only To and actions while the source-origin field truncates its placeholder. These are inefficient captured layouts, not proof of unreachable results.",
+      "fix": "Use an explicit filter grid: compact compatible fields together at390px, full-width text/date fields when needed, and one action row; align date bounds together on desktop. Give the source HTTPS origin flexible width. Preserve explicit Apply/Clear semantics and all UTC, retention and transport help.",
+      "locations": [
+        "web/src/styles/theme.css:514",
+        "web/src/pages/Logs.tsx:23",
+        "web/src/pages/Activity.tsx:23",
+        "web/src/components/LogSources.tsx:63"
+      ]
+    },
+    {
+      "id": "F3",
+      "severity": "P2",
+      "kind": "factual competing emphasis",
+      "title": "Make reset and refresh secondary actions",
+      "evidence": [
+        "screenshots/kypulse-00-before-logs-desktop-light.png",
+        "screenshots/kypulse-00-before-activity-desktop-dark.png"
+      ],
+      "observation": "Apply and Clear have identical orange fills; Logs adds equally filled Add source and Refresh sources. Separate tasks lack a clear leading action.",
+      "fix": "Keep Apply and Add source primary within their respective groups; apply existing btn-secondary to Clear and Refresh sources. Keep labels, event handlers and permissions.",
+      "locations": [
+        "web/src/pages/Logs.tsx:29",
+        "web/src/pages/Activity.tsx:29",
+        "web/src/components/LogSources.tsx:74",
+        "web/src/styles/theme.css:533"
+      ]
+    },
+    {
+      "id": "F4",
+      "severity": "P2",
+      "kind": "factual mobile triage presentation",
+      "title": "Present complete event summaries without split transition labels on phones",
+      "evidence": [
+        "screenshots/kypulse-00-before-alerts-mobile-light.png",
+        "screenshots/kypulse-00-before-alerts-mobile-dark.png"
+      ],
+      "observation": "pending \u2192 degraded breaks across three lines and Delivery is beyond the initial horizontal table view. Native inspection confirms the table scrolls internally; this is not an unreachable column or document overflow claim.",
+      "fix": "At the existing phone breakpoint give each event an app/change lead and labeled time/reason/delivery below, retaining the same event data and links; desktop keeps its aligned table. Preserve screen-reader table or equivalent list semantics rather than visually hiding columns.",
+      "locations": [
+        "web/src/pages/Alerts.tsx:54",
+        "web/src/styles/theme.css:504"
+      ]
+    },
+    {
+      "id": "F5",
+      "severity": "P2",
+      "kind": "visible palette inconsistency; accessibility unmeasured",
+      "title": "Use the shared warning and link vocabulary on operator data",
+      "evidence": [
+        "screenshots/kypulse-00-before-status-desktop-dark.png",
+        "screenshots/kypulse-00-before-alerts-desktop-dark.png",
+        "screenshots/kypulse-00-before-alerts-desktop-light.png"
+      ],
+      "observation": "Degraded text is subdued brown beside a bright yellow dot in dark Status/Alerts; app links use browser blue/violet while the detail Status link uses ink. This reduces emphasis consistency; no numeric contrast failure is asserted.",
+      "fix": "Use existing warning tokens for degraded text/dots and an underlined ink link treatment for ordinary in-content app links. Check both Busnes and all named palettes before accepting contrast; do not hand-edit vendored ky-ui.",
+      "locations": [
+        "web/src/styles/theme.css:488",
+        "web/src/styles/theme.css:492",
+        "web/src/pages/Alerts.tsx:65"
+      ]
+    }
+  ],
+  "smallest_fix_batch": {
+    "required": [
+      "F1",
+      "F2",
+      "F3",
+      "F4",
+      "F5"
+    ],
+    "preserve": [
+      "single navigation region",
+      "Appearance card picker and existing named themes",
+      "problem meaning and app health diagnostic details",
+      "admin/viewer authority boundaries",
+      "existing routes, handlers, explicit Apply, UTC and security help",
+      "CSP, CSRF and normal service workers"
+    ],
+    "note": "One bounded composition/style batch; no optional feature work. Re-rate matched after captures; this recommendation is not a projected or guaranteed score."
+  },
+  "gates": {
+    "keyboard": {
+      "status": "untested",
+      "evidence": "No keyboard-only task path or dialog focus-return exercise.",
+      "revision": "fef7b670a36d48792137f56d839e49a86d44eadc"
+    },
+    "focus": {
+      "status": "untested",
+      "evidence": "No exhaustive both-theme focus exercise.",
+      "revision": "fef7b670a36d48792137f56d839e49a86d44eadc"
+    },
+    "contrast": {
+      "status": "untested",
+      "evidence": "No computed contrast ratios across all shipped themes.",
+      "revision": "fef7b670a36d48792137f56d839e49a86d44eadc"
+    },
+    "states": {
+      "status": "untested",
+      "evidence": "Captured sparse health/alerts and empty/unpaired Logs/Activity only; not complete loading/error/task state coverage.",
+      "revision": "fef7b670a36d48792137f56d839e49a86d44eadc"
+    },
+    "responsive": {
+      "status": "untested",
+      "evidence": "Manifest reports0 document overflow on32 scored captures; supplemental native navigation/table geometry recorded. Target usability, all routes and soft keyboard not exercised sufficiently to pass the gate.",
+      "revision": "fef7b670a36d48792137f56d839e49a86d44eadc"
+    }
+  },
+  "supplemental_native": {
+    "tool": "T3 collaborative preview",
+    "tabId": "tab_1t_2e419d46-7b07-427f-bf30-1831131b4cba",
+    "lifecycle": "preview_status then preview_open(reuseExistingTab:false,profileId:incognito); explicit tabId every subsequent call; owned tab closed",
+    "browser": "Chromium154, devicePixelRatio2",
+    "desktop": {
+      "viewport": [
+        1280,
+        800
+      ],
+      "primary_nav_regions": 1,
+      "document_overflow": 0,
+      "theme_saved_choice": null
+    },
+    "appearance": {
+      "native_radios": 23,
+      "checked": "system",
+      "theme_saved_choice": null
+    },
+    "phone": {
+      "viewport": [
+        390,
+        844
+      ],
+      "header_height": 125,
+      "primary_nav_client_width": 358,
+      "primary_nav_scroll_width": 754,
+      "primary_nav_overflow_x": "auto",
+      "document_overflow": 0,
+      "selected": "Appearance"
+    },
+    "alerts_phone": {
+      "table_width": 421.34375,
+      "container_client_width": 356,
+      "container_scroll_width": 421,
+      "container_overflow_x": "auto",
+      "global_alertbar_height": 134,
+      "document_overflow": 0
+    },
+    "scope": "Supplemental measurements only; not substituted for scored captures or full behavior gates."
+  },
+  "drift": {
+    "historical_inputs": {
+      "/home/yoshi/Pictures/KyPost-UI-Councel/exports/2026-10-26-suite-summary/HANDOFF.md": "c74e22f042dda33c62cac01d7e412bf562ed361f7a635ab97aca156f62355c05",
+      "docs/ui-visual-refinement-2026-10-26/README.md": "ff2df1e4fa911b96801d53066165d09e2c7bddec0c24ed92b9e62ae4598a20af",
+      "docs/ui-review-followups-2026-10-26/README.md": "477e00cdb3a78dd88da602baf7ecef0b39f0c274915a0f25fb4e6f812dd31bd6"
+    },
+    "historical_summary": {
+      "prior_reported_Pulse_mean_before_refinement": 5.6,
+      "prior_reported_latest_scored_Pulse_mean": 6.9,
+      "comparable": false
+    },
+    "current_same_hash_prior_rows": 0,
+    "prior_totals_available_for_current_files": false,
+    "per_file_delta": null,
+    "ky_mean_drift": null,
+    "competitor_mean_drift": null,
+    "cause": "Different source images, states, surfaces, viewport extent and reviewer; historical follow-ups explicitly unscored. No valid same-file drift or controlled product improvement can be computed.",
+    "context": "App-detail ink return link, flat facts and closing Stop watching section already exist; follow-up fixes preserve inline Backup badges and subgrid alignment. Do not re-open these as unfixed old defects.",
+    "blindness_protocol": "All32 current images were viewed individually at original resolution before historical numeric evidence; 28 dimension rows were explicitly frozen before historical read. Status pre-history overall scores8.2 desktop/7.5 phone were retained, but its four dimension rows were transcribed afterward. Treat those four as a documented blind-protocol limitation.",
+    "second_current_reviewer_spread": null,
+    "other_current_review_read": false
+  },
+  "council_status": {
+    "Sol": {
+      "round1_admin_console_mean": 7.39,
+      "round1_settings_mean": 8.0,
+      "satisfied": false
+    },
+    "Opus5.5": "pending/unread by this reviewer",
+    "Gemini4Argon": "deferred; not invoked"
+  },
+  "limitations": [
+    "All32 current images were viewed individually at original resolution before historical numeric evidence; 28 dimension rows were explicitly frozen before historical read. Status pre-history overall scores8.2 desktop/7.5 phone were retained, but its four dimension rows were transcribed afterward. Treat those four as a documented blind-protocol limitation.",
+    "Only initial1280x900 and390x844 viewports, Chromium153.0.8010.12 scale1, OS-following light/dark, no saved theme choice, normal service workers.",
+    "Only synthetic administrator coverage. Existing viewer/role tests were not rerun by parent or reviewer; no authorization acceptance.",
+    "Logs/Activity are empty/unpaired, not populated-state evidence. Settings/Backup are unconfigured defaults. Status has three synthetic watched apps; no multi-team/dense-history coverage.",
+    "Keyboard, focus, all-theme contrast, screen readers, WebKit, soft keyboards, performance, loading/error task states and full behavior acceptance remain untested.",
+    "No penalty for lack of real data or for lower-page content outside the captures. No off-screen feature absence inferred.",
+    "Live Computer Use is supplemental Chromium154/scale2; timestamps/latencies change. No saved theme, pairing, backup, silence or app data was modified.",
+    "Historical coverage and capture rules differ, including full-page images and blocked workers in follow-ups. Current-versus-historical scores are not a controlled improvement.",
+    "No competitor set; no cross-cohort, whole-app, provider or whole-fleet quality ranking. Brand references are excluded from all quality counts/means.",
+    "No broad build/test/capture suite or fixture restart was run; review integrity checks are not product acceptance.",
+    "Impeccable context found no PRODUCT.md/DESIGN.md; the explicit Operate brief and incumbent captured UI supplied review context. No context files were created.",
+    "Other current review was not read. Opus score/satisfaction is pending to this reviewer; Gemini deferred and not invoked. No subdelegation, GitHub, git mutation or shared-board action."
+  ],
+  "unscored": [],
+  "dox": {
+    "pass": "Applicable workspace/product/web/browser/evidence chain read. Reports add evidence inside the existing ownership contract; AGENTS.md intentionally unchanged.",
+    "product_checks": "Not run under explicit read-only review constraints. Integrity/arithmetic checks only."
+  }
+}

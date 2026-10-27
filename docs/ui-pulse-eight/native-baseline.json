@@ -1,0 +1,61 @@
+{
+  "scope": "Parent native T3 Computer Use supplemental baseline; Chromium154 differs from scored Chromium153/scale1; synthetic admin only",
+  "phone": {
+    "heading": "Appearance",
+    "overflow": 0,
+    "radios": 23,
+    "regions": [
+      {
+        "height": 140,
+        "label": null,
+        "role": null,
+        "tag": "HEADER",
+        "width": 375,
+        "x": 0,
+        "y": 0
+      },
+      {
+        "height": 55,
+        "label": "Primary",
+        "role": null,
+        "tag": "NAV",
+        "width": 343,
+        "x": 16,
+        "y": 68
+      }
+    ],
+    "savedChoice": null,
+    "viewport": {
+      "height": 844,
+      "width": 390
+    }
+  },
+  "desktop": {
+    "overflow": 0,
+    "radios": 23,
+    "regions": [
+      {
+        "height": 900,
+        "label": null,
+        "tag": "HEADER",
+        "width": 240,
+        "x": 0,
+        "y": 0
+      },
+      {
+        "height": 304,
+        "label": "Primary",
+        "tag": "NAV",
+        "width": 207,
+        "x": 16,
+        "y": 72
+      }
+    ],
+    "savedChoice": null,
+    "viewport": {
+      "height": 900,
+      "width": 1280
+    }
+  },
+  "observations": "One240px left navigation region on desktop; phone header/horizontal primary navigation.23nativeAppearance radios,system following,no savedchoice,overflow0. No product state or theme was changed."
+}

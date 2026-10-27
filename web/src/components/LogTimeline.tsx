@@ -46,7 +46,7 @@ export function RecentLogs({ id }: { id: string }) {
   return <section className="dr-section" aria-label="Recent logs"><h3>Recent logs</h3>
     {page.error && <p role="alert">{page.error} <button onClick={page.retry}>Retry recent logs</button></p>}
     {page.loading && <p role="status">Loading recent logs…</p>}
-    {!page.loading && !page.error && !page.items.length && <p>No retained logs for this app.</p>}
+    {!page.loading && !page.error && !page.items.length && <p className="dr-hint">No retained logs for this app.</p>}
     <LogLines items={page.items} />
   </section>;
 }

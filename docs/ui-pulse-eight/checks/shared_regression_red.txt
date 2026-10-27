@@ -1,0 +1,37 @@
+✔ catalog keeps 22 unique saved IDs, names and aliases (0.806728ms)
+✔ every non-Busnes theme has a complete palette whose scheme matches its background (0.780279ms)
+✔ legacy names resolve without rewriting the saved value (0.143378ms)
+✖ named palettes set product variables and Busnes or system clears them (0.798372ms)
+✔ suite Patina Ky and base patina keep their own actual colours (0.245579ms)
+✔ generated preview CSS is current and Busnes previews come from tokens.css (8.316186ms)
+ℹ tests 6
+ℹ suites 0
+ℹ pass 5
+ℹ fail 1
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 69.212726
+
+✖ failing tests:
+
+test at test/themes.test.js:39:1
+✖ named palettes set product variables and Busnes or system clears them (0.798372ms)
+  AssertionError [ERR_ASSERTION]: named palettes include scheme-bound status colours
+
+  15 !== 16
+
+      at TestContext.<anonymous> (file:///home/yoshi/git/busnes.app/ky-ui/.claude/worktrees/fix-named-warning/test/themes.test.js:45:10)
+      at Test.runInAsyncScope (node:async_hooks:227:14)
+      at Test.run (node:internal/test_runner/test:1402:25)
+      at Test.processPendingSubtests (node:internal/test_runner/test:974:18)
+      at Test.postRun (node:internal/test_runner/test:1542:19)
+      at Test.run (node:internal/test_runner/test:1467:12)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:974:7) {
+    generatedMessage: false,
+    code: 'ERR_ASSERTION',
+    actual: 15,
+    expected: 16,
+    operator: 'strictEqual',
+    diff: 'simple'
+  }

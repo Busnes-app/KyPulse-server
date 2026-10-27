@@ -1,0 +1,68 @@
+{
+  "logs": {
+    "fields": [
+      {
+        "type": "text",
+        "width": 163.5
+      },
+      {
+        "type": "text",
+        "width": 163.5
+      },
+      {
+        "type": "text",
+        "width": 343
+      },
+      {
+        "type": "datetime-local",
+        "width": 343
+      },
+      {
+        "type": "datetime-local",
+        "width": 343
+      }
+    ],
+    "heading": {
+      "fontSize": "24px",
+      "fontWeight": "600"
+    },
+    "nav": {
+      "activeLeft": 212.78125,
+      "activeRight": 293.296875,
+      "borderBottom": "3px",
+      "left": 16,
+      "right": 359
+    },
+    "overflow": 0,
+    "theme": "busnes-light"
+  },
+  "backup": {
+    "disabled": [
+      {
+        "background": "rgb(242, 239, 231)",
+        "color": "rgb(86, 100, 97)",
+        "opacity": "1",
+        "text": "Back up now"
+      },
+      {
+        "background": "rgb(242, 239, 231)",
+        "color": "rgb(86, 100, 97)",
+        "opacity": "1",
+        "text": "Download capsule"
+      },
+      {
+        "background": "rgb(242, 239, 231)",
+        "color": "rgb(86, 100, 97)",
+        "opacity": "1",
+        "text": "Save"
+      }
+    ],
+    "nav": {
+      "activeLeft": 260.296875,
+      "activeRight": 359.078125,
+      "left": 16,
+      "right": 359
+    },
+    "overflow": 0
+  }
+}

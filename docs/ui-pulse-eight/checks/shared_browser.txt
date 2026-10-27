@@ -1,0 +1,69 @@
+npm notice run @busnes/ky-ui@0.4.3 test:browser
+npm notice run playwright test
+[WebServer] (node:1466274) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+[WebServer] (Use `node --trace-warnings ...` to show where the warning was created)
+
+Running 36 tests using 10 workers
+
+(node:1466298) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:1466321) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:1466292) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:1466304) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:1466333) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:1466289) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:1466291) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:1466290) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:1466327) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:1466315) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✓   3 [dark-390] › browser/readme.spec.js:5:1 › README bootstrap applies a saved choice under a self-only script policy (270ms)
+  ✓   7 [light-390] › browser/readme.spec.js:5:1 › README bootstrap applies a saved choice under a self-only script policy (288ms)
+  ✓   6 [light-1280] › browser/readme.spec.js:5:1 › README bootstrap applies a saved choice under a self-only script policy (296ms)
+  ✓   8 [dark-390] › browser/appearance.spec.js:4:1 › Appearance cards support native keyboard selection, persistence and visible focus (599ms)
+  ✓   4 [light-1280] › browser/appearance.spec.js:4:1 › Appearance cards support native keyboard selection, persistence and visible focus (609ms)
+  ✓   1 [dark-1280] › browser/appearance.spec.js:4:1 › Appearance cards support native keyboard selection, persistence and visible focus (654ms)
+  ✓   5 [light-390] › browser/appearance.spec.js:4:1 › Appearance cards support native keyboard selection, persistence and visible focus (643ms)
+(node:1467161) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:1467164) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ✓  14 [light-390] › browser/appearance.spec.js:21:1 › Appearance selection stays visible in forced colors and follows changes from another tab (583ms)
+  ✓  11 [dark-390] › browser/appearance.spec.js:21:1 › Appearance selection stays visible in forced colors and follows changes from another tab (674ms)
+  ✓  13 [dark-1280] › browser/appearance.spec.js:21:1 › Appearance selection stays visible in forced colors and follows changes from another tab (663ms)
+  ✓   2 [light-1280] › browser/theme.spec.js:4:1 › every catalog palette keeps status text and field borders readable (1.3s)
+  ✓  12 [light-1280] › browser/appearance.spec.js:21:1 › Appearance selection stays visible in forced colors and follows changes from another tab (737ms)
+  ✓  10 [dark-390] › browser/theme.spec.js:4:1 › every catalog palette keeps status text and field borders readable (1.4s)
+  ✓  15 [dark-1280] › browser/readme.spec.js:5:1 › README bootstrap applies a saved choice under a self-only script policy (304ms)
+  ✓   9 [light-390] › browser/theme.spec.js:4:1 › every catalog palette keeps status text and field borders readable (1.4s)
+  ✓  17 [light-390] › browser/appearance.spec.js:36:1 › full catalog starts in system mode and all previews fit the viewport (405ms)
+  ✓  18 [dark-390] › browser/appearance.spec.js:36:1 › full catalog starts in system mode and all previews fit the viewport (418ms)
+  ✓  19 [dark-1280] › browser/appearance.spec.js:36:1 › full catalog starts in system mode and all previews fit the viewport (435ms)
+  ✓  21 [light-1280] › browser/appearance.spec.js:36:1 › full catalog starts in system mode and all previews fit the viewport (415ms)
+  ✓  20 [light-1280] › browser/theme.spec.js:46:1 › layout, selected/disabled states, keyboard focus and dialog (681ms)
+  ✓  23 [light-390] › browser/theme.spec.js:46:1 › layout, selected/disabled states, keyboard focus and dialog (635ms)
+  ✓  22 [dark-390] › browser/theme.spec.js:46:1 › layout, selected/disabled states, keyboard focus and dialog (689ms)
+  ✓  16 [dark-1280] › browser/theme.spec.js:4:1 › every catalog palette keeps status text and field borders readable (987ms)
+  ✓  24 [light-1280] › browser/theme.spec.js:77:1 › OS following, explicit persistence, legacy switching and cross-tab changes (445ms)
+  ✓  25 [light-390] › browser/theme.spec.js:77:1 › OS following, explicit persistence, legacy switching and cross-tab changes (420ms)
+  ✓  26 [dark-390] › browser/theme.spec.js:77:1 › OS following, explicit persistence, legacy switching and cross-tab changes (436ms)
+  ✓  27 [dark-1280] › browser/theme.spec.js:46:1 › layout, selected/disabled states, keyboard focus and dialog (509ms)
+  ✓  28 [light-1280] › browser/theme.spec.js:94:1 › restricted storage still renders the OS theme (187ms)
+  ✓  30 [dark-390] › browser/theme.spec.js:94:1 › restricted storage still renders the OS theme (141ms)
+  ✓  29 [light-390] › browser/theme.spec.js:94:1 › restricted storage still renders the OS theme (179ms)
+  ✓  34 [light-390] › browser/theme.spec.js:102:1 › controls retain geometry, field contrast and readable legacy hover (320ms)
+  ✓  32 [light-1280] › browser/theme.spec.js:102:1 › controls retain geometry, field contrast and readable legacy hover (335ms)
+  ✓  33 [dark-390] › browser/theme.spec.js:102:1 › controls retain geometry, field contrast and readable legacy hover (341ms)
+  ✓  31 [dark-1280] › browser/theme.spec.js:77:1 › OS following, explicit persistence, legacy switching and cross-tab changes (407ms)
+  ✓  35 [dark-1280] › browser/theme.spec.js:94:1 › restricted storage still renders the OS theme (125ms)
+  ✓  36 [dark-1280] › browser/theme.spec.js:102:1 › controls retain geometry, field contrast and readable legacy hover (292ms)
+
+  36 passed (4.3s)

@@ -1,0 +1,15 @@
+# KyPulse visual8 progression
+
+Read [COUNCIL.md](COUNCIL.md) for every round’s independent cohort scores and [KyPulse-Council.xlsx](KyPulse-Council.xlsx) for dimensions, evidence, spreads and checks. Rebuild with `python3 docs/ui-pulse-eight/build-report.py` after all reviews in a round are terminal.
+
+Round1 is the fresh baseline at product source fef7b670a36d48792137f56d839e49a86d44eadc. Round2 uses manifest-02-after.json and inventory-v2.json. Both reports are terminal; the parent audit and workbook retain their independent ratings. Round3 uses manifest-03-after.json and inventory-v3.json at clean UI3984044 (21source pins, no uncommitted source). Its reviews are pending; stage01 is frozen, unscored iteration evidence before the shared warning correction. Original reviewer reports remain unchanged.
+
+Each scored set has32 distinct initial-viewport captures:20 admin-console and12 settings. Coverage:Status,Alerts,appdetail,Logs,Activity,Settings,Appearance,Backup. Logs/Activity are empty/unpaired; Settings/Backup use synthetic unconfigured defaults. Other roles, dense content and lower content remain outside visual coverage.
+
+Capture conditions: Chromium153.0.8010.12,scale1,normal service workers,1280x900/390x844,OSlight/dark,no saved choice; synthetic admin and3watched apps(ok,degraded,down) from an owned private-interface fake upstream. Live timestamps/ages differ. Baseline vendor0.4.1; stage01 vendor0.4.2; stage02 vendor0.4.3 from ky-ui a7e93b7; stage03 vendor0.4.3 from58626b7 with matching warning-key types. See manifest source hashes for each built capture.
+
+Capture-only execution establishes provenance,not behavior acceptance. Verification is recorded separately. `native-round2.json` contains Computer Use measurements and the browser-version caveat. Impeccable’s source detector found the prescribed Space Grotesk font and an existing mobile navigation border rule; these are the approved suite typography and navigation selection language,not a reason to replace them. Regex scanning does not establish rendered contrast/accessibility.
+
+The first baseline attempt failed on the test selector Backup; actual heading:Backup & recovery. Corrected capture succeeded without product change. Capture helper refuses overwritten stages. KEEP_FIXTURE=1 keeps owned servers alive until SIGTERM; fixture.json is ignored. Disposable credentials:admin / CaptureUpdated456!. Never use real data or disable CSP/CSRF/service workers.
+
+Read workspace,product,web and browser AGENTS before edits. Opus/Sol first; Gemini only after both satisfied,then parent-audited. One left navigation region across every app. No merge or deployment authorized. MySlop returns401 unknown or revoked token; no shared-board handoff has been posted.

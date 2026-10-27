@@ -155,7 +155,7 @@ export const AppDetail: React.FC<AppDetailProps> = ({ id, user, onChanged }) => 
         </div>
       )}
 
-      <div className="dr-two">
+      <div className="dr-two app-detail-diagnostics">
         <div className="dr-section">
           <h3>Checks</h3>
           {last?.checks && last.checks.length > 0 ? (
@@ -193,15 +193,15 @@ export const AppDetail: React.FC<AppDetailProps> = ({ id, user, onChanged }) => 
         <h3>Alert history</h3>
         {events.length === 0 ? <p className="dr-hint">No state changes yet.</p> : (
           <div className="panel" style={{ overflowX: 'auto', padding: 0 }}>
-            <table className="events">
-              <thead><tr><th>Time</th><th>Change</th><th>Reason</th><th>Delivery</th></tr></thead>
-              <tbody>
+            <table className="events" role="table" aria-label="Alert history">
+              <thead role="rowgroup"><tr role="row"><th scope="col">Time</th><th scope="col">Change</th><th scope="col">Reason</th><th scope="col">Delivery</th></tr></thead>
+              <tbody role="rowgroup">
                 {events.map((e) => (
-                  <tr key={e.id}>
-                    <td>{timeLabel(e.at)}</td>
-                    <td className={`state-${e.to}`}>{e.reminder ? `still ${e.to} (reminder)` : `${e.from} → ${e.to}`}</td>
-                    <td className="dr-mono">{e.cause || ''}</td>
-                    <td>{e.notified ? 'sent' : e.notify_error ? `failed: ${e.notify_error}` : 'not sent'}</td>
+                  <tr key={e.id} role="row">
+                    <td role="cell" data-label="Time">{timeLabel(e.at)}</td>
+                    <td role="cell" data-label="Change" className={`state-${e.to}`}>{e.reminder ? `still ${e.to} (reminder)` : `${e.from} → ${e.to}`}</td>
+                    <td role="cell" data-label="Reason" className="dr-mono">{e.cause || '—'}</td>
+                    <td role="cell" data-label="Delivery">{e.notified ? 'sent' : e.notify_error ? `failed: ${e.notify_error}` : 'not sent'}</td>
                   </tr>
                 ))}
               </tbody>
