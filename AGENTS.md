@@ -95,6 +95,8 @@ Design authority: `docs/superpowers/specs/2026-09-26-kypulse-design.md`. Plans l
 
 ## Child DOX Index
 
+- `docs/ui-pulse-eight/AGENTS.md`: sequential UI council captures, source provenance, scores and audits.
+
 - `internal/api/AGENTS.md`: HTTP routes, auth wrappers, backup handlers, `/healthz`, SPA hosting.
 - `internal/auth/AGENTS.md`: password policy, TOTP, recovery codes, sessions, PoW CAPTCHA.
 - `internal/backup/AGENTS.md`: KyRecovery adapter over `ky-primitives/recoveryclient`.
