@@ -1,7 +1,7 @@
 {
   "product_source": "3b696001b04d79eaad6705756272288d1336397c",
   "shared_source": "58626b7",
-  "status": "Round11 source3b69600 build/typecheck/makeci/nav-regression pass.40fresh originals/21source pins/zero overflow/duplicates; native scoped checks pass. Full local browser, remote CI/security and primary reviews pending. Round10 Opus admin below8; Gemini deferred.",
+  "status": "Round11 source3b69600 build/makeci/nav regression pass;40fresh originals/21source pins. Full browser first attempt failed because Delete contrast clip was below viewport; one-line sampling repair passes focused test, full rerun pending. Runtime/capture pins unchanged. Current-head CI/security/primary reviews pending; Gemini deferred.",
   "checks": {
     "build": {
       "status": "pass",
@@ -19,9 +19,9 @@
       "result": "Tidy/formatting/vet/race/96frontend/smoke pass; exit0."
     },
     "browser": {
-      "status": "running",
-      "evidence": "/tmp/kypulse-r11-browser.log",
-      "exit_record": "/tmp/kypulse-r11-browser.exit"
+      "status": "rerunning",
+      "evidence": "/tmp/kypulse-r11-browser-fixed.log",
+      "exit_record": "/tmp/kypulse-r11-browser-fixed.exit"
     },
     "remote_previous": {
       "status": "all-green",
@@ -33,6 +33,18 @@
       "status": "pass-scoped",
       "evidence": "native-round11.json",
       "result": "Selected Backup visible after desktop\u2192phone resize;7detail heading gaps16px, centered silence labels, tertiary Refresh40px, one nav/no overflow; OSlight390 only."
+    },
+    "browser_first_attempt": {
+      "status": "fail",
+      "evidence": "checks/r11-browser-failed.txt",
+      "exit_record": "checks/r11-browser-failed.exit.txt",
+      "result": "22passed,2failed,8layout-specific skips,8.5min; both failures in danger-button screenshot sampling below viewport, clean teardown,exit1."
+    },
+    "contrast_sampling_fix": {
+      "status": "pass-scoped",
+      "before": "checks/r11-danger-before.txt",
+      "after": "checks/r11-danger-after.txt",
+      "result": "Reproduced clip failure; scroll actual Delete into view before bounding-box sample.2pass/2layout-specific skips in13.1s, all15suite palette rest/hover/focus contrast assertions preserved; no runtime change."
     }
   },
   "retained_checks": "verification-round7.json/checks/r7-remote.json preserve remote CI success54fc13e (including clean browser completion), local assertions22pass6skips with wrapper143, and stale authored securityc976d40. These predate round8 source.",

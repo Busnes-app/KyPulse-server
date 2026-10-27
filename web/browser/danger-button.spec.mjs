@@ -10,6 +10,7 @@ const SUITE = THEME_CATALOG.filter(t => !t.id.startsWith('busnes-') && !LEGACY.i
 // Fill = the most common pixel; label = the pixel that contrasts most with it. The clip stays
 // inside the rounded corners, so the page behind the button is never sampled.
 const shot = async (page, button) => {
+  await button.scrollIntoViewIfNeeded();
   const box = await button.boundingBox();
   return page.screenshot({ animations: 'disabled', clip: { x: box.x + 8, y: box.y + 4, width: box.width - 16, height: box.height - 8 } });
 };

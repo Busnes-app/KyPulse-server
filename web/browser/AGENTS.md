@@ -36,6 +36,7 @@ This directory owns test setup, disposable server launch and UI assertions. The 
 Owned fake HTTP servers close all remaining connections during teardown, after workflow assertions and API cleanup; pooled or incomplete requests must not hold the server-close callback open.
 
 Prefer browser-native behavior and assertions over screenshot-only checks. A passing suite covers these workflows, not every page or a complete accessibility audit.
+- Pixel contrast sampling scrolls the real control into view before reading its screenshot bounds; controls may appear below the initial viewport.
 - `nav.spec.mjs` delays the real font response in a fresh authenticated context to prove the active phone tab remains fully visible after font metrics settle; normal service-worker/CSP/CSRF behavior remains enabled. Its desktop-to-phone regression keeps the active Backup item visible while retaining focus and page scroll.
 
 ## Verification
