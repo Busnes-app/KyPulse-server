@@ -1,0 +1,23 @@
+{
+  "round": 10,
+  "runtime_source": "61e4a0c2fdcff64910c1a9d6a8f33e81cb1df910",
+  "kind": "supplemental-behavior-reproduction",
+  "method": "Owned T3 Computer Use tab; Chrome154/DPR2; synthetic admin at18432, OSlight/no saved choice. Reload Backup at1280x900 so nav scrollLeft resets0; shrink to390x844 without route change.",
+  "result": {
+    "active": "Backup",
+    "nav": {
+      "left": 16,
+      "right": 374
+    },
+    "item": {
+      "left": 395,
+      "right": 494
+    },
+    "scrollLeft": 0,
+    "visible": false,
+    "pageY": 0
+  },
+  "initial_attempt": "Resizing a tab that had previously visited phone layout retained scrollLeft120 and did not reproduce. Fresh desktop reload is the relevant trigger.",
+  "conclusion": "Reproduced selected Backup offscreen until a route transition. Separate from frozen original-frame scores; defer source mutation until both primary reviews terminal.",
+  "configuration_writes": false
+}

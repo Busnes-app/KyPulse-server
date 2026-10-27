@@ -1,38 +1,38 @@
 {
-  "product_source": "61e4a0c2fdcff64910c1a9d6a8f33e81cb1df910",
+  "product_source": "3b696001b04d79eaad6705756272288d1336397c",
   "shared_source": "58626b7",
-  "status": "Round10 new Backup source61e4a0c built/typechecked/makeci pass;40fresh originals,21source pins,normal service workers; native light geometry pass. Full browser/current-head remote CI/security/primary reviews pending. Round9 Opus settings remains239/30; no Gemini.",
+  "status": "Round11 source3b69600 build/typecheck/makeci/nav-regression pass.40fresh originals/21source pins/zero overflow/duplicates; native scoped checks pass. Full local browser, remote CI/security and primary reviews pending. Round10 Opus admin below8; Gemini deferred.",
   "checks": {
     "build": {
       "status": "pass",
-      "evidence": "checks/r10-web.txt",
-      "result": "vendor verification, TypeScript and production build pass"
+      "evidence": "checks/r11-web.txt"
+    },
+    "resize_regression": {
+      "status": "pass",
+      "before": "checks/r11-resize-before.txt",
+      "after": "checks/r11-nav-after.txt",
+      "result": "New resize test fails on source61 at active-item visibility; after fix6pass6layout-specific skips in nav suite, focus and scroll retained, exit0."
     },
     "make_ci": {
       "status": "pass",
-      "evidence": "checks/r10-ci.txt",
-      "result": "Tidy, formatting/vet, race tests,96frontend tests and real-server smoke pass; exit0."
+      "evidence": "checks/r11-ci.txt",
+      "result": "Tidy/formatting/vet/race/96frontend/smoke pass; exit0."
     },
     "browser": {
       "status": "running",
-      "evidence": "/tmp/kypulse-r10-browser.log",
-      "exit_record": "/tmp/kypulse-r10-browser.exit"
+      "evidence": "/tmp/kypulse-r11-browser.log",
+      "exit_record": "/tmp/kypulse-r11-browser.exit"
     },
-    "remote_ci_previous": {
-      "status": "pass",
-      "head": "50576c8557d1a0f98e496d5bfff1e58a46e92fcd",
-      "run": "40468664761",
-      "result": "All checks pass or expected skips, including full browser; superseded by new Backup source."
-    },
-    "security": {
-      "status": "pending",
-      "last_cleared_head": "4128723ff9742a6a6f5b1b22b0b990f9bea54ec0",
-      "note": "Fresh authored exact-head marker required."
+    "remote_previous": {
+      "status": "all-green",
+      "head": "a8b6e511217493ef7f9622f7719c83d8075b508c",
+      "evidence": "checks/r10-remote.json",
+      "note": "Both CI and authored security clear a8; superseded by new source3b69600."
     },
     "native": {
       "status": "pass-scoped",
-      "evidence": "native-round10.json",
-      "result": "OSlight390/1280,32px phone notice/setup gaps, description before all3 action buttons, one nav/zero overflow, no saved theme; not full acceptance."
+      "evidence": "native-round11.json",
+      "result": "Selected Backup visible after desktop\u2192phone resize;7detail heading gaps16px, centered silence labels, tertiary Refresh40px, one nav/no overflow; OSlight390 only."
     }
   },
   "retained_checks": "verification-round7.json/checks/r7-remote.json preserve remote CI success54fc13e (including clean browser completion), local assertions22pass6skips with wrapper143, and stale authored securityc976d40. These predate round8 source.",

@@ -1,0 +1,75 @@
+npm notice run test:browser
+npm notice run playwright test
+[WebServer] {"timestamp":"2026-10-27T04:06:31.14214084-04:00","level":"INFO","message":"✓ Admin user \"admin\" created successfully","app":"kypulse","severity":6,"facility":16}
+[WebServer] {"timestamp":"2026-10-27T04:06:31.223393543-04:00","level":"INFO","message":"✓ Admin user \"viewer\" created successfully","app":"kypulse","severity":6,"facility":16}
+[WebServer] {"timestamp":"2026-10-27T04:06:31.237968011-04:00","level":"INFO","message":"[ALERTS] KYPULSE_ALERT_ALLOW_HTTP is on: a plain-http webhook receiver is admitted (loopback and link-local remain refused)","app":"kypulse","severity":6,"facility":16}
+[WebServer] {"timestamp":"2026-10-27T04:06:31.23804257-04:00","level":"INFO","message":"[KYYARD] KYPULSE_KYYARD_ALLOW_HTTP is on: a plain-http KyYard URL is admitted (loopback and link-local remain refused)","app":"kypulse","severity":6,"facility":16}
+[WebServer] {"timestamp":"2026-10-27T04:06:31.23805276-04:00","level":"WARN","message":"audit key sits beside the database; move it to its own directory and set KYPULSE_AUDIT_KEY_FILE","app":"kypulse","event":"audit_key_beside_db","path":"/tmp/ky-browser-FbiJua/data/audit.key","severity":4,"facility":16}
+[WebServer] {"timestamp":"2026-10-27T04:06:31.239036698-04:00","level":"INFO","message":"audit chain placed at start","app":"kypulse","event":"audit_chain_placed","mode":"new","count":0,"head":"0000000000000000000000000000000000000000000000000000000000000000","severity":6,"facility":16}
+[WebServer] {"timestamp":"2026-10-27T04:06:31.239801107-04:00","level":"INFO","message":"[KYPULSE] kyPulse listening on http://127.0.0.1:5391 (DB: sqlite)","app":"kypulse","severity":6,"facility":16}
+
+Running 28 tests using 1 worker
+
+(node:1616464) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  -   1 [light-390] › browser/danger-button.spec.mjs:37:1 › the filled danger button label reads on its fill in every suite palette
+
+  ✓   2 [light-390] › browser/logs.spec.mjs:44:1 › admin logs, activity, pairing, filters, retry and viewer boundaries (1.1m)
+  ✓   3 [light-390] › browser/monitor.spec.mjs:48:1 › empty alert bar remains visible while watched apps load (590ms)
+[WebServer] {"timestamp":"2026-10-27T04:08:11.245641971-04:00","level":"WARN","message":"watched app changed state","app":"kypulse","event":"target_state_changed","target_id":"tgt_0735e1d6b6a759f4","state":"down","previous":"pending","reason_code":"status_503","severity":4,"facility":16}
+[WebServer] {"timestamp":"2026-10-27T04:08:41.246026188-04:00","level":"WARN","message":"watched app changed state","app":"kypulse","event":"target_state_changed","target_id":"tgt_0735e1d6b6a759f4","state":"ok","previous":"down","reason_code":"","severity":4,"facility":16}
+  ✓   4 [light-390] › browser/monitor.spec.mjs:66:1 › status, alerts, detail page and the alert bar in every state (1.3m)
+  ✓   5 [light-390] › browser/nav.spec.mjs:3:1 › phone navigation keeps the current row visible after the font loads (796ms)
+  ✓   6 [light-390] › browser/nav.spec.mjs:40:1 › phone navigation reveals the current row on a deep link (565ms)
+  ✓   7 [light-390] › browser/ui.spec.mjs:15:1 › production CSP, worker, themes, keyboard and responsive shell (4.1s)
+(node:1618651) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+[WebServer] {"timestamp":"2026-10-27T04:08:59.3484041-04:00","level":"WARN","message":"alert could not be delivered","app":"kypulse","event":"alert_send_failed","target_id":"tgt_0735e1d6b6a759f4","state":"ok","error_kind":"connection refused","severity":4,"facility":16}
+light-1280 [{"id":"dark-matter","rest":6.23,"hover":6.05,"focus":7.22},{"id":"light-matter","rest":5.75,"hover":5.03,"focus":5.75},{"id":"tropics","rest":5.83,"hover":5.07,"focus":5.83},{"id":"tropic-night","rest":7.66,"hover":6.41,"focus":7.66},{"id":"ocean","rest":7.27,"hover":6.1,"focus":7.27},{"id":"coffee","rest":7.37,"hover":6.17,"focus":7.37},{"id":"white-cliffs","rest":6.23,"hover":5.42,"focus":6.23},{"id":"cyber-punk","rest":8.08,"hover":6.68,"focus":8.08},{"id":"neon-purple","rest":7.97,"hover":6.6,"focus":7.97},{"id":"space","rest":7.94,"hover":6.57,"focus":7.94},{"id":"sky","rest":5.69,"hover":5.01,"focus":5.69},{"id":"forest","rest":7,"hover":5.89,"focus":7},{"id":"sun","rest":5.98,"hover":5.17,"focus":5.98},{"id":"patina-ky","rest":7.95,"hover":6.58,"focus":7.95},{"id":"polished-ky","rest":5.84,"hover":5.12,"focus":5.84}]
+  ✓   8 [light-1280] › browser/danger-button.spec.mjs:37:1 › the filled danger button label reads on its fill in every suite palette (4.1s)
+
+  ✓   9 [light-1280] › browser/logs.spec.mjs:44:1 › admin logs, activity, pairing, filters, retry and viewer boundaries (33.8s)
+  ✓  10 [light-1280] › browser/monitor.spec.mjs:48:1 › empty alert bar remains visible while watched apps load (413ms)
+[WebServer] {"timestamp":"2026-10-27T04:10:11.241066422-04:00","level":"WARN","message":"watched app changed state","app":"kypulse","event":"target_state_changed","target_id":"tgt_258a31d53b9e9158","state":"down","previous":"pending","reason_code":"status_503","severity":4,"facility":16}
+[WebServer] {"timestamp":"2026-10-27T04:10:24.957915352-04:00","level":"WARN","message":"alert could not be delivered","app":"kypulse","event":"alert_send_failed","target_id":"tgt_258a31d53b9e9158","state":"down","error_kind":"connection refused","severity":4,"facility":16}
+[WebServer] {"timestamp":"2026-10-27T04:10:41.246263812-04:00","level":"WARN","message":"watched app changed state","app":"kypulse","event":"target_state_changed","target_id":"tgt_258a31d53b9e9158","state":"ok","previous":"down","reason_code":"","severity":4,"facility":16}
+  ✓  11 [light-1280] › browser/monitor.spec.mjs:66:1 › status, alerts, detail page and the alert bar in every state (1.3m)
+  -  12 [light-1280] › browser/nav.spec.mjs:3:1 › phone navigation keeps the current row visible after the font loads
+  -  13 [light-1280] › browser/nav.spec.mjs:40:1 › phone navigation reveals the current row on a deep link
+[WebServer] {"timestamp":"2026-10-27T04:10:54.782636932-04:00","level":"WARN","message":"alert could not be delivered","app":"kypulse","event":"alert_send_failed","target_id":"tgt_258a31d53b9e9158","state":"ok","error_kind":"connection refused","severity":4,"facility":16}
+  ✓  14 [light-1280] › browser/ui.spec.mjs:15:1 › production CSP, worker, themes, keyboard and responsive shell (4.2s)
+(node:1619994) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  -  15 [dark-390] › browser/danger-button.spec.mjs:37:1 › the filled danger button label reads on its fill in every suite palette
+
+  ✓  16 [dark-390] › browser/logs.spec.mjs:44:1 › admin logs, activity, pairing, filters, retry and viewer boundaries (49.1s)
+  ✓  17 [dark-390] › browser/monitor.spec.mjs:48:1 › empty alert bar remains visible while watched apps load (544ms)
+[WebServer] {"timestamp":"2026-10-27T04:12:21.245742096-04:00","level":"WARN","message":"watched app changed state","app":"kypulse","event":"target_state_changed","target_id":"tgt_8e03b93e44713d80","state":"down","previous":"pending","reason_code":"status_503","severity":4,"facility":16}
+[WebServer] {"timestamp":"2026-10-27T04:12:34.088991728-04:00","level":"WARN","message":"alert could not be delivered","app":"kypulse","event":"alert_send_failed","target_id":"tgt_8e03b93e44713d80","state":"down","error_kind":"connection refused","severity":4,"facility":16}
+[WebServer] {"timestamp":"2026-10-27T04:12:51.243804797-04:00","level":"WARN","message":"watched app changed state","app":"kypulse","event":"target_state_changed","target_id":"tgt_8e03b93e44713d80","state":"ok","previous":"down","reason_code":"","severity":4,"facility":16}
+  ✓  18 [dark-390] › browser/monitor.spec.mjs:66:1 › status, alerts, detail page and the alert bar in every state (1.3m)
+  ✓  19 [dark-390] › browser/nav.spec.mjs:3:1 › phone navigation keeps the current row visible after the font loads (782ms)
+  ✓  20 [dark-390] › browser/nav.spec.mjs:40:1 › phone navigation reveals the current row on a deep link (707ms)
+[WebServer] {"timestamp":"2026-10-27T04:13:09.898111773-04:00","level":"WARN","message":"alert could not be delivered","app":"kypulse","event":"alert_send_failed","target_id":"tgt_8e03b93e44713d80","state":"ok","error_kind":"connection refused","severity":4,"facility":16}
+  ✓  21 [dark-390] › browser/ui.spec.mjs:15:1 › production CSP, worker, themes, keyboard and responsive shell (4.2s)
+(node:1621806) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+dark-1280 [{"id":"dark-matter","rest":6.23,"hover":6.05,"focus":7.22},{"id":"light-matter","rest":5.75,"hover":5.03,"focus":5.75},{"id":"tropics","rest":5.83,"hover":5.07,"focus":5.83},{"id":"tropic-night","rest":7.66,"hover":6.41,"focus":7.66},{"id":"ocean","rest":7.27,"hover":6.1,"focus":7.27},{"id":"coffee","rest":7.37,"hover":6.17,"focus":7.37},{"id":"white-cliffs","rest":6.23,"hover":5.42,"focus":6.23},{"id":"cyber-punk","rest":8.08,"hover":6.68,"focus":8.08},{"id":"neon-purple","rest":7.97,"hover":6.6,"focus":7.97},{"id":"space","rest":7.94,"hover":6.57,"focus":7.94},{"id":"sky","rest":5.69,"hover":5.01,"focus":5.69},{"id":"forest","rest":7,"hover":5.89,"focus":7},{"id":"sun","rest":5.98,"hover":5.17,"focus":5.98},{"id":"patina-ky","rest":7.95,"hover":6.58,"focus":7.95},{"id":"polished-ky","rest":5.84,"hover":5.12,"focus":5.84}]
+  ✓  22 [dark-1280] › browser/danger-button.spec.mjs:37:1 › the filled danger button label reads on its fill in every suite palette (4.2s)
+
+  ✓  23 [dark-1280] › browser/logs.spec.mjs:44:1 › admin logs, activity, pairing, filters, retry and viewer boundaries (33.7s)
+  ✓  24 [dark-1280] › browser/monitor.spec.mjs:48:1 › empty alert bar remains visible while watched apps load (544ms)
+[WebServer] {"timestamp":"2026-10-27T04:14:21.245987576-04:00","level":"WARN","message":"watched app changed state","app":"kypulse","event":"target_state_changed","target_id":"tgt_ccd38d608dfcd295","state":"down","previous":"pending","reason_code":"status_503","severity":4,"facility":16}
+[WebServer] {"timestamp":"2026-10-27T04:14:37.061510479-04:00","level":"WARN","message":"alert could not be delivered","app":"kypulse","event":"alert_send_failed","target_id":"tgt_ccd38d608dfcd295","state":"down","error_kind":"connection refused","severity":4,"facility":16}
+[WebServer] {"timestamp":"2026-10-27T04:15:06.246155161-04:00","level":"WARN","message":"watched app changed state","app":"kypulse","event":"target_state_changed","target_id":"tgt_ccd38d608dfcd295","state":"ok","previous":"down","reason_code":"","severity":4,"facility":16}
+  ✓  25 [dark-1280] › browser/monitor.spec.mjs:66:1 › status, alerts, detail page and the alert bar in every state (1.5m)
+  -  26 [dark-1280] › browser/nav.spec.mjs:3:1 › phone navigation keeps the current row visible after the font loads
+  -  27 [dark-1280] › browser/nav.spec.mjs:40:1 › phone navigation reveals the current row on a deep link
+[WebServer] {"timestamp":"2026-10-27T04:15:24.513641451-04:00","level":"WARN","message":"alert could not be delivered","app":"kypulse","event":"alert_send_failed","target_id":"tgt_ccd38d608dfcd295","state":"ok","error_kind":"connection refused","severity":4,"facility":16}
+  ✓  28 [dark-1280] › browser/ui.spec.mjs:15:1 › production CSP, worker, themes, keyboard and responsive shell (4.6s)
+[WebServer] {"timestamp":"2026-10-27T04:15:25.204658553-04:00","level":"INFO","message":"[KYPULSE] Shutting down gracefully...","app":"kypulse","severity":6,"facility":16}
+[WebServer] {"timestamp":"2026-10-27T04:15:25.204778287-04:00","level":"INFO","message":"[KYPULSE] waiting for the scheduled backup in flight...","app":"kypulse","severity":6,"facility":16}
+[WebServer] {"timestamp":"2026-10-27T04:15:25.204830815-04:00","level":"INFO","message":"[KYPULSE] Server stopped","app":"kypulse","severity":6,"facility":16}
+
+  6 skipped
+  22 passed (8.9m)

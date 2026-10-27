@@ -1,0 +1,94 @@
+{
+  "round": 11,
+  "runtime_source": "3b696001b04d79eaad6705756272288d1336397c",
+  "method": "Owned T3 Computer Use tab Chrome154/DPR2, synthetic admin fixture18433, OSlight/no saved theme. Supplements Chromium153/DPR1 originals; no recovery/content/configuration/theme writes.",
+  "resize": {
+    "active": "Backup",
+    "nav": {
+      "left": 16,
+      "right": 374
+    },
+    "item": {
+      "left": 275,
+      "right": 374
+    },
+    "scrollLeft": 120,
+    "visible": true,
+    "pageY": 0,
+    "overflow": 0,
+    "theme": null
+  },
+  "detail_phone": {
+    "headings": [
+      {
+        "name": "Silence webhook messages",
+        "gap": 16
+      },
+      {
+        "name": "Checks",
+        "gap": 16
+      },
+      {
+        "name": "Settings",
+        "gap": 16
+      },
+      {
+        "name": "KyYard",
+        "gap": 16
+      },
+      {
+        "name": "Recent logs",
+        "gap": 16
+      },
+      {
+        "name": "Alert history",
+        "gap": 16
+      },
+      {
+        "name": "Stop watching",
+        "gap": 16
+      }
+    ],
+    "silence": [
+      {
+        "label": "Silence 1h",
+        "leftGap": 54.25,
+        "rightGap": 54.25,
+        "justify": "center"
+      },
+      {
+        "label": "Silence 8h",
+        "leftGap": 53,
+        "rightGap": 53,
+        "justify": "center"
+      },
+      {
+        "label": "Silence until fixed",
+        "leftGap": 118.75,
+        "rightGap": 118.75,
+        "justify": "center"
+      }
+    ],
+    "nav_count": 1,
+    "overflow": 0
+  },
+  "source_actions_phone": [
+    {
+      "label": "Add source",
+      "class": "btn-secondary",
+      "height": 40,
+      "background": "rgba(0, 0, 0, 0)",
+      "border": "color(srgb 0.44549 0.468235 0.465882)",
+      "color": "rgb(24, 35, 38)"
+    },
+    {
+      "label": "Refresh sources",
+      "class": "btn-tertiary",
+      "height": 40,
+      "background": "rgba(0, 0, 0, 0)",
+      "border": "rgba(0, 0, 0, 0)",
+      "color": "rgb(24, 35, 38)"
+    }
+  ],
+  "limits": "Scoped geometry only, not full behavior/contrast acceptance. Production regression separately proves focus and page scroll preservation."
+}
