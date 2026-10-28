@@ -19,8 +19,10 @@ env:
   NODE_VERSION: "26"
 
 jobs:
-  go:
-    name: Go build, vet & tests (SQLite)
+  # Slow steps run as parallel legs. The required check names are gate jobs that
+  # pass only when every leg behind them did.
+  sqlite:
+    name: SQLite (normal)
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
@@ -102,17 +104,6 @@ jobs:
       - name: Tests with race detector and coverage
         run: go test -race -covermode=atomic -coverprofile=coverage.out ./...
 
-      - name: Strong-key profile (SQLite)
-        env:
-          GODEBUG: fips140=on
-        run: go test -race -count=1 ./...
-
-      # Bounded fuzz runs over parsers of untrusted input; together about a minute.
-      - run: go test -fuzz=FuzzDecode -fuzztime=100000x ./internal/ingest
-      - run: go test -fuzz=FuzzNormalize -fuzztime=500000x ./internal/poller
-      - run: go test -fuzz=FuzzParseLogs -fuzztime=50000x ./internal/kyyard
-      - run: go test -fuzz=FuzzDisplay -fuzztime=200000x ./internal/logstore
-
       - name: Coverage summary
         run: |
           go tool cover -func=coverage.out | tail -n 1 | tee -a "$GITHUB_STEP_SUMMARY"
@@ -122,9 +113,52 @@ jobs:
           name: coverage
           path: coverage.out
 
-  postgres:
-    name: Go tests (PostgreSQL)
+  sqlite-fips:
+    name: SQLite (fips)
     runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: actions/setup-go@b7ad1dad31e06c5925ef5d2fc7ad053ef454303e # v7.0.0
+        with:
+          go-version-file: go.mod
+          cache: true
+
+      - name: Strong-key profile (SQLite)
+        env:
+          GODEBUG: fips140=on
+        run: go test -race -count=1 ./...
+
+  fuzz:
+    name: Fuzz
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: actions/setup-go@b7ad1dad31e06c5925ef5d2fc7ad053ef454303e # v7.0.0
+        with:
+          go-version-file: go.mod
+          cache: true
+
+      # Bounded fuzz runs over parsers of untrusted input; together about a minute.
+      - run: go test -fuzz=FuzzDecode -fuzztime=100000x ./internal/ingest
+      - run: go test -fuzz=FuzzNormalize -fuzztime=500000x ./internal/poller
+      - run: go test -fuzz=FuzzParseLogs -fuzztime=50000x ./internal/kyyard
+      - run: go test -fuzz=FuzzDisplay -fuzztime=200000x ./internal/logstore
+
+  go:
+    name: Go build, vet & tests (SQLite)
+    needs: [sqlite, sqlite-fips, fuzz]
+    if: always()
+    runs-on: ubuntu-latest
+    steps:
+      - run: test "${{ !contains(needs.*.result, 'failure') && !contains(needs.*.result, 'cancelled') && !contains(needs.*.result, 'skipped') }}" = true
+
+  postgres-tests:
+    name: PostgreSQL (${{ matrix.profile }})
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        profile: [normal, fips]
     services:
       postgres:
         image: postgres:17-alpine
@@ -147,15 +181,25 @@ jobs:
 
       # Same suite, real Postgres: each test gets its own schema (internal/testdb).
       - name: Tests against PostgreSQL
+        if: matrix.profile == 'normal'
         env:
           KYPULSE_TEST_POSTGRES_DSN: postgres://ci:ci@127.0.0.1:5432/ci_test?sslmode=disable
         run: go test -race -count=1 ./...
 
       - name: Strong-key profile (PostgreSQL)
+        if: matrix.profile == 'fips'
         env:
           KYPULSE_TEST_POSTGRES_DSN: postgres://ci:ci@127.0.0.1:5432/ci_test?sslmode=disable
           GODEBUG: fips140=on
         run: go test -race -count=1 ./...
+
+  postgres:
+    name: Go tests (PostgreSQL)
+    needs: [postgres-tests]
+    if: always()
+    runs-on: ubuntu-latest
+    steps:
+      - run: test "${{ !contains(needs.*.result, 'failure') && !contains(needs.*.result, 'cancelled') && !contains(needs.*.result, 'skipped') }}" = true
 
   web:
     name: Frontend typecheck & build
@@ -187,11 +231,15 @@ jobs:
         run: npm audit --audit-level=high
         working-directory: web
 
-  browser:
-    name: Browser regressions (production server)
+  browser-tests:
+    name: Browser regressions (${{ matrix.project }})
     runs-on: ubuntu-latest
-    # Dependency installation plus the complete browser matrix can exceed 15 minutes.
+    # Dependency installation plus one Playwright project.
     timeout-minutes: 20
+    strategy:
+      fail-fast: false
+      matrix:
+        project: [light-390, light-1280, dark-390, dark-1280]
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
@@ -212,14 +260,22 @@ jobs:
       - run: go build -o .browser/server ./cmd/server
       - run: npx playwright install --with-deps chromium
         working-directory: web
-      - run: npm run test:browser
+      - run: npm run test:browser -- --project=${{ matrix.project }}
         working-directory: web
       - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         if: always()
         with:
-          name: browser-results
+          name: browser-results-${{ matrix.project }}
           path: web/test-results/
           retention-days: 7
+
+  browser:
+    name: Browser regressions (production server)
+    needs: [browser-tests]
+    if: always()
+    runs-on: ubuntu-latest
+    steps:
+      - run: test "${{ !contains(needs.*.result, 'failure') && !contains(needs.*.result, 'cancelled') && !contains(needs.*.result, 'skipped') }}" = true
 
   security:
     name: Vulnerability scan
@@ -302,7 +358,7 @@ jobs:
   # the pushed bytes are the tested bytes. A pull request from a fork must
   # never reach this job or write a package.
   publish:
-    needs: [go, postgres, web, browser, security, smoke, docker]
+    needs: [sqlite, sqlite-fips, fuzz, go, postgres-tests, postgres, web, browser-tests, browser, security, smoke, docker]
     if: github.event_name == 'push' && github.ref == 'refs/heads/master'
     runs-on: ubuntu-latest
     # No concurrency group here on purpose: GitHub cancels a *pending* job when a
