@@ -53,6 +53,8 @@ See [`LICENSE.txt`](LICENSE.txt).
 Container-local installer setup and its current acceptance limits are documented in
 [installer setup](docs/INSTALLER_SETUP.md).
 
+[![OctoCounts](https://api.octocounts.com/badge/Busnes-app/KyPulse-server/branch/master)](https://octocounts.com/github/Busnes-app/KyPulse-server/tree/master)
+
 ## Documentation
 
 - [Running](docs/RUNNING.md) — Quick start. <a id="quick-start"></a><a id="without-root-named-volumes"></a><a id="upgrading-port-8080-now-on-loopback"></a><a id="upgrading-to-a-non-root-container"></a><a id="audit-key"></a>
