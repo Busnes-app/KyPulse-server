@@ -12,6 +12,7 @@ import (
 	"testing"
 
 	"github.com/Busnes-app/kypulse-server/internal/api"
+	"github.com/Busnes-app/kypulse-server/internal/appversion"
 	"github.com/Busnes-app/kypulse-server/internal/auth"
 	"github.com/Busnes-app/kypulse-server/internal/config"
 	"github.com/Busnes-app/kypulse-server/internal/egress"
@@ -129,6 +130,9 @@ func TestStatusSummary(t *testing.T) {
 	}
 	if s["webhook"].(map[string]any)["configured"] != false {
 		t.Fatalf("webhook: %v", s["webhook"])
+	}
+	if s["version"] != appversion.String() {
+		t.Fatalf("version: %v", s["version"])
 	}
 	if w := do(t, srv, "GET", "/api/status", nil); w.Code != http.StatusUnauthorized {
 		t.Fatalf("anonymous status: %d", w.Code)

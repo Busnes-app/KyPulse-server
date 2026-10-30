@@ -142,6 +142,7 @@ export const App: React.FC = () => {
         activePath={route.path}
         user={user}
         onLogout={handleLogout}
+        version={status?.version}
       />
 
       <main className="app-main">
