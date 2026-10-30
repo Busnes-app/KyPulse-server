@@ -12,6 +12,7 @@ import (
 	"strconv"
 	"time"
 
+	"github.com/Busnes-app/kypulse-server/internal/appversion"
 	"github.com/Busnes-app/kypulse-server/internal/crypto"
 	"github.com/Busnes-app/kypulse-server/internal/egress"
 	"github.com/Busnes-app/kypulse-server/internal/monitor"
@@ -330,6 +331,7 @@ func (s *Server) handleStatus(w http.ResponseWriter, r *http.Request) {
 		"problems":   problems,
 		"webhook":    webhook,
 		"kyyard":     s.kyyard.Status(time.Now()),
+		"version":    appversion.String(),
 	})
 }
 

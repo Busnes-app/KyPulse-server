@@ -75,6 +75,7 @@ export interface StatusSummary {
   problems: Problem[] | null;
   webhook: { configured: boolean; last: DeliveryStatus | null };
   kyyard?: KyYardStatus;
+  version?: string;
 }
 
 export interface WebhookInfo {

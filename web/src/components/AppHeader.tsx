@@ -1,12 +1,14 @@
 import React, { useEffect, useRef } from 'react';
 import { LogOut, Settings as SettingsIcon, Activity, Bell, Archive, Palette, History, HardDrive } from 'lucide-react';
 import { hrefFor } from '../router';
+import { LicenseFooter } from './LicenseFooter';
 
 interface AppHeaderProps {
   appName: string;
   activePath: string;
   user: { role: string; display_name?: string; username?: string } | null;
   onLogout: () => void;
+  version?: string;
 }
 
 export const navItems = [
@@ -19,7 +21,7 @@ export const navItems = [
   { path: '/appearance', label: 'Appearance', icon: Palette, admin: false },
 ];
 
-export const AppHeader: React.FC<AppHeaderProps> = ({ appName, activePath, user, onLogout }) => {
+export const AppHeader: React.FC<AppHeaderProps> = ({ appName, activePath, user, onLogout, version }) => {
   const items = navItems.filter((item) => !item.admin || user?.role === 'admin');
   const navRef = useRef<HTMLElement>(null);
   // Phones scroll the navigation sideways: keep the current page's row in view, also on deep links.
@@ -80,6 +82,7 @@ export const AppHeader: React.FC<AppHeaderProps> = ({ appName, activePath, user,
             </button>
           </div>
         )}
+        <LicenseFooter appName={appName || 'kyPulse'} version={version} />
       </div>
     </header>
   );
