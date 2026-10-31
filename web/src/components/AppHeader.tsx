@@ -43,13 +43,20 @@ export const AppHeader: React.FC<AppHeaderProps> = ({ appName, activePath, user,
   const role = user?.role === 'admin' ? 'Administrator' : 'Everyday account';
   const name = user?.display_name && user.display_name !== role ? user.display_name : user?.username;
   return (
-    <header className="app-header">
-      <div className="app-brand">
-        <img className="ky-mark" src="/app-icon.png" width={28} height={28} alt="" />
-        <span>{appName}</span>
+    <header className="ky-sidebar">
+      <div className="ky-mobile-head">
+        <div className="ky-brand">
+          <img className="ky-mark" src="/app-icon.png" width={28} height={28} alt="" />
+          <span>{appName}</span>
+        </div>
+        {user && (
+          <button type="button" className="ky-mobile-signout" aria-label="Sign out" onClick={onLogout}>
+            <LogOut aria-hidden="true" />
+          </button>
+        )}
       </div>
 
-      <nav ref={navRef} className="app-nav" aria-label="Primary">
+      <nav ref={navRef} className="ky-nav" aria-label="Primary">
         {items.map((item) => {
           const Icon = item.icon;
           // An app detail page belongs to Status.
@@ -58,16 +65,16 @@ export const AppHeader: React.FC<AppHeaderProps> = ({ appName, activePath, user,
             <a
               key={item.path}
               href={hrefFor(item.path)}
-              className={active ? 'ky-nav-item active' : 'ky-nav-item'}
+              className="ky-nav-item"
               aria-current={active ? 'page' : undefined}
             >
-              <Icon size={16} aria-hidden="true" />
+              <Icon aria-hidden="true" />
               <span>{item.label}</span>
             </a>
           );
         })}
       </nav>
-      <div className="app-sidebar-foot">
+      <div className="ky-sidebar-foot">
         {user && (
           <div className="ky-user">
             <div className="ky-user-copy">
@@ -75,7 +82,7 @@ export const AppHeader: React.FC<AppHeaderProps> = ({ appName, activePath, user,
               <p className="ky-user-role">{role}</p>
             </div>
             <button type="button" className="ky-user-signout" onClick={onLogout}>
-              <LogOut size={16} aria-hidden="true" />Sign out
+              <LogOut aria-hidden="true" />Sign out
             </button>
           </div>
         )}

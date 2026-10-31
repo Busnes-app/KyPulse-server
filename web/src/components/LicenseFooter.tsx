@@ -5,16 +5,17 @@ interface LicenseFooterProps {
   appName: string;
   // version comes from the authenticated /api/status; empty hides the pill.
   version?: string;
+  className?: string;
 }
 
 // The suite's licence line and About dialog (ky-ui shell markup).
-export const LicenseFooter: React.FC<LicenseFooterProps> = ({ appName, version }) => {
+export const LicenseFooter: React.FC<LicenseFooterProps> = ({ appName, version, className }) => {
   const dialog = useRef<HTMLDialogElement>(null);
   const year = new Date().getFullYear();
   const close = () => dialog.current?.close();
 
   return (
-    <div className="ky-license">
+    <footer className={className}>
       <button type="button" className="ky-license-link" onClick={() => dialog.current?.showModal()}>
         &copy; {year} &middot; MIT License
       </button>
@@ -30,6 +31,6 @@ export const LicenseFooter: React.FC<LicenseFooterProps> = ({ appName, version }
         </div>
         <textarea className="ky-about-license" readOnly value={mitLicenseText} aria-label="MIT License" />
       </dialog>
-    </div>
+    </footer>
   );
 };

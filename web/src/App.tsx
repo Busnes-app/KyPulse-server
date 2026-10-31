@@ -1,6 +1,8 @@
 import React, { useCallback, useEffect, useState } from 'react';
 import { AppHeader } from './components/AppHeader';
 import { AlertBar } from './components/AlertBar';
+import { LicenseFooter } from './components/LicenseFooter';
+import { PageBanner } from './components/PageHead';
 import { Status } from './pages/Status';
 import { Alerts } from './pages/Alerts';
 import { Logs } from './pages/Logs';
@@ -140,7 +142,7 @@ export const App: React.FC = () => {
 
   const head = route.parts[0] ?? 'status';
   return (
-    <div className="app-shell">
+    <div className="ky-app">
       <AppHeader
         appName={brand(settings?.app_name)}
         activePath={route.path}
@@ -149,8 +151,8 @@ export const App: React.FC = () => {
         version={status?.version}
       />
 
-      <main className="app-main">
-        <AlertBar status={status} loading={statusLoading} isAdmin={isAdmin} />
+      <main className="ky-content">
+        <PageBanner.Provider value={<AlertBar status={status} loading={statusLoading} isAdmin={isAdmin} />}>
         {head === 'status' && <Status user={user} onChanged={refreshStatus} />}
         {head === 'alerts' && <Alerts user={user} />}
         {head === 'apps' && route.parts[1] && <AppDetail key={`${route.parts[1]}:${user.id}:${user.role}`} id={route.parts[1]} user={user} onChanged={refreshStatus} />}
@@ -159,6 +161,8 @@ export const App: React.FC = () => {
         {head === 'backup' && isAdmin && <Backup />}
         {head === 'appearance' && <Appearance />}
         {head === 'settings' && <Settings settings={settings} user={user} onChanged={refreshStatus} onTOTPChange={(totp_enabled) => setUser((u: any) => (u ? { ...u, totp_enabled } : u))} />}
+        </PageBanner.Provider>
+        <LicenseFooter className="ky-content-foot" appName={brand(settings?.app_name)} version={status?.version} />
       </main>
     </div>
   );
