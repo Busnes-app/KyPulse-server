@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"errors"
 	"log/slog"
+	"slices"
 	"sync"
 	"time"
 
@@ -57,6 +58,38 @@ type Service struct {
 	mu       sync.Mutex
 	overflow map[string]delivery // held while the queue was full; see enqueue
 	closed   bool                // queue closed by Drain
+	beats    map[string][]Beat   // the last Beats polls per target; see Recent
+}
+
+// Beats is how many polls Recent keeps per target. They live in memory only, so the
+// heartbeat strip starts empty after a restart.
+const Beats = 24
+
+// Beat is one poll's raw answer, before the thresholds settle a state.
+type Beat struct {
+	At        time.Time    `json:"at"`
+	State     poller.State `json:"state"`
+	LatencyMS int64        `json:"latency_ms"`
+}
+
+// Recent returns a target's last polls, oldest first.
+func (s *Service) Recent(id string) []Beat {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	return slices.Clone(s.beats[id])
+}
+
+func (s *Service) remember(id string, b Beat) {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if s.beats == nil {
+		s.beats = map[string][]Beat{}
+	}
+	list := append(s.beats[id], b)
+	if len(list) > Beats {
+		list = slices.Clone(list[len(list)-Beats:])
+	}
+	s.beats[id] = list
 }
 
 // delivery is one queued message. done is a flush marker for tests: the sender closes it
@@ -254,6 +287,7 @@ func (s *Service) Observe(ctx context.Context, o poller.Observation) {
 		s.Logger.Log(ctx, evPollStoreError, logging.TargetID(tg.ID), logging.Err(err))
 		return
 	}
+	s.remember(tg.ID, Beat{At: o.At, State: o.Result.State, LatencyMS: o.Latency.Milliseconds()})
 	// Each transition and each flapping notice is its own event; the last one recorded is what
 	// a send reports. Without either, a send is a reminder about the current state.
 	var ev *store.TargetEvent
@@ -420,7 +454,7 @@ func (s *Service) SendTest(ctx context.Context) error {
 	if !ok {
 		return ErrNoWebhook
 	}
-	msg := notify.Message{App: "kyPulse", State: "ok", Previous: "ok", Time: s.now(), URL: s.AppURL, Test: true}
+	msg := notify.Message{App: "KyPulse", State: "ok", Previous: "ok", Time: s.now(), URL: s.AppURL, Test: true}
 	// A test is a diagnostic the admin is waiting on: one attempt, answered within the request.
 	once := *s.Notifier
 	once.Backoff = nil

@@ -12,6 +12,7 @@ import (
 	"strconv"
 	"time"
 
+	"github.com/Busnes-app/kypulse-server/internal/alerts"
 	"github.com/Busnes-app/kypulse-server/internal/appversion"
 	"github.com/Busnes-app/kypulse-server/internal/crypto"
 	"github.com/Busnes-app/kypulse-server/internal/egress"
@@ -80,15 +81,48 @@ func (s *Server) writeTargetError(w http.ResponseWriter, err error) {
 	}
 }
 
+// historyView is targetView plus what Status and the detail page read at a glance: the last
+// polls (memory only) and the past day's uptime and incidents (from recorded transitions).
+func (s *Server) historyView(t *store.Target, changes []alerts.Change, now time.Time) map[string]any {
+	out := targetView(t)
+	a := alerts.Measure(alerts.State(t.State), t.CreatedAt, changes, now)
+	if !t.Enabled {
+		a.Uptime = nil // a paused app's last state says nothing about now
+	}
+	out["uptime_24h"] = a.Uptime
+	out["incidents_24h"] = a.Incidents
+	out["recent"] = s.monitor.Recent(t.ID)
+	return out
+}
+
+// changesByTarget reads the past day's transitions once for every target.
+func (s *Server) changesByTarget(r *http.Request, now time.Time) (map[string][]alerts.Change, error) {
+	events, err := s.store.Targets().TransitionsSince(r.Context(), now.Add(-alerts.AvailabilityWindow))
+	if err != nil {
+		return nil, err
+	}
+	out := map[string][]alerts.Change{}
+	for _, e := range events {
+		out[e.TargetID] = append(out[e.TargetID], alerts.Change{At: e.At, From: alerts.State(e.FromState), To: alerts.State(e.ToState)})
+	}
+	return out, nil
+}
+
 func (s *Server) handleListTargets(w http.ResponseWriter, r *http.Request) {
 	targets, err := s.store.Targets().ListTargets(r.Context())
 	if err != nil {
 		s.writeError(w, http.StatusInternalServerError, "Failed to list targets")
 		return
 	}
+	now := time.Now()
+	changes, err := s.changesByTarget(r, now)
+	if err != nil {
+		s.writeError(w, http.StatusInternalServerError, "Failed to list targets")
+		return
+	}
 	views := make([]map[string]any, 0, len(targets))
 	for _, t := range targets {
-		views = append(views, targetView(t))
+		views = append(views, s.historyView(t, changes[t.ID], now))
 	}
 	s.writeJSON(w, http.StatusOK, map[string]any{"targets": views})
 }
@@ -112,6 +146,12 @@ func (s *Server) handleGetTarget(w http.ResponseWriter, r *http.Request) {
 		s.writeError(w, http.StatusInternalServerError, "Failed to list events")
 		return
 	}
+	now := time.Now()
+	changes, err := s.changesByTarget(r, now)
+	if err != nil {
+		s.writeError(w, http.StatusInternalServerError, "Failed to list events")
+		return
+	}
 	var facts any
 	if t.Container != "" {
 		if f, ok := s.kyyard.Facts(t.Container, time.Now()); ok {
@@ -119,7 +159,7 @@ func (s *Server) handleGetTarget(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 	s.writeJSON(w, http.StatusOK, map[string]any{
-		"target":      targetView(t),
+		"target":      s.historyView(t, changes[t.ID], now),
 		"last_result": lastResult,
 		"events":      events,
 		"kyyard":      facts,

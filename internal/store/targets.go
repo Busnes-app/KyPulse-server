@@ -3,6 +3,7 @@ package store
 import (
 	"context"
 	"database/sql"
+	"slices"
 	"strings"
 	"time"
 )
@@ -299,6 +300,32 @@ FROM target_events` + whereSQL(where) + ` ORDER BY id DESC LIMIT ?`)
 		}
 		events = append(events, &e)
 	}
+	return events, rows.Err()
+}
+
+// TransitionsSince lists the state changes recorded at or after since, every target, oldest
+// first: no reminders, flapping notices or offboarding alerts. It walks back by id and stops
+// at the first older row, comparing parsed times rather than SQLite's stored text.
+func (t *targetStore) TransitionsSince(ctx context.Context, since time.Time) ([]*TargetEvent, error) {
+	rows, err := t.store.db.QueryContext(ctx, `SELECT id, target_id, at, from_state, to_state, cause, reminder, notified, notify_error
+FROM target_events WHERE reminder = FALSE AND from_state <> to_state
+AND from_state IN ('pending', 'ok', 'degraded', 'down') AND to_state IN ('pending', 'ok', 'degraded', 'down') ORDER BY id DESC`)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+	var events []*TargetEvent
+	for rows.Next() {
+		var e TargetEvent
+		if err := rows.Scan(&e.ID, &e.TargetID, &e.At, &e.FromState, &e.ToState, &e.Cause, &e.Reminder, &e.Notified, &e.NotifyError); err != nil {
+			return nil, err
+		}
+		if e.At.Before(since) {
+			break
+		}
+		events = append(events, &e)
+	}
+	slices.Reverse(events)
 	return events, rows.Err()
 }
 

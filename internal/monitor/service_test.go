@@ -480,3 +480,23 @@ func TestObserveIgnoresADeletedTarget(t *testing.T) {
 		t.Fatal("sent for a target that does not exist")
 	}
 }
+
+func TestRecentKeepsTheLastPollsPerTarget(t *testing.T) {
+	svc, st, _, now := newService(t)
+	ctx := context.Background()
+	_ = st.Targets().CreateTarget(ctx, &store.Target{ID: "a", Name: "KyVault", URL: "https://a/", IntervalSec: 30, Enabled: true})
+	for i := range monitor.Beats + 3 {
+		state := poller.OK
+		if i%5 == 0 {
+			state = poller.Down
+		}
+		observe(svc, "a", state, now.Add(time.Duration(i)*30*time.Second))
+	}
+	got := svc.Recent("a")
+	if len(got) != monitor.Beats || !got[0].At.Equal(now.Add(3*30*time.Second)) || got[len(got)-1].State != poller.OK || got[2].State != poller.Down {
+		t.Fatalf("%+v", got)
+	}
+	if len(svc.Recent("unknown")) != 0 {
+		t.Fatal("unknown target has beats")
+	}
+}
