@@ -2,6 +2,7 @@ import { KyYardCollection } from '../components/KyYardCollectors';
 import { useState } from 'react';
 import { getActivity, type LogUser } from '../logs';
 import { PageControls, useLogPage } from '../components/LogTimeline';
+import { PageHead } from '../components/PageHead';
 
 const empty = { app: '', actor: '', outcome: '', from: '', to: '' };
 export function Activity({ user }: { user: LogUser }) {
@@ -23,7 +24,7 @@ function AdminActivity() {
     : Object.values(appliedFilters).some(Boolean)
       ? 'No audit events match these filters. Within the retained 7-day window; filters may exclude retained events.'
       : 'No audit events found in the retained 7-day window.';
-  return <div className="dr-page"><div className="dr-header"><h1>Activity</h1></div><p className="dr-hint">Audit events retained for up to 7 days, subject to the shared size limit. Imported chains are not verified. Times are UTC.</p>
+  return <div className="dr-page"><PageHead title="Activity" lede="Audit events retained for up to 7 days, subject to the shared size limit. Imported chains are not verified. Times are UTC." />
     <details className="log-filter-panel"><summary>Filters{Object.values(appliedFilters).some(Boolean) && <span className="filter-applied"> Applied</span>}</summary>
     <form className="log-filters" onSubmit={event => { event.preventDefault(); apply(); }}>
       <label>Activity app<input value={filters.app} maxLength={256} onChange={e => setFilters({ ...filters, app: e.target.value })} /></label>

@@ -1,14 +1,21 @@
 import { useSyncExternalStore } from 'react';
 import { readChoice, saveChoice, watchChoice } from './ky-ui/theme';
-import { SYSTEM_THEME, THEME_CATALOG, applyThemeVariables, findTheme } from './ky-ui/themes';
-// The shared suite catalog; explicit choices are local to this browser under the same key.
-export const THEME_OPTIONS = [SYSTEM_THEME, ...THEME_CATALOG];
-export function themeMode(theme: string): string {
-  const scheme = findTheme(theme)?.scheme;
-  return scheme === 'light' ? 'Light' : scheme === 'dark' ? 'Dark' : 'Follows device';
-}
+import { SYSTEM_THEME, THEME_PAIRS, applyThemeVariables, findPair, findTheme } from './ky-ui/themes';
+// Busnes.app defaults; explicit choices are local to this browser under `ky_theme`. The saved
+// value is `system` (Busnes following the OS), a pair ID (that pair following the OS) or a half
+// ID (a fixed mode). Earlier IDs and aliases resolve to their half; removed ones to `system`.
+const KEY = 'ky_theme';
+export const THEME_CHOICES = THEME_PAIRS.map((pair) => ({
+  pair,
+  choices: [
+    { mode: 'system', label: 'Match system', value: pair.id === 'busnes-pair' ? SYSTEM_THEME.id : pair.id },
+    { mode: 'light', label: 'Light', value: pair.light },
+    { mode: 'dark', label: 'Dark', value: pair.dark },
+  ],
+}));
 export function storedTheme(): string {
-  return findTheme(readChoice('ky_theme'))?.id ?? 'system';
+  const saved = readChoice(KEY);
+  return findPair(saved)?.id ?? findTheme(saved)?.id ?? SYSTEM_THEME.id;
 }
 let current = storedTheme();
 // Every theme control on the page reads one store, so they never disagree.
@@ -20,15 +27,18 @@ function subscribe(listener: () => void) {
 export const useTheme = () => useSyncExternalStore(subscribe, () => current);
 const media = window.matchMedia?.('(prefers-color-scheme: dark)');
 export function applyTheme(theme: string, persist = false) {
-  const id = findTheme(theme)?.id;
-  if (!id) return;
-  current = id;
-  const resolved = id === 'system' ? (media?.matches ? 'busnes-dark' : 'busnes-light') : id;
-  document.documentElement.dataset.theme = resolved;
-  // Named palettes set their colors inline; Busnes clears them so the token aliases apply.
-  document.documentElement.style.colorScheme = applyThemeVariables(resolved) ?? (resolved === 'busnes-dark' ? 'dark' : 'light');
-  if (persist) saveChoice('ky_theme', id);
-  listeners.forEach(listener => listener());
+  const option = findTheme(theme);
+  if (!option) return;
+  current = findPair(theme)?.id ?? option.id;
+  const root = document.documentElement;
+  const resolved = option.id === 'system' ? (media?.matches ? 'busnes-dark' : 'busnes-light') : option.id;
+  // Named palettes set their colours inline; Busnes clears them so the token aliases apply.
+  const scheme = applyThemeVariables(resolved) ?? (resolved === 'busnes-dark' ? 'dark' : 'light');
+  root.dataset.theme = resolved;
+  root.dataset.scheme = scheme;
+  root.style.colorScheme = scheme;
+  if (persist) saveChoice(KEY, current);
+  listeners.forEach((listener) => listener());
 }
 applyTheme(current);
-watchChoice('ky_theme', () => applyTheme(storedTheme()), () => current !== 'system');
+watchChoice(KEY, () => applyTheme(storedTheme()));

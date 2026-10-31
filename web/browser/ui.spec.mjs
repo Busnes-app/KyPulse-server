@@ -1,5 +1,4 @@
 import { test, expect } from '@playwright/test';
-import { THEME_CATALOG } from '../src/ky-ui/themes.js';
 
 // Relative luminance of a computed colour: rgb() channels are 0-255, color(srgb …) 0-1.
 const luminance = color => {
@@ -29,13 +28,13 @@ test('production CSP, worker, themes, keyboard and responsive shell', async ({ p
   });
   // Online navigation must refresh the shell rather than pinning a previous deploy.
   await page.reload();
-  await page.getByPlaceholder('admin', { exact: true }).fill('admin');
+  await page.getByLabel('Username').fill('admin');
   await page.locator('input[type=password]').fill('IncorrectPassword123!');
-  await page.getByRole('button', { name: 'Sign In', exact: true }).click();
+  await page.getByRole('button', { name: 'Sign in', exact: true }).click();
   await expect(page.locator('form').locator('..')).toContainText(/invalid|incorrect|failed/i);
   await fits(page);
   await page.locator('input[type=password]').fill('BrowserUpdated456!');
-  await page.getByRole('button', { name: 'Sign In', exact: true }).click();
+  await page.getByRole('button', { name: 'Sign in', exact: true }).click();
   const nav = page.getByRole('navigation', { name: 'Primary' });
   await expect(nav).toBeVisible();
   await expect(page.getByRole('heading', { name: 'Status' })).toBeVisible();
@@ -49,7 +48,7 @@ test('production CSP, worker, themes, keyboard and responsive shell', async ({ p
   const theme = (p, id) => p.getByRole('group', { name: 'Theme' }).locator(`input[value="${id}"]`);
   await openAppearance(page);
   await theme(page, 'paper').check();
-  await expect(page.locator('body')).toHaveCSS('background-color', 'rgb(248, 250, 252)');
+  await expect(page.locator('body')).toHaveCSS('background-color', 'rgb(236, 239, 244)');
   await theme(page, 'busnes-dark').check();
   await page.reload();
   await expect(page.locator('body')).toHaveCSS('background-color', 'rgb(24, 35, 38)');
@@ -74,22 +73,25 @@ test('production CSP, worker, themes, keyboard and responsive shell', async ({ p
   await expect(nav.getByRole('link', { name: 'Settings & DB' })).toHaveAttribute('aria-current', 'page');
   await expect(page.getByRole('heading', { name: 'Settings', exact: true })).toBeVisible();
   await fits(page);
-  // Appearance: native radio cards for every catalog theme, chosen by keyboard.
+  // Appearance: six pairs of Match system / Light / Dark in one radio group, chosen by keyboard.
   await nav.getByRole('link', { name: 'Appearance' }).click();
   const picker = page.getByRole('group', { name: 'Theme' });
-  await expect(picker.getByRole('radio')).toHaveCount(THEME_CATALOG.length + 1);
-  await expect(picker.getByRole('radio', { name: /Match system/ })).toBeChecked();
-  await picker.getByRole('radio', { name: /Coffee/ }).check();
-  await page.keyboard.press('ArrowLeft');
-  await expect(picker.getByRole('radio', { name: /Ocean/ })).toBeChecked();
-  await expect(picker.getByRole('radio', { name: /Ocean/ })).toBeFocused();
+  const mode = (pair, label) => picker.getByRole('group', { name: pair }).getByRole('radio', { name: label });
+  await expect(picker.getByRole('radio')).toHaveCount(18);
+  await expect(mode('Busnes', 'Match system')).toBeChecked();
+  await mode('Ocean', 'Light').check();
+  await page.keyboard.press('ArrowRight');
+  await expect(mode('Ocean', 'Dark')).toBeChecked();
+  await expect(mode('Ocean', 'Dark')).toBeFocused();
   await expect(page.locator('body')).toHaveCSS('background-color', 'rgb(15, 27, 36)');
+  // The selected segment carries a check and a single focus ring.
+  await expect(picker.locator('.appearance-mode', { has: page.locator('input:checked') }).locator('svg')).toHaveCount(1);
+  await expect(picker.locator('.appearance-mode', { has: page.locator('input:checked') })).toHaveCSS('outline-style', 'solid');
   await fits(page);
   await page.reload();
-  await expect(page.getByRole('group', { name: 'Theme' }).getByRole('radio', { name: /Ocean/ })).toBeChecked();
-  // A new light named theme has no product CSS block: hover, selection and focus must
-  // come from its own palette, not the dark base :root values.
-  await page.getByRole('group', { name: 'Theme' }).getByRole('radio', { name: /^Sky Light$/ }).check();
+  await expect(mode('Ocean', 'Dark')).toBeChecked();
+  // A light named palette has no product CSS block: hover and selection come from its own palette.
+  await mode('Ky', 'Light').check();
   const idle = nav.getByRole('link').first();
   await idle.hover();
   const hovered = await idle.evaluate(el => [getComputedStyle(el).backgroundColor, getComputedStyle(el).color]);
@@ -97,22 +99,15 @@ test('production CSP, worker, themes, keyboard and responsive shell', async ({ p
   expect(luminance(hovered[1])).toBeLessThan(0.2);
   const current = nav.locator('[aria-current="page"]');
   expect(luminance(await current.evaluate(el => getComputedStyle(el).backgroundColor))).toBeGreaterThan(0.5);
-  // Keyboard round trip so the radio has :focus-visible, ending back on Sky.
-  await page.getByRole('group', { name: 'Theme' }).getByRole('radio', { name: /^Sky Light$/ }).focus();
-  await page.keyboard.press('ArrowRight');
-  await page.keyboard.press('ArrowLeft');
-  await expect(page.getByRole('group', { name: 'Theme' }).getByRole('radio', { name: /^Sky Light$/ })).toBeChecked();
-  await expect(page.getByRole('group', { name: 'Theme' }).locator('label', { hasText: 'Sky' })).toHaveCSS('outline-style', 'solid');
-  await page.getByRole('group', { name: 'Theme' }).getByRole('radio', { name: /^Busnes Light Light$/ }).check();
+  await mode('Busnes', 'Light').check();
   await expect(page.locator('body')).toHaveCSS('background-color', 'rgb(248, 246, 240)');
   expect(await page.evaluate(() => document.documentElement.style.getPropertyValue('--panel-hover'))).toBe('');
-  await page.getByRole('radio', { name: /Match system/ }).check();
+  await mode('Busnes', 'Match system').check();
   await expect(page.locator('body')).toHaveCSS('background-color', testInfo.project.use.colorScheme === 'dark' ? 'rgb(24, 35, 38)' : 'rgb(248, 246, 240)');
-  // New suite palettes must keep status text readable against both app surfaces.
-  await nav.getByRole('link', { name: 'Appearance' }).click();
+  // Light named palettes must keep status text readable against both app surfaces.
   const statusContrast = [];
-  for (const id of ['light-matter', 'tropics', 'white-cliffs', 'sun', 'polished-ky', 'sky']) {
-    await page.locator(`.ky-appearance-radio[value="${id}"]`).check();
+  for (const id of ['light-matter', 'white-cliffs', 'forest-light', 'polished-ky', 'paper']) {
+    await theme(page, id).check();
     statusContrast.push(...await page.evaluate((theme) => {
       const root = document.documentElement;
       const probe = document.createElement('span');
@@ -135,7 +130,7 @@ test('production CSP, worker, themes, keyboard and responsive shell', async ({ p
   }
   await page.mouse.move(0, 0);
   await testInfo.attach('status-contrast', { body: JSON.stringify(statusContrast, null, 2), contentType: 'application/json' });
-  await page.screenshot({ path: testInfo.outputPath('sky-status-contrast.png'), fullPage: true });
+  await page.screenshot({ path: testInfo.outputPath('light-status-contrast.png'), fullPage: true });
   for (const row of statusContrast) expect(row.ratio, JSON.stringify(row)).toBeGreaterThanOrEqual(4.5);
   await page.evaluate(() => fetch('/browser-regression-uncached'));
   const cachedDynamic = await page.evaluate(async () => {

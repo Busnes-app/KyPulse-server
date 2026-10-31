@@ -32,9 +32,9 @@ test.afterAll(async () => {
 
 async function signIn(page, username = 'admin') {
   await page.goto('/');
-  await page.getByPlaceholder('admin', { exact: true }).fill(username);
+  await page.getByLabel('Username').fill(username);
   await page.locator('input[type=password]').fill(username === 'admin' ? 'BrowserUpdated456!' : 'BrowserViewer123!');
-  await page.getByRole('button', { name: 'Sign In', exact: true }).click();
+  await page.getByRole('button', { name: 'Sign in', exact: true }).click();
   await expect(page.getByRole('navigation', { name: 'Primary' })).toBeVisible();
 }
 async function csrf(page) {

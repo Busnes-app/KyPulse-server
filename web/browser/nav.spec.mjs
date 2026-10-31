@@ -3,9 +3,9 @@ import { test, expect } from '@playwright/test';
 test('desktop to phone resizing keeps the current navigation item visible', async ({ page }, testInfo) => {
   test.skip(testInfo.project.use.viewport.width < 1280, 'starts in the desktop layout');
   await page.goto('/');
-  await page.getByPlaceholder('admin', { exact: true }).fill('admin');
+  await page.getByLabel('Username').fill('admin');
   await page.locator('input[type=password]').fill('BrowserUpdated456!');
-  await page.getByRole('button', { name: 'Sign In', exact: true }).click();
+  await page.getByRole('button', { name: 'Sign in', exact: true }).click();
   const nav = page.getByRole('navigation', { name: 'Primary' });
   await expect(nav).toBeVisible();
   await page.goto('/#/backup');
@@ -28,9 +28,9 @@ test('desktop to phone resizing keeps the current navigation item visible', asyn
 test('phone navigation keeps the current row visible after the font loads', async ({ page, browser }, testInfo) => {
   test.skip(testInfo.project.use.viewport.width > 390, 'phone layout only');
   await page.goto('/');
-  await page.getByPlaceholder('admin', { exact: true }).fill('admin');
+  await page.getByLabel('Username').fill('admin');
   await page.locator('input[type=password]').fill('BrowserUpdated456!');
-  await page.getByRole('button', { name: 'Sign In', exact: true }).click();
+  await page.getByRole('button', { name: 'Sign in', exact: true }).click();
   await expect(page.getByRole('navigation', { name: 'Primary' })).toBeVisible();
   const context = await browser.newContext({
     storageState: await page.context().storageState(),
@@ -65,9 +65,9 @@ test('phone navigation keeps the current row visible after the font loads', asyn
 test('phone navigation reveals the current row on a deep link', async ({ page }, testInfo) => {
   test.skip(testInfo.project.use.viewport.width > 390, 'phone layout only');
   await page.goto('/');
-  await page.getByPlaceholder('admin', { exact: true }).fill('admin');
+  await page.getByLabel('Username').fill('admin');
   await page.locator('input[type=password]').fill('BrowserUpdated456!');
-  await page.getByRole('button', { name: 'Sign In', exact: true }).click();
+  await page.getByRole('button', { name: 'Sign in', exact: true }).click();
   const nav = page.getByRole('navigation', { name: 'Primary' });
   await expect(nav).toBeVisible();
   await page.goto('/#/appearance');

@@ -1,4 +1,4 @@
-import { afterEach, describe, expect, it, vi } from 'vitest';
+import { afterEach, beforeAll, describe, expect, it, vi } from 'vitest';
 import { cleanup, fireEvent, render, screen, waitFor } from '@testing-library/react';
 import { Status } from './Status';
 import type { Target } from '../monitor';
@@ -25,6 +25,13 @@ function stub(calls: Array<[RegExp, unknown, number?]>) {
 
 afterEach(() => { cleanup(); vi.unstubAllGlobals(); });
 
+beforeAll(() => {
+  // jsdom has no modal dialogs; open/close by attribute is enough here.
+  HTMLDialogElement.prototype.showModal ??= function (this: HTMLDialogElement) { this.open = true; };
+  HTMLDialogElement.prototype.close ??= function (this: HTMLDialogElement) { this.open = false; };
+});
+
+
 describe('Status', () => {
   it('lists broken apps first with a dot and links to the detail page', async () => {
     stub([[/GET \/api\/targets$/, { targets: list }]]);
@@ -39,6 +46,24 @@ describe('Status', () => {
     expect(screen.queryByRole('button', { name: /Add app/ })).toBeNull();
   });
 
+  it('shows the endpoint without its scheme, the heartbeat, the day\'s uptime, check age and latency', async () => {
+    const at = new Date(Date.now() - 12_000).toISOString();
+    stub([[/GET \/api\/targets$/, { targets: [target({
+      name: 'KyVault', state: 'down', cause: 'status_503', url: 'http://10.0.0.5:8080/healthz', last_polled_at: at, last_latency_ms: 30,
+      uptime_24h: 99.96, incidents_24h: 1, recent: [{ at, state: 'down', latency_ms: 30 }, { at: at + 'x', state: 'ok', latency_ms: 20 }],
+    })] }]]);
+    render(<Status user={{ role: 'viewer' }} onChanged={() => {}} />);
+    const row = await screen.findByRole('link', { name: /KyVault/ });
+    expect(row.textContent).toContain('10.0.0.5:8080/healthz');
+    expect(row.textContent).not.toContain('http://');
+    expect(row.textContent).toContain('down · status_503');
+    expect(row.textContent).toContain('99.9%');
+    expect(row.textContent).toMatch(/1\ds ago/);
+    expect(row.textContent).toContain('30 ms');
+    expect(screen.getByRole('img', { name: 'Last 2 checks: 1 ok, 1 down' }).children).toHaveLength(24);
+    expect(row.querySelector('[style*="underline"], u')).toBeNull();
+  });
+
   it('lets an admin add an app and refreshes', async () => {
     const fetchMock = stub([
       [/GET \/api\/targets$/, { targets: [] }],
@@ -47,10 +72,12 @@ describe('Status', () => {
     const onChanged = vi.fn();
     render(<Status user={{ role: 'admin' }} onChanged={onChanged} />);
     fireEvent.click(await screen.findByRole('button', { name: /Add app/ }));
+    expect(screen.getByRole('dialog', { name: 'Add app' })).toBeTruthy();
     fireEvent.change(screen.getByLabelText('Name'), { target: { value: 'New' } });
     fireEvent.change(screen.getByLabelText('Health URL'), { target: { value: 'https://new.lan/healthz' } });
     fireEvent.click(screen.getByRole('button', { name: 'Save' }));
     await waitFor(() => expect(onChanged).toHaveBeenCalled());
+    expect(screen.queryByRole('dialog')).toBeNull();
     const post = fetchMock.mock.calls.find(([, init]) => (init as RequestInit)?.method === 'POST')!;
     expect(JSON.parse((post[1] as RequestInit).body as string)).toEqual({ name: 'New', url: 'https://new.lan/healthz', interval_sec: 30, enabled: true });
   });

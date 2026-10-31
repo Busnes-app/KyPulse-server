@@ -1,4 +1,4 @@
-import { afterEach, describe, expect, it, vi } from 'vitest';
+import { afterEach, beforeAll, describe, expect, it, vi } from 'vitest';
 import { cleanup, fireEvent, render, screen, waitFor } from '@testing-library/react';
 import { AppDetail } from './AppDetail';
 import type { Target } from '../monitor';
@@ -28,13 +28,22 @@ function stub(extra: Array<[RegExp, unknown, number?]> = []) {
 
 afterEach(() => { cleanup(); vi.unstubAllGlobals(); window.location.hash = ''; });
 
+beforeAll(() => {
+  // jsdom has no modal dialogs; open/close by attribute is enough here.
+  HTMLDialogElement.prototype.showModal ??= function (this: HTMLDialogElement) { this.open = true; };
+  HTMLDialogElement.prototype.close ??= function (this: HTMLDialogElement) { this.open = false; };
+});
+
+
 describe('AppDetail', () => {
-  it('shows the banner, the failing request, checks and history; a viewer gets no controls', async () => {
+  it('shows the state and failing check under the name, three stats, the request, checks and history; a viewer gets no controls', async () => {
     const fetchMock = stub();
     render(<AppDetail id="tgt_a" user={{ role: 'viewer' }} onChanged={() => {}} />);
-    expect(await screen.findByRole('heading', { name: 'KyVault' })).toBeTruthy();
+    expect(await screen.findByRole('heading', { level: 1, name: 'KyVault' })).toBeTruthy();
     const banner = screen.getByRole('region', { name: 'Current state' });
-    expect(banner.className).toContain('banner-down');
+    expect(banner.className).toContain('detail-down');
+    expect(banner.querySelector('.detail-headline')?.textContent).toContain('kyyard: refused');
+    expect([...banner.querySelectorAll('dt')].map((d) => d.textContent)).toEqual(['Down for', 'Last checked', 'Incidents in 24h']);
     expect(banner.textContent).toContain('refused');
     expect(banner.textContent).toContain('GET https://vault.lan/healthz');
     expect(screen.getByText('kyyard').parentElement?.textContent).toContain('down');
@@ -143,10 +152,29 @@ describe('AppDetail', () => {
     expect(await screen.findByText(/Not linked to a KyYard container/)).toBeTruthy();
   });
 
+  it('collapses an unlinked app with no logs into one line, after the history', async () => {
+    const unlinked = { ...target, container: undefined };
+    const fn = vi.fn(async (input: RequestInfo | URL) => {
+      const key = String(input);
+      if (/^\/api\/kyyard$/.test(key)) return new Response(JSON.stringify({ paired: false, stale: false }));
+      if (key.startsWith('/api/logs')) return new Response(JSON.stringify({ items: [], next_before_id: 0, bursts: [], has_app_events: false }));
+      if (/tgt_a$/.test(key)) return new Response(JSON.stringify({ ...detail, target: unlinked, kyyard: null }));
+      throw new Error(key);
+    });
+    vi.stubGlobal('fetch', fn);
+    render(<AppDetail id="tgt_a" user={{ role: 'admin' }} onChanged={() => {}} />);
+    const line = await screen.findByText(/No KyYard container linked and no retained logs/);
+    expect(screen.queryByRole('heading', { name: 'Recent logs' })).toBeNull();
+    expect(screen.queryByRole('heading', { name: 'KyYard' })).toBeNull();
+    const history = screen.getByRole('heading', { name: 'Alert history' });
+    expect(history.compareDocumentPosition(line) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+  });
+
   it('keeps the container when editing and saving', async () => {
     const fetchMock = stub([[/^PUT \/api\/targets\/tgt_a$/, { target }]]);
     render(<AppDetail id="tgt_a" user={{ role: 'admin' }} onChanged={() => {}} />);
     fireEvent.click(await screen.findByRole('button', { name: 'Edit' }));
+    expect(screen.getByRole('dialog', { name: 'Edit KyVault' })).toBeTruthy();
     fireEvent.click(screen.getByRole('button', { name: 'Save changes' }));
     await waitFor(() => expect(fetchMock.mock.calls.some(([, init]) => (init as RequestInit)?.method === 'PUT')).toBe(true));
     const put = fetchMock.mock.calls.find(([, init]) => (init as RequestInit)?.method === 'PUT')!;

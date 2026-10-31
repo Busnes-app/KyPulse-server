@@ -1,7 +1,7 @@
 import React from 'react';
 import { AlertTriangle, CheckCircle2, CircleDashed, Database, Send } from 'lucide-react';
 import { hrefFor } from '../router';
-import { kyYardPending, sinceLabel, timeLabel, webhookFailing, type StatusSummary } from '../monitor';
+import { kyYardPending, sinceLabel, webhookFailing, type StatusSummary } from '../monitor';
 
 interface AlertBarProps {
   status: StatusSummary | null;
@@ -9,8 +9,9 @@ interface AlertBarProps {
   isAdmin: boolean;
 }
 
-// AlertBar sits above every page: red with one line per problem, green when all is well,
-// plus a delivery warning when the webhook keeps failing.
+// AlertBar sits above every page as one fixed-height line: the problem counts and a pill per
+// problem app (exact times and causes live on its detail page), green when all is well, plus
+// chips for failing alert delivery and stale KyYard data.
 export const AlertBar: React.FC<AlertBarProps> = ({ status, loading, isAdmin }) => {
   if (!status) {
     return (
@@ -41,21 +42,23 @@ export const AlertBar: React.FC<AlertBarProps> = ({ status, loading, isAdmin }) 
 
   const problems = status.problems ?? [];
   if (problems.length > 0) {
+    const counts = [status.down && `${status.down} down`, status.degraded && `${status.degraded} degraded`].filter(Boolean).join(' · ');
     return (
-      <div role="alert" className="alert-bar alert-bar-down">
-        {problems.map((p) => (
-          <div key={p.id} className={`alert-bar-line state-${p.state}`}>
-            <AlertTriangle size={16} />
-            <a href={hrefFor(`/apps/${p.id}`)} title={`Since ${timeLabel(p.since)}`}>
-              {p.name} {p.state}
-              <span className="alert-bar-since"> since {timeLabel(p.since)} ({sinceLabel(p.since)}{p.cause ? `, ${p.cause}` : ''})</span>
-              <span className="alert-bar-compact" aria-hidden="true"> · {sinceLabel(p.since)}{p.cause ? ` · ${p.cause}` : ''}</span>
-            </a>
-          </div>
-        ))}
-        <a className="alert-bar-link" href={hrefFor('/alerts')}>Alerts</a>
+      <div role="alert" className={`alert-bar alert-bar-down${status.down ? '' : ' alert-bar-degraded'}`}>
+        <AlertTriangle size={16} aria-hidden="true" />
+        <strong className="alert-bar-count">{counts || `${problems.length} problem${problems.length === 1 ? '' : 's'}`}</strong>
+        <ul className="alert-bar-apps">
+          {problems.map((p) => (
+            <li key={p.id}>
+              <a className="alert-pill" href={hrefFor(`/apps/${p.id}`)} aria-label={`${p.name} ${p.state} for ${sinceLabel(p.since)}`}>
+                <span className={`dot dot-${p.state}`} aria-hidden="true" />{p.name}
+              </a>
+            </li>
+          ))}
+        </ul>
         {delivery}
         {yard}
+        <a className="alert-bar-link" href={hrefFor('/alerts')}>Alerts</a>
       </div>
     );
   }
@@ -82,7 +85,7 @@ export const AlertBar: React.FC<AlertBarProps> = ({ status, loading, isAdmin }) 
     <div role="status" className="alert-bar alert-bar-ok">
       <div className="alert-bar-line">
         <CheckCircle2 size={16} />
-        <span>All {status.ok} app{status.ok === 1 ? '' : 's'} healthy{pendingNote} · last check {timeLabel(status.checked_at)}</span>
+        <span>All {status.ok} app{status.ok === 1 ? '' : 's'} healthy{pendingNote}{status.checked_at ? ` · last check ${sinceLabel(status.checked_at)} ago` : ''}</span>
       </div>
       {delivery}
       {yard}

@@ -1,11 +1,12 @@
 import { RecentLogs } from '../components/LogTimeline';
 import React, { useCallback, useEffect, useState } from 'react';
 import { ArrowLeft, BellOff, Pencil, Trash2 } from 'lucide-react';
-import { TargetForm } from '../components/TargetForm';
+import { TargetDialog } from '../components/TargetDialog';
 import { KyYardFacts } from '../components/KyYardFacts';
+import { PageHead } from '../components/PageHead';
 import { hrefFor, navigate } from '../router';
 import {
-  ApiError, deleteTarget, getKyYard, getTarget, isSilenced, kyYardContainers, kyYardPending, silenceTarget, sinceLabel, stateClass, stateLabel, timeLabel, updateTarget,
+  ApiError, deleteTarget, getKyYard, getTarget, isSilenced, kyYardContainers, kyYardPending, silenceTarget, sinceLabel, stateClass, stateLabel, timeLabel, updateTarget, uptimeLabel,
   type ContainerFacts, type KyYardStatus, type LastResult, type SilenceFor, type Suggestion, type Target, type TargetEvent, type TargetInput,
 } from '../monitor';
 import type { PageUser } from './Status';
@@ -16,8 +17,9 @@ interface AppDetailProps {
   onChanged: () => void;
 }
 
-// AppDetail is one watched app: state banner, the exact request that fails, the checks the
-// app reported, alert history and, for admins, silence, edit and delete.
+// AppDetail is one watched app: its state and failing check under the name, three stats, the
+// incident (the exact request, times and silence actions), checks, history and, for admins,
+// edit and delete.
 export const AppDetail: React.FC<AppDetailProps> = ({ id, user, onChanged }) => {
   const [target, setTarget] = useState<Target | null>(null);
   const [last, setLast] = useState<LastResult | null>(null);
@@ -107,57 +109,63 @@ export const AppDetail: React.FC<AppDetailProps> = ({ id, user, onChanged }) => 
 
   const cls = stateClass(target);
   const failing = target.enabled && !!target.last_polled_at && target.state !== 'ok';
+  const silenced = isSilenced(target);
+  // The reason leads: the worst check the app reported, else the poll's own cause.
+  const worst = last?.checks?.find((c) => c.status === 'down') ?? last?.checks?.find((c) => c.status === 'degraded');
+  const reason = worst ? `${worst.name}: ${worst.reason || worst.status}` : target.cause || last?.cause || '';
+  const forLabel = { ok: 'Up for', degraded: 'Degraded for', down: 'Down for', pending: 'Pending for', paused: 'Paused for' }[cls] ?? 'For';
+  const yardSection = <KyYardFacts facts={facts} link={target.container} paired={!!yard?.paired} pending={!!yard && kyYardPending(yard)} isAdmin={isAdmin} />;
   return (
     <div className="dr-page app-detail-page">
       <p className="dr-hint"><a href={hrefFor('/status')}><ArrowLeft size={14} aria-hidden="true" />Status</a></p>
-      <div className="dr-header">
-        <h1>{target.name}</h1>
-        {isAdmin && !editing && (
-          <div className="dr-actions">
-            <button type="button" className="btn-secondary" onClick={() => setEditing(true)} disabled={busy}><Pencil size={14} />Edit</button>
-          </div>
-        )}
-      </div>
+      <PageHead title={target.name}
+        action={isAdmin && <button type="button" className="btn-secondary" onClick={() => setEditing(true)} disabled={busy}><Pencil size={14} aria-hidden="true" />Edit</button>} />
       {error && <p className="form-error" role="alert">{error}</p>}
-      {editing && <div className="dr-section"><TargetForm initial={target} submitLabel="Save changes" suggestions={suggestions} onSubmit={save} onCancel={() => setEditing(false)} /></div>}
+      {editing && <TargetDialog title={`Edit ${target.name}`} initial={target} submitLabel="Save changes" suggestions={suggestions} onSubmit={save} onClose={() => setEditing(false)} />}
 
-      <section className={`banner banner-${cls}`} aria-label="Current state">
-        <span className={`dot dot-${cls}`} aria-hidden="true" />
-        <h2 className={`state-${cls}`}>{stateLabel(target)}</h2>
-        <span>
-          {!target.last_polled_at
-            ? 'awaiting first check'
-            : target.state === 'pending'
-              ? 'not yet classified'
-              : `for ${sinceLabel(target.state_since)} (since ${timeLabel(target.state_since)})`}
-        </span>
-        {failing && (
-          <span className="dr-mono" style={{ flexBasis: '100%', fontSize: 13 }}>
-            GET {target.url} → {target.cause || last?.cause || 'unknown'}
-            {target.last_polled_at ? ` · last tried ${timeLabel(target.last_polled_at)} (${target.last_latency_ms} ms)` : ''}
-          </span>
-        )}
-        {isSilenced(target) && (
-          <span className="badge dr-badge-muted"><BellOff size={12} />silenced {target.until_fixed ? 'until fixed' : `until ${timeLabel(target.silenced_until)}`}</span>
+      <section className={`detail-state detail-${cls}`} aria-label="Current state">
+        <p className="detail-headline">
+          <span className={`dot dot-${cls}`} aria-hidden="true" />
+          <strong className={`state-${cls} cap`}>{stateLabel(target)}</strong>
+          {!target.last_polled_at ? <span>awaiting first check</span> : target.state === 'pending' && <span>not yet classified</span>}
+          {failing && reason && <span className="detail-reason">{reason}</span>}
+        </p>
+        <dl className="detail-stats">
+          <div><dt>{forLabel}</dt><dd>{target.last_polled_at ? sinceLabel(target.state_since) : '—'}</dd></div>
+          <div><dt>Last checked</dt><dd>{target.last_polled_at ? `${sinceLabel(target.last_polled_at)} ago` : 'Not yet'}</dd>
+            {target.last_polled_at && <dd className="detail-stat-note">{target.last_latency_ms} ms</dd>}</div>
+          <div><dt>Incidents in 24h</dt><dd>{target.incidents_24h ?? 0}</dd>
+            <dd className="detail-stat-note">{target.uptime_24h == null ? 'no uptime yet' : `${uptimeLabel(target.uptime_24h)} uptime`}</dd></div>
+        </dl>
+        {(failing || silenced || isAdmin) && (
+          <div className="detail-incident">
+            {failing && (
+              <div className="detail-incident-facts">
+                <p className="dr-mono">GET {target.url} → {target.cause || last?.cause || last?.state || 'unknown'}</p>
+                <p>Since {timeLabel(target.state_since)} · last tried {timeLabel(target.last_polled_at)} ({target.last_latency_ms} ms)</p>
+              </div>
+            )}
+            {silenced && (
+              <p><span className="badge dr-badge-muted"><BellOff size={12} aria-hidden="true" />Silenced {target.until_fixed ? 'until fixed' : `until ${timeLabel(target.silenced_until)}`}</span></p>
+            )}
+            {isAdmin && (
+              <div className="detail-silence">
+                <div className="dr-actions silence-actions">
+                  <button type="button" className="btn-secondary" disabled={busy} onClick={() => silence('1h')}>Silence 1h</button>
+                  <button type="button" className="btn-secondary" disabled={busy} onClick={() => silence('8h')}>Silence 8h</button>
+                  <button type="button" className="btn-secondary" disabled={busy} onClick={() => silence('until_fixed')}>Silence until fixed</button>
+                  {silenced && <button type="button" className="btn-secondary" disabled={busy} onClick={() => silence('off')}>Unsilence</button>}
+                </div>
+                <p className="dr-hint">Silencing stops webhook messages only; the alert bar and this page keep showing the problem.</p>
+              </div>
+            )}
+          </div>
         )}
       </section>
 
-      {isAdmin && (
-        <div className="dr-section">
-          <h3>Silence webhook messages</h3>
-          <p className="dr-hint">The alert bar and this page keep showing the problem; only webhook messages stop.</p>
-          <div className="dr-actions silence-actions">
-            <button type="button" className="btn-secondary" disabled={busy} onClick={() => silence('1h')}>Silence 1h</button>
-            <button type="button" className="btn-secondary" disabled={busy} onClick={() => silence('8h')}>Silence 8h</button>
-            <button type="button" className="btn-secondary" disabled={busy} onClick={() => silence('until_fixed')}>Silence until fixed</button>
-            {isSilenced(target) && <button type="button" className="btn-secondary" disabled={busy} onClick={() => silence('off')}>Unsilence</button>}
-          </div>
-        </div>
-      )}
-
       <div className="dr-two app-detail-diagnostics">
         <div className="dr-section">
-          <h3>Checks</h3>
+          <h2>Checks</h2>
           {last?.checks && last.checks.length > 0 ? (
             <div className="dr-checks">
               {last.checks.map((c) => (
@@ -173,7 +181,7 @@ export const AppDetail: React.FC<AppDetailProps> = ({ id, user, onChanged }) => 
           )}
         </div>
         <div className="dr-section">
-          <h3>Settings</h3>
+          <h2>Settings</h2>
           <div className="dr-facts">
             <div className="dr-fact"><span className="dr-fact-label">Health URL</span><span className="dr-fact-value dr-mono">{target.url}</span></div>
             <div className="dr-fact"><span className="dr-fact-label">Interval</span><span className="dr-fact-value">{target.interval_sec} s</span></div>
@@ -183,14 +191,7 @@ export const AppDetail: React.FC<AppDetailProps> = ({ id, user, onChanged }) => 
       </div>
 
       <div className="dr-section">
-        <h3>KyYard</h3>
-        <KyYardFacts facts={facts} link={target.container} paired={!!yard?.paired} pending={!!yard && kyYardPending(yard)} isAdmin={isAdmin} />
-      </div>
-
-      {isAdmin && <RecentLogs key={id} id={id} />}
-
-      <div className="dr-section">
-        <h3>Alert history</h3>
+        <h2>Alert history</h2>
         {events.length === 0 ? <p className="dr-hint">No state changes yet.</p> : (
           <div className="panel" style={{ overflowX: 'auto', padding: 0 }}>
             <table className="events" role="table" aria-label="Alert history">
@@ -210,11 +211,15 @@ export const AppDetail: React.FC<AppDetailProps> = ({ id, user, onChanged }) => 
         )}
       </div>
 
-      {isAdmin && !editing && (
+      {/* An unlinked app with no logs gets one muted line instead of two empty sections. */}
+      {isAdmin ? <RecentLogs key={id} id={id} kyYard={target.container ? yardSection : null} />
+        : <div className="dr-section">{target.container && <h2>KyYard</h2>}{yardSection}</div>}
+
+      {isAdmin && (
         <div className="dr-section dr-remove">
-          <h3>Stop watching</h3>
+          <h2>Stop watching</h2>
           <p className="dr-hint">Its alert history is deleted too.</p>
-          <button type="button" className="btn-danger" onClick={remove} disabled={busy}><Trash2 size={14} />Delete</button>
+          <button type="button" className="btn-danger" onClick={remove} disabled={busy}><Trash2 size={14} aria-hidden="true" />Delete</button>
         </div>
       )}
     </div>

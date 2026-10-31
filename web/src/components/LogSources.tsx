@@ -60,7 +60,7 @@ export function LogSources() {
   };
   return <section className="dr-section log-sources" aria-label="Log sources"><h2>Log sources</h2>
     <p className="dr-hint">Choose an optional watched app before creating a single-use, 15-minute code. The sender supplies its name when it claims the code.</p>
-    <p className="dr-hint" id="sender-origin-help">Use this kyPulse instance’s HTTPS address reachable from the sender, with a trusted TLS certificate. Configure TLS first if needed. The sender refuses loopback and link-local destinations.</p>
+    <p className="dr-hint" id="sender-origin-help">Use this KyPulse instance’s HTTPS address reachable from the sender, with a trusted TLS certificate. Configure TLS first if needed. The sender refuses loopback and link-local destinations.</p>
     <form className="log-filters source-filters" onSubmit={e => { e.preventDefault(); void generate(); }}>
       <label>Bind log source to watched app<select value={target} disabled={busy || !!pairing || loading} onChange={e => setTarget(e.target.value)}>
         <option value="">Unbound</option>{targets.map(t => <option key={t.id} value={t.id}>{t.name}</option>)}

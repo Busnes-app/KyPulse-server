@@ -3,6 +3,7 @@ import { BellOff } from 'lucide-react';
 import { hrefFor } from '../router';
 import { ApiError, isSilenced, listAlerts, listTargets, timeLabel, type Target, type TargetEvent } from '../monitor';
 import type { PageUser } from './Status';
+import { PageHead } from '../components/PageHead';
 
 interface AlertsProps { user: PageUser }
 
@@ -39,9 +40,7 @@ export const Alerts: React.FC<AlertsProps> = () => {
 
   return (
     <div className="dr-page">
-      <div className="dr-header">
-        <h1>Alerts</h1>
-      </div>
+      <PageHead title="Alerts" lede="State changes and reminders for every watched app, newest first." />
       {error && <p className="form-error" role="alert">{error}</p>}
       {silenced.length > 0 && (
         <p className="dr-hint"><BellOff size={14} /><strong>Silenced:</strong>{' '}

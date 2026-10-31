@@ -15,6 +15,7 @@ import {
   XCircle,
 } from 'lucide-react';
 import { secureFetch } from '../api';
+import { PageHead } from '../components/PageHead';
 
 export interface DepositReceipt {
   capsule_id: string;
@@ -424,13 +425,11 @@ export const Backup: React.FC = () => {
 
   return (
     <div className="dr-page backup-page">
-      <div className="dr-header">
-        <h1>Backup &amp; recovery</h1>
-        <button type="button" className="btn-secondary" onClick={fetchStatus} disabled={loadingStatus}>
-          <RefreshCw size={14} className={loadingStatus ? 'animate-spin' : ''} />
+      <PageHead title="Backup & recovery" lede="Recovery capsules for this KyPulse: pairing, keys, schedule and local copies."
+        action={<button type="button" className="btn-secondary" onClick={fetchStatus} disabled={loadingStatus}>
+          <RefreshCw size={14} className={loadingStatus ? 'animate-spin' : ''} aria-hidden="true" />
           <span>Refresh</span>
-        </button>
-      </div>
+        </button>} />
 
       {statusError && <Alert kind="error">{statusError}</Alert>}
       {status?.recovery_key_error && <Alert kind="error">{status.recovery_key_error}</Alert>}

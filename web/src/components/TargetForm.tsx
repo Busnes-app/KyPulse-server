@@ -41,12 +41,12 @@ export const TargetForm: React.FC<TargetFormProps> = ({ initial, submitLabel, su
   };
 
   return (
-    <form onSubmit={submit} className="panel" aria-label={submitLabel}>
+    <form onSubmit={submit} aria-label={submitLabel}>
       <div className="form-grid">
         <label>Name<input value={name} onChange={(e) => setName(e.target.value)} required maxLength={64} /></label>
         <label>Health URL<input type="url" value={url} onChange={(e) => setUrl(e.target.value)} required placeholder="https://app.lan/healthz" /></label>
         <label>Interval (seconds)<input type="number" min={10} max={3600} value={interval} onChange={(e) => setInterval_(Number(e.target.value))} required /></label>
-        <label style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
+        <label style={{ flexDirection: 'row', alignItems: 'center', alignSelf: 'end', gap: 8, minHeight: 40 }}>
           <input type="checkbox" style={{ width: 'auto' }} checked={enabled} onChange={(e) => setEnabled(e.target.checked)} />Enabled
         </label>
         <label>KyYard container

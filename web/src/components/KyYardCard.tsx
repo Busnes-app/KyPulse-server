@@ -5,7 +5,7 @@ import { ApiError, getKyYard, kyYardPending, pairKyYard, sinceLabel, timeLabel, 
 
 const POLL_MS = 5_000;
 
-// KyYardCard pairs this kyPulse to one KyYard organization with a code a KyYard
+// KyYardCard pairs this KyPulse to one KyYard organization with a code a KyYard
 // administrator generated (Members → Service tokens → Pair kyPulse). Unpairing here deletes
 // the URL and token here only; revoking the token is KyYard's step.
 export const KyYardCard: React.FC<{ onChanged: () => void }> = ({ onChanged }) => {

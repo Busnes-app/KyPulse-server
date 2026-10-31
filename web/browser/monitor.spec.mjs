@@ -39,9 +39,9 @@ test.afterAll(async () => {
 
 async function signIn(page) {
   await page.goto('/');
-  await page.getByPlaceholder('admin', { exact: true }).fill('admin');
+  await page.getByLabel('Username').fill('admin');
   await page.locator('input[type=password]').fill('BrowserUpdated456!');
-  await page.getByRole('button', { name: 'Sign In', exact: true }).click();
+  await page.getByRole('button', { name: 'Sign in', exact: true }).click();
   await expect(page.getByRole('navigation', { name: 'Primary' })).toBeVisible();
 }
 
@@ -73,11 +73,13 @@ test('status, alerts, detail page and the alert bar in every state', async ({ pa
   await page.getByLabel('Name').fill('Fake app');
   await page.getByLabel('Health URL').fill(`${base}/healthz`);
   await page.getByLabel('Interval (seconds)').fill('10');
-  await page.getByRole('button', { name: 'Save', exact: true }).click();
+  await page.getByRole('dialog', { name: 'Add app' }).getByRole('button', { name: 'Save', exact: true }).click();
+  await expect(page.getByRole('dialog', { name: 'Add app' })).toBeHidden();
   const tile = page.getByRole('link', { name: /Fake app/ });
   await expect(tile).toBeVisible();
-  // Three down polls → down: red bar with the problem line linking to the detail page.
-  await expect(page.getByRole('alert')).toContainText('Fake app down', { timeout: 90_000 });
+  // Three down polls → down: the bar leads with the count, and the app's pill opens its detail page.
+  await expect(page.getByRole('alert')).toContainText('1 down', { timeout: 90_000 });
+  await expect(page.getByRole('alert')).toHaveCSS('height', '44px');
   await page.screenshot({ path: testInfo.outputPath('status-down.png'), fullPage: true });
   await page.getByRole('alert').getByRole('link', { name: /Fake app down/ }).click();
   await expect(page).toHaveURL(/#\/apps\/tgt_/);
@@ -89,7 +91,7 @@ test('status, alerts, detail page and the alert bar in every state', async ({ pa
   await page.screenshot({ path: testInfo.outputPath('detail-down.png'), fullPage: true });
   // Silence until fixed: still shown, marked silenced.
   await page.getByRole('button', { name: 'Silence until fixed' }).click();
-  await expect(banner).toContainText('silenced until fixed');
+  await expect(banner).toContainText('Silenced until fixed');
   // Alerts tab lists the transition and the silence.
   await page.getByRole('link', { name: 'Alerts' }).first().click();
   await expect(page.getByRole('row').nth(1)).toContainText('pending → down');
@@ -130,7 +132,7 @@ test('status, alerts, detail page and the alert bar in every state', async ({ pa
   await tile.click();
   await expect(banner).toContainText('ok');
   await expect(page.getByText('database')).toBeVisible();
-  await expect(banner).not.toContainText('silenced');
+  await expect(banner).not.toContainText('Silenced');
   // Delete goes back to Status.
   page.once('dialog', (d) => d.accept());
   await page.getByRole('button', { name: 'Delete' }).click();
