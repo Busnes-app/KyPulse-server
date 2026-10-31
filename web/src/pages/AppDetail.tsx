@@ -6,7 +6,7 @@ import { KyYardFacts } from '../components/KyYardFacts';
 import { PageHead } from '../components/PageHead';
 import { hrefFor, navigate } from '../router';
 import {
-  ApiError, deleteTarget, getKyYard, getTarget, isSilenced, kyYardContainers, kyYardPending, silenceTarget, sinceLabel, stateClass, stateLabel, stateWord, timeLabel, updateTarget, uptimeLabel, causeLabel,
+  ApiError, deleteTarget, getKyYard, getTarget, isSilenced, kyStatus, kyYardContainers, kyYardPending, silenceTarget, sinceLabel, stateClass, stateLabel, stateWord, timeLabel, updateTarget, uptimeLabel, causeLabel,
   type ContainerFacts, type KyYardStatus, type LastResult, type SilenceFor, type Suggestion, type Target, type TargetEvent, type TargetInput,
 } from '../monitor';
 import type { PageUser } from './Status';
@@ -128,8 +128,7 @@ export const AppDetail: React.FC<AppDetailProps> = ({ id, user, onChanged }) => 
 
       <section className={`detail-state detail-${cls}`} aria-label="Current state">
         <p className="detail-headline">
-          <span className={`dot dot-${cls}`} aria-hidden="true" />
-          <strong className={`state-${cls}`}>{stateLabel(target)}</strong>
+          <span className="ky-status" data-ky-status={kyStatus(cls)}>{stateLabel(target)}</span>
           {!target.last_polled_at ? <span>awaiting first check</span> : target.state === 'pending' && <span>not yet classified</span>}
           {failing && reason && <span className="detail-reason">{reason}</span>}
         </p>
@@ -149,7 +148,7 @@ export const AppDetail: React.FC<AppDetailProps> = ({ id, user, onChanged }) => 
               </div>
             )}
             {silenced && (
-              <p><span className="badge dr-badge-muted"><BellOff size={12} aria-hidden="true" />Silenced {target.until_fixed ? 'until fixed' : `until ${timeLabel(target.silenced_until)}`}</span></p>
+              <p><span className="ky-status"><BellOff aria-hidden="true" />Silenced {target.until_fixed ? 'until fixed' : `until ${timeLabel(target.silenced_until)}`}</span></p>
             )}
             {isAdmin && (
               <div className="detail-silence">
@@ -173,9 +172,9 @@ export const AppDetail: React.FC<AppDetailProps> = ({ id, user, onChanged }) => 
             <div className="dr-checks">
               {checks.map((c) => (
                 <div key={c.name} className="dr-check">
-                  <span className={`dot dot-${c.status}`} aria-hidden="true" />
                   <span className="dr-mono">{c.name}</span>
-                  <span className={`state-${c.status}`}>{stateWord(c.status)}{c.reason ? ` · ${c.reason}` : ''}</span>
+                  <span className="ky-status" data-ky-status={kyStatus(c.status)}>{stateWord(c.status)}</span>
+                  {c.reason && <span>{c.reason}</span>}
                 </div>
               ))}
             </div>

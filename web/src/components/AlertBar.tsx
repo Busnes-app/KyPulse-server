@@ -22,15 +22,15 @@ export const AlertBar: React.FC<AlertBarProps> = ({ status, loading, isAdmin }) 
     );
   }
   const delivery = webhookFailing(status) ? (
-    <div className="alert-bar-line alert-bar-delivery">
-      <Send size={14} />
+    <div className="ky-status" data-ky-status="warning">
+      <Send aria-hidden="true" />
       <span>Alerts not being delivered ({status.webhook.last?.error || 'failed'}) · {isAdmin ? <a href={hrefFor('/settings')}>Settings</a> : 'tell an admin'}</span>
     </div>
   ) : null;
   const yardPending = !!status.kyyard?.paired && kyYardPending(status.kyyard);
   const yard = status.kyyard?.paired && status.kyyard.stale && !yardPending ? (
-    <div className="alert-bar-line alert-bar-delivery">
-      <Database size={14} />
+    <div className="ky-status" data-ky-status="warning">
+      <Database aria-hidden="true" />
       <span>KyYard data stale{status.kyyard.error ? ` (${status.kyyard.error})` : ''}{status.kyyard.fetched_at ? `, last pull ${sinceLabel(status.kyyard.fetched_at)} ago` : ', never pulled'} · {isAdmin ? <a href={hrefFor('/settings')}>Settings</a> : 'tell an admin'}</span>
     </div>
   ) : yardPending ? (
@@ -51,7 +51,7 @@ export const AlertBar: React.FC<AlertBarProps> = ({ status, loading, isAdmin }) 
           {problems.map((p) => (
             <li key={p.id}>
               <a className="alert-pill" href={hrefFor(`/apps/${p.id}`)} aria-label={`${p.name} ${p.state} for ${sinceLabel(p.since)}`}>
-                <span className={`dot dot-${p.state}`} aria-hidden="true" />{p.name}
+                <span className={`dot dot-${p.state}`} aria-hidden="true" />{p.name}<span className="alert-pill-state">{p.state}</span>
               </a>
             </li>
           ))}

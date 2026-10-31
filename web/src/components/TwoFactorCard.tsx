@@ -80,7 +80,7 @@ export function TwoFactorCard({ enabled: initial, onEnabledChange }: TwoFactorCa
       <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '12px' }}>
         <KeyRound size={20} style={{ color: 'var(--ink)' }} />
         <h3 style={{ fontSize: '16px' }}>Two-factor authentication</h3>
-        <span className={enabled ? 'badge badge-accent' : 'badge dr-badge-muted'}>{enabled ? 'On' : 'Off'}</span>
+        <span className="ky-status" data-ky-status={enabled ? 'success' : undefined}>{enabled ? 'On' : 'Off'}</span>
       </div>
 
       {recovery && (

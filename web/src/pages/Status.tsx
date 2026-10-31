@@ -2,10 +2,11 @@ import React, { useCallback, useEffect, useState } from 'react';
 import { Plus, BellOff } from 'lucide-react';
 import { TargetDialog } from '../components/TargetDialog';
 import { Heartbeat } from '../components/Heartbeat';
+import { Sparkline } from '../components/Sparkline';
 import { PageHead } from '../components/PageHead';
 import { hrefFor } from '../router';
 import {
-  ApiError, createTarget, hostPath, isSilenced, kyYardContainers, listTargets, sinceLabel, sortTargets, stateClass, stateLabel, uptimeLabel, causeLabel,
+  ApiError, createTarget, hostPath, isSilenced, kyStatus, kyYardContainers, listTargets, sinceLabel, sortTargets, stateClass, stateLabel, uptimeLabel, causeLabel,
   type Suggestion, type Target, type TargetInput,
 } from '../monitor';
 
@@ -75,7 +76,8 @@ export const Status: React.FC<StatusProps> = ({ user, onChanged }) => {
   );
 };
 
-// One 52px row: name and endpoint, recent polls, the day's uptime, state, check age, latency.
+// One 52px row: name and endpoint, recent polls, the day's uptime, state, check age, latency
+// trend with the last value.
 function StatusRow({ t }: { t: Target }) {
   const cls = stateClass(t);
   const cause = t.cause && t.enabled && t.state !== 'ok' ? causeLabel(t.cause) : '';
@@ -83,20 +85,22 @@ function StatusRow({ t }: { t: Target }) {
   return (
     <a className="status-row" href={hrefFor(`/apps/${t.id}`)}>
       <span className="status-app">
-        <span className={`dot dot-${cls}`} aria-hidden="true" />
         <span className="status-name">{t.name}</span>
         <span className="status-endpoint" title={t.url}>{hostPath(t.url)}</span>
       </span>
       <Heartbeat beats={t.recent} />
       <span className="status-uptime num" title="Share of the past 24 hours (or since the app was added) it was OK">{uptimeLabel(t.uptime_24h)}</span>
       <span className="status-state" title={cause || undefined}>
-        <span className={`state-${cls}`}>{stateLabel(t)}</span>
-        {cause && <span className="status-cause"> · {cause}</span>}
+        <span className="ky-status" data-ky-status={kyStatus(cls)}>{stateLabel(t)}</span>
+        {cause && <span className="status-cause"> {cause}</span>}
         <span className="status-meta"> {age}</span>
         {isSilenced(t) && <span className="status-meta"> · <BellOff size={12} aria-hidden="true" /> silenced</span>}
       </span>
       <span className="status-checked">{t.last_polled_at ? `${sinceLabel(t.last_polled_at)} ago` : '—'}</span>
-      <span className="status-latency num">{t.last_polled_at ? `${t.last_latency_ms} ms` : '—'}</span>
+      <span className="status-latency">
+        <Sparkline beats={t.recent} />
+        <span className="num">{t.last_polled_at ? `${t.last_latency_ms} ms` : '—'}</span>
+      </span>
     </a>
   );
 }

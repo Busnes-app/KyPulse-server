@@ -33,7 +33,7 @@ beforeAll(() => {
 
 
 describe('Status', () => {
-  it('lists broken apps first with a dot and links to the detail page', async () => {
+  it('lists broken apps first with a status pill and links to the detail page', async () => {
     stub([[/GET \/api\/targets$/, { targets: list }]]);
     render(<Status user={{ role: 'viewer' }} onChanged={() => {}} />);
     const tiles = await screen.findAllByRole('link', { name: /Ky/ });
@@ -41,7 +41,8 @@ describe('Status', () => {
       expect.stringContaining('KyVault'), expect.stringContaining('KyPost'), expect.stringContaining('KyYard'),
     ]);
     expect(tiles[0].getAttribute('href')).toBe('#/apps/tgt_KyVault');
-    expect(tiles[0].querySelector('.dot-down')).toBeTruthy();
+    expect(tiles[0].querySelector('.ky-status[data-ky-status="danger"]')?.textContent).toBe('Down');
+    expect(tiles[2].querySelector('.ky-status[data-ky-status="success"]')?.textContent).toBe('OK (basic)');
     expect(tiles[2].textContent).toContain('OK (basic)');
     expect(screen.queryByRole('button', { name: /Add app/ })).toBeNull();
   });
@@ -56,11 +57,12 @@ describe('Status', () => {
     const row = await screen.findByRole('link', { name: /KyVault/ });
     expect(row.textContent).toContain('10.0.0.5:8080/healthz');
     expect(row.textContent).not.toContain('http://');
-    expect(row.textContent).toContain('Down · HTTP 503');
+    expect(row.textContent).toContain('Down HTTP 503');
     expect(row.textContent).toContain('99.9%');
     expect(row.textContent).toMatch(/1\ds ago/);
     expect(row.textContent).toContain('30 ms');
     expect(screen.getByRole('img', { name: 'Last 2 checks: 1 ok, 1 down' }).children).toHaveLength(24);
+    expect(screen.getByRole('img', { name: 'Latency over the last 1 answered check: 20 ms, median 20 ms' })).toBeTruthy();
     expect(row.querySelector('[style*="underline"], u')).toBeNull();
   });
 
