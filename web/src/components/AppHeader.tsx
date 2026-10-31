@@ -1,5 +1,5 @@
 import React, { useEffect, useRef } from 'react';
-import { LogOut, Settings as SettingsIcon, Activity, Bell, Archive, Palette, History, HardDrive } from 'lucide-react';
+import { LogOut, Settings as SettingsIcon, Activity, Bell, Archive, History, HardDrive } from 'lucide-react';
 import { hrefFor } from '../router';
 import { LicenseFooter } from './LicenseFooter';
 
@@ -18,8 +18,15 @@ export const navItems = [
   { path: '/logs', label: 'Logs', icon: Archive, admin: true },
   { path: '/backup', label: 'Backup', icon: HardDrive, admin: true },
   { path: '/settings', label: 'Settings', icon: SettingsIcon, admin: false },
-  { path: '/appearance', label: 'Appearance', icon: Palette, admin: false },
 ];
+
+// Icon only, named by aria-label; title shows the same word on hover. Admin consoles have no
+// Settings button: Settings is a navigation row.
+const SignOut = ({ onLogout }: { onLogout: () => void }) => (
+  <button type="button" className="ky-icon-button" aria-label="Sign out" title="Sign out" onClick={onLogout}>
+    <LogOut aria-hidden="true" />
+  </button>
+);
 
 export const AppHeader: React.FC<AppHeaderProps> = ({ appName, activePath, user, onLogout, version }) => {
   const items = navItems.filter((item) => !item.admin || user?.role === 'admin');
@@ -50,17 +57,18 @@ export const AppHeader: React.FC<AppHeaderProps> = ({ appName, activePath, user,
           <span>{appName}</span>
         </div>
         {user && (
-          <button type="button" className="ky-mobile-signout" aria-label="Sign out" onClick={onLogout}>
-            <LogOut aria-hidden="true" />
-          </button>
+          <div className="ky-mobile-actions">
+            <SignOut onLogout={onLogout} />
+          </div>
         )}
       </div>
 
       <nav ref={navRef} className="ky-nav" aria-label="Primary">
         {items.map((item) => {
           const Icon = item.icon;
-          // An app detail page belongs to Status.
-          const active = activePath === item.path || (item.path === '/status' && activePath.startsWith('/apps/'));
+          // An app detail page belongs to Status; every Settings tab keeps the Settings row current.
+          const active = activePath === item.path || (item.path === '/status' && activePath.startsWith('/apps/'))
+            || (item.path === '/settings' && activePath.startsWith('/settings/'));
           return (
             <a
               key={item.path}
@@ -81,9 +89,9 @@ export const AppHeader: React.FC<AppHeaderProps> = ({ appName, activePath, user,
               <p className="ky-user-name">{name}</p>
               <p className="ky-user-role">{role}</p>
             </div>
-            <button type="button" className="ky-user-signout" onClick={onLogout}>
-              <LogOut aria-hidden="true" />Sign out
-            </button>
+            <div className="ky-user-actions">
+              <SignOut onLogout={onLogout} />
+            </div>
           </div>
         )}
         <LicenseFooter appName={appName} version={version} />

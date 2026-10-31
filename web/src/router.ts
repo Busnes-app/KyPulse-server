@@ -24,6 +24,29 @@ export function hrefFor(path: string): string {
   return '#' + path;
 }
 
+// redirect swaps the current history entry, so Back skips a moved or unknown route.
+export function redirect(path: string): void {
+  window.location.replace(hrefFor(path.startsWith('/') ? path : '/' + path));
+}
+
+export type SettingsSection = 'account' | 'appearance' | 'server';
+
+// Settings tabs in order: the personal ones first, then the server's. KyPulse has no app
+// passwords or devices, so there is no Phones & apps tab.
+export const settingsSections: { id: SettingsSection; label: string }[] = [
+  { id: 'account', label: 'Account' },
+  { id: 'appearance', label: 'Appearance' },
+  { id: 'server', label: 'Server' },
+];
+
+// movedRoute maps a route that used to be its own page to its Settings tab (null: not moved).
+// The Settings row itself opens the first tab.
+export function movedRoute(path: string): string | null {
+  if (path === '/appearance') return '/settings/appearance';
+  if (path === '/settings') return '/settings/account';
+  return null;
+}
+
 // useHashRoute re-renders on every hashchange; the hash is the only navigation state.
 export function useHashRoute(): Route {
   const [route, setRoute] = useState<Route>(currentRoute);

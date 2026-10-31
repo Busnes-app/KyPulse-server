@@ -1,6 +1,6 @@
 import { afterEach, describe, expect, it } from 'vitest';
 import { act, renderHook } from '@testing-library/react';
-import { hrefFor, navigate, useHashRoute } from './router';
+import { hrefFor, movedRoute, navigate, settingsSections, useHashRoute } from './router';
 
 afterEach(() => { window.location.hash = ''; });
 
@@ -25,5 +25,18 @@ describe('useHashRoute', () => {
 
   it('builds hrefs', () => {
     expect(hrefFor('/alerts')).toBe('#/alerts');
+  });
+});
+
+describe('Settings routes', () => {
+  it('orders the tabs Account, Appearance, then the server', () => {
+    expect(settingsSections.map((s) => s.label)).toEqual(['Account', 'Appearance', 'Server']);
+  });
+
+  it('sends the old Appearance page and the bare Settings row to their tabs', () => {
+    expect(movedRoute('/appearance')).toBe('/settings/appearance');
+    expect(movedRoute('/settings')).toBe('/settings/account');
+    expect(movedRoute('/settings/server')).toBeNull();
+    expect(movedRoute('/status')).toBeNull();
   });
 });
