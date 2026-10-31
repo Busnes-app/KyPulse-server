@@ -11,8 +11,9 @@ test('desktop to phone resizing keeps the current navigation item visible', asyn
   await page.goto('/#/backup');
   await expect(nav.locator('[aria-current="page"]')).toHaveText('Backup');
   await page.evaluate(() => document.fonts.ready);
-  const signOut = page.getByRole('button', { name: 'Sign out', exact: true });
-  await signOut.focus();
+  // A control that exists at both widths (the sidebar Sign out hides on phones, where the header icon replaces it).
+  const focused = page.getByRole('main').getByRole('button').first();
+  await focused.focus();
   await page.locator('main').evaluate(el => el.style.setProperty('min-height', '400vh'));
   await page.evaluate(() => scrollTo(0, 600));
   await page.setViewportSize({ width: 390, height: 844 });
@@ -21,7 +22,7 @@ test('desktop to phone resizing keeps the current navigation item visible', asyn
     const item = el.querySelector('[aria-current="page"]').getBoundingClientRect();
     return item.left >= box.left - 1 && item.right <= box.right + 1;
   })).toBe(true);
-  await expect(signOut).toBeFocused();
+  await expect(focused).toBeFocused();
   expect(await page.evaluate(() => scrollY)).toBe(600);
 });
 

@@ -126,7 +126,7 @@ test('admin logs, activity, pairing, filters, retry and viewer boundaries', asyn
     await page.getByRole('button', { name: 'Apply', exact: true }).click();
     await expect(page.locator('.log-lines').first().locator(':scope > li')).toHaveCount(1);
     await expect(page.getByText(`${xss} literal %_`, { exact: true })).toBeVisible();
-    expect(await page.locator('.app-main img').count()).toBe(0);
+    expect(await page.locator('.ky-content img').count()).toBe(0);
     expect(await page.locator('.log-lines').first().textContent()).not.toMatch(/[\u001b\u0007]/);
     await page.getByText('Raw line', { exact: true }).click();
     await expect(page.locator('details[open] pre')).toContainText(xss);

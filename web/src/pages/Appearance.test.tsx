@@ -26,7 +26,7 @@ describe('Appearance', () => {
     expect(radios).toHaveLength(18);
     expect(new Set(radios.map((r) => r.name)).size).toBe(1);
     expect(mode('Busnes', 'Match system').checked).toBe(true);
-    expect(screen.getByText(/Match system follows your device’s light or dark setting, Light or Dark fixes the mode/)).toBeTruthy();
+    expect(screen.getByText(/Match system switches with your device’s setting; Light or Dark keeps one. Your choice applies straight away and is saved in this browser only./)).toBeTruthy();
   });
 
   it('marks only the selected mode with a check', () => {

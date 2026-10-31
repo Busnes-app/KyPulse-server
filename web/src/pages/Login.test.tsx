@@ -22,7 +22,7 @@ it('solves a fresh CAPTCHA after a rejected login, since each solution is single
   });
   vi.stubGlobal('fetch', fetcher);
   render(<Login onSuccess={vi.fn()} appName="KyPulse" />);
-  await screen.findByText('Security check verified.');
+  await screen.findByText('Browser check passed');
   // Typing must not throw away the solved challenge.
   fireEvent.change(screen.getByLabelText('Username'), { target: { value: 'alice' } });
   fireEvent.change(screen.getByLabelText('Password'), { target: { value: 'WrongPassword123!' } });
@@ -30,7 +30,7 @@ it('solves a fresh CAPTCHA after a rejected login, since each solution is single
   fireEvent.click(screen.getByRole('button', { name: 'Sign in' }));
   expect(await screen.findByText('Invalid credentials or too many attempts')).toBeTruthy();
   await waitFor(() => expect(round).toBe(2));
-  await screen.findByText('Security check verified.');
+  await screen.findByText('Browser check passed');
   fireEvent.click(screen.getByRole('button', { name: 'Sign in' }));
   await waitFor(() => expect(tokens).toHaveLength(2));
   expect(atob(tokens[0])).toContain('"salt":"salt1"');
@@ -40,11 +40,11 @@ it('solves a fresh CAPTCHA after a rejected login, since each solution is single
 it('offers KySignOn only when the server reports a configured issuer', () => {
   vi.stubGlobal('fetch', vi.fn(() => new Promise<Response>(() => {})));
   const { rerender } = render(<Login onSuccess={vi.fn()} appName="KyPulse" />);
-  expect(screen.queryByRole('link', { name: 'Continue with Single Sign On' })).toBeNull();
+  expect(screen.queryByRole('link', { name: 'Continue with single sign-on' })).toBeNull();
   expect(screen.queryByRole('separator')).toBeNull();
   expect(screen.getByRole('button', { name: 'Sign in' }).querySelector('svg')).not.toBeNull();
-  expect(screen.getByText('Health and alerts for your Ky apps')).toBeTruthy();
+  expect(screen.getByText('Health and alerts for your Ky apps.')).toBeTruthy();
   rerender(<Login onSuccess={vi.fn()} appName="KyPulse" ssoEnabled />);
-  expect(screen.getByRole('link', { name: 'Continue with Single Sign On' }).getAttribute('href')).toBe('/api/sso/kysignon/login');
-  expect(screen.getAllByText(/Single Sign.On/)).toHaveLength(1);
+  expect(screen.getByRole('link', { name: 'Continue with single sign-on' }).getAttribute('href')).toBe('/api/sso/kysignon/login');
+  expect(screen.getAllByText(/single sign-on/i)).toHaveLength(1);
 });

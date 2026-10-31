@@ -102,7 +102,7 @@ export const Login: React.FC<LoginProps> = ({ onSuccess, appName, ssoEnabled = f
         <div className="ky-auth-brand">
           <img className="ky-mark" src="/app-icon.png" width={56} height={56} alt="" />
           <h1>{appName || 'KyPulse'}</h1>
-          <p>Health and alerts for your Ky apps</p>
+          <p>Health and alerts for your Ky apps.</p>
         </div>
 
         <div className="ky-auth-card">
@@ -147,7 +147,7 @@ export const Login: React.FC<LoginProps> = ({ onSuccess, appName, ssoEnabled = f
                 <hr className="ky-auth-divider" />
                 <a href="/api/sso/kysignon/login" className="ky-auth-sso">
                   <Key aria-hidden="true" />
-                  <span>Continue with Single Sign On</span>
+                  <span>Continue with single sign-on</span>
                 </a>
               </>}
             </form>
