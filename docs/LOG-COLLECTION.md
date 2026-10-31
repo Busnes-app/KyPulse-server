@@ -29,7 +29,7 @@ Unknown fields are accepted. Source identity and watched-target binding come fro
 token, never the body; an application `app` field is an untrusted label. A bound source
 appears in that target's detail queries even if its `app` label differs. An unbound source
 appears in global queries. Logs shaped like audit events also create imported Activity
-rows; they are indexed observations, not verified entries in kyPulse's own audit chain.
+rows; they are indexed observations, not verified entries in KyPulse's own audit chain.
 
 The complete request is limited to 1 MiB and 1,000 records. Decoded lines beyond 16 KiB
 are cut at a UTF-8 boundary and marked truncated. Empty batches, blank records, malformed
@@ -91,7 +91,7 @@ kypulse-send docker --container app,worker --socket /var/run/docker.sock
 The sender requires Linux. Its default state is `$XDG_STATE_HOME/kypulse-send` or
 `~/.local/state/kypulse-send`; the directory is mode 0700, the token and checkpoint are
 mode 0600, and one process holds its lock. Use `--state-dir` on each command for another
-source. kyPulse can revoke a source by deleting it from the admin source list, after
+source. KyPulse can revoke a source by deleting it from the admin source list, after
 which delivery gets 401. TLS uses the host's normal system root certificates.
 
 One bounded queue combines all configured inputs. It sends every 2 s or at 500 lines,

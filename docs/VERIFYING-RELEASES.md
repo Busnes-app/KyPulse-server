@@ -2,7 +2,7 @@
 
 [Product overview](../README.md) · [Restore and pinning](RESTORE.md) · [Assurance case](ASSURANCE-CASE.md)
 
-A kyPulse release is the container image `ghcr.io/busnes-app/kypulse-server:X.Y.Z` (or `X.Y.Z.N`
+A KyPulse release is the container image `ghcr.io/busnes-app/kypulse-server:X.Y.Z` (or `X.Y.Z.N`
 for a dependency-only release). The release has no other downloads: `kypulse-send` is built from
 source (`make build`). This page shows how to check that an image was built by this repository's
 release workflow from the tagged commit, and how to rebuild its binary yourself and get the same

@@ -1,4 +1,4 @@
-# kyPulse server
+# KyPulse server
 
 ## Purpose
 
@@ -58,7 +58,7 @@ Design authority: `docs/superpowers/specs/2026-09-26-kypulse-design.md`. Plans l
 - The bootstrap admin's generated password goes only to `<DataDir>/initial-admin-password`
   (0600, `cmd/server/bootstrap.go`), never a log line; a file that cannot be written fails
   startup. `KYPULSE_ADMIN_PASSWORD` still chooses it and writes no file.
-- `GET /healthz` is public and is what an external monitor watches; kyPulse does not monitor
+- `GET /healthz` is public and is what an external monitor watches; KyPulse does not monitor
   itself.
 - The audit trail is a keyed hash chain (`internal/store/audit.go`); a log the store cannot
   place refuses to start.

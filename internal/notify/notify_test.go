@@ -42,7 +42,7 @@ func TestValidate(t *testing.T) {
 
 func TestBuildPresets(t *testing.T) {
 	ntfy, _ := Build(Config{Preset: Ntfy, URL: "https://ntfy.lan/pulse", Token: "tk"}, msg)
-	if ntfy.ContentType != "text/plain" || ntfy.Headers["Title"] != "kyPulse: KyVault is down" || ntfy.Headers["Priority"] != "5" || ntfy.Headers["Authorization"] != "Bearer tk" {
+	if ntfy.ContentType != "text/plain" || ntfy.Headers["Title"] != "KyPulse: KyVault is down" || ntfy.Headers["Priority"] != "5" || ntfy.Headers["Authorization"] != "Bearer tk" {
 		t.Errorf("ntfy = %+v", ntfy)
 	}
 	if !strings.Contains(string(ntfy.Body), "(refused) at 2026-09-26T10:41:00Z\nhttps://pulse.lan/apps/kyvault") {
@@ -52,7 +52,7 @@ func TestBuildPresets(t *testing.T) {
 	gotify, _ := Build(Config{Preset: Gotify, URL: "https://gotify.lan/", Token: "gk"}, msg)
 	var g map[string]any
 	_ = json.Unmarshal(gotify.Body, &g)
-	if gotify.URL != "https://gotify.lan/message" || gotify.Headers["X-Gotify-Key"] != "gk" || g["priority"] != float64(8) || g["title"] != "kyPulse: KyVault is down" {
+	if gotify.URL != "https://gotify.lan/message" || gotify.Headers["X-Gotify-Key"] != "gk" || g["priority"] != float64(8) || g["title"] != "KyPulse: KyVault is down" {
 		t.Errorf("gotify = %+v body=%v", gotify, g)
 	}
 	if strings.Contains(gotify.URL, "gk") {
@@ -70,7 +70,7 @@ func TestBuildPresets(t *testing.T) {
 	discord, _ := Build(Config{Preset: Discord, URL: "https://discord.com/api/webhooks/1/x"}, msg)
 	var d map[string]string
 	_ = json.Unmarshal(discord.Body, &d)
-	if !strings.HasPrefix(d["content"], "kyPulse: KyVault is down") {
+	if !strings.HasPrefix(d["content"], "KyPulse: KyVault is down") {
 		t.Errorf("discord = %v", d)
 	}
 
@@ -86,11 +86,11 @@ func TestBuildPresets(t *testing.T) {
 
 func TestTitles(t *testing.T) {
 	cases := map[string]Message{
-		"kyPulse: KyVault is down":     msg,
-		"kyPulse: KyVault still down":  {App: "KyVault", State: "down", Reminder: true},
-		"kyPulse: KyVault recovered":   {App: "KyVault", State: "ok"},
-		"kyPulse: KyVault is degraded": {App: "KyVault", State: "degraded"},
-		"kyPulse: test alert":          {Test: true},
+		"KyPulse: KyVault is down":     msg,
+		"KyPulse: KyVault still down":  {App: "KyVault", State: "down", Reminder: true},
+		"KyPulse: KyVault recovered":   {App: "KyVault", State: "ok"},
+		"KyPulse: KyVault is degraded": {App: "KyVault", State: "degraded"},
+		"KyPulse: test alert":          {Test: true},
 	}
 	for want, m := range cases {
 		if got := m.Title(); got != want {

@@ -8,7 +8,7 @@ Owns environment variable parsing, configuration validation, default fallbacks, 
 
 ## Local Contracts
 - `installer.go` validates protected target credential references and exact product callback/issuer, refuses explicit conflicting authentication, and narrows the saved installer configuration before runtime construction. Default auto-provisioning is disabled for a new installer configuration; an explicitly configured value or active issuer is not silently overridden.
-- `monitoring.go` owns kyPulse's bundle extension: at most 32 keyed health targets and 32
+- `monitoring.go` owns KyPulse's bundle extension: at most 32 keyed health targets and 32
   keyed sources referencing those targets. Validate public intent before credential reads;
   refuse self origin, unsafe target URLs, duplicate keys/names and foreign target references.
   Source files contain distinct private lowercase 32-byte hexadecimal tokens; active SSO

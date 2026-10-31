@@ -29,7 +29,7 @@ address according to the product’s proxy guide.
 
 ## Install monitoring
 
-kyPulse runs with local operator accounts and SQLite without KyIdentity or KyYard. Health
+KyPulse runs with local operator accounts and SQLite without KyIdentity or KyYard. Health
 sources and an alert webhook are added after installation. KyYard enables optional
 container facts and log collection.
 

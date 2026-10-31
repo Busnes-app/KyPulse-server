@@ -39,7 +39,7 @@ func (s *Server) handleInstallerDirectory(w http.ResponseWriter, r *http.Request
 		return
 	}
 	if event.Type == "user.mfa_reset" {
-		// kyPulse holds no KyIdentity MFA state; acknowledged so it does not stay pending.
+		// KyPulse holds no KyIdentity MFA state; acknowledged so it does not stay pending.
 		w.WriteHeader(http.StatusNoContent)
 		return
 	}

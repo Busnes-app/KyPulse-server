@@ -1,4 +1,4 @@
-# kyPulse
+# KyPulse
 
 Supported cryptographic configuration and upgrades: [Key strength and TLS](docs/STRONG-CRYPTO.md).
 
@@ -7,7 +7,7 @@ Supported cryptographic configuration and upgrades: [Key strength and TLS](docs/
 
 **Start here:** [Standalone installation](INSTALL.md). Local operator sign-in works without KyIdentity; the first `admin` password is written to `initial-admin-password` in the data directory, never to the log. Add health endpoints to monitor any compatible service; KyYard integration is optional for container information and log collection. Alerts require a configured, reachable webhook.
 
-Unified health and logging for the Busnes.app Ky suite. kyPulse polls every Ky app's
+Unified health and logging for the Busnes.app Ky suite. KyPulse polls every Ky app's
 `/healthz`, reads container state from KyYard, shows what is broken first, and sends an
 outbound webhook when an app goes down or degrades. It is read-only towards the apps it
 watches: it observes and reports, and never changes them.
@@ -21,7 +21,7 @@ Design: [`docs/superpowers/specs/2026-09-26-kypulse-design.md`](docs/superpowers
 | Health polling, alert state machine, webhook alerts | done |
 | Status, Alerts, app detail, alert bar, webhook form | done |
 | KyYard pairing, container facts, stale marking | done |
-| kyPulse's own tamper-evident audit trail | done |
+| KyPulse's own tamper-evident audit trail | done |
 | Source pairing, log ingest, admin log and activity APIs, retention | done |
 | `kypulse-send` Linux sender | done |
 | Admin Logs/Activity screens and KyYard log/audit collection | done; audit requires the KyYard cursor API |

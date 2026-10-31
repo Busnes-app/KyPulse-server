@@ -7,7 +7,7 @@ Commands and unlinked file paths below are relative to the repository root.
 ## Watching apps
 
 An admin adds an app with a name, its health URL and an interval (default 30 s, 10 s to 1 h).
-kyPulse reads any health endpoint, in this order:
+KyPulse reads any health endpoint, in this order:
 
 1. A 2xx with `"schema": "ky.health/1"` is used as-is, checks included
    ([`ky-primitives/health`](https://github.com/Busnes-app/ky-primitives) serves it).
@@ -48,13 +48,13 @@ IPs. Webhook URLs must be https unless `KYPULSE_ALERT_ALLOW_HTTP=true`.
 
 ## KyYard
 
-kyPulse can read one KyYard organization with a read-only service token.
+KyPulse can read one KyYard organization with a read-only service token.
 
 1. A KyYard organization administrator opens **Members → Service tokens → Pair kyPulse** and
    gets a six-digit code, valid 15 minutes.
-2. A kyPulse admin enters the KyYard URL and that code on the KyYard card in Settings & DB.
+2. A KyPulse admin enters the KyYard URL and that code on the KyYard card in Settings & DB.
 
-The token is sealed at rest, never logged and never shown. kyPulse then pulls every 60 s:
+The token is sealed at rest, never logged and never shown. KyPulse then pulls every 60 s:
 Docker endpoints that are approved, active or offline (the first 200), their container
 inventory and latest resource samples. Inventory and samples live in memory and a restart
 re-pulls them. A separate 60-second worker collects linked-container logs and organization
@@ -89,6 +89,6 @@ continue independently. Remote audit chain verification is not performed. Re-pai
 a fresh generation and starts new cursors; already imported history remains until retention.
 
 Unpairing takes two steps, one on each side: **Unpair** here deletes the URL and token in
-kyPulse only; a KyYard administrator must also revoke the token on the Members page. The
+KyPulse only; a KyYard administrator must also revoke the token on the Members page. The
 same applies when you pair again: the previous token stays valid in KyYard until revoked
 there. KyYard URLs must be https unless `KYPULSE_KYYARD_ALLOW_HTTP=true`.

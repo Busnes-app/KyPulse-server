@@ -1,6 +1,6 @@
 # Security Policy
 
-kyPulse aggregates health and logs from the suite's Ky apps. It centralizes operational data, which makes it a sensitive collection point.
+KyPulse aggregates health and logs from the suite's Ky apps. It centralizes operational data, which makes it a sensitive collection point.
 
 ## Reporting vulnerabilities
 
@@ -12,7 +12,7 @@ and disclosure.
 
 ## Trust boundaries and limitations
 
-- kyPulse concentrates logs and health data from many products; its data store is as sensitive as the most sensitive thing any product logs. Keep it private and access-controlled.
+- KyPulse concentrates logs and health data from many products; its data store is as sensitive as the most sensitive thing any product logs. Keep it private and access-controlled.
 - It polls product endpoints over HTTPS with configured credentials; those credentials are handled with least privilege and never logged.
 - Aggregated views are authorized per identity; there is no unauthenticated status page that leaks topology or errors.
 

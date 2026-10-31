@@ -29,7 +29,7 @@ func ApplyInstallerConfiguration(cfg *Config, b applysetup.Common) error {
 			return errors.New("installer callback does not match the configured product URL")
 		}
 		if s.SCIMTokenFile != "" || s.DirectorySecretFile == "" {
-			return errors.New("kyPulse setup requires the protected KyIdentity directory webhook secret")
+			return errors.New("KyPulse setup requires the protected KyIdentity directory webhook secret")
 		}
 		secret, err := applysetup.Secret(s.ClientSecretFile)
 		if err != nil {
