@@ -28,7 +28,7 @@ type IdentityClaims struct {
 	IssuedAt time.Time `json:"-"`
 }
 
-// RoleFor maps a role asserted by an identity provider onto kyPulse's two roles. Only an
+// RoleFor maps a role asserted by an identity provider onto KyPulse's two roles. Only an
 // exact "admin" grants admin; every other value, including a missing one, is a viewer, so a
 // provider that speaks another product's role vocabulary cannot grant privilege by accident.
 func RoleFor(claimed string) string {

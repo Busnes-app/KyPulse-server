@@ -27,89 +27,15 @@
   font-display: swap;
 }
 
-/* ---------- Theme Definitions ---------- */
-
-:root, [data-theme="patina"] {
-  --bg: #0d0f14;
-  --panel: #161a22;
-  --panel-hover: #1c222c;
-  --ink: #94a3b8;
-  --ink-strong: #f1f5f9;
-  --accent: #4deeea;
-  --accent-soft: rgba(77, 238, 234, 0.15);
-  --line: #1e293b;
-  --line-strong: #334155;
-  --danger: #ef4444;
-  --success: #10b981;
+/* Busnes Light/Dark come from the token aliases below; ky-ui themes.js sets every named palette,
+   status colours included, inline on the root. */
+:root {
   --font-sans: "Space Grotesk", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
   --font-mono: "IBM Plex Mono", ui-monospace, monospace;
 }
-
-[data-theme="cyber"] {
-  --bg: #05070a;
-  --panel: #0d121d;
-  --panel-hover: #131b2a;
-  --ink: #aab7c8;
-  --ink-strong: #eef6f5;
-  --accent: #00d9bd;
-  --accent-soft: rgba(0, 255, 204, 0.18);
-  --line: #1e293b;
-  --line-strong: #00ffcc44;
-  --danger: #ff0055;
-  --success: #00ff66;
-}
-
-[data-theme="nord"] {
-  --bg: #2e3440;
-  --panel: #3b4252;
-  --panel-hover: #434c5e;
-  --ink: #d8dee9;
-  --ink-strong: #eceff4;
-  --accent: #88c0d0;
-  --accent-soft: rgba(136, 192, 208, 0.2);
-  --line: #4c566a;
-  --line-strong: #5e81ac;
-  --danger: #bf616a;
-  --success: #a3be8c;
-}
-
-[data-theme="paper"] {
-  --bg: #f8fafc;
-  --panel: #ffffff;
-  --panel-hover: #f1f5f9;
-  --ink: #64748b;
-  --ink-strong: #0f172a;
-  --accent: #0284c7;
-  --accent-soft: rgba(2, 132, 199, 0.12);
-  --line: #e2e8f0;
-  --line-strong: #cbd5e1;
-  --danger: #dc2626;
-  --success: #16a34a;
-}
-
-[data-theme="oled"] {
-  --bg: #000000;
-  --panel: #111111;
-  --panel-hover: #1a1a1a;
-  --ink: #a1a1aa;
-  --ink-strong: #fafafa;
-  --accent: #4deeea;
-  --accent-soft: rgba(77, 238, 234, 0.15);
-  --line: #222222;
-  --line-strong: #333333;
-  --danger: #ef4444;
-  --success: #10b981;
-}
-
-/* The suite palettes (ky-ui themes.js sets their colours inline) have no status colours;
-   tint Busnes ones toward the palette's ink, as KyPost does, so they read on light and dark. */
-:root[data-theme]:not([data-theme^="busnes-"], [data-theme="patina"], [data-theme="cyber"], [data-theme="nord"], [data-theme="paper"], [data-theme="oled"]) {
-  --danger: color-mix(in srgb, var(--ky-danger) 50%, var(--ink-strong));
-  --success: color-mix(in srgb, var(--ky-success) 50%, var(--ink-strong));
-}
-/* That tint darkens the danger fill on light palettes, whose --button-text is dark too: label
-   the filled danger button with the page colour, which reads on it in every suite palette. */
-:root[data-theme]:not([data-theme^="busnes-"], [data-theme="patina"], [data-theme="cyber"], [data-theme="nord"], [data-theme="paper"], [data-theme="oled"]) .btn-danger {
+/* Named palettes pair a scheme's status colour with their own --button-text, which can be the
+   same lightness as the danger fill: label the filled danger button with the page colour. */
+:root[data-theme]:not([data-theme^="busnes-"]) .btn-danger {
   color: var(--bg);
 }
 
@@ -138,15 +64,12 @@ body {
 .app-nav a:hover, .app-nav button:hover { background: var(--panel-hover); color: var(--ink-strong); }
 .app-nav a { display: inline-flex; align-items: center; gap: 8px; text-decoration: none; font-weight: 600; font-family: var(--font-sans); }
 /* Selected, hover and focus states are supplied by ky-ui/navigation.css. */
-.app-header-actions { display: flex; flex-direction: column; gap: .65rem; margin-top: auto; }
-.app-pair { justify-content: flex-start; width: 100%; font-size: .82rem; }
-.app-user { display: flex; align-items: center; gap: .55rem; border-top: 1px solid var(--line); padding-top: .8rem; }
-.app-user-copy { min-width: 0; flex: 1; font-size: .8rem; }
-.app-user-copy > div:first-child { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.app-user-copy > div:last-child { color: var(--ink); font-size: .7rem; }
-.app-logout { padding: .45rem; color: var(--danger); }
+.app-sidebar-foot { display: grid; gap: 12px; margin-top: auto; min-width: 0; }
+/* The B stamp is a dark tile: dark schemes get the shell's light tile with a dark mark. */
+.ky-mark { border-radius: var(--ky-control-radius); flex: none; }
+:root[data-scheme="dark"] .ky-mark { filter: invert(1) hue-rotate(180deg); }
 .app-main { min-width: 0; }
-@media (max-width: 720px) { .app-shell { display: block; } .app-header { position: sticky; height: auto; padding: .75rem 1rem; border-right: 0; border-bottom: 1px solid var(--line); } .app-brand { padding: 0; } .app-nav { flex-direction: row; overflow-x: auto; } .app-nav a, .app-nav button { width: auto; flex: 0 0 auto; border-left: 0; border-bottom: 3px solid transparent; white-space: nowrap; } .app-nav a.active, .app-nav button.active { border-bottom-color: var(--accent); } .app-header-actions { flex-direction: row; margin-top: 0; align-items: center; } .app-pair { width: auto; } .app-user { border-top: 0; border-left: 1px solid var(--line); padding: 0 0 0 .65rem; } .app-user-copy { display: none; } }
+@media (max-width: 720px) { .app-shell { display: block; } .app-header { position: sticky; height: auto; padding: .75rem 1rem; border-right: 0; border-bottom: 1px solid var(--line); } .app-brand { padding: 0; } .app-nav { flex-direction: row; overflow-x: auto; } .app-nav a, .app-nav button { width: auto; flex: 0 0 auto; border-left: 0; border-bottom: 3px solid transparent; white-space: nowrap; } .app-nav a.active, .app-nav button.active { border-bottom-color: var(--accent); } }
 
 code, pre, .font-mono {
   font-family: var(--font-mono);
@@ -172,7 +95,7 @@ code, pre, .font-mono {
 
 /* ---------- Buttons & Inputs ---------- */
 
-button, .btn {
+:where(button, .btn) {
   font-family: var(--font-sans);
   background: var(--accent);
   color: var(--button-text, #0d0f14);
@@ -188,11 +111,12 @@ button, .btn {
   transition: opacity 0.15s ease, transform 0.1s ease;
 }
 
-button:hover, .btn:hover {
+/* Zero specificity, and never on the shell's own controls (ky-ui shell.css), which have theirs. */
+:where(button:not([class^="ky-"]), .btn):hover {
   opacity: 0.9;
 }
 
-button:active, .btn:active {
+:where(button:not([class^="ky-"]), .btn):active {
   transform: scale(0.98);
 }
 
@@ -218,7 +142,7 @@ button:disabled, .btn:disabled {
 
 input, select, textarea {
   font-family: var(--font-sans);
-  background: var(--bg);
+  background: var(--panel);
   color: var(--ink-strong);
   border: 1px solid var(--line);
   border-radius: 6px;
@@ -262,19 +186,7 @@ input:focus, select:focus, textarea:focus {
   border: 1px solid rgba(239, 68, 68, 0.3);
 }
 
-/* ---------- Modal Backdrop ---------- */
-
-.modal-backdrop {
-  position: fixed;
-  inset: 0;
-  background: rgba(0, 0, 0, 0.7);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 16px;
-  z-index: 1000;
-  backdrop-filter: blur(4px);
-}
+/* ---------- Dialogs ---------- */
 
 dialog.modal-window {
   margin: auto;
@@ -305,9 +217,7 @@ dialog.modal-window::backdrop {
 }
 .animate-spin { animation: dr-spin 1s linear infinite; }
 
-.dr-page { max-width: 1080px; padding: 32px; }
-.dr-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
-.dr-header h1 { font-size: var(--ky-type-title); font-weight: 600; line-height: 1.25; }
+.dr-page { max-width: 1200px; padding: 32px; }
 .dr-section { margin-bottom: 20px; }
 .dr-section h2, .dr-section h3 { font-size: var(--ky-type-section); font-weight: 600; display: inline-flex; align-items: center; gap: 8px; }
 .dr-mono { font-family: var(--font-mono); }
@@ -459,37 +369,61 @@ dialog.modal-window::backdrop {
 .theme-selector:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; }
 .auth-theme { padding: 12px; text-align: right; }
 
-/* ---------- kyPulse: alert bar, status grid, detail ---------- */
+/* ---------- KyPulse: alert bar, status grid, detail ---------- */
 
-.alert-bar { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 16px; padding: 10px 20px; border-bottom: 1px solid var(--line); font-size: 14px; color: var(--ink-strong); }
+/* One fixed-height line above every page: it never grows, so the page below never moves.
+   Pills scroll sideways when there are more than fit. */
+.alert-bar { display: flex; flex-wrap: nowrap; align-items: center; gap: 12px; height: 44px; padding: 0 20px; border-bottom: 1px solid var(--line); font-size: var(--ky-type-nav); color: var(--ink-strong); white-space: nowrap; overflow-x: auto; scrollbar-width: none; }
+.alert-bar > svg { flex: none; }
 .alert-bar-line { display: inline-flex; align-items: center; gap: 8px; }
-.alert-bar-compact { display: none; }
 .alert-bar a { color: inherit; font-weight: 600; }
-.alert-bar-ok { background: rgba(16, 185, 129, 0.12); color: var(--success); }
-.alert-bar-down { background: color-mix(in srgb, var(--danger) 8%, var(--panel)); color: var(--danger); }
+.alert-bar-ok { background: color-mix(in srgb, var(--success) 10%, var(--bg)); color: var(--success); }
+.alert-bar-down { background: color-mix(in srgb, var(--danger) 8%, var(--bg)); color: var(--danger); }
+.alert-bar-degraded { background: color-mix(in srgb, var(--warning) 10%, var(--bg)); color: var(--warning); }
 .alert-bar-neutral { background: var(--panel-hover); color: var(--ink); }
-.alert-bar-delivery { color: var(--ink-strong); background: var(--accent-soft); border: 1px solid var(--accent); border-radius: 6px; padding: 2px 8px; font-size: 13px; }
+.alert-bar-count { font-weight: 600; }
+.alert-bar-apps { display: flex; gap: 6px; margin: 0; padding: 0; list-style: none; }
+.alert-bar a.alert-pill { display: inline-flex; align-items: center; gap: 6px; height: 26px; padding: 0 10px; border: 1px solid var(--line-strong); border-radius: 999px; background: var(--panel); color: var(--ink-strong); font-size: var(--ky-type-meta); font-weight: 500; text-decoration: none; }
+.alert-bar a.alert-pill:hover { border-color: var(--ink); }
+.alert-pill .dot { width: 8px; height: 8px; }
+.alert-bar-delivery { height: 26px; padding: 0 8px; border: 1px solid var(--accent); border-radius: 6px; background: var(--accent-soft); color: var(--ink-strong); font-size: var(--ky-type-meta); }
 .alert-bar-link { margin-left: auto; }
 
-/* One shared grid keeps labels and data aligned; rows stack on small screens. */
-.status-intro { margin: -8px 0 24px; color: var(--ink); max-width: 65ch; font-size: 14px; }
+/* Status: one 52px row per app on a shared grid, so every column lines up. */
 .status-list { border: 1px solid var(--line); border-radius: 8px; background: var(--panel); overflow: hidden; }
 .status-list ul { list-style: none; }
-.status-list-heading, .status-row { display: grid; grid-template-columns: minmax(0, 1.1fr) minmax(0, 1fr) minmax(9rem, .8fr); gap: 24px; padding: 16px 20px; }
-.status-list-heading { color: var(--ink); font-size: 12px; font-weight: 600; border-bottom: 1px solid var(--line); }
+.status-list-heading, .status-row { display: grid; grid-template-columns: minmax(0, 1.5fr) 166px 6.5rem minmax(0, 1.1fr) 5.5rem 4.5rem; column-gap: 20px; align-items: center; padding: 0 20px; }
+.status-list-heading { height: 36px; white-space: nowrap; color: var(--ink); font-size: var(--ky-type-meta); font-weight: 600; border-bottom: 1px solid var(--line); }
 .status-list li + li { border-top: 1px solid var(--line); }
-.status-row { color: var(--ink-strong); text-decoration: none; font-weight: 400; align-items: center; }
-.status-row:hover { background: var(--panel-hover); opacity: 1; }
+.status-row { min-height: 52px; color: var(--ink-strong); text-decoration: none; font-weight: 400; font-size: var(--ky-type-nav); }
+.status-row:hover { background: var(--panel-hover); }
 .status-row:focus-visible { outline: 2px solid var(--accent); outline-offset: -3px; }
-.status-app, .status-state { min-width: 0; display: flex; flex-direction: column; gap: 5px; overflow-wrap: anywhere; }
-.status-tile-name { display: flex; align-items: center; gap: 8px; font-weight: 600; font-size: 15px; }
-.status-endpoint, .status-tile-meta, .status-check { font-size: 12px; color: var(--ink); }
-.status-endpoint { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.status-tile-meta svg { vertical-align: middle; }
-.status-check { font-variant-numeric: tabular-nums; }
-.status-check > span { display: block; margin-top: 4px; }
-@media (max-width: 900px) { .status-list-heading, .status-row { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 12px 20px; } .status-list-heading > :last-child { display: none; } .status-check { grid-column: 1 / -1; } .status-check > span { display: inline; margin-left: 12px; } }
-@media (max-width: 480px) { .status-list-heading { display: none; } .status-row { padding: 16px; grid-template-columns: 1fr; gap: 12px; } .status-check { grid-column: auto; } }
+.status-app { display: flex; align-items: baseline; gap: 8px; min-width: 0; }
+.status-app .dot { align-self: center; }
+.status-name { flex: none; max-width: 60%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-weight: 600; }
+.status-endpoint, .status-meta, .status-checked { color: var(--ink); font-size: var(--ky-type-meta); }
+.status-endpoint { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.status-state { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.status-cause { color: var(--ink-strong); }
+.status-meta svg { vertical-align: -1px; }
+.num, .status-checked { font-variant-numeric: tabular-nums; }
+.num { text-align: right; }
+.beats { display: flex; gap: 2px; height: 18px; }
+.beat { flex: 1 1 0; min-width: 3px; border-radius: 2px; background: var(--line); }
+.beat-ok { background: var(--success); }
+.beat-degraded { background: var(--warning); }
+.beat-down { background: var(--danger); }
+@media (max-width: 900px) {
+  /* Narrow: name and state on the first line, history and timing beneath. */
+  .status-list-heading { display: none; }
+  .status-row { grid-template-columns: minmax(0, 1fr) auto auto; grid-template-areas: "app app app" "state state checked" "beats uptime latency"; row-gap: 6px; padding: 12px 16px; }
+  .status-app { grid-area: app; }
+  .status-state { grid-area: state; white-space: normal; }
+  .status-row .beats { grid-area: beats; max-width: 166px; }
+  .status-uptime { grid-area: uptime; }
+  .status-latency { grid-area: latency; }
+  .status-checked { grid-area: checked; text-align: right; }
+}
 
 .dot { width: 10px; height: 10px; border-radius: 50%; flex: none; background: var(--ink); }
 .dot-ok { background: var(--success); }
@@ -501,12 +435,28 @@ dialog.modal-window::backdrop {
 .state-down { color: var(--danger); }
 .state-pending, .state-paused { color: var(--ink); }
 
-.banner { display: flex; flex-wrap: wrap; align-items: center; gap: 12px; padding: 16px 20px; border-radius: 8px; border: 1px solid var(--line); margin-bottom: 20px; }
-.banner-ok { background: rgba(16, 185, 129, 0.12); }
-.banner-degraded { background: color-mix(in srgb, var(--warning) 14%, var(--panel)); }
-.banner-down { background: rgba(239, 68, 68, 0.14); }
-.banner-pending, .banner-paused { background: var(--panel-hover); }
-.banner h2 { font-size: 20px; text-transform: capitalize; }
+/* App detail: the state and failing check under the name, three stats, then the incident. */
+.detail-state { display: grid; gap: 16px; margin-bottom: 28px; }
+.detail-headline { display: flex; flex-wrap: wrap; align-items: center; gap: 4px 10px; margin-top: -8px; color: var(--ink); }
+.detail-headline strong { font-weight: 600; }
+.detail-reason { color: var(--ink-strong); font-family: var(--font-mono); font-size: var(--ky-type-meta); }
+.detail-stats { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); margin: 0; border: 1px solid var(--line); border-radius: 8px; background: var(--panel); }
+.detail-stats > div { padding: 14px 20px; }
+.detail-stats > div + div { border-left: 1px solid var(--line); }
+.detail-stats dt { color: var(--ink); font-size: var(--ky-type-meta); }
+.detail-stats dd { margin: 2px 0 0; font-size: 1.25rem; font-weight: 600; font-variant-numeric: tabular-nums; }
+.detail-stats dd.detail-stat-note { margin: 0; color: var(--ink); font-size: var(--ky-type-meta); font-weight: 400; }
+.detail-incident { display: grid; gap: 12px; padding: 16px 20px; border: 1px solid var(--line); border-radius: 8px; }
+.detail-down .detail-incident { border-color: color-mix(in srgb, var(--danger) 45%, var(--line)); background: color-mix(in srgb, var(--danger) 6%, var(--bg)); }
+.detail-degraded .detail-incident { border-color: color-mix(in srgb, var(--warning) 45%, var(--line)); background: color-mix(in srgb, var(--warning) 7%, var(--bg)); }
+.detail-incident-facts { display: grid; gap: 4px; font-size: var(--ky-type-meta); color: var(--ink); }
+.detail-incident-facts .dr-mono { color: var(--ink-strong); overflow-wrap: anywhere; }
+.detail-silence .dr-hint { margin: 8px 0 0; }
+.detail-empty { margin-top: 8px; }
+@media (max-width: 720px) {
+  .detail-stats { grid-template-columns: minmax(0, 1fr); }
+  .detail-stats > div + div { border-left: 0; border-top: 1px solid var(--line); }
+}
 
 .events { width: 100%; border-collapse: collapse; font-size: 13px; }
 .events th, .events td { text-align: left; padding: 8px 10px; border-top: 1px solid var(--line); vertical-align: top; }
@@ -516,14 +466,11 @@ dialog.modal-window::backdrop {
 .form-grid label { display: flex; flex-direction: column; gap: 4px; font-size: 13px; color: var(--ink); }
 .form-error { color: var(--danger); font-size: 13px; margin: 0 0 12px; }
 .form-ok { color: var(--success); font-size: 13px; margin: 0 0 12px; }
+/* Phones: the bar may wrap, so every pill stays whole. */
 @media (max-width: 720px) {
-  .alert-bar { padding: 8px 12px; gap: 6px 12px; }
-  .alert-bar-line { min-width: 0; }
-  .alert-bar-line a { overflow-wrap: anywhere; }
-  .alert-bar-link { margin-left: auto; }
-  .alert-bar-compact { display: inline; }
-  /* Keep the full chronology in each link's accessible name and on desktop. */
-  .alert-bar-since { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
+  .alert-bar { flex-wrap: wrap; height: auto; min-height: 44px; padding: 8px 12px; row-gap: 6px; white-space: normal; overflow: visible; }
+  .alert-bar-apps { flex-wrap: wrap; }
+  .alert-bar a.alert-pill { white-space: nowrap; }
 }
 
 /* Stored text stays within the page at phone widths, including unbroken raw lines. */
@@ -573,14 +520,18 @@ textarea { border-radius: var(--ky-control-radius); }
 .btn-tertiary:hover:not(:disabled) { background: var(--panel-hover); opacity: 1; }
 .theme-selector { min-height: var(--ky-control-size); border-color: var(--ky-field-border); border-radius: var(--ky-control-radius); }
 :is(a, button, input, select, textarea, summary):focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
-.app-logout { justify-content: center; width: var(--ky-control-size); padding: 0; }
 @media (max-width: 720px) {
   /* Brand and account actions share the top row; navigation scrolls below them. */
   .app-header { display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: center; gap: 12px; }
   .app-nav { grid-column: 1 / -1; grid-row: 2; }
-  .app-header-actions > .app-user:first-child { border-left: 0; padding-left: 0; }
   .dr-page { padding: 24px 16px; }
   .app-nav a, .app-nav button { padding: 0 12px; }
+  /* Sign out joins the brand row; the licence line stays reachable under the navigation. */
+  .app-sidebar-foot { display: contents; }
+  .app-sidebar-foot .ky-user { grid-column: 2; grid-row: 1; padding: 0; border: 0; }
+  .app-sidebar-foot .ky-user-copy { display: none; }
+  .ky-license { grid-column: 1 / -1; }
+  .ky-license .ky-license-link { margin-left: 0; }
   .dr-facts { grid-template-columns: minmax(0, 1fr); }
   .dr-fact-label { grid-row: auto; }
   .dr-fact-note { grid-column: 1; }
@@ -590,10 +541,9 @@ textarea { border-radius: var(--ky-control-radius); }
 .log-sources { margin-top: 32px; padding-top: 24px; border-top: 1px solid var(--line); }
 .log-sources > h2 { margin-bottom: var(--ky-space-2); }
 .log-sources > .dr-hint { margin-bottom: var(--ky-space-3); }
-.status-tile-name { text-decoration: underline; text-underline-offset: 3px; }
 .app-detail-diagnostics:not(:has(.dr-checks)) { grid-template-columns: minmax(0, 1fr); }
-.app-detail-page .dr-section > h3 { display: flex; margin-bottom: var(--ky-space-3); }
-.app-detail-page .dr-section > h3 + :is(.dr-facts, .dr-checks, .dr-hint) { margin-top: 0; }
+.app-detail-page .dr-section > h2 { display: flex; margin-bottom: var(--ky-space-3); }
+.app-detail-page .dr-section > h2 + :is(.dr-facts, .dr-checks, .dr-hint) { margin-top: 0; }
 
 .backup-setup { align-items: start; }
 .backup-actions { margin-bottom: var(--ky-space-2); }
@@ -621,18 +571,39 @@ textarea { border-radius: var(--ky-control-radius); }
   .log-filter-panel .log-filters { gap: var(--ky-space-2) var(--ky-space-3); margin: var(--ky-space-2) 0; }
 }
 
-/* Copyright line and About dialog, shared with KyPost. */
-.sidebar-footer { font-size: 0.75rem; color: var(--ink); padding-left: var(--ky-space-2); white-space: nowrap; }
-.sidebar-footer p { margin: 0; }
-.license-link { min-height: 0; margin: 0; padding: 0; border: none; background: none; color: inherit; font: inherit; cursor: pointer; text-decoration: underline; }
-.compose-backdrop { position: fixed; inset: 0; margin: 0; border: none; width: 100%; height: 100%; max-width: none; max-height: none; color: inherit; background: rgba(12, 12, 18, 0.68); display: grid; place-items: center; z-index: 2500; padding: 16px; }
-.compose-backdrop:not([open]) { display: none; }
-.license-window { width: min(720px, 96vw); max-height: 90vh; background: var(--panel); border: 1px solid var(--line); border-radius: 14px; color: var(--ink-strong); padding: 16px; display: flex; flex-direction: column; gap: 12px; }
-.license-window-header { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; }
-.license-window-title { margin: 0; display: flex; flex-direction: column; gap: 4px; }
-.license-title-main { display: flex; align-items: baseline; gap: 10px; }
-.license-app-name { font-size: 1.35rem; font-weight: 700; letter-spacing: -0.01em; line-height: 1.1; }
-.license-version-badge { font-size: 0.72rem; font-weight: 600; letter-spacing: 0.02em; padding: 2px 8px; border-radius: 999px; color: var(--accent); background: var(--accent-soft); border: 1px solid color-mix(in srgb, var(--accent) 35%, transparent); }
-.license-title-sub { margin: 0; font-size: 0.82rem; opacity: 0.7; }
-.license-text { width: 100%; flex: 1; min-height: 320px; resize: vertical; font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; font-size: 0.78rem; line-height: 1.4; white-space: pre; background: var(--panel); color: var(--ink-strong); border: 1px solid var(--line); border-radius: 10px; padding: 12px; }
-@media (max-width: 720px) { .sidebar-footer { display: none; } }
+
+/* ---------- Sign-in extras (ky-ui shell.css owns the .ky-auth layout) ---------- */
+.ky-auth-error { display: flex; align-items: flex-start; gap: var(--ky-space-2); margin: 0; color: var(--danger); font-size: var(--ky-type-meta); }
+.ky-auth-error svg { flex: none; margin-top: 2px; }
+.ky-auth-note { margin: 0; color: var(--ink); font-size: var(--ky-type-meta); }
+.ky-auth-field > input.ky-code-input { font-family: var(--font-mono); font-size: 1.125rem; letter-spacing: 2px; text-align: center; }
+.ky-auth-check .animate-spin { color: var(--accent); }
+
+/* ---------- Add and edit dialog ---------- */
+dialog.modal-window.target-dialog { max-width: min(560px, calc(100vw - 32px)); }
+.target-dialog h2 { margin-bottom: var(--ky-space-3); font-size: var(--ky-type-section); font-weight: 600; }
+
+/* ---------- Appearance: six pairs, each Match system / Light / Dark (KyCalendar reference) ---------- */
+.ky-appearance .ky-appearance-grid.appearance-pairs { grid-template-columns: repeat(auto-fill, minmax(min(100%, 18rem), 1fr)); gap: var(--ky-space-3); }
+.appearance-pair { display: grid; gap: var(--ky-space-3); min-width: 0; padding: var(--ky-space-3); border: 1px solid var(--line-strong); border-radius: var(--ky-radius); background: var(--panel); }
+.appearance-pair:has(:checked) { border-color: var(--accent); box-shadow: inset 0 0 0 1px var(--accent); }
+.appearance-pair-head { display: flex; flex-wrap: wrap; align-items: baseline; justify-content: space-between; gap: 0 var(--ky-space-2); }
+.appearance-pair-name { font-size: 1rem; font-weight: 600; color: var(--ink-strong); }
+.appearance-pair-halves { color: var(--ink); font-size: var(--ky-type-meta); }
+.appearance-pair .ky-appearance-preview { block-size: 56px; }
+.appearance-modes { display: flex; border: 1px solid var(--line-strong); border-radius: var(--ky-control-radius); overflow: hidden; }
+.appearance-mode { position: relative; flex: 1 1 auto; display: flex; align-items: center; justify-content: center; gap: .3rem; min-height: 40px; padding: 0 var(--ky-space-2); color: var(--ink); font-size: .85rem; font-weight: 500; white-space: nowrap; cursor: pointer; }
+.appearance-mode + .appearance-mode { border-left: 1px solid var(--line-strong); }
+.appearance-mode > input[type='radio'] { position: absolute; inset: 0; width: 100%; height: 100%; min-height: 0; margin: 0; opacity: 0; cursor: pointer; }
+.appearance-mode:hover { background: var(--panel-hover); color: var(--ink-strong); }
+.appearance-mode:has(:checked) { background: var(--accent); color: var(--button-text); font-weight: 600; }
+.appearance-mode:has(:focus-visible) { outline: 2px solid var(--ink-strong); outline-offset: -4px; }
+.appearance-mode > input[type='radio']:focus-visible { outline: none; }
+@media (forced-colors: active) {
+  .appearance-pair:has(:checked) { border-color: Highlight; }
+  .appearance-mode:has(:checked) { outline: 2px solid Highlight; outline-offset: -3px; }
+}
+
+/* ---------- Settings: one column of sections ---------- */
+.settings-stack { display: grid; gap: 16px; max-width: 720px; align-items: start; }
+.settings-stack .dr-facts { margin-bottom: 0; }

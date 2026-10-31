@@ -1,7 +1,7 @@
 # KyYard
 
 ## Purpose
-Pairs kyPulse to one KyYard organization and reads what a `pulse_reader` may: endpoints, container inventory, resource samples, linked-container logs and organization audit.
+Pairs KyPulse to one KyYard organization and reads what a `pulse_reader` may: endpoints, container inventory, resource samples, linked-container logs and organization audit.
 
 ## Ownership
 `Pairing` (sealed URL, organization and token in `server_settings.kyyard_enc`), `Client` (bearer reads over the egress guard), `Claim` (pairing-code exchange), and the independent `Service` inventory and collection loops.

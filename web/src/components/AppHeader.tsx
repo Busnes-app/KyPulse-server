@@ -17,7 +17,7 @@ export const navItems = [
   { path: '/activity', label: 'Activity', icon: History, admin: true },
   { path: '/logs', label: 'Logs', icon: Archive, admin: true },
   { path: '/backup', label: 'Backup', icon: HardDrive, admin: true },
-  { path: '/settings', label: 'Settings & DB', icon: SettingsIcon, admin: false },
+  { path: '/settings', label: 'Settings', icon: SettingsIcon, admin: false },
   { path: '/appearance', label: 'Appearance', icon: Palette, admin: false },
 ];
 
@@ -39,11 +39,14 @@ export const AppHeader: React.FC<AppHeaderProps> = ({ appName, activePath, user,
       window.removeEventListener('resize', revealCurrent);
     };
   }, [activePath]);
+  // A display name that repeats the role line says nothing; show the username instead.
+  const role = user?.role === 'admin' ? 'Administrator' : 'Everyday account';
+  const name = user?.display_name && user.display_name !== role ? user.display_name : user?.username;
   return (
     <header className="app-header">
       <div className="app-brand">
-        <img src="/app-icon.png" width={28} height={28} alt="" />
-        <span>{appName || 'kyPulse'}</span>
+        <img className="ky-mark" src="/app-icon.png" width={28} height={28} alt="" />
+        <span>{appName}</span>
       </div>
 
       <nav ref={navRef} className="app-nav" aria-label="Primary">
@@ -58,31 +61,25 @@ export const AppHeader: React.FC<AppHeaderProps> = ({ appName, activePath, user,
               className={active ? 'ky-nav-item active' : 'ky-nav-item'}
               aria-current={active ? 'page' : undefined}
             >
-              <Icon size={16} />
+              <Icon size={16} aria-hidden="true" />
               <span>{item.label}</span>
             </a>
           );
         })}
       </nav>
-      <div className="app-header-actions">
-
+      <div className="app-sidebar-foot">
         {user && (
-          <div className="app-user">
-            <div className="app-user-copy">
-              <div style={{ fontWeight: 600, color: 'var(--ink-strong)' }}>{user.display_name || user.username}</div>
-              <div style={{ fontSize: '11px', color: 'var(--ink)' }}>{user.role}</div>
+          <div className="ky-user">
+            <div className="ky-user-copy">
+              <p className="ky-user-name">{name}</p>
+              <p className="ky-user-role">{role}</p>
             </div>
-            <button
-              className="btn-secondary app-logout"
-              onClick={onLogout}
-              title="Sign out"
-              aria-label="Sign out"
-            >
-              <LogOut size={16} />
+            <button type="button" className="ky-user-signout" onClick={onLogout}>
+              <LogOut size={16} aria-hidden="true" />Sign out
             </button>
           </div>
         )}
-        <LicenseFooter appName={appName || 'kyPulse'} version={version} />
+        <LicenseFooter appName={appName} version={version} />
       </div>
     </header>
   );

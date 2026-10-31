@@ -1,4 +1,4 @@
-// Package kyyard pairs kyPulse to one KyYard organization and reads what a pulse_reader
+// Package kyyard pairs KyPulse to one KyYard organization and reads what a pulse_reader
 // may: inventory/samples in memory, and logs/audit with durable generation-scoped cursors.
 package kyyard
 

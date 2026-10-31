@@ -1,53 +1,68 @@
 import { afterEach, describe, expect, it } from 'vitest';
-import { cleanup, fireEvent, render, screen } from '@testing-library/react';
+import { cleanup, fireEvent, render, screen, within } from '@testing-library/react';
 import { Appearance } from './Appearance';
 import { ThemeSwitcher } from '../components/ThemeSwitcher';
-import { THEME_CATALOG } from '../ky-ui/themes';
 
 const root = document.documentElement;
+const saved = (id: string | null) => {
+  if (id === null) localStorage.removeItem('ky_theme');
+  else localStorage.setItem('ky_theme', id);
+  window.dispatchEvent(new StorageEvent('storage', { key: 'ky_theme' }));
+};
+const mode = (pair: string, label: string) =>
+  within(within(screen.getByRole('group', { name: 'Theme' })).getByRole('group', { name: pair })).getByRole('radio', { name: label }) as HTMLInputElement;
 
 describe('Appearance', () => {
   afterEach(() => {
     cleanup();
-    localStorage.clear();
-    window.dispatchEvent(new StorageEvent('storage', { key: 'ky_theme' }));
+    saved(null);
   });
 
-  it('lists every suite theme as a native radio card, keeping a saved legacy choice', () => {
-    localStorage.setItem('ky_theme', 'paper');
-    window.dispatchEvent(new StorageEvent('storage', { key: 'ky_theme' }));
+  it('offers six pairs with Match system, Light and Dark in one radio group, Busnes Match system by default', () => {
     render(<Appearance />);
-    const radios = screen.getAllByRole('radio');
-    expect(radios).toHaveLength(THEME_CATALOG.length + 1);
-    expect(screen.getByRole('group', { name: 'Theme' })).toBeTruthy();
-    expect(screen.getByRole('radio', { name: /Paper Clean/ })).toHaveProperty('checked', true);
-    expect(screen.getByRole('radio', { name: /Match system/ })).toHaveProperty('checked', false);
-    expect(document.querySelector('[data-ky-preview="ocean"]')).not.toBeNull();
+    expect(screen.getByRole('heading', { level: 1, name: 'Appearance' })).toBeTruthy();
+    expect(screen.getByRole('group', { name: 'Theme' }).querySelectorAll('[role="group"]')).toHaveLength(6);
+    const radios = screen.getAllByRole('radio') as HTMLInputElement[];
+    expect(radios).toHaveLength(18);
+    expect(new Set(radios.map((r) => r.name)).size).toBe(1);
+    expect(mode('Busnes', 'Match system').checked).toBe(true);
+    expect(screen.getByText(/Match system follows your device’s light or dark setting, Light or Dark fixes the mode/)).toBeTruthy();
   });
 
-  it('keeps the base Patina palette for a saved patina choice, distinct from suite Patina Ky', () => {
-    localStorage.setItem('ky_theme', 'patina');
-    window.dispatchEvent(new StorageEvent('storage', { key: 'ky_theme' }));
+  it('marks only the selected mode with a check', () => {
+    saved('busnes-dark');
     render(<Appearance />);
-    expect(screen.getByRole('radio', { name: /Patina Ky \(base\)/ })).toHaveProperty('checked', true);
-    expect(root.style.getPropertyValue('--ink-strong')).toBe('#f1f5f9');
-    expect(root.style.getPropertyValue('--panel-hover')).toBe('#1c222c');
-    fireEvent.click(document.querySelector('input[value="patina-ky"]')!);
-    expect(localStorage.getItem('ky_theme')).toBe('patina-ky');
-    expect(root.style.getPropertyValue('--ink-strong')).toBe('#e2e8f0');
+    expect(mode('Busnes', 'Dark').closest('label')!.querySelector('svg')).not.toBeNull();
+    expect(mode('Busnes', 'Light').closest('label')!.querySelector('svg')).toBeNull();
+    expect(root.dataset.scheme).toBe('dark');
   });
 
-  it('applies a named palette inline and clears it again for Busnes', () => {
+  it('keeps earlier saved IDs: paper is Nord Light, base patina is Ky Dark, cyber resets to Busnes', () => {
+    saved('paper');
+    const { unmount } = render(<Appearance />);
+    expect(mode('Nord', 'Light').checked).toBe(true);
+    unmount();
+    saved('patina');
+    render(<Appearance />);
+    expect(mode('Ky', 'Dark').checked).toBe(true);
+    cleanup();
+    saved('cyber');
+    render(<Appearance />);
+    expect(mode('Busnes', 'Match system').checked).toBe(true);
+  });
+
+  it('saves a fixed half and a pair following the OS, then clears colours for Busnes; the switcher agrees', () => {
     render(<><ThemeSwitcher /><Appearance /></>);
-    expect(screen.getByRole('radio', { name: /Match system/ })).toHaveProperty('checked', true);
-    fireEvent.click(screen.getByRole('radio', { name: /Ocean/ }));
+    fireEvent.click(mode('Ocean', 'Dark'));
     expect(screen.getByLabelText('Color theme')).toHaveProperty('value', 'ocean');
     expect(localStorage.getItem('ky_theme')).toBe('ocean');
     expect(root.dataset.theme).toBe('ocean');
     expect(root.style.getPropertyValue('--bg')).toBe('#0f1b24');
     expect(root.style.colorScheme).toBe('dark');
+    fireEvent.click(mode('Forest', 'Match system'));
+    expect(localStorage.getItem('ky_theme')).toBe('forest-pair');
     fireEvent.change(screen.getByLabelText('Color theme'), { target: { value: 'busnes-light' } });
-    expect(screen.getByRole('radio', { name: /Busnes Light/ })).toHaveProperty('checked', true);
+    expect(mode('Busnes', 'Light').checked).toBe(true);
     expect(localStorage.getItem('ky_theme')).toBe('busnes-light');
     expect(root.dataset.theme).toBe('busnes-light');
     expect(root.style.getPropertyValue('--bg')).toBe('');

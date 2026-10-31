@@ -3,6 +3,7 @@ import { useState } from 'react';
 import { getLogs, type LogUser } from '../logs';
 import { LogLines, PageControls, useLogPage } from '../components/LogTimeline';
 import { LogSources } from '../components/LogSources';
+import { PageHead } from '../components/PageHead';
 
 const empty = { app: '', level: '', text: '', from: '', to: '' };
 export function Logs({ user }: { user: LogUser }) {
@@ -19,7 +20,7 @@ function AdminLogs() {
     for (const [key, value] of Object.entries(filters)) if (value) query.set(key, key === 'from' || key === 'to' ? new Date(`${value}Z`).toISOString() : value);
     setRangeError(''); setHasAppliedFilters(Object.values(filters).some(Boolean)); page.apply(query.toString());
   };
-  return <div className="dr-page"><div className="dr-header"><h1>Logs</h1></div><p className="dr-hint">Retained for up to 7 days, subject to the shared size limit. Times are UTC.</p>
+  return <div className="dr-page"><PageHead title="Logs" lede="Retained for up to 7 days, subject to the shared size limit. Times are UTC." />
     <details className="log-filter-panel"><summary>Filters{hasAppliedFilters && <span className="filter-applied"> Applied</span>}</summary>
     <form className="log-filters" onSubmit={event => { event.preventDefault(); apply(); }}>
       <label>Log app<input value={filters.app} maxLength={256} onChange={e => setFilters({ ...filters, app: e.target.value })} /></label>

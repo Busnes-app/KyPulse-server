@@ -10,6 +10,7 @@ import (
 	"net/url"
 	"strings"
 	"testing"
+	"time"
 
 	"github.com/Busnes-app/kypulse-server/internal/api"
 	"github.com/Busnes-app/kypulse-server/internal/appversion"
@@ -89,9 +90,19 @@ func TestTargetCRUDAndValidation(t *testing.T) {
 	if n := len(list["targets"].([]any)); n != 1 {
 		t.Fatalf("viewer list: %v", list)
 	}
+	if v := list["targets"].([]any)[0].(map[string]any); v["uptime_24h"] != nil || v["incidents_24h"] != float64(0) {
+		t.Fatalf("unclassified history: %v", v)
+	}
 	detail := decodeMap(t, do(t, srv, "GET", "/api/targets/"+id, viewer))
 	if detail["target"].(map[string]any)["state"] != "pending" {
 		t.Fatalf("detail: %v", detail)
+	}
+	// One recorded problem: the history fields read it.
+	if err := st.Targets().RecordEvent(context.Background(), &store.TargetEvent{TargetID: id, At: time.Now(), FromState: "pending", ToState: "down"}); err != nil {
+		t.Fatal(err)
+	}
+	if got := decodeMap(t, do(t, srv, "GET", "/api/targets/"+id, viewer))["target"].(map[string]any); got["incidents_24h"] != float64(1) {
+		t.Fatalf("history: %v", got)
 	}
 	if w := do(t, srv, "GET", "/api/targets/nope", viewer); w.Code != http.StatusNotFound {
 		t.Fatalf("missing: %d", w.Code)

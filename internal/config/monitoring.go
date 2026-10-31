@@ -13,7 +13,7 @@ import (
 	"github.com/Busnes-app/kypulse-server/internal/egress"
 )
 
-// InstallerBundle extends the common envelope only for kyPulse-owned monitoring.
+// InstallerBundle extends the common envelope only for KyPulse-owned monitoring.
 type InstallerBundle struct {
 	applysetup.Common
 	Monitoring *InstallerMonitoring `json:"monitoring,omitempty"`
@@ -95,7 +95,7 @@ func (b InstallerBundle) ValidateFor(appURL string) error {
 	for _, target := range b.Monitoring.Targets {
 		u, _ := url.Parse(target.URL)
 		if self != nil && self.Host != "" && u.Scheme == self.Scheme && strings.EqualFold(u.Host, self.Host) {
-			return errors.New("kyPulse cannot monitor its own configured origin")
+			return errors.New("KyPulse cannot monitor its own configured origin")
 		}
 	}
 	return nil

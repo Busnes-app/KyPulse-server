@@ -1,21 +1,36 @@
-import { THEME_OPTIONS, applyTheme, themeMode, useTheme } from '../theme';
+import { Check } from 'lucide-react';
+import { findTheme } from '../ky-ui/themes';
+import { THEME_CHOICES, applyTheme, useTheme } from '../theme';
+import { PageHead } from '../components/PageHead';
 
+// One native radio group across the pairs: arrow keys move through every choice.
 export function Appearance() {
   const theme = useTheme();
   return (
     <div className="dr-page">
-      <div className="dr-header"><h1>Appearance</h1></div>
-      <p className="ky-appearance-description">Pick a theme. It applies straight away and is saved in this browser only. Match system follows your device’s light or dark setting.</p>
+      <PageHead title="Appearance"
+        lede="Pick a palette: Match system follows your device’s light or dark setting, Light or Dark fixes the mode, and the choice applies straight away and is saved in this browser only." />
       <fieldset className="ky-appearance">
         <legend className="ky-appearance-legend">Theme</legend>
-        <div className="ky-appearance-grid">
-          {THEME_OPTIONS.map(option => (
-            <label key={option.id} className="ky-appearance-option">
-              <input className="ky-appearance-radio" type="radio" name="kypulse-theme" value={option.id} checked={theme === option.id} onChange={() => applyTheme(option.id, true)} />
-              <span className="ky-appearance-preview" aria-hidden="true" data-ky-preview={option.id} />
-              <span className="ky-appearance-name">{option.name}</span>
-              <small className="ky-appearance-mode">{themeMode(option.id)}</small>
-            </label>
+        <div className="ky-appearance-grid appearance-pairs">
+          {THEME_CHOICES.map(({ pair, choices }) => (
+            <div key={pair.id} role="group" aria-labelledby={`${pair.id}-name`} className="appearance-pair">
+              <div className="appearance-pair-head">
+                <h2 id={`${pair.id}-name`} className="appearance-pair-name">{pair.name}</h2>
+                <span className="appearance-pair-halves">{findTheme(pair.light)?.name} · {findTheme(pair.dark)?.name}</span>
+              </div>
+              <span className="ky-appearance-preview" data-ky-preview={pair.id} aria-hidden="true" />
+              <div className="appearance-modes">
+                {choices.map(({ mode, label, value }) => (
+                  <label key={mode} className="appearance-mode">
+                    <input type="radio" name="kypulse-theme" value={value} checked={theme === value}
+                      onChange={() => applyTheme(value, true)} />
+                    {theme === value && <Check size={14} strokeWidth={2.5} aria-hidden="true" />}
+                    <span>{label}</span>
+                  </label>
+                ))}
+              </div>
+            </div>
           ))}
         </div>
       </fieldset>

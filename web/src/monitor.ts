@@ -22,6 +22,18 @@ export interface Target {
   created_at: string;
   updated_at: string;
   basic: boolean;
+  // History, on list and detail answers: the last polls (memory only, so empty after a
+  // restart) and the past day read from recorded transitions.
+  recent?: Beat[] | null;
+  uptime_24h?: number | null;
+  incidents_24h?: number;
+}
+
+// Beat is one poll's raw answer, before the thresholds settle a state.
+export interface Beat {
+  at: string;
+  state: 'ok' | 'degraded' | 'down';
+  latency_ms: number;
 }
 
 export interface HealthCheck {
@@ -214,10 +226,21 @@ export function sortTargets(list: Target[]): Target[] {
   });
 }
 
+// stateWord is how a state reads on screen: OK, Degraded, Down, Pending, Paused.
+export function stateWord(s: string): string {
+  return s === 'ok' ? 'OK' : s.charAt(0).toUpperCase() + s.slice(1);
+}
+
+// stateLabel marks an OK app that answers a plain 200 without checks as basic.
 export function stateLabel(t: Target): string {
-  if (!t.enabled) return 'paused';
-  if (t.state === 'ok' && t.basic) return 'ok (basic)';
-  return t.state;
+  if (!t.enabled) return 'Paused';
+  if (t.state === 'ok' && t.basic) return 'OK (basic)';
+  return stateWord(t.state);
+}
+
+// causeLabel shows the poller's status_<code> as HTTP <code>; other causes are already words.
+export function causeLabel(cause: string | undefined): string {
+  return (cause ?? '').replace(/^status_(\d{3})$/, 'HTTP $1');
 }
 
 // stateClass is the CSS suffix for a dot or badge: ok|degraded|down|pending|paused.
@@ -253,4 +276,19 @@ export function kyYardPending(s: Pick<KyYardStatus, 'paired' | 'fetched_at' | 'e
 export function isSilenced(t: Target, now: Date = new Date()): boolean {
   if (t.until_fixed) return true;
   return !!t.silenced_until && new Date(t.silenced_until).getTime() > now.getTime();
+}
+
+// Display rules for the history columns.
+
+export const beatCount = 24; // monitor.Beats on the server
+
+// uptimeLabel rounds down, so a single failed minute never reads as 100%.
+export function uptimeLabel(u: number | null | undefined): string {
+  if (u === null || u === undefined) return '—';
+  return `${Math.floor(u * 10) / 10}%`;
+}
+
+// hostPath is a health URL without its scheme: the row already says it is a health check.
+export function hostPath(url: string): string {
+  return url.replace(/^https?:\/\//, '');
 }

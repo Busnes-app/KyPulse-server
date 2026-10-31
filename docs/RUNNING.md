@@ -29,7 +29,7 @@ new one later, run
 `KYPULSE_ADMIN_PASSWORD` in `.env` before the first start to choose it instead; it is read only
 while the database has no users and stays visible in `docker inspect`, so remove it
 afterwards. Compose runs in `KYPULSE_ENV=production`, so session cookies are `Secure`: a
-browser on the same machine can use `http://localhost`, anyone else needs kyPulse behind a TLS
+browser on the same machine can use `http://localhost`, anyone else needs KyPulse behind a TLS
 proxy with `KYPULSE_APP_URL=https://...` and `KYPULSE_TRUSTED_PROXIES` (the proxy's own
 address) in `.env`.
 
@@ -62,7 +62,7 @@ to the volume.
 ### Upgrading: port 8080 now on loopback
 
 Compose used to publish `8080` on every interface. It now binds `127.0.0.1` unless
-`KYPULSE_BIND` is set. If a proxy on another host, or clients on the LAN, reached kyPulse
+`KYPULSE_BIND` is set. If a proxy on another host, or clients on the LAN, reached KyPulse
 directly on `:8080`, set `KYPULSE_BIND=0.0.0.0` in `.env` to restore the old behaviour, or
 better, put a TLS proxy in front.
 
@@ -100,4 +100,4 @@ docker compose down && sudo mv -n data/audit.key secrets/audit.key && docker com
 After the first start you may mount `./secrets` read-only (`./secrets:/app/secrets:ro`); a
 fresh install needs it writable once to mint the key. Back `./secrets` up with `./data`.
 
-Watch kyPulse's own `GET /healthz` from outside. kyPulse does not monitor itself.
+Watch KyPulse's own `GET /healthz` from outside. KyPulse does not monitor itself.

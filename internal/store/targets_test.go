@@ -204,3 +204,29 @@ func TestUpdateTargetResetsHealthOnNewURL(t *testing.T) {
 		t.Fatalf("new URL must reset health: %+v", moved)
 	}
 }
+
+func TestTransitionsSince(t *testing.T) {
+	ctx := context.Background()
+	st := newTestStore(t)
+	if err := st.Targets().CreateTarget(ctx, &store.Target{ID: "a", Name: "a", URL: "https://a/", IntervalSec: 30, Enabled: true}); err != nil {
+		t.Fatal(err)
+	}
+	since := time.Date(2026, 10, 30, 12, 0, 0, 0, time.UTC)
+	for _, e := range []store.TargetEvent{
+		{At: since.Add(-time.Hour), FromState: "ok", ToState: "down"},
+		{At: since.Add(time.Hour), FromState: "pending", ToState: "ok"},
+		{At: since.Add(2 * time.Hour), FromState: "ok", ToState: "down", Reminder: true},
+		{At: since.Add(3 * time.Hour), FromState: "down", ToState: "flapping"},
+		{At: since.Add(4 * time.Hour), FromState: "", ToState: "down", Cause: "offboarding_failed"},
+		{At: since.Add(5 * time.Hour), FromState: "ok", ToState: "degraded"},
+	} {
+		e.TargetID = "a"
+		if err := st.Targets().RecordEvent(ctx, &e); err != nil {
+			t.Fatal(err)
+		}
+	}
+	got, err := st.Targets().TransitionsSince(ctx, since)
+	if err != nil || len(got) != 2 || got[0].ToState != "ok" || got[1].ToState != "degraded" || !got[0].At.Equal(since.Add(time.Hour)) {
+		t.Fatalf("%v %+v", err, got)
+	}
+}

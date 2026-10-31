@@ -14,7 +14,7 @@ there is no log file.
 |---|---|---|
 | `KYPULSE_PORT`, `KYPULSE_HOST` | `8080`, `127.0.0.1` (`0.0.0.0` in the image) | listen address |
 | `KYPULSE_APP_URL` | `http://localhost:<port>` | public URL; CORS origin and the link in webhook messages |
-| `KYPULSE_APP_NAME` | `kyPulse` | name shown in the UI |
+| `KYPULSE_APP_NAME` | `kyPulse` | service name: recovery capsules are sealed under it, so keep it across restores. The UI shows it, with the default spelled KyPulse |
 | `KYPULSE_ENV` | `development` (`production` in the image and Compose) | `development` or `production`. Development listens on loopback only, mints a session secret per start and sends cookies without `Secure` |
 | `KYPULSE_ALLOW_INSECURE_DEV` | `false` | let development listen on a non-loopback `KYPULSE_HOST` |
 | `KYPULSE_SESSION_SECRET` | `<data dir>/session.key` in production, random per start in development | signs the proof-of-work login challenge |
@@ -83,7 +83,7 @@ chain.
 
 **PostgreSQL**. Set `POSTGRES_PASSWORD` in `.env` (`openssl rand -hex 32`), then
 `docker compose --profile postgres up -d` starts the bundled database, reachable only on the
-compose network. Point kyPulse at it with `KYPULSE_DB_DRIVER=postgres` and
+compose network. Point KyPulse at it with `KYPULSE_DB_DRIVER=postgres` and
 `KYPULSE_DB_DSN=postgres://postgres:<password>@postgres:5432/kypulse?sslmode=disable`. Backups
 snapshot SQLite only, so a PostgreSQL deployment backs up its database separately.
 

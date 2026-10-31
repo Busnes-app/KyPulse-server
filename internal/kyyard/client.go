@@ -68,7 +68,7 @@ func Claim(ctx context.Context, h HTTP, baseURL, code string) (Config, error) {
 	return Config{URL: base, Token: out.Token, OrganizationID: out.Organization.ID, OrganizationName: out.Organization.Name}, nil
 }
 
-// Endpoint is what kyPulse keeps of a KyYard endpoint.
+// Endpoint is what KyPulse keeps of a KyYard endpoint.
 type Endpoint struct {
 	ID         string     `json:"id"`
 	Name       string     `json:"name"`

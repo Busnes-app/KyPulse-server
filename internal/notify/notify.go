@@ -57,7 +57,7 @@ type Message struct {
 	Previous string    `json:"previous"`
 	Reason   string    `json:"reason,omitempty"`
 	Time     time.Time `json:"time"`
-	URL      string    `json:"url"` // link back to the kyPulse app page
+	URL      string    `json:"url"` // link back to the KyPulse app page
 	Reminder bool      `json:"reminder,omitempty"`
 	Test     bool      `json:"test,omitempty"`
 }
@@ -66,13 +66,13 @@ type Message struct {
 func (m Message) Title() string {
 	switch {
 	case m.Test:
-		return "kyPulse: test alert"
+		return "KyPulse: test alert"
 	case m.Reminder:
-		return fmt.Sprintf("kyPulse: %s still %s", m.App, m.State)
+		return fmt.Sprintf("KyPulse: %s still %s", m.App, m.State)
 	case m.State == "ok":
-		return fmt.Sprintf("kyPulse: %s recovered", m.App)
+		return fmt.Sprintf("KyPulse: %s recovered", m.App)
 	}
-	return fmt.Sprintf("kyPulse: %s is %s", m.App, m.State)
+	return fmt.Sprintf("KyPulse: %s is %s", m.App, m.State)
 }
 
 func (m Message) text() string {

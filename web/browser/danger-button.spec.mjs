@@ -4,8 +4,7 @@ import { THEME_CATALOG } from '../src/ky-ui/themes.js';
 // The filled danger button's label must read on its fill for every suite palette, as the
 // screen shows it: pixels from a screenshot, so hover opacity and focus are included. The
 // control is the real Delete on a disabled synthetic app; it is never clicked.
-const LEGACY = ['patina', 'cyber', 'nord', 'paper', 'oled'];
-const SUITE = THEME_CATALOG.filter(t => !t.id.startsWith('busnes-') && !LEGACY.includes(t.id)).map(t => t.id);
+const SUITE = THEME_CATALOG.filter(t => !t.id.startsWith('busnes-')).map(t => t.id);
 
 // Fill = the most common pixel; label = the pixel that contrasts most with it. The clip stays
 // inside the rounded corners, so the page behind the button is never sampled.
@@ -39,9 +38,9 @@ test('the filled danger button label reads on its fill in every suite palette', 
   test.skip(testInfo.project.use.viewport.width < 1280, 'one width per OS scheme is enough for colour');
   test.setTimeout(120000);
   await page.goto('/');
-  await page.getByPlaceholder('admin', { exact: true }).fill('admin');
+  await page.getByLabel('Username').fill('admin');
   await page.locator('input[type=password]').fill('BrowserUpdated456!');
-  await page.getByRole('button', { name: 'Sign In', exact: true }).click();
+  await page.getByRole('button', { name: 'Sign in', exact: true }).click();
   await expect(page.getByRole('navigation', { name: 'Primary' })).toBeVisible();
   const headers = { 'X-CSRF-Token': (await context.cookies()).find(c => c.name === 'ky_csrf').value };
   const created = await page.request.post('/api/targets', { headers, data: { name: `danger-${testInfo.project.name}`, url: 'https://example.com/healthz', interval_sec: 30, enabled: false } });
@@ -73,8 +72,8 @@ test('the filled danger button label reads on its fill in every suite palette', 
     }
     console.log(testInfo.project.name, JSON.stringify(results));
     expect(results.filter(r => Math.min(r.rest, r.hover, r.focus) < 4.5)).toEqual([]);
-    // Busnes and the five original base palettes keep their own label colour.
-    for (const id of ['busnes-light', 'busnes-dark', ...LEGACY]) {
+    // Busnes keeps its own label colour.
+    for (const id of ['busnes-light', 'busnes-dark']) {
       await choose(id);
       expect(await button.evaluate(el => {
         const probe = document.body.appendChild(document.createElement('i'));

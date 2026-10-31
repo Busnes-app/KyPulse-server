@@ -1,6 +1,6 @@
-# Contributing to kyPulse
+# Contributing to KyPulse
 
-kyPulse is unified health and logging for the Ky suite: it polls every Ky app's health endpoint and aggregates logs. Contributions must keep that aggregated data authenticated and private and must not turn kyPulse into a channel that exposes other products' secrets.
+KyPulse is unified health and logging for the Ky suite: it polls every Ky app's health endpoint and aggregates logs. Contributions must keep that aggregated data authenticated and private and must not turn KyPulse into a channel that exposes other products' secrets.
 
 ## Before contributing
 
@@ -59,5 +59,5 @@ for what that is and the boundary it keeps.
 
 ## Licence
 
-kyPulse is licensed under the MIT License. See [LICENSE.txt](LICENSE.txt).
+KyPulse is licensed under the MIT License. See [LICENSE.txt](LICENSE.txt).
 

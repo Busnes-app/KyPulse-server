@@ -13,10 +13,10 @@ afterEach(cleanup);
 
 describe('LicenseFooter', () => {
   it('opens the About dialog with version, copyright and the MIT text', () => {
-    render(<LicenseFooter appName="kyPulse" version="0.5.0" />);
+    render(<LicenseFooter appName="KyPulse" version="0.5.0" />);
     const year = new Date().getFullYear();
     fireEvent.click(screen.getByRole('button', { name: `© ${year} · MIT License` }));
-    const dialog = screen.getByRole('dialog', { name: 'About kyPulse' }) as HTMLDialogElement;
+    const dialog = screen.getByRole('dialog', { name: 'About KyPulse' }) as HTMLDialogElement;
     expect(dialog.open).toBe(true);
     expect(dialog.textContent).toContain('v0.5.0');
     expect(dialog.textContent).toContain('Developed by Busnes.app');
@@ -26,8 +26,8 @@ describe('LicenseFooter', () => {
   });
 
   it('shows no badge without a version', () => {
-    render(<LicenseFooter appName="kyPulse" />);
-    expect(document.querySelector('.license-version-badge')).toBeNull();
+    render(<LicenseFooter appName="KyPulse" />);
+    expect(document.querySelector('.ky-about-version')).toBeNull();
   });
 
   it('ships the repository licence unchanged', () => {

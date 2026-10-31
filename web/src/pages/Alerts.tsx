@@ -1,8 +1,9 @@
 import React, { useEffect, useState } from 'react';
 import { BellOff } from 'lucide-react';
 import { hrefFor } from '../router';
-import { ApiError, isSilenced, listAlerts, listTargets, timeLabel, type Target, type TargetEvent } from '../monitor';
+import { ApiError, causeLabel, isSilenced, listAlerts, listTargets, stateWord, timeLabel, type Target, type TargetEvent } from '../monitor';
 import type { PageUser } from './Status';
+import { PageHead } from '../components/PageHead';
 
 interface AlertsProps { user: PageUser }
 
@@ -39,9 +40,7 @@ export const Alerts: React.FC<AlertsProps> = () => {
 
   return (
     <div className="dr-page">
-      <div className="dr-header">
-        <h1>Alerts</h1>
-      </div>
+      <PageHead title="Alerts" lede="State changes and reminders for every watched app, newest first." />
       {error && <p className="form-error" role="alert">{error}</p>}
       {silenced.length > 0 && (
         <p className="dr-hint"><BellOff size={14} /><strong>Silenced:</strong>{' '}
@@ -62,8 +61,8 @@ export const Alerts: React.FC<AlertsProps> = () => {
                   <tr key={e.id} role="row">
                     <td role="cell" data-label="Time">{timeLabel(e.at)}</td>
                     <td role="cell" data-label="App">{t ? <a href={hrefFor(`/apps/${t.id}`)}>{t.name}</a> : <span className="dr-mono">{e.target_id}</span>}</td>
-                    <td role="cell" data-label="Change" className={`state-${e.to}`}>{e.reminder ? `still ${e.to} (reminder)` : `${e.from} → ${e.to}`}</td>
-                    <td role="cell" data-label="Reason" className="dr-mono">{e.cause || '—'}</td>
+                    <td role="cell" data-label="Change" className={`state-${e.to}`}>{e.reminder ? `Still ${stateWord(e.to)} (reminder)` : `${stateWord(e.from)} → ${stateWord(e.to)}`}</td>
+                    <td role="cell" data-label="Reason" className="dr-mono">{causeLabel(e.cause) || '—'}</td>
                     <td role="cell" data-label="Delivery">{delivery(e)}</td>
                   </tr>
                 );

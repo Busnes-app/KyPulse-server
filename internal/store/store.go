@@ -131,4 +131,5 @@ type TargetStore interface {
 	NextOffboardingAlert(ctx context.Context) (*TargetEvent, error)                                     // oldest pending; ErrNotFound when empty
 	ListEvents(ctx context.Context, targetID string, beforeID int64, limit int) ([]*TargetEvent, error) // targetID "" = all; newest id first; beforeID 0 = from the newest
 	PruneEvents(ctx context.Context, before time.Time) error                                            // keeps pending offboarding alerts
+	TransitionsSince(ctx context.Context, since time.Time) ([]*TargetEvent, error)                      // every target, oldest first
 }

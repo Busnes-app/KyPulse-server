@@ -2,7 +2,7 @@
 
 [Product overview](../README.md) · [Development](DEVELOPMENT.md) · [Verifying releases](VERIFYING-RELEASES.md)
 
-This is the argument that kyPulse meets its security requirements: what it protects, from whom,
+This is the argument that KyPulse meets its security requirements: what it protects, from whom,
 where the trust boundaries are, and why the design and the code hold at each one. The detailed
 contracts live in [AGENTS.md](../AGENTS.md) and the `AGENTS.md` beside each package; this page
 ties them together and points at the evidence. Where a claim names code, the path is relative to
@@ -10,7 +10,7 @@ the repository root. Vulnerability reports go through the Busnes-app
 [security policy](https://github.com/Busnes-app/.github/blob/main/SECURITY.md) (the repository's
 **Security** tab, **Report a vulnerability**).
 
-## What kyPulse must protect
+## What KyPulse must protect
 
 The supported [key-strength/TLS configuration](STRONG-CRYPTO.md) records imported
 HMAC/RSA/TOTP floors, verifier-matched JWK parsing and complete verified TLS-chain
@@ -19,7 +19,7 @@ remain intact. Monitoring egress limits, library-owned OIDC/recovery transport
 and the local Docker Unix socket have explicit ownership. The independent HTTPS
 edge and live endpoint/restore readiness require operational verification.
 
-kyPulse watches other apps: it polls their health endpoints, reads container state and logs from
+KyPulse watches other apps: it polls their health endpoints, reads container state and logs from
 KyYard, accepts logs from paired senders, and sends webhook alerts. It never changes the apps it
 watches. Its security requirements:
 
@@ -43,33 +43,33 @@ watches. Its security requirements:
 | Anonymous network client | Send any request to the published port | Take over the admin account, exhaust resources |
 | Signed-in viewer | Use a viewer session and the read APIs | Change targets or the webhook, read collected logs |
 | Holder of a sender token | Call the ingest endpoint | Read data, act as another source, flood storage |
-| Compromised watched app or KyYard | Answer polls and pulls with anything | Crash or stall kyPulse, inject script into the UI, hide an outage |
+| Compromised watched app or KyYard | Answer polls and pulls with anything | Crash or stall KyPulse, inject script into the UI, hide an outage |
 | Admin-entered URL (by mistake or by a compromised admin session) | Point polls or webhooks anywhere | Reach the host's loopback services or a cloud metadata endpoint |
 | Someone with a copy of the data volume or a backup | Read the database file | Recover the webhook, KyYard and KyRecovery tokens, or passwords |
 | Network attacker between browser and proxy | Read and alter traffic | Steal a session |
 
 Out of scope: an attacker who already runs code on the host or holds the data volume **and** the
-key files (they are the server), and a malicious administrator. kyPulse serves plain HTTP and
+key files (they are the server), and a malicious administrator. KyPulse serves plain HTTP and
 publishes on loopback by default; TLS is the reverse proxy's job.
 
 ## Trust boundaries
 
-1. **Browser → reverse proxy → kyPulse.** The client address comes from one helper,
+1. **Browser → reverse proxy → KyPulse.** The client address comes from one helper,
    `auth.ClientIP` (`internal/auth/clientip.go`): `X-Forwarded-For` is read right to left and only
    while the hop is in `KYPULSE_TRUSTED_PROXIES`; otherwise the TCP peer is used. Rate limits and
    session binding both use it. Compose publishes on `127.0.0.1` unless `KYPULSE_BIND` says
    otherwise (`docker-compose.yml`).
-2. **kyPulse → outbound targets** (health polls, webhook, KyYard, KyRecovery). Every HTTP call to
+2. **KyPulse → outbound targets** (health polls, webhook, KyYard, KyRecovery). Every HTTP call to
    another service goes through `internal/egress`: loopback, link-local (which includes
    `169.254.169.254`), unspecified, multicast, documentation, reserved and two named metadata
    addresses are refused on every resolved IP at dial time, redirects are refused, and bodies are
    capped. The one other `http.Client` in the module, in `internal/sender/docker.go`, dials only a
    local Docker Unix socket.
-3. **Senders and KyYard → kyPulse.** Log batches arrive with a source Bearer token, are capped at
+3. **Senders and KyYard → KyPulse.** Log batches arrive with a source Bearer token, are capped at
    1 MiB and validated as a whole before anything is stored (`internal/ingest`). KyYard replies are
    parsed under size caps (`internal/kyyard`). Stored text is sanitised for display
    (`logstore.Display`) and rendered as text.
-4. **kyPulse → its data volume.** Secrets are sealed or hashed before they reach the database; the
+4. **KyPulse → its data volume.** Secrets are sealed or hashed before they reach the database; the
    encryption key and the audit key live in separate files (`encryption.key` in the data
    directory, the audit key under `/app/secrets` in the image).
 5. **Viewer → admin.** Every privileged route is registered wrapped in `s.requireAdmin` in
@@ -79,7 +79,7 @@ publishes on loopback by default; TLS is the reverse proxy's job.
 
 - **Least privilege.** Two roles; the store refuses any other. A source token can only ingest. The
   container runs as uid 10001, and Compose runs it read-only with all capabilities dropped and
-  `no-new-privileges` (`Dockerfile`, `docker-compose.yml`). kyPulse is read-only towards the apps
+  `no-new-privileges` (`Dockerfile`, `docker-compose.yml`). KyPulse is read-only towards the apps
   it watches.
 - **Fail-safe defaults.** Forwarded headers are ignored until a proxy is named. Loopback and
   link-local targets stay refused even when plain HTTP is allowed. Cookies are `Secure` by default
@@ -118,14 +118,14 @@ publishes on loopback by default; TLS is the reverse proxy's job.
 
 ## Residual risk
 
-- kyPulse has no step-up re-authentication; admin-only access plus the per-route tests stand in
+- KyPulse has no step-up re-authentication; admin-only access plus the per-route tests stand in
   for it on destructive backup routes ([internal/api/AGENTS.md](../internal/api/AGENTS.md)).
 - There is no operator reset of a viewer's second factor: a viewer who loses the
   authenticator and the recovery codes needs an admin to recreate the account. `kypulse
   init-admin` turns TOTP off for the admin it resets.
 - TOTP secrets are sealed under `encryption.key` directly rather than a per-purpose derived
   key: that is the format the sign-in path opens and restored capsules carry.
-- Rate limits are process-local, which suits the single-instance deployment kyPulse is built for.
+- Rate limits are process-local, which suits the single-instance deployment KyPulse is built for.
 - Health targets may use plain HTTP, and `KYPULSE_ALERT_ALLOW_HTTP` and `KYPULSE_KYYARD_ALLOW_HTTP`
   admit plain HTTP for the webhook and KyYard. The server logs a warning at startup when either is
   on.

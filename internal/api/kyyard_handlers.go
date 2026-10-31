@@ -47,7 +47,7 @@ func (s *Server) handleKyYardPair(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	base := trimURL(req.URL)
-	// KyYard is a separate service kyPulse reads over the network, never itself: unlike a
+	// KyYard is a separate service KyPulse reads over the network, never itself: unlike a
 	// health target (which may legitimately watch this instance), "localhost" here is refused
 	// by name, ahead of the DNS lookup the egress dialer would otherwise need to catch it.
 	if u, err := url.Parse(base); err == nil && strings.EqualFold(u.Hostname(), "localhost") {

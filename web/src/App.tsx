@@ -14,6 +14,7 @@ import { Appearance } from './pages/Appearance';
 import './styles/theme.css';
 import './ky-ui/tokens.css';
 import './ky-ui/navigation.css';
+import './ky-ui/shell.css';
 import './ky-ui/appearance.css';
 import './ky-ui/appearance-themes.css';
 import { secureFetch } from './api';
@@ -22,6 +23,9 @@ import { ApiError, getStatus, type StatusSummary } from './monitor';
 
 // statusEvery is how often the alert bar re-reads /api/status.
 const statusEvery = 15_000;
+
+// The default service name keeps its old spelling (capsules are sealed under it); show the brand.
+const brand = (name?: string) => (!name || name === 'kyPulse' ? 'KyPulse' : name);
 
 export const App: React.FC = () => {
   const [user, setUser] = useState<any>(null);
@@ -105,7 +109,7 @@ export const App: React.FC = () => {
   if (loading) {
     return (
       <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'var(--bg)', color: 'var(--ink)' }}>
-        Loading {settings?.app_name || 'kyPulse'}...
+        Loading {brand(settings?.app_name)}…
       </div>
     );
   }
@@ -115,7 +119,7 @@ export const App: React.FC = () => {
       <>
       {notice && <p role="status" style={{ padding: 16 }}>{notice}</p>}
       <Login
-        appName={settings?.app_name || 'kyPulse'}
+        appName={brand(settings?.app_name)}
         ssoEnabled={settings?.sso_enabled === true}
         onSuccess={(u) => {
           setNotice('');
@@ -138,7 +142,7 @@ export const App: React.FC = () => {
   return (
     <div className="app-shell">
       <AppHeader
-        appName={settings?.app_name || 'kyPulse'}
+        appName={brand(settings?.app_name)}
         activePath={route.path}
         user={user}
         onLogout={handleLogout}

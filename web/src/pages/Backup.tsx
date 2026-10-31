@@ -15,6 +15,7 @@ import {
   XCircle,
 } from 'lucide-react';
 import { secureFetch } from '../api';
+import { PageHead } from '../components/PageHead';
 
 export interface DepositReceipt {
   capsule_id: string;
@@ -424,13 +425,11 @@ export const Backup: React.FC = () => {
 
   return (
     <div className="dr-page backup-page">
-      <div className="dr-header">
-        <h1>Backup &amp; recovery</h1>
-        <button type="button" className="btn-secondary" onClick={fetchStatus} disabled={loadingStatus}>
-          <RefreshCw size={14} className={loadingStatus ? 'animate-spin' : ''} />
+      <PageHead title="Backup & recovery" lede="Recovery capsules for this KyPulse: pairing, keys, schedule and local copies."
+        action={<button type="button" className="btn-secondary" onClick={fetchStatus} disabled={loadingStatus}>
+          <RefreshCw size={14} className={loadingStatus ? 'animate-spin' : ''} aria-hidden="true" />
           <span>Refresh</span>
-        </button>
-      </div>
+        </button>} />
 
       {statusError && <Alert kind="error">{statusError}</Alert>}
       {status?.recovery_key_error && <Alert kind="error">{status.recovery_key_error}</Alert>}
@@ -480,9 +479,12 @@ export const Backup: React.FC = () => {
         <div className="dr-fact">
           <div className="dr-fact-label">
             <span>Schedule</span>
-            <Badge tone={scheduleOn ? 'muted' : 'danger'}>{every(status?.interval_sec)}</Badge>
+            <Badge tone={!scheduleOn ? 'danger' : canBackUp ? 'success' : 'muted'}>{every(status?.interval_sec)}</Badge>
           </div>
-          <div className="dr-fact-value">{scheduleOn && status?.next_run_at ? `Next ${when(status.next_run_at)}` : 'Manual only'}</div>
+          <div className="dr-fact-value">
+            {!scheduleOn ? 'Manual only' : !keyPinned ? 'Waiting for recovery key' : !canBackUp ? 'Waiting for a destination'
+              : status?.next_run_at ? `Next ${when(status.next_run_at)}` : 'Next run not scheduled'}
+          </div>
           <div className="dr-fact-note">Counts from the last attempt, successful or not</div>
         </div>
       </div>

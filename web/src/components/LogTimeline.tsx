@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, type ReactNode } from 'react';
 import { ApiError } from '../monitor';
 import { getLogs, logError, type LogLine, type Page } from '../logs';
 
@@ -41,14 +41,23 @@ export function LogLines({ items }: { items: LogLine[] }) {
   </li>)}</ol>;
 }
 
-export function RecentLogs({ id }: { id: string }) {
+// RecentLogs is the admin detail page's context: the linked KyYard container (kyYard, null
+// when unlinked) and the app's newest retained log lines. Both empty collapse to one line.
+export function RecentLogs({ id, kyYard }: { id: string; kyYard: ReactNode }) {
   const page = useLogPage(getLogs, `target_id=${encodeURIComponent(id)}&limit=20`);
-  return <section className="dr-section" aria-label="Recent logs"><h3>Recent logs</h3>
-    {page.error && <p role="alert">{page.error} <button onClick={page.retry}>Retry recent logs</button></p>}
-    {page.loading && <p role="status">Loading recent logs…</p>}
-    {!page.loading && !page.error && !page.items.length && <p className="dr-hint">No retained logs for this app.</p>}
-    <LogLines items={page.items} />
-  </section>;
+  const noLogs = !page.loading && !page.error && !page.items.length;
+  if (noLogs && !kyYard) {
+    return <p className="dr-hint detail-empty">No KyYard container linked and no retained logs. Edit the app to link a container.</p>;
+  }
+  return <>
+    <div className="dr-section"><h2>KyYard</h2>{kyYard ?? <p className="dr-hint">Not linked to a KyYard container. Edit the app and pick one under Container.</p>}</div>
+    <section className="dr-section" aria-label="Recent logs"><h2>Recent logs</h2>
+      {page.error && <p role="alert">{page.error} <button onClick={page.retry}>Retry recent logs</button></p>}
+      {page.loading && <p role="status">Loading recent logs…</p>}
+      {noLogs && <p className="dr-hint">No retained logs for this app.</p>}
+      <LogLines items={page.items} />
+    </section>
+  </>;
 }
 
 export function PageControls({ page }: { page: { loading: boolean; error: string; next_before_id: number; capped: boolean; retry: () => void; more: () => void } }) {

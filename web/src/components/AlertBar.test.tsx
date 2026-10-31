@@ -18,13 +18,17 @@ describe('AlertBar', () => {
     expect(bar.textContent).toContain('All 3 apps healthy');
   });
 
-  it('is red with one line per problem and a link to Alerts', () => {
+  it('leads with the counts, then one pill per problem app and a link to Alerts', () => {
     render(<AlertBar status={{ ...healthy, ok: 1, down: 1, degraded: 1, problems: [
       { id: 'tgt_a', name: 'KyVault', state: 'down', since: '2026-09-27T09:30:00Z', cause: 'refused' },
       { id: 'tgt_b', name: 'KyPost', state: 'degraded', since: '2026-09-27T09:40:00Z' },
     ] }} loading={false} isAdmin={false} />);
     const bar = screen.getByRole('alert');
     expect(bar.className).toContain('alert-bar-down');
+    expect(bar.querySelector('.alert-bar-count')?.textContent).toBe('1 down · 1 degraded');
+    // Exact times and raw causes belong to the detail page.
+    expect(bar.textContent).not.toContain('refused');
+    expect(bar.textContent).not.toContain('since');
     expect(screen.getByRole('link', { name: /KyVault down/ }).getAttribute('href')).toBe('#/apps/tgt_a');
     expect(screen.getByRole('link', { name: /KyPost degraded/ })).toBeTruthy();
     expect(screen.getByRole('link', { name: 'Alerts' }).getAttribute('href')).toBe('#/alerts');

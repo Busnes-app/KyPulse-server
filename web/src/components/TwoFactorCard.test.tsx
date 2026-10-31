@@ -2,7 +2,7 @@ import { afterEach, describe, expect, it, vi } from 'vitest';
 import { cleanup, fireEvent, render, screen, waitFor } from '@testing-library/react';
 import { TwoFactorCard } from './TwoFactorCard';
 
-const uri = 'otpauth://totp/kyPulse:erin?secret=JBSWY3DPEHPK3PXP&issuer=kyPulse';
+const uri = 'otpauth://totp/KyPulse:erin?secret=JBSWY3DPEHPK3PXP&issuer=KyPulse';
 
 function stub(routes: Record<string, [unknown, number?]>) {
   const fn = vi.fn(async (input: RequestInfo | URL, init?: RequestInit) => {

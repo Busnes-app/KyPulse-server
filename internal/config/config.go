@@ -18,7 +18,7 @@ import (
 	"github.com/Busnes-app/kypulse-server/internal/crypto"
 )
 
-// Config encapsulates all runtime configuration for kyPulse.
+// Config encapsulates all runtime configuration for KyPulse.
 type Config struct {
 	Server   ServerConfig   `json:"server"`
 	Database DatabaseConfig `json:"database"`

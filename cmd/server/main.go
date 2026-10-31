@@ -60,7 +60,7 @@ func main() {
 			runAuditVerify()
 			return
 		case "version":
-			fmt.Println("kypulse v" + appversion.String() + " (Busnes.app kyPulse)")
+			fmt.Println("kypulse v" + appversion.String() + " (Busnes.app KyPulse)")
 			return
 		}
 	}

@@ -2,7 +2,7 @@
 
 > Evidence scope: this document records the revision, environment and capture conditions below. Screenshots and generated fixtures demonstrate appearance; they do not qualify live email delivery, push delivery, recovery custody or every product feature. Test counts describe that recorded run, not the current suite.
 
-kyPulse screens: alert bar, Status, Alerts, app detail, webhook, admin Logs/Activity and KyYard collection status.
+KyPulse screens: alert bar, Status, Alerts, app detail, webhook, admin Logs/Activity and KyYard collection status.
 
 ## Capture conditions
 

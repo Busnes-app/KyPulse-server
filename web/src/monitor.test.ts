@@ -23,10 +23,10 @@ describe('monitor helpers', () => {
   });
 
   it('labels states, basic and paused', () => {
-    expect(stateLabel(target({ name: 'a' }))).toBe('ok');
-    expect(stateLabel(target({ name: 'a', basic: true }))).toBe('ok (basic)');
-    expect(stateLabel(target({ name: 'a', enabled: false }))).toBe('paused');
-    expect(stateLabel(target({ name: 'a', state: 'down' }))).toBe('down');
+    expect(stateLabel(target({ name: 'a' }))).toBe('OK');
+    expect(stateLabel(target({ name: 'a', basic: true }))).toBe('OK (basic)');
+    expect(stateLabel(target({ name: 'a', enabled: false }))).toBe('Paused');
+    expect(stateLabel(target({ name: 'a', state: 'down' }))).toBe('Down');
   });
 
   it('formats durations', () => {

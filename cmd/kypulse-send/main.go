@@ -56,7 +56,7 @@ func runWith(args []string, stdin io.ReadCloser, http sender.HTTP, logger *loggi
 	}
 	flags := flag.NewFlagSet(args[0], flag.ContinueOnError)
 	flags.SetOutput(io.Discard)
-	base := flags.String("url", "", "kyPulse HTTPS origin")
+	base := flags.String("url", "", "KyPulse HTTPS origin")
 	code := flags.String("code", "", "six-digit pairing code")
 	name := flags.String("name", "", "source name")
 	stateDir := flags.String("state-dir", dir, "sender state directory")

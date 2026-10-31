@@ -1,11 +1,11 @@
 import { KyYardCollectors } from './KyYardCollectors';
 import React, { useEffect, useState } from 'react';
-import { Database, Link2, Unlink } from 'lucide-react';
+import { Container, Link2, Unlink } from 'lucide-react';
 import { ApiError, getKyYard, kyYardPending, pairKyYard, sinceLabel, timeLabel, unpairKyYard, type KyYardStatus } from '../monitor';
 
 const POLL_MS = 5_000;
 
-// KyYardCard pairs this kyPulse to one KyYard organization with a code a KyYard
+// KyYardCard pairs this KyPulse to one KyYard organization with a code a KyYard
 // administrator generated (Members → Service tokens → Pair kyPulse). Unpairing here deletes
 // the URL and token here only; revoking the token is KyYard's step.
 export const KyYardCard: React.FC<{ onChanged: () => void }> = ({ onChanged }) => {
@@ -59,7 +59,7 @@ export const KyYardCard: React.FC<{ onChanged: () => void }> = ({ onChanged }) =
   return (
     <div className="panel">
       <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 12 }}>
-        <Database size={20} style={{ color: 'var(--ink)' }} />
+        <Container size={20} style={{ color: 'var(--ink)' }} aria-hidden="true" />
         <h3 style={{ fontSize: 16 }}>KyYard</h3>
       </div>
       {status?.paired ? (

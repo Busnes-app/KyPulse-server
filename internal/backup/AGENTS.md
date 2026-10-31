@@ -29,7 +29,7 @@ live in `recoveryclient` and in the settings rows it reads and writes through th
   Keep the lock file in place. Before reading the temporary snapshot, it securely deletes collected log lines,
   imported activity, collection cursors and pending log pairing codes, resets log usage and compacts the copy;
   deletion or compaction failures refuse the capsule. Source identities and token hashes, users,
-  targets, settings and kyPulse's own keyed audit chain remain. Source sequence receipts remain
+  targets, settings and KyPulse's own keyed audit chain remain. Source sequence receipts remain
   too: replay of the latest acknowledged batch succeeds without reintroducing its excluded
   payload. Administrator-owned offboarding source grants and target alert events, including
   pending notification, remain; receipt replay cannot duplicate a restored alert. Collected
