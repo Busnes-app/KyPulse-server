@@ -244,6 +244,11 @@ export function causeLabel(cause: string | undefined): string {
 }
 
 // stateClass is the CSS suffix for a dot or badge: ok|degraded|down|pending|paused.
+// kyStatus maps a state to ky-ui's .ky-status tone; pending and paused stay neutral.
+export function kyStatus(state: string): 'danger' | 'warning' | 'success' | undefined {
+  return ({ down: 'danger', degraded: 'warning', ok: 'success' } as const)[state as 'ok'];
+}
+
 export function stateClass(t: Pick<Target, 'state' | 'enabled'>): string {
   return t.enabled ? t.state : 'paused';
 }

@@ -129,8 +129,8 @@ const Alert: React.FC<{ kind: 'error' | 'warn' | 'success'; children: React.Reac
   </div>
 );
 
-const Badge: React.FC<{ tone: 'success' | 'accent' | 'danger' | 'muted'; children: React.ReactNode }> = ({ tone, children }) => (
-  <span className={tone === 'muted' ? 'badge dr-badge-muted' : `badge badge-${tone}`}>{children}</span>
+const Badge: React.FC<{ tone: 'success' | 'danger' | 'muted'; children: React.ReactNode }> = ({ tone, children }) => (
+  <span className="ky-status" data-ky-status={tone === 'muted' ? undefined : tone}>{children}</span>
 );
 
 export const Backup: React.FC = () => {
