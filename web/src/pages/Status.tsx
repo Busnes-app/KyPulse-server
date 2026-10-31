@@ -5,7 +5,7 @@ import { Heartbeat } from '../components/Heartbeat';
 import { PageHead } from '../components/PageHead';
 import { hrefFor } from '../router';
 import {
-  ApiError, createTarget, hostPath, isSilenced, kyYardContainers, listTargets, sinceLabel, sortTargets, stateClass, stateLabel, uptimeLabel,
+  ApiError, createTarget, hostPath, isSilenced, kyYardContainers, listTargets, sinceLabel, sortTargets, stateClass, stateLabel, uptimeLabel, causeLabel,
   type Suggestion, type Target, type TargetInput,
 } from '../monitor';
 
@@ -64,7 +64,7 @@ export const Status: React.FC<StatusProps> = ({ user, onChanged }) => {
       {targets && targets.length > 0 && (
         <section className="status-list" aria-label="Watched applications">
           <div className="status-list-heading" aria-hidden="true">
-            <span>Application</span><span>Last 24 checks</span><span className="num">Uptime 24h</span><span>Status</span><span>Checked</span><span className="num">Latency</span>
+            <span>Application</span><span>Last 24 checks</span><span className="num">Uptime (24 h)</span><span>Status</span><span>Checked</span><span className="num">Latency</span>
           </div>
           <ul>
             {targets.map((t) => <li key={t.id}><StatusRow t={t} /></li>)}
@@ -78,7 +78,7 @@ export const Status: React.FC<StatusProps> = ({ user, onChanged }) => {
 // One 52px row: name and endpoint, recent polls, the day's uptime, state, check age, latency.
 function StatusRow({ t }: { t: Target }) {
   const cls = stateClass(t);
-  const cause = t.cause && t.enabled && t.state !== 'ok' ? t.cause : '';
+  const cause = t.cause && t.enabled && t.state !== 'ok' ? causeLabel(t.cause) : '';
   const age = !t.last_polled_at ? 'awaiting first check' : t.state === 'pending' ? 'not yet classified' : `for ${sinceLabel(t.state_since)}`;
   return (
     <a className="status-row" href={hrefFor(`/apps/${t.id}`)}>
@@ -88,9 +88,9 @@ function StatusRow({ t }: { t: Target }) {
         <span className="status-endpoint" title={t.url}>{hostPath(t.url)}</span>
       </span>
       <Heartbeat beats={t.recent} />
-      <span className="status-uptime num" title="Share of the past 24 hours the app was ok">{uptimeLabel(t.uptime_24h)}</span>
+      <span className="status-uptime num" title="Share of the past 24 hours (or since the app was added) it was OK">{uptimeLabel(t.uptime_24h)}</span>
       <span className="status-state" title={cause || undefined}>
-        <span className={`state-${cls} cap`}>{stateLabel(t)}</span>
+        <span className={`state-${cls}`}>{stateLabel(t)}</span>
         {cause && <span className="status-cause"> · {cause}</span>}
         <span className="status-meta"> {age}</span>
         {isSilenced(t) && <span className="status-meta"> · <BellOff size={12} aria-hidden="true" /> silenced</span>}

@@ -79,14 +79,16 @@ test('status, alerts, detail page and the alert bar in every state', async ({ pa
   await expect(tile).toBeVisible();
   // Three down polls → down: the bar leads with the count, and the app's pill opens its detail page.
   await expect(page.getByRole('alert')).toContainText('1 down', { timeout: 90_000 });
-  await expect(page.getByRole('alert')).toHaveCSS('height', '44px');
+  // Desktop keeps it to one fixed line; phones may wrap so no pill is clipped.
+  if (testInfo.project.use.viewport.width > 720) await expect(page.getByRole('alert')).toHaveCSS('height', '44px');
   await page.screenshot({ path: testInfo.outputPath('status-down.png'), fullPage: true });
   await page.getByRole('alert').getByRole('link', { name: /Fake app down/ }).click();
   await expect(page).toHaveURL(/#\/apps\/tgt_/);
   const banner = page.getByRole('region', { name: 'Current state' });
-  await expect(banner).toContainText('down');
+  await expect(banner).toContainText('Down');
   await expect(banner).toContainText(`GET ${base}/healthz`);
-  await expect(page.getByText('No checks reported yet.')).toBeVisible();
+  // No checks reported: the section is left out rather than shown empty.
+  await expect(page.getByRole('heading', { name: 'Checks' })).toHaveCount(0);
   await expect(page.getByRole('navigation', { name: 'Primary' }).getByRole('link', { name: 'Status', exact: true })).toHaveAttribute('aria-current', 'page');
   await page.screenshot({ path: testInfo.outputPath('detail-down.png'), fullPage: true });
   // Silence until fixed: still shown, marked silenced.
@@ -94,11 +96,11 @@ test('status, alerts, detail page and the alert bar in every state', async ({ pa
   await expect(banner).toContainText('Silenced until fixed');
   // Alerts tab lists the transition and the silence.
   await page.getByRole('link', { name: 'Alerts' }).first().click();
-  await expect(page.getByRole('row').nth(1)).toContainText('pending → down');
+  await expect(page.getByRole('row').nth(1)).toContainText('Pending → Down');
   await expect(page.getByText('Silenced:')).toBeVisible();
   await page.screenshot({ path: testInfo.outputPath('alerts.png'), fullPage: true });
   // Webhook that fails → "Alerts not being delivered".
-  await page.getByRole('link', { name: 'Settings & DB' }).click();
+  await page.getByRole('navigation', { name: 'Primary' }).getByRole('link', { name: 'Settings', exact: true }).click();
   await page.getByLabel('Preset').selectOption('gotify');
   await page.getByLabel('URL', { exact: true }).fill(base);
   await page.getByRole('button', { name: 'Save webhook' }).click();
@@ -130,7 +132,7 @@ test('status, alerts, detail page and the alert bar in every state', async ({ pa
   await expect(page.getByRole('status').filter({ hasText: 'All 1 app healthy' })).toBeVisible({ timeout: 90_000 });
   await page.screenshot({ path: testInfo.outputPath('status-ok.png'), fullPage: true });
   await tile.click();
-  await expect(banner).toContainText('ok');
+  await expect(banner).toContainText('OK');
   await expect(page.getByText('database')).toBeVisible();
   await expect(banner).not.toContainText('Silenced');
   // Delete goes back to Status.

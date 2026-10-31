@@ -30,7 +30,7 @@ describe('Alerts', () => {
     expect(rows[1].textContent).toContain('KyVault');
     expect(rows[1].textContent).toContain('reminder');
     expect(rows[1].textContent).toContain('failed: receiver_500');
-    expect(rows[2].textContent).toContain('ok → down');
+    expect(rows[2].textContent).toContain('OK → Down');
     expect(rows[2].textContent).toContain('sent');
     expect(rows[3].textContent).toContain('tgt_gone'); // deleted target: id shown, nothing crashes
     expect(rows[3].textContent).toContain('not sent');

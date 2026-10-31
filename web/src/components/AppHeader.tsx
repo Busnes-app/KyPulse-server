@@ -17,7 +17,7 @@ export const navItems = [
   { path: '/activity', label: 'Activity', icon: History, admin: true },
   { path: '/logs', label: 'Logs', icon: Archive, admin: true },
   { path: '/backup', label: 'Backup', icon: HardDrive, admin: true },
-  { path: '/settings', label: 'Settings & DB', icon: SettingsIcon, admin: false },
+  { path: '/settings', label: 'Settings', icon: SettingsIcon, admin: false },
   { path: '/appearance', label: 'Appearance', icon: Palette, admin: false },
 ];
 

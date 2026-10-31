@@ -46,12 +46,29 @@ describe('AppDetail', () => {
     expect([...banner.querySelectorAll('dt')].map((d) => d.textContent)).toEqual(['Down for', 'Last checked', 'Incidents in 24h']);
     expect(banner.textContent).toContain('refused');
     expect(banner.textContent).toContain('GET https://vault.lan/healthz');
-    expect(screen.getByText('kyyard').parentElement?.textContent).toContain('down');
+    expect(screen.getByText('kyyard').parentElement?.textContent).toContain('Down');
+    // Unhealthy checks lead the list.
+    expect([...document.querySelectorAll('.dr-check .dr-mono')].map((n) => n.textContent)).toEqual(['kyyard', 'database']);
     expect(screen.getAllByRole('row')).toHaveLength(2);
     expect(fetchMock.mock.calls.some(([url]) => String(url).startsWith('/api/logs'))).toBe(false);
     expect(screen.queryByRole('button', { name: /Silence/ })).toBeNull();
     expect(screen.queryByRole('button', { name: 'Edit' })).toBeNull();
     expect(screen.queryByRole('button', { name: 'Delete' })).toBeNull();
+  });
+
+  it('leaves out an empty Checks section and shows HTTP codes, not status_<code>', async () => {
+    const fn = vi.fn(async (input: RequestInfo | URL) => {
+      if (/tgt_a$/.test(String(input))) return new Response(JSON.stringify({ ...detail, target: { ...target, cause: 'status_503' }, last_result: { state: 'down', cause: 'status_503' } }));
+      if (/^\/api\/kyyard$/.test(String(input))) return new Response(JSON.stringify({ paired: false, stale: false }));
+      throw new Error(String(input));
+    });
+    vi.stubGlobal('fetch', fn);
+    render(<AppDetail id="tgt_a" user={{ role: 'viewer' }} onChanged={() => {}} />);
+    const banner = await screen.findByRole('region', { name: 'Current state' });
+    expect(screen.queryByRole('heading', { name: 'Checks' })).toBeNull();
+    expect(banner.textContent).toContain('HTTP 503');
+    expect(banner.textContent).not.toContain('status_503');
+    expect(banner.textContent).not.toContain('last tried');
   });
 
   it('lets an admin silence for 8h', async () => {

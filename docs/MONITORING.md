@@ -29,7 +29,7 @@ ends at the next recovery.
 
 ## Alert webhook
 
-Set in Settings & DB by an admin, sealed at rest with the deployment key. Presets:
+Set in Settings by an admin, sealed at rest with the deployment key. Presets:
 
 | Preset | Sends |
 |---|---|
@@ -52,7 +52,7 @@ KyPulse can read one KyYard organization with a read-only service token.
 
 1. A KyYard organization administrator opens **Members → Service tokens → Pair kyPulse** and
    gets a six-digit code, valid 15 minutes.
-2. A KyPulse admin enters the KyYard URL and that code on the KyYard card in Settings & DB.
+2. A KyPulse admin enters the KyYard URL and that code on the KyYard card in Settings.
 
 The token is sealed at rest, never logged and never shown. KyPulse then pulls every 60 s:
 Docker endpoints that are approved, active or offline (the first 200), their container

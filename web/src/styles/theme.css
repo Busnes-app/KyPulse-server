@@ -392,8 +392,8 @@ dialog.modal-window::backdrop {
 /* Status: one 52px row per app on a shared grid, so every column lines up. */
 .status-list { border: 1px solid var(--line); border-radius: 8px; background: var(--panel); overflow: hidden; }
 .status-list ul { list-style: none; }
-.status-list-heading, .status-row { display: grid; grid-template-columns: minmax(0, 1.5fr) 166px 5rem minmax(0, 1.1fr) 5.5rem 4.5rem; column-gap: 20px; align-items: center; padding: 0 20px; }
-.status-list-heading { height: 36px; color: var(--ink); font-size: var(--ky-type-meta); font-weight: 600; border-bottom: 1px solid var(--line); }
+.status-list-heading, .status-row { display: grid; grid-template-columns: minmax(0, 1.5fr) 166px 6.5rem minmax(0, 1.1fr) 5.5rem 4.5rem; column-gap: 20px; align-items: center; padding: 0 20px; }
+.status-list-heading { height: 36px; white-space: nowrap; color: var(--ink); font-size: var(--ky-type-meta); font-weight: 600; border-bottom: 1px solid var(--line); }
 .status-list li + li { border-top: 1px solid var(--line); }
 .status-row { min-height: 52px; color: var(--ink-strong); text-decoration: none; font-weight: 400; font-size: var(--ky-type-nav); }
 .status-row:hover { background: var(--panel-hover); }
@@ -407,9 +407,6 @@ dialog.modal-window::backdrop {
 .status-cause { color: var(--ink-strong); }
 .status-meta svg { vertical-align: -1px; }
 .num, .status-checked { font-variant-numeric: tabular-nums; }
-/* State words lead in sentence case; the stored value stays lowercase. */
-.cap { display: inline-block; }
-.cap::first-letter { text-transform: uppercase; }
 .num { text-align: right; }
 .beats { display: flex; gap: 2px; height: 18px; }
 .beat { flex: 1 1 0; min-width: 3px; border-radius: 2px; background: var(--line); }
@@ -419,13 +416,13 @@ dialog.modal-window::backdrop {
 @media (max-width: 900px) {
   /* Narrow: name and state on the first line, history and timing beneath. */
   .status-list-heading { display: none; }
-  .status-row { grid-template-columns: minmax(0, 1fr) auto auto; grid-template-areas: "app app app" "state state state" "beats uptime latency"; row-gap: 6px; padding: 12px 16px; }
+  .status-row { grid-template-columns: minmax(0, 1fr) auto auto; grid-template-areas: "app app app" "state state checked" "beats uptime latency"; row-gap: 6px; padding: 12px 16px; }
   .status-app { grid-area: app; }
   .status-state { grid-area: state; white-space: normal; }
   .status-row .beats { grid-area: beats; max-width: 166px; }
   .status-uptime { grid-area: uptime; }
   .status-latency { grid-area: latency; }
-  .status-checked { display: none; }
+  .status-checked { grid-area: checked; text-align: right; }
 }
 
 .dot { width: 10px; height: 10px; border-radius: 50%; flex: none; background: var(--ink); }
@@ -469,7 +466,12 @@ dialog.modal-window::backdrop {
 .form-grid label { display: flex; flex-direction: column; gap: 4px; font-size: 13px; color: var(--ink); }
 .form-error { color: var(--danger); font-size: 13px; margin: 0 0 12px; }
 .form-ok { color: var(--success); font-size: 13px; margin: 0 0 12px; }
-@media (max-width: 720px) { .alert-bar { padding: 0 12px; } }
+/* Phones: the bar may wrap, so every pill stays whole. */
+@media (max-width: 720px) {
+  .alert-bar { flex-wrap: wrap; height: auto; min-height: 44px; padding: 8px 12px; row-gap: 6px; white-space: normal; overflow: visible; }
+  .alert-bar-apps { flex-wrap: wrap; }
+  .alert-bar a.alert-pill { white-space: nowrap; }
+}
 
 /* Stored text stays within the page at phone widths, including unbroken raw lines. */
 .log-filters { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); align-items: end; gap: 16px; margin: 16px 0; }
@@ -601,3 +603,7 @@ dialog.modal-window.target-dialog { max-width: min(560px, calc(100vw - 32px)); }
   .appearance-pair:has(:checked) { border-color: Highlight; }
   .appearance-mode:has(:checked) { outline: 2px solid Highlight; outline-offset: -3px; }
 }
+
+/* ---------- Settings: one column of sections ---------- */
+.settings-stack { display: grid; gap: 16px; max-width: 720px; align-items: start; }
+.settings-stack .dr-facts { margin-bottom: 0; }

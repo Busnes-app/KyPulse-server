@@ -6,7 +6,7 @@ import { KyYardFacts } from '../components/KyYardFacts';
 import { PageHead } from '../components/PageHead';
 import { hrefFor, navigate } from '../router';
 import {
-  ApiError, deleteTarget, getKyYard, getTarget, isSilenced, kyYardContainers, kyYardPending, silenceTarget, sinceLabel, stateClass, stateLabel, timeLabel, updateTarget, uptimeLabel,
+  ApiError, deleteTarget, getKyYard, getTarget, isSilenced, kyYardContainers, kyYardPending, silenceTarget, sinceLabel, stateClass, stateLabel, stateWord, timeLabel, updateTarget, uptimeLabel, causeLabel,
   type ContainerFacts, type KyYardStatus, type LastResult, type SilenceFor, type Suggestion, type Target, type TargetEvent, type TargetInput,
 } from '../monitor';
 import type { PageUser } from './Status';
@@ -111,8 +111,11 @@ export const AppDetail: React.FC<AppDetailProps> = ({ id, user, onChanged }) => 
   const failing = target.enabled && !!target.last_polled_at && target.state !== 'ok';
   const silenced = isSilenced(target);
   // The reason leads: the worst check the app reported, else the poll's own cause.
-  const worst = last?.checks?.find((c) => c.status === 'down') ?? last?.checks?.find((c) => c.status === 'degraded');
-  const reason = worst ? `${worst.name}: ${worst.reason || worst.status}` : target.cause || last?.cause || '';
+  // Unhealthy checks first; the reason that leads is the worst one, else the poll's own cause.
+  const order: Record<string, number> = { down: 0, degraded: 1, ok: 2 };
+  const checks = [...(last?.checks ?? [])].sort((a, b) => (order[a.status] ?? 2) - (order[b.status] ?? 2));
+  const worst = checks.find((c) => c.status !== 'ok');
+  const reason = worst ? `${worst.name}: ${worst.reason || stateWord(worst.status)}` : causeLabel(target.cause || last?.cause);
   const forLabel = { ok: 'Up for', degraded: 'Degraded for', down: 'Down for', pending: 'Pending for', paused: 'Paused for' }[cls] ?? 'For';
   const yardSection = <KyYardFacts facts={facts} link={target.container} paired={!!yard?.paired} pending={!!yard && kyYardPending(yard)} isAdmin={isAdmin} />;
   return (
@@ -126,7 +129,7 @@ export const AppDetail: React.FC<AppDetailProps> = ({ id, user, onChanged }) => 
       <section className={`detail-state detail-${cls}`} aria-label="Current state">
         <p className="detail-headline">
           <span className={`dot dot-${cls}`} aria-hidden="true" />
-          <strong className={`state-${cls} cap`}>{stateLabel(target)}</strong>
+          <strong className={`state-${cls}`}>{stateLabel(target)}</strong>
           {!target.last_polled_at ? <span>awaiting first check</span> : target.state === 'pending' && <span>not yet classified</span>}
           {failing && reason && <span className="detail-reason">{reason}</span>}
         </p>
@@ -135,14 +138,14 @@ export const AppDetail: React.FC<AppDetailProps> = ({ id, user, onChanged }) => 
           <div><dt>Last checked</dt><dd>{target.last_polled_at ? `${sinceLabel(target.last_polled_at)} ago` : 'Not yet'}</dd>
             {target.last_polled_at && <dd className="detail-stat-note">{target.last_latency_ms} ms</dd>}</div>
           <div><dt>Incidents in 24h</dt><dd>{target.incidents_24h ?? 0}</dd>
-            <dd className="detail-stat-note">{target.uptime_24h == null ? 'no uptime yet' : `${uptimeLabel(target.uptime_24h)} uptime`}</dd></div>
+            <dd className="detail-stat-note">{target.uptime_24h == null ? 'no uptime yet' : `${uptimeLabel(target.uptime_24h)} uptime (24 h)`}</dd></div>
         </dl>
         {(failing || silenced || isAdmin) && (
           <div className="detail-incident">
             {failing && (
               <div className="detail-incident-facts">
-                <p className="dr-mono">GET {target.url} → {target.cause || last?.cause || last?.state || 'unknown'}</p>
-                <p>Since {timeLabel(target.state_since)} · last tried {timeLabel(target.last_polled_at)} ({target.last_latency_ms} ms)</p>
+                <p className="dr-mono">GET {target.url} → {causeLabel(target.cause || last?.cause) || stateWord(last?.state ?? 'unknown')}</p>
+                <p>Since {timeLabel(target.state_since)}</p>
               </div>
             )}
             {silenced && (
@@ -164,22 +167,20 @@ export const AppDetail: React.FC<AppDetailProps> = ({ id, user, onChanged }) => 
       </section>
 
       <div className="dr-two app-detail-diagnostics">
-        <div className="dr-section">
-          <h2>Checks</h2>
-          {last?.checks && last.checks.length > 0 ? (
+        {checks.length > 0 && (
+          <div className="dr-section">
+            <h2>Checks</h2>
             <div className="dr-checks">
-              {last.checks.map((c) => (
+              {checks.map((c) => (
                 <div key={c.name} className="dr-check">
                   <span className={`dot dot-${c.status}`} aria-hidden="true" />
                   <span className="dr-mono">{c.name}</span>
-                  <span className={`state-${c.status}`}>{c.status}{c.reason ? ` · ${c.reason}` : ''}</span>
+                  <span className={`state-${c.status}`}>{stateWord(c.status)}{c.reason ? ` · ${c.reason}` : ''}</span>
                 </div>
               ))}
             </div>
-          ) : (
-            <p className="dr-hint">{last?.basic ? 'This app answers with a plain OK and reports no checks.' : 'No checks reported yet.'}</p>
-          )}
-        </div>
+          </div>
+        )}
         <div className="dr-section">
           <h2>Settings</h2>
           <div className="dr-facts">
@@ -200,8 +201,8 @@ export const AppDetail: React.FC<AppDetailProps> = ({ id, user, onChanged }) => 
                 {events.map((e) => (
                   <tr key={e.id} role="row">
                     <td role="cell" data-label="Time">{timeLabel(e.at)}</td>
-                    <td role="cell" data-label="Change" className={`state-${e.to}`}>{e.reminder ? `still ${e.to} (reminder)` : `${e.from} → ${e.to}`}</td>
-                    <td role="cell" data-label="Reason" className="dr-mono">{e.cause || '—'}</td>
+                    <td role="cell" data-label="Change" className={`state-${e.to}`}>{e.reminder ? `Still ${stateWord(e.to)} (reminder)` : `${stateWord(e.from)} → ${stateWord(e.to)}`}</td>
+                    <td role="cell" data-label="Reason" className="dr-mono">{causeLabel(e.cause) || '—'}</td>
                     <td role="cell" data-label="Delivery">{e.notified ? 'sent' : e.notify_error ? `failed: ${e.notify_error}` : 'not sent'}</td>
                   </tr>
                 ))}

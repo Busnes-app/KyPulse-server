@@ -42,7 +42,7 @@ describe('Status', () => {
     ]);
     expect(tiles[0].getAttribute('href')).toBe('#/apps/tgt_KyVault');
     expect(tiles[0].querySelector('.dot-down')).toBeTruthy();
-    expect(tiles[2].textContent).toContain('ok (basic)');
+    expect(tiles[2].textContent).toContain('OK (basic)');
     expect(screen.queryByRole('button', { name: /Add app/ })).toBeNull();
   });
 
@@ -56,7 +56,7 @@ describe('Status', () => {
     const row = await screen.findByRole('link', { name: /KyVault/ });
     expect(row.textContent).toContain('10.0.0.5:8080/healthz');
     expect(row.textContent).not.toContain('http://');
-    expect(row.textContent).toContain('down · status_503');
+    expect(row.textContent).toContain('Down · HTTP 503');
     expect(row.textContent).toContain('99.9%');
     expect(row.textContent).toMatch(/1\ds ago/);
     expect(row.textContent).toContain('30 ms');

@@ -35,7 +35,7 @@ Design authority: `docs/superpowers/specs/2026-09-26-kypulse-design.md`. Plans l
   suite-wide `KY_LOG_LEVEL`. The documented Go runtime profile uses `GODEBUG`.
 - Two roles, `admin` and `viewer`; the store refuses anything else and identity providers map
   through `sso.RoleFor`. Every admin-only route answers 403 to a viewer. A viewer sees Status,
-  Alerts, app detail pages and Settings & DB (read-only, no webhook form); Backup and every
+  Alerts, app detail pages and Settings (read-only, no webhook form); Backup and every
   write are admin-only.
 - Every process line is a JSON record on stderr through `ky-primitives/logging`; there is no
   log file and no log socket.
