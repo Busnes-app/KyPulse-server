@@ -1,15 +1,14 @@
 import { Check } from 'lucide-react';
 import { findTheme } from '../ky-ui/themes';
 import { THEME_CHOICES, applyTheme, useTheme } from '../theme';
-import { PageHead } from '../components/PageHead';
 
 // One native radio group across the pairs: arrow keys move through every choice.
 export function Appearance() {
   const theme = useTheme();
   return (
-    <div className="dr-page">
-      <PageHead title="Appearance"
-        lede="Pick a palette and how it handles light and dark. Match system switches with your device’s setting; Light or Dark keeps one. Your choice applies straight away and is saved in this browser only." />
+    <>
+      {/* A Settings tab: the Settings page head sits above, so the description is the tab's intro. */}
+      <p className="settings-intro">Pick a palette and how it handles light and dark. Match system switches with your device’s setting; Light or Dark keeps one. Your choice applies straight away and is saved in this browser only.</p>
       <fieldset className="ky-appearance">
         <legend className="ky-appearance-legend">Theme</legend>
         <div className="ky-appearance-grid appearance-pairs">
@@ -34,6 +33,6 @@ export function Appearance() {
           ))}
         </div>
       </fieldset>
-    </div>
+    </>
   );
 }

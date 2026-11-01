@@ -101,6 +101,7 @@ test('status, alerts, detail page and the alert bar in every state', async ({ pa
   await page.screenshot({ path: testInfo.outputPath('alerts.png'), fullPage: true });
   // Webhook that fails → "Alerts not being delivered".
   await page.getByRole('navigation', { name: 'Primary' }).getByRole('link', { name: 'Settings', exact: true }).click();
+  await page.getByRole('navigation', { name: 'Settings sections' }).getByRole('link', { name: 'Server' }).click();
   await page.getByLabel('Preset').selectOption('gotify');
   await page.getByLabel('URL', { exact: true }).fill(base);
   await page.getByRole('button', { name: 'Save webhook' }).click();

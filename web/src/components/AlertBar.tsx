@@ -24,14 +24,14 @@ export const AlertBar: React.FC<AlertBarProps> = ({ status, loading, isAdmin }) 
   const delivery = webhookFailing(status) ? (
     <div className="ky-status" data-ky-status="warning">
       <Send aria-hidden="true" />
-      <span>Alerts not being delivered ({status.webhook.last?.error || 'failed'}) · {isAdmin ? <a href={hrefFor('/settings')}>Settings</a> : 'tell an admin'}</span>
+      <span>Alerts not being delivered ({status.webhook.last?.error || 'failed'}) · {isAdmin ? <a href={hrefFor('/settings/server')}>Settings</a> : 'tell an admin'}</span>
     </div>
   ) : null;
   const yardPending = !!status.kyyard?.paired && kyYardPending(status.kyyard);
   const yard = status.kyyard?.paired && status.kyyard.stale && !yardPending ? (
     <div className="ky-status" data-ky-status="warning">
       <Database aria-hidden="true" />
-      <span>KyYard data stale{status.kyyard.error ? ` (${status.kyyard.error})` : ''}{status.kyyard.fetched_at ? `, last pull ${sinceLabel(status.kyyard.fetched_at)} ago` : ', never pulled'} · {isAdmin ? <a href={hrefFor('/settings')}>Settings</a> : 'tell an admin'}</span>
+      <span>KyYard data stale{status.kyyard.error ? ` (${status.kyyard.error})` : ''}{status.kyyard.fetched_at ? `, last pull ${sinceLabel(status.kyyard.fetched_at)} ago` : ', never pulled'} · {isAdmin ? <a href={hrefFor('/settings/server')}>Settings</a> : 'tell an admin'}</span>
     </div>
   ) : yardPending ? (
     <div className="alert-bar-line">

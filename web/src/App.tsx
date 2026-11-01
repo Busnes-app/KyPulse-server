@@ -12,7 +12,6 @@ import { Login } from './pages/Login';
 import { ChangePassword } from './pages/ChangePassword';
 import { Backup } from './pages/Backup';
 import { Settings } from './pages/Settings';
-import { Appearance } from './pages/Appearance';
 import './styles/theme.css';
 import './ky-ui/tokens.css';
 import './ky-ui/navigation.css';
@@ -20,7 +19,7 @@ import './ky-ui/shell.css';
 import './ky-ui/appearance.css';
 import './ky-ui/appearance-themes.css';
 import { secureFetch } from './api';
-import { navigate, useHashRoute } from './router';
+import { movedRoute, navigate, redirect, settingsSections, useHashRoute, type SettingsSection } from './router';
 import { ApiError, getStatus, type StatusSummary } from './monitor';
 
 // statusEvery is how often the alert bar re-reads /api/status.
@@ -90,9 +89,12 @@ export const App: React.FC = () => {
   const isAdmin = user?.role === 'admin';
   useEffect(() => {
     if (!signedIn) return;
-    const known = ['status', 'alerts', 'apps', 'settings', 'appearance', 'backup', 'logs', 'activity'];
+    const moved = movedRoute(route.path);
+    if (moved) { redirect(moved); return; }
+    const known = ['status', 'alerts', 'apps', 'settings', 'backup', 'logs', 'activity'];
     const head = route.parts[0] ?? 'status';
-    if (!known.includes(head) || (['backup', 'logs', 'activity'].includes(head) && !isAdmin) || (head === 'apps' && route.parts.length !== 2)) navigate('/status');
+    const badSection = head === 'settings' && (route.parts.length !== 2 || !settingsSections.some((s) => s.id === route.parts[1]));
+    if (!known.includes(head) || (['backup', 'logs', 'activity'].includes(head) && !isAdmin) || (head === 'apps' && route.parts.length !== 2) || badSection) redirect('/status');
   }, [signedIn, isAdmin, route]);
 
   useEffect(() => {
@@ -159,8 +161,9 @@ export const App: React.FC = () => {
         {head === 'logs' && isAdmin && <Logs user={user} />}
         {head === 'activity' && isAdmin && <Activity user={user} />}
         {head === 'backup' && isAdmin && <Backup />}
-        {head === 'appearance' && <Appearance />}
-        {head === 'settings' && <Settings settings={settings} user={user} onChanged={refreshStatus} onTOTPChange={(totp_enabled) => setUser((u: any) => (u ? { ...u, totp_enabled } : u))} />}
+        {head === 'settings' && settingsSections.some((s) => s.id === route.parts[1]) && (
+          <Settings section={route.parts[1] as SettingsSection} settings={settings} user={user} onChanged={refreshStatus} onTOTPChange={(totp_enabled) => setUser((u: any) => (u ? { ...u, totp_enabled } : u))} />
+        )}
         </PageBanner.Provider>
         <LicenseFooter className="ky-content-foot" appName={brand(settings?.app_name)} version={status?.version} />
       </main>

@@ -54,7 +54,7 @@ test('admin logs, activity, pairing, filters, retry and viewer boundaries', asyn
     expect(pairing.status()).toBe(200);
     await expect.poll(async () => (await (await page.request.get('/api/kyyard/containers')).json()).length).toBe(2);
     // Leave Status so its suggestions reload after this API-side pairing.
-    await page.goto('/#/settings');
+    await page.goto('/#/settings/server');
     await expect(page.getByRole('form', { name: 'Alert webhook' })).toBeVisible();
     await page.goto('/#/status');
     await page.getByRole('button', { name: 'Add app' }).click();
@@ -161,7 +161,7 @@ test('admin logs, activity, pairing, filters, retry and viewer boundaries', asyn
     await page.getByRole('button', { name: 'Apply', exact: true }).click();
     await expect(page.getByText(/no audit events: not on shared logging/)).toBeVisible();
     await expect(page.getByText(/Within the retained 7-day window/)).toBeVisible();
-    await page.goto('/#/settings');
+    await page.goto('/#/settings/server');
     await expect(page.getByRole('region', { name: 'KyYard collection' })).toContainText('audit_cursor_unsupported');
     await page.goto(`/#/apps/${target.id}`);
     await expect(page.getByRole('region', { name: 'Recent logs' }).locator('li')).toHaveCount(20);

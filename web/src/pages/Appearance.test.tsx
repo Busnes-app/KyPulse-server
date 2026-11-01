@@ -20,7 +20,6 @@ describe('Appearance', () => {
 
   it('offers six pairs with Match system, Light and Dark in one radio group, Busnes Match system by default', () => {
     render(<Appearance />);
-    expect(screen.getByRole('heading', { level: 1, name: 'Appearance' })).toBeTruthy();
     expect(screen.getByRole('group', { name: 'Theme' }).querySelectorAll('[role="group"]')).toHaveLength(6);
     const radios = screen.getAllByRole('radio') as HTMLInputElement[];
     expect(radios).toHaveLength(18);

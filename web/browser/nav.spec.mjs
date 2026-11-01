@@ -62,7 +62,7 @@ test('phone navigation keeps the current row visible after the font loads', asyn
 });
 
 // Phones scroll the Primary navigation sideways. Loading a deep link (here a reload of
-// #/appearance) must bring the current row into view, without moving the page or focus.
+// #/settings/appearance, the last row) must bring the current row into view, without moving the page or focus.
 test('phone navigation reveals the current row on a deep link', async ({ page }, testInfo) => {
   test.skip(testInfo.project.use.viewport.width > 390, 'phone layout only');
   await page.goto('/');
@@ -71,9 +71,9 @@ test('phone navigation reveals the current row on a deep link', async ({ page },
   await page.getByRole('button', { name: 'Sign in', exact: true }).click();
   const nav = page.getByRole('navigation', { name: 'Primary' });
   await expect(nav).toBeVisible();
-  await page.goto('/#/appearance');
+  await page.goto('/#/settings/appearance');
   await page.reload();
-  await expect(nav.locator('[aria-current="page"]')).toHaveText('Appearance');
+  await expect(nav.locator('[aria-current="page"]')).toHaveText('Settings');
   await expect.poll(() => nav.evaluate(el => {
     const box = el.getBoundingClientRect();
     const item = el.querySelector('[aria-current="page"]').getBoundingClientRect();
@@ -88,8 +88,8 @@ test('phone navigation reveals the current row on a deep link', async ({ page },
   await expect(nav.locator('[aria-current="page"]')).toHaveText('Status');
   await page.locator('main').evaluate(el => el.style.setProperty('min-height', '400vh'));
   await page.evaluate(() => scrollTo(0, 600));
-  await page.evaluate(() => { location.hash = '#/appearance'; });
-  await expect(nav.locator('[aria-current="page"]')).toHaveText('Appearance');
+  await page.evaluate(() => { location.hash = '#/settings/appearance'; });
+  await expect(nav.locator('[aria-current="page"]')).toHaveText('Settings');
   await expect.poll(() => nav.evaluate(el => {
     const box = el.getBoundingClientRect();
     const item = el.querySelector('[aria-current="page"]').getBoundingClientRect();

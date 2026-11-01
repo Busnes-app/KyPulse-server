@@ -41,8 +41,10 @@ test('production CSP, worker, themes, keyboard and responsive shell', async ({ p
   await fits(page);
   // The Appearance page is the only theme control in the signed-in shell.
   await expect(page.locator('select[aria-label="Color theme"]')).toHaveCount(0);
+  // Appearance is a Settings tab: the Settings row, then the tab.
   const openAppearance = async p => {
-    await p.getByRole('navigation', { name: 'Primary' }).getByRole('link', { name: 'Appearance' }).click();
+    await p.getByRole('navigation', { name: 'Primary' }).getByRole('link', { name: 'Settings', exact: true }).click();
+    await p.getByRole('navigation', { name: 'Settings sections' }).getByRole('link', { name: 'Appearance' }).click();
     await p.getByRole('group', { name: 'Theme' }).waitFor();
   };
   const theme = (p, id) => p.getByRole('group', { name: 'Theme' }).locator(`input[value="${id}"]`);
@@ -69,12 +71,33 @@ test('production CSP, worker, themes, keyboard and responsive shell', async ({ p
   await page.keyboard.press('Tab');
   await expect(nav.getByRole('link').nth(1)).toBeFocused();
   await expect(nav.getByRole('link').nth(1)).toHaveCSS('outline-style', 'solid');
+  // Settings is the one row for Account, Appearance and Server; Appearance is no longer a row.
+  await expect(nav.getByRole('link', { name: 'Appearance' })).toHaveCount(0);
   await nav.getByRole('link', { name: 'Settings', exact: true }).click();
+  await expect(page).toHaveURL(/#\/settings\/account$/);
   await expect(nav.getByRole('link', { name: 'Settings', exact: true })).toHaveAttribute('aria-current', 'page');
   await expect(page.getByRole('heading', { name: 'Settings', exact: true })).toBeVisible();
+  const tabs = page.getByRole('navigation', { name: 'Settings sections' });
+  await expect(tabs.getByRole('link')).toHaveText(['Account', 'Appearance', 'Server']);
+  await expect(tabs.locator('[aria-current="page"]')).toHaveText('Account');
+  await expect(page.getByRole('region', { name: 'Signed in as' })).toBeVisible();
   await fits(page);
+  await tabs.getByRole('link', { name: 'Server' }).click();
+  await expect(page.getByRole('form', { name: 'Alert webhook' })).toBeVisible();
+  await fits(page);
+  // Back returns to the previous tab; the old Appearance route opens its tab in place.
+  await page.goBack();
+  await expect(tabs.locator('[aria-current="page"]')).toHaveText('Account');
+  await page.goto('/#/appearance');
+  await expect(page).toHaveURL(/#\/settings\/appearance$/);
+  await expect(tabs.locator('[aria-current="page"]')).toHaveText('Appearance');
+  // Sign out is an icon button named by its label, never the written words.
+  const signOut = page.locator('.ky-icon-button[aria-label="Sign out"]:visible');
+  await expect(signOut).toHaveCount(1);
+  await expect(signOut).toHaveAttribute('title', 'Sign out');
+  await expect(signOut).toHaveText('');
+  await expect(page.locator('.ky-sidebar')).not.toContainText('Sign out');
   // Appearance: six pairs of Match system / Light / Dark in one radio group, chosen by keyboard.
-  await nav.getByRole('link', { name: 'Appearance' }).click();
   const picker = page.getByRole('group', { name: 'Theme' });
   const mode = (pair, label) => picker.getByRole('group', { name: pair }).getByRole('radio', { name: label });
   await expect(picker.getByRole('radio')).toHaveCount(18);

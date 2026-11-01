@@ -3,7 +3,7 @@ import { hrefFor } from '../router';
 import { getKyYard, sinceLabel, type KyYardStatus } from '../monitor';
 
 export function KyYardCollectors({ status }: { status: KyYardStatus }) {
-  if (!status.paired) return <p className="dr-hint"><span>KyYard is not paired. <a href={hrefFor('/settings')}>Pair it in Settings</a> to collect linked container logs and activity.</span></p>;
+  if (!status.paired) return <p className="dr-hint"><span>KyYard is not paired. <a href={hrefFor('/settings/server')}>Pair it in Settings</a> to collect linked container logs and activity.</span></p>;
   const collectors = [
     { label: 'Inventory', state: status.inventory },
     { label: 'Container logs', state: status.logs },
