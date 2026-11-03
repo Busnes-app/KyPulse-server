@@ -18,7 +18,17 @@ import (
 
 var evSSOFailed = logging.DeclareEvent("sso_failed", "SSO sign-in failed", slog.LevelWarn)
 
+// ssoOn is the one rule for KySignOn sign-in: enabled and an issuer set. The login page
+// offers the button on the same rule, and both sign-in routes refuse without it.
+func (s *Server) ssoOn() bool {
+	return s.config.SSO.Enabled && s.config.SSO.KySignOnIssuer != ""
+}
+
 func (s *Server) handleKySignOnLogin(w http.ResponseWriter, r *http.Request) {
+	if !s.ssoOn() {
+		s.writeError(w, http.StatusNotFound, "SSO is not enabled")
+		return
+	}
 	state := crypto.RandomHex(16)
 	nonce := crypto.RandomHex(16)
 	verifier := oauth2.GenerateVerifier()
@@ -53,6 +63,10 @@ func (s *Server) setSSOCookie(w http.ResponseWriter, name, value string, maxAge 
 }
 
 func (s *Server) handleKySignOnCallback(w http.ResponseWriter, r *http.Request) {
+	if !s.ssoOn() {
+		s.writeError(w, http.StatusNotFound, "SSO is not enabled")
+		return
+	}
 	code := r.URL.Query().Get("code")
 	state := r.URL.Query().Get("state")
 

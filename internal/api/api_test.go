@@ -210,6 +210,15 @@ func TestSettingsOfferSSOOnlyWithAnIssuer(t *testing.T) {
 	if got := ssoEnabled(); got != false {
 		t.Errorf("disabled: sso_enabled = %v, want false", got)
 	}
+	// Turning SSO off must stop sign-in, not just hide the button.
+	srv, _, _ := setupTestServer(t)
+	for _, path := range []string{"/api/sso/kysignon/login", "/api/sso/kysignon/callback?code=c&state=s"} {
+		w := httptest.NewRecorder()
+		srv.ServeHTTP(w, httptest.NewRequest("GET", path, nil))
+		if w.Code != http.StatusNotFound {
+			t.Errorf("%s with SSO disabled: %d %s", path, w.Code, w.Body.String())
+		}
+	}
 }
 
 func TestLoginRejectsUnparseableStoredHash(t *testing.T) {
