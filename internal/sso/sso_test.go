@@ -144,6 +144,66 @@ func TestKySignOnWebhookRefusesReplay(t *testing.T) {
 	}
 }
 
+// A delayed older delivery must not undo a newer one: the promotion sent before a demotion
+// but delivered after it is acknowledged and changes nothing.
+func TestKySignOnWebhookOrdersPerSubject(t *testing.T) {
+	st, err := store.Open(context.Background(), testdb.Config(t))
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer st.Close()
+	const secret = "webhook-secret-999"
+	client := sso.NewKySignOnClient(config.SSOConfig{KySignOnHMACSecret: secret}, st)
+	send := func(p sso.KySignOnSyncPayload) error {
+		body, _ := json.Marshal(p)
+		return client.HandleSyncWebhook(context.Background(), body, crypto.ComputeHMACSHA256(body, secret))
+	}
+	now := time.Now().Unix()
+	promoted := sso.KySignOnSyncPayload{Event: "user.updated", ID: "ext-order", Username: "ann", Role: "admin", Status: "active", Timestamp: now - 60}
+	demoted := promoted
+	demoted.Role, demoted.Timestamp = "viewer", now
+	if err := send(demoted); err != nil {
+		t.Fatal(err)
+	}
+	if err := send(promoted); err != nil {
+		t.Fatalf("stale delivery should be acknowledged: %v", err)
+	}
+	u, err := st.Users().GetUserBySSO(context.Background(), "kysignon", "ext-order")
+	if err != nil {
+		t.Fatal(err)
+	}
+	if u.Role != store.RoleViewer {
+		t.Fatalf("older delivery restored role %q", u.Role)
+	}
+	// Another subject is ordered on its own.
+	other := promoted
+	other.ID, other.Username = "ext-other", "bea"
+	if err := send(other); err != nil {
+		t.Fatal(err)
+	}
+	if u, _ := st.Users().GetUserBySSO(context.Background(), "kysignon", "ext-other"); u == nil || u.Role != store.RoleAdmin {
+		t.Fatalf("other subject not applied: %+v", u)
+	}
+}
+
+// Deprovisioning that cannot read the store fails, so the provider retries it, instead of
+// being acknowledged as "user not here" and leaving the account active.
+func TestKySignOnDeprovisioningFailsOnStoreError(t *testing.T) {
+	st, err := store.Open(context.Background(), testdb.Config(t))
+	if err != nil {
+		t.Fatal(err)
+	}
+	const secret = "webhook-secret-999"
+	client := sso.NewKySignOnClient(config.SSOConfig{KySignOnHMACSecret: secret}, st)
+	st.Close()
+	for _, event := range []string{"user.deactivated", "user.deleted"} {
+		body, _ := json.Marshal(sso.KySignOnSyncPayload{Event: event, ID: "ext-gone", Timestamp: time.Now().Unix()})
+		if err := client.HandleSyncWebhook(context.Background(), body, crypto.ComputeHMACSHA256(body, secret)); err == nil {
+			t.Fatalf("%s acknowledged on a store error", event)
+		}
+	}
+}
+
 func TestSAMLServiceProvider(t *testing.T) {
 	sp := sso.NewSAMLServiceProvider("https://app.busnes.app/saml/metadata", "https://app.busnes.app/saml/acs")
 
