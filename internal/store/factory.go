@@ -40,12 +40,18 @@ func openSQLite(ctx context.Context, dsn string, auditKey []byte) (Store, error)
 		}
 	}
 
-	if !strings.Contains(dsn, "_pragma") {
+	// Add each default the DSN does not set itself: one custom pragma must not drop the rest,
+	// least of all foreign_keys, which the schema's ON DELETE rules depend on.
+	for _, p := range []string{"busy_timeout(5000)", "journal_mode(WAL)", "foreign_keys(ON)", "synchronous(NORMAL)"} {
+		name, _, _ := strings.Cut(p, "(")
+		if strings.Contains(dsn, "_pragma="+name+"(") {
+			continue
+		}
 		delim := "?"
 		if strings.Contains(dsn, "?") {
 			delim = "&"
 		}
-		dsn = fmt.Sprintf("%s%s_pragma=busy_timeout(5000)&_pragma=journal_mode(WAL)&_pragma=foreign_keys(ON)&_pragma=synchronous(NORMAL)", dsn, delim)
+		dsn += delim + "_pragma=" + p
 	}
 
 	db, err := sql.Open("sqlite", dsn)
