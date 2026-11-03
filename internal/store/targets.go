@@ -107,7 +107,8 @@ func (t *targetStore) ListTargets(ctx context.Context) ([]*Target, error) {
 
 func (t *targetStore) UpdateTarget(ctx context.Context, tg *Target) error {
 	tg.UpdatedAt = time.Now().UTC()
-	// A new URL is a new endpoint: its health starts over instead of inheriting streaks.
+	// A new URL is a new endpoint: its health starts over instead of inheriting streaks, and an
+	// "until fixed" silence ends, since its first ok is not a recovery that would clear it.
 	// SET expressions read the old row, so "url <> ?" compares against the stored URL.
 	q := t.store.rebind(`UPDATE targets SET
     track_json = CASE WHEN url <> ? THEN '' ELSE track_json END,
@@ -117,9 +118,10 @@ func (t *targetStore) UpdateTarget(ctx context.Context, tg *Target) error {
     state = CASE WHEN url <> ? THEN 'pending' ELSE state END,
     state_since = CASE WHEN url <> ? THEN ? ELSE state_since END,
     cause = CASE WHEN url <> ? THEN '' ELSE cause END,
+    until_fixed = CASE WHEN url <> ? THEN FALSE ELSE until_fixed END,
     name = ?, url = ?, interval_sec = ?, enabled = ?, container = ?, updated_at = ? WHERE id = ?`)
 	u := tg.URL
-	res, err := t.store.db.ExecContext(ctx, q, u, u, u, u, u, u, tg.UpdatedAt, u,
+	res, err := t.store.db.ExecContext(ctx, q, u, u, u, u, u, u, tg.UpdatedAt, u, u,
 		tg.Name, tg.URL, tg.IntervalSec, tg.Enabled, tg.Container, tg.UpdatedAt, tg.ID)
 	if err != nil {
 		if strings.Contains(err.Error(), "UNIQUE") || strings.Contains(err.Error(), "duplicate key") {

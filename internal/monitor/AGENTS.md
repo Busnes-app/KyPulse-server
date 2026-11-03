@@ -7,7 +7,7 @@ Glues the poller, the alerts state machine and the notifier to the store: what i
 Owns `Service` (Due, Observe, Recent, Start, Drain, DueFailed, Silence, SendTest), `Webhooks` (sealed webhook config and delivery status), the `alerts.Track`/`poller.Result` JSON stored on target rows, and the monitoring log events (`target_state_changed`, `alert_sent`, `alert_send_failed`, `alert_dropped`, `alert_cancelled`, `poll_store_error`, `poll_due_failed`).
 
 ## Local Contracts
-- Observe writes the poll result and the transition, then enqueues the webhook; a failed send is recorded on the event and in `alert_webhook_status`, never lost.
+- Observe writes the poll result and the transition, then enqueues the webhook; a failed send is recorded on the event and in `alert_webhook_status`, never lost. An observation whose URL no longer matches the stored target (edited while the poll was in flight) is dropped. Editing the URL also ends an "until fixed" silence.
 - The same serial sender checks one durable pending offboarding failure per second. Native
   ingestion creates these events independently of poll health; restart consumes retained
   pending work. Timed/until-fixed silence and disabled targets retain the event with

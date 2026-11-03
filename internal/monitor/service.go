@@ -260,6 +260,9 @@ func (s *Service) Observe(ctx context.Context, o poller.Observation) {
 	if err != nil {
 		return // deleted while in flight
 	}
+	if tg.URL != o.Target.URL {
+		return // the URL was edited while this poll was in flight: it says nothing about the new one
+	}
 	before := Track(tg)
 	track, tr := alerts.Next(before, o.Result, o.At)
 	decision, track := alerts.Decide(track, tr, o.At)

@@ -92,7 +92,11 @@ func observe(svc *monitor.Service, id string, state poller.State, at time.Time) 
 }
 
 func observeAsync(svc *monitor.Service, id string, state poller.State, at time.Time) {
-	svc.Observe(context.Background(), poller.Observation{Target: poller.Target{ID: id, Name: "KyVault"},
+	var url string
+	if tg, err := svc.Store.Targets().GetTarget(context.Background(), id); err == nil {
+		url = tg.URL // the poller polls the stored URL
+	}
+	svc.Observe(context.Background(), poller.Observation{Target: poller.Target{ID: id, Name: "KyVault", URL: url},
 		Result: poller.Result{State: state, Cause: "refused"}, At: at, Latency: 12 * time.Millisecond})
 }
 
@@ -478,6 +482,51 @@ func TestObserveIgnoresADeletedTarget(t *testing.T) {
 	observe(svc, "gone", poller.Down, *now) // must not panic or send
 	if poster.calls != 0 {
 		t.Fatal("sent for a target that does not exist")
+	}
+}
+
+// A poll of the old URL that lands after an edit must not classify the new endpoint.
+func TestObserveIgnoresAPollOfAnEditedURL(t *testing.T) {
+	svc, st, _, now := newService(t)
+	ctx := context.Background()
+	_ = st.Targets().CreateTarget(ctx, &store.Target{ID: "a", Name: "a", URL: "https://old/", IntervalSec: 30, Enabled: true})
+	tg, _ := st.Targets().GetTarget(ctx, "a")
+	tg.URL = "https://new/"
+	if err := st.Targets().UpdateTarget(ctx, tg); err != nil {
+		t.Fatal(err)
+	}
+	svc.Observe(ctx, poller.Observation{Target: poller.Target{ID: "a", Name: "a", URL: "https://old/"},
+		Result: poller.Result{State: poller.OK}, At: *now, Latency: time.Millisecond})
+	monitor.Flush(svc)
+	tg, _ = st.Targets().GetTarget(ctx, "a")
+	if tg.State != "pending" || tg.LastPolledAt != nil {
+		t.Fatalf("stale poll classified the new URL: state=%s polled=%v", tg.State, tg.LastPolledAt)
+	}
+}
+
+// "Until fixed" on a down target ends when its URL is corrected: otherwise the new endpoint's
+// first ok (pending -> ok, not a recovery) keeps the silence and its next outage is never sent.
+func TestURLEditEndsUntilFixedSilence(t *testing.T) {
+	svc, st, poster, now := newService(t)
+	ctx := context.Background()
+	oneDownFromDown(t, st, "a", *now)
+	observe(svc, "a", poller.Down, *now)
+	if err := svc.Silence(ctx, "a", 0, true); err != nil {
+		t.Fatal(err)
+	}
+	tg, _ := st.Targets().GetTarget(ctx, "a")
+	tg.URL = "https://fixed/"
+	if err := st.Targets().UpdateTarget(ctx, tg); err != nil {
+		t.Fatal(err)
+	}
+	calls := poster.calls
+	at := now.Add(time.Minute)
+	observe(svc, "a", poller.OK, at)
+	for i := 1; i <= 3; i++ {
+		observe(svc, "a", poller.Down, at.Add(time.Duration(i)*30*time.Second))
+	}
+	if poster.calls != calls+1 {
+		t.Fatalf("outage after the URL fix was not sent: %d -> %d", calls, poster.calls)
 	}
 }
 
