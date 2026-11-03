@@ -72,6 +72,7 @@ Owns user interface components, service worker caching, PWA installation manifes
 - `src/ky-ui/` is generated from Busnes-app/ky-ui, pinned by `VERSION` file hashes. Change shared colors, navigation states and storage helpers upstream, then run its consumer sync with an explicit worktree map; do not hand-edit vendored files.
 - Shell geometry (sidebar, brand, 40px navigation rows, content inset) is ky-ui's `shell.css` and `navigation.css`; control rows, radius and type read ky-ui tokens in the suite-shell block at the end of `src/styles/theme.css`.
 - Shared files include `appearance.css`, `appearance-themes.css` and `themes.js`; the catalog and palette values come only from there. Products own layout, routes and saved choice keys. Busnes aliases consume shared tokens; mark primary navigation with `ky-nav-item` while preserving current-page semantics.
+- `src/main.tsx` starts ky-ui's `watchForUpdate` (the update notice). `web/embed.go` sends `index.html`, other HTML entries and the SPA fallback with `Cache-Control: no-cache` (a stricter header set earlier stays), so the notice and Reload see the current build; `web/embed_test.go` checks it.
 - Verify vendored files with `node src/ky-ui/check-vendor.mjs` from this document's directory. Builds/CI run that check. Rendered evidence and capture limitations are recorded in the repository-root `UI-VERIFICATION.md`; the fleet Appearance stages (screenshots, manifests with hashes and behaviour checks, results CSV, reproducible `capture.mjs`) live in `docs/ui-fleet-2026-10-26/`.
 
 ## Child DOX Index

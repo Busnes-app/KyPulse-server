@@ -71,3 +71,8 @@ App detail: the Status back link uses page ink, settings facts are flat label/va
 ## Review follow-up R2 (2026-10-26)
 
 The flat `.dr-facts` rows had moved Backup's status badges (None, Not paired, 0 of 7) under their labels at 1280px. The rows now share one label column, at least 8rem and as wide as the widest label with its badge, so every badge sits beside its label while app detail keeps its 8rem column and value edge. Before/after captures of Backup and app detail (light/dark × 1280×900/390×844), manifests and the reviewer's harness rerun (failing before, passing after) are in [docs/ui-review-followups-2026-10-26](docs/ui-review-followups-2026-10-26/README.md).
+
+## Stale tab after an upgrade — 2026-11-02
+
+The ky-ui update notice ("<app> was updated. Reload to use the new version.", Reload and Dismiss) is started from `web/src/main.tsx`; the entry document is never reused from a cache. Not captured in this repository: the notice is the shared ky-ui component, captured end to end (a real server upgrade under an open tab, 1440×900, Busnes Light and Dark) in KyIdentity and KyPost (`docs/ui-stale-tab-2026-11-02/`), and checked by ky-ui's `browser/update.spec.js` under a strict CSP at 390 and 1280 px. `check-vendor.mjs` passes and the web tests and build pass with Node 26.12.1.
+
