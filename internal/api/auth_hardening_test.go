@@ -87,23 +87,27 @@ func TestLoginDoesNotEnumerateAccounts(t *testing.T) {
 	}
 }
 
-// A botnet must not outrun the per-IP window on one account, a full IP limiter must not
-// reset the account window, and a locked account answers like any other rejection.
+// Ten wrong passwords lock the account for that client only (IPv6 by its /64): a full IP
+// limiter must not reset the window, a locked client answers like any other rejection, and
+// the owner signing in from another address is never locked out by someone else's guesses.
 func TestLoginPerAccountWindow(t *testing.T) {
 	srv, st, _ := setupTestServer(t)
 	createLocalUser(t, st, "usr_target", "target", "active")
 	for i := 1; i <= 10; i++ {
-		if w := loginFrom(t, srv, fmt.Sprintf("203.0.113.%d:1", i), "target", "WrongPassword123!"); w.Code != http.StatusUnauthorized {
+		if w := loginFrom(t, srv, fmt.Sprintf("[2001:db8:1:1::%x]:1", i), "target", "WrongPassword123!"); w.Code != http.StatusUnauthorized {
 			t.Fatalf("attempt %d: %d", i, w.Code)
 		}
 	}
 	for i := 0; i < api.AttemptsCapForTest+50; i++ {
 		api.AllowAttemptForTest(srv, "filler:"+strconv.Itoa(i), 3, 5*time.Minute)
 	}
-	locked := loginFrom(t, srv, "198.51.100.50:1", "target", "SuperSecretPass123!")
+	locked := loginFrom(t, srv, "[2001:db8:1:1::99]:1", "target", "SuperSecretPass123!")
 	wrong := loginFrom(t, srv, "198.51.100.51:1", "nobody", "SuperSecretPass123!")
 	if locked.Code != http.StatusUnauthorized || locked.Body.String() != wrong.Body.String() {
 		t.Fatalf("locked account: %d %s, unknown: %s", locked.Code, locked.Body.String(), wrong.Body.String())
+	}
+	if w := loginFrom(t, srv, "198.51.100.50:1", "target", "SuperSecretPass123!"); w.Code != http.StatusOK {
+		t.Fatalf("owner from another address locked out: %d %s", w.Code, w.Body.String())
 	}
 	if w := loginFrom(t, srv, "198.51.100.52:1", "other", "x"); w.Code != http.StatusUnauthorized {
 		t.Fatalf("other account affected: %d", w.Code)

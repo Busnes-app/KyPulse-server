@@ -92,9 +92,10 @@ func (s *Server) handleLogin(w http.ResponseWriter, r *http.Request) {
 		s.writeError(w, http.StatusInternalServerError, "Authentication error")
 		return
 	}
-	// Per account, so a botnet spread across many IPs cannot outrun the per-IP window. Only
-	// wrong passwords spend it, so signing in often never locks an account.
-	accountKey := "login-user:" + user.ID
+	// Per account and client (IPv6 by /64): one address cannot keep guessing past the per-IP
+	// window, and nobody elsewhere can lock the real owner out. Only wrong passwords spend it,
+	// so signing in often never locks an account.
+	accountKey := "login-user:" + user.ID + "@" + s.limitIP(r)
 	if !s.accountOpen(accountKey, 10) {
 		password.DummyVerify()
 		fail(user.ID, "account_rate_limit", http.StatusUnauthorized, loginFailed)
