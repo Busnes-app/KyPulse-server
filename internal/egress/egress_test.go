@@ -89,6 +89,32 @@ func TestGetReturnsTheBodyFromALANAddress(t *testing.T) {
 	}
 }
 
+// A name with a dead first address still reaches its live second one; refused addresses
+// are never dialled.
+func TestDialFallsBackToTheNextAllowedAddress(t *testing.T) {
+	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {}))
+	defer srv.Close()
+	var tried []string
+	lookup := func(context.Context, string, string) ([]net.IP, error) {
+		return []net.IP{net.ParseIP("127.0.0.1"), net.ParseIP("10.0.0.1"), net.ParseIP("10.0.0.2")}, nil
+	}
+	dial := func(ctx context.Context, network, addr string) (net.Conn, error) {
+		tried = append(tried, addr)
+		if strings.HasPrefix(addr, "10.0.0.1:") {
+			return nil, errors.New("connection refused")
+		}
+		return (&net.Dialer{}).DialContext(ctx, network, srv.Listener.Addr().String())
+	}
+	c := newClient(Options{AllowHTTP: true}, lookup, dial)
+	resp, err := c.Get(context.Background(), "http://multi.lan/healthz")
+	if err != nil || resp.StatusCode != 200 {
+		t.Fatalf("resp=%v err=%v", resp, err)
+	}
+	if strings.Join(tried, ",") != "10.0.0.1:80,10.0.0.2:80" {
+		t.Fatalf("dialled %v", tried)
+	}
+}
+
 func TestRedirectIsRefused(t *testing.T) {
 	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		http.Redirect(w, r, "http://evil.test/", http.StatusFound)
