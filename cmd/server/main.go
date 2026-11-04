@@ -345,7 +345,7 @@ func runDeposit() {
 	}
 	defer st.Close()
 
-	res, err := runBackup(ctx, cfg, st)
+	res, err := deposit(ctx, cfg, st)
 	recordRun(ctx, st, "cli", res, err)
 	if err != nil {
 		fatal("Backup: %v", err)
@@ -353,6 +353,15 @@ func runDeposit() {
 	if res.Receipt != nil {
 		log.Printf("✓ Capsule %s deposited at %s; digest %s", res.Manifest.CapsuleID, res.Receipt.DepositedAt.Format(time.RFC3339), res.Receipt.Digest)
 	}
+}
+
+// deposit is one CLI backup run with the installer's saved backup directory and retention
+// applied, as server startup applies them, so it never prunes copies the policy keeps.
+func deposit(ctx context.Context, cfg *config.Config, st store.Store) (recoveryclient.Result, error) {
+	if err := loadInstallerConfiguration(ctx, cfg, st); err != nil {
+		return recoveryclient.Result{}, fmt.Errorf("installer configuration invalid: %w", err)
+	}
+	return runBackup(ctx, cfg, st)
 }
 
 // runAuditVerify walks the whole audit chain against its anchor and exits non-zero when any
