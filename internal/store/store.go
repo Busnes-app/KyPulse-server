@@ -55,7 +55,12 @@ type UserStore interface {
 	GetUserByUsername(ctx context.Context, username string) (*User, error)
 	GetUserByEmail(ctx context.Context, email string) (*User, error)
 	GetUserBySSO(ctx context.Context, provider, subject string) (*User, error)
+	// UpdateUser returns ErrAlreadyExists when a changed username is a case variant of
+	// another user's.
 	UpdateUser(ctx context.Context, u *User) error
+	// UsernameClashes lists pairs of usernames that differ only in case. While any exist
+	// the case-insensitive unique index is not created; cmd/server logs them at start.
+	UsernameClashes(ctx context.Context) ([][]string, error)
 	// ChangeRole moves an active user from one role to another and deletes all of the
 	// user's sessions in one transaction. ErrAlreadyExists when the row moved on meanwhile
 	// (another role, or no longer active), so a concurrent deactivation is never undone.

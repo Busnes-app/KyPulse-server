@@ -43,11 +43,12 @@ Owns HTTP routing, request parsing, session cookie validation, CORS headers, and
   read collected logs/activity or administer sources.
 - `GET /api/backup/status` adds `last_run_error` while the most recent scheduled backup failed (cleared by any success).
 - Creating a pairing code is a step-up: a local admin sends `password` (current password; five
-  wrong ones in 15 minutes refuse even a right one), a KyIdentity admin's session must come
+  wrong ones in 15 minutes from one client, counted together with wrong current passwords on
+  change-password (`stepUpKey`), refuse even a right one there and 429 change-password), a KyIdentity admin's session must come
   from a step-up sign-in (`/api/sso/kysignon/login?step_up=1`: `max_age=0`, `prompt=login`, an
   `auth_time` no earlier than a minute before the MACed start, stored as `sessions.step_up_at`)
   less than 10 minutes old. Otherwise 403 `{code:"step_up_required", method:"password"|"kyidentity"}`,
-  audited `reason=step_up`. A step-up callback returns to `/#/logs`.
+  audited through `s.auditRefusal` with `reason=step_up` or `step_up_rate_limit`. A step-up callback returns to `/#/logs`.
 - Admin pairing optionally accepts `offboarding_alerts:true` with a required watched
   `target_id`; the claim cannot change this grant or target. A granted, still-bound source's
   authenticated OPTIONS adds `Ky-Log-Alerts: ky.offboarding-alerts/1`. Each sequenced batch

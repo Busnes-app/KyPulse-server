@@ -7,7 +7,7 @@ Commands and unlinked file paths below are relative to the repository root.
 ## Quick start
 
 ```sh
-mkdir -p data backups secrets && sudo chown 10001:10001 data backups secrets
+mkdir -p data backups secrets && sudo chown 10001:10001 data backups secrets && sudo chmod 700 data
 docker compose up -d
 docker compose exec app cat /app/data/initial-admin-password   # the generated admin password
 ```
@@ -99,5 +99,10 @@ docker compose down && sudo mv -n data/audit.key secrets/audit.key && docker com
 
 After the first start you may mount `./secrets` read-only (`./secrets:/app/secrets:ro`); a
 fresh install needs it writable once to mint the key. Back `./secrets` up with `./data`.
+
+Usernames are unique regardless of case. An older install may hold two accounts whose names
+differ only in case (`admin` and `Admin`); each start then logs `username_case_clash` with
+both names, renames nothing, and refuses any new case variant. Rename or remove one of them
+and restart: the start after that adds the case-insensitive unique index.
 
 Watch KyPulse's own `GET /healthz` from outside. KyPulse does not monitor itself.

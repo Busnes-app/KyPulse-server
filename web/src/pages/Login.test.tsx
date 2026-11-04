@@ -1,9 +1,9 @@
 import { afterEach, expect, it, vi } from 'vitest';
-import { cleanup, fireEvent, render, screen, waitFor } from '@testing-library/react';
+import { act, cleanup, fireEvent, render, screen, waitFor } from '@testing-library/react';
 import { createHash } from 'node:crypto';
 import { Login } from './Login';
 
-afterEach(() => { cleanup(); vi.unstubAllGlobals(); });
+afterEach(() => { cleanup(); vi.unstubAllGlobals(); vi.useRealTimers(); });
 
 it('solves a fresh CAPTCHA after a rejected login, since each solution is single-use', async () => {
   let round = 0;
@@ -83,4 +83,28 @@ it('still offers sign-in when the browser check fails', async () => {
   render(<Login onSuccess={vi.fn()} appName="KyPulse" />);
   const submit = await screen.findByRole('button', { name: 'Sign in' });
   expect((submit as HTMLButtonElement).disabled).toBe(false);
+});
+
+it('solves a fresh check before an idle page\'s solution expires', async () => {
+  vi.useFakeTimers({ shouldAdvanceTime: true });
+  let round = 0;
+  vi.stubGlobal('fetch', vi.fn(async (input: RequestInfo | URL) => {
+    if (String(input) === '/api/auth/pow-challenge') {
+      const salt = `salt${++round}`;
+      const challenge = createHash('sha256').update(`${salt}1`).digest('hex');
+      return new Response(JSON.stringify({ algorithm: 'SHA-256', salt, challenge, maxnumber: 1, expires_at: 0, signature: 'sig' }));
+    }
+    throw new Error(String(input));
+  }));
+  render(<Login onSuccess={vi.fn()} appName="KyPulse" />);
+  // The button reads "Sign in" once the token is held; act flushes the effect that sets
+  // the renewal.
+  await screen.findByRole('button', { name: 'Sign in' });
+  await act(async () => {});
+  expect(round).toBe(1);
+  await act(async () => { vi.advanceTimersByTime(3 * 60_000); });
+  expect(round).toBe(1);
+  await act(async () => { vi.advanceTimersByTime(60_000); });
+  await waitFor(() => expect(round).toBe(2));
+  await screen.findByRole('button', { name: 'Sign in' });
 });

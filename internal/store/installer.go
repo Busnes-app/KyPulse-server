@@ -36,7 +36,22 @@ func (s *SQLStore) ApplyInstaller(ctx context.Context, b config.InstallerBundle,
 	if err := b.Validate(); err != nil {
 		return r, err
 	}
-	tx, err := s.db.BeginTx(ctx, &sql.TxOptions{Isolation: sql.LevelSerializable})
+	conn, err := s.db.Conn(ctx)
+	if err != nil {
+		return r, err
+	}
+	defer conn.Close()
+	if len(b.Admins)+len(b.Everyday) > 0 {
+		// Hold the username lock CreateUser/UpdateUser take before the serializable
+		// snapshot exists, so the name check below sees every committed case variant,
+		// on this one connection so the pool is never waited on while it is held.
+		unlock, err := s.users.lockUsernamesOn(ctx, conn)
+		if err != nil {
+			return r, err
+		}
+		defer unlock()
+	}
+	tx, err := conn.BeginTx(ctx, &sql.TxOptions{Isolation: sql.LevelSerializable})
 	if err != nil {
 		return r, err
 	}

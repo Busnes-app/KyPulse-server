@@ -129,7 +129,7 @@ func (s *Server) pairingStepUp(w http.ResponseWriter, r *http.Request, pw string
 		return false
 	}
 	refuse := func(reason, method, message string) bool {
-		s.audit(r.Context(), user.ID, r, "admin.log_pairing", "", "outcome=refused reason="+reason)
+		s.auditRefusal(r.Context(), user.ID, r, "admin.log_pairing", "outcome=refused reason="+reason)
 		s.writeJSON(w, http.StatusForbidden, map[string]string{"error": message, "code": "step_up_required", "method": method})
 		return false
 	}
@@ -140,7 +140,7 @@ func (s *Server) pairingStepUp(w http.ResponseWriter, r *http.Request, pw string
 		return true
 	}
 	// Only wrong passwords spend the window, so a stolen session cannot guess on for long.
-	key := "step-up:" + user.ID
+	key := stepUpKey(s, r, user.ID)
 	if !s.loginOpen(key, 5) {
 		return refuse("step_up_rate_limit", "password", "Too many wrong passwords; wait a few minutes")
 	}
@@ -149,6 +149,13 @@ func (s *Server) pairingStepUp(w http.ResponseWriter, r *http.Request, pw string
 		return refuse("step_up", "password", "Enter your current password to add a log source")
 	}
 	return true
+}
+
+// stepUpKey is the wrong-password window shared by the pairing step-up and the password
+// change: five guesses across both, then 15 minutes. It carries the client address, so a
+// stolen session elsewhere cannot lock the owner out of changing their password.
+func stepUpKey(s *Server, r *http.Request, userID string) string {
+	return "step-up:" + userID + "@" + s.limitIP(r)
 }
 
 func (s *Server) handleClaimLogSource(w http.ResponseWriter, r *http.Request) {

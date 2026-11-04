@@ -108,6 +108,7 @@ func (s *Server) handleKySignOnCallback(w http.ResponseWriter, r *http.Request) 
 	}
 
 	// Upsert user
+	role, claimed := claims.LocalRole()
 	user, err := s.store.Users().GetUserBySSO(r.Context(), "kysignon", claims.Subject)
 	switch {
 	case errors.Is(err, store.ErrNotFound) && s.config.SSO.AutoProvision:
@@ -116,7 +117,7 @@ func (s *Server) handleKySignOnCallback(w http.ResponseWriter, r *http.Request) 
 			Username:    claims.PreferredUsername,
 			Email:       claims.Email,
 			DisplayName: claims.Name,
-			Role:        sso.RoleFor(claims.Role),
+			Role:        sso.RoleFor(role), // viewer when the token has no role claim
 			Status:      "active",
 			SSOProvider: "kysignon",
 			SSOSubject:  claims.Subject,
@@ -140,8 +141,9 @@ func (s *Server) handleKySignOnCallback(w http.ResponseWriter, r *http.Request) 
 		return
 	default:
 		// KyIdentity is the authority for an SSO user's role, except an installer-owned
-		// identity's, which the installer directory governs.
-		if !s.applySSORole(w, r, user, sso.RoleFor(claims.Role)) {
+		// identity's, which the installer directory governs. A token with no role claim
+		// leaves the role as it is.
+		if claimed && !s.applySSORole(w, r, user, role) {
 			return
 		}
 	}

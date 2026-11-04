@@ -20,6 +20,7 @@ import (
 	"time"
 
 	"github.com/Busnes-app/ky-primitives/applysetup"
+	"github.com/Busnes-app/ky-primitives/keyfile"
 	"github.com/Busnes-app/ky-primitives/logging"
 	"github.com/Busnes-app/ky-primitives/password"
 	"github.com/Busnes-app/ky-primitives/recoveryclient"
@@ -119,6 +120,13 @@ func runServer(lg *logging.Logger) {
 	}
 	placed := st.Audit().Placement()
 	lg.Log(ctx, auditChainPlaced, fChainMode(placed.Mode), logging.Count(int64(placed.Count)), fChainHead(placed.Head))
+	clashes, err := st.Users().UsernameClashes(ctx)
+	if err != nil {
+		fatal("Failed to check usernames: %v", err)
+	}
+	for _, c := range clashes {
+		lg.Log(ctx, usernameCaseClash, fUsername(c[0]), fOtherUsername(c[1]))
+	}
 
 	if err := ensureBootstrapAdmin(ctx, st, cfg.Database.DataDir, lg); err != nil {
 		fatal("%v", err)
@@ -160,19 +168,12 @@ func runServer(lg *logging.Logger) {
 	stop := make(chan os.Signal, 1)
 	signal.Notify(stop, os.Interrupt, syscall.SIGTERM)
 
-	socket, err := config.InstallerSocket(cfg.Database.DataDir)
-	if err != nil {
-		fatal("Installer IPC unavailable: %v", err)
-	}
-	closeSetup, err := applysetup.StartLocal(ctx, socket, srv.ApplyInstaller, func() {
+	closeSetup := startSetupSocket(ctx, lg, cfg.Database.DataDir, srv.ApplyInstaller, func() {
 		select {
 		case stop <- syscall.SIGTERM:
 		default:
 		}
 	})
-	if err != nil {
-		fatal("Installer IPC unavailable: %v", err)
-	}
 	defer closeSetup()
 
 	go func() {
@@ -325,6 +326,26 @@ func recordRun(ctx context.Context, st store.Store, actor string, res recoverycl
 	log.Printf("[BACKUP] %s: capsule %s (%d bytes) local=%q deposited=%t", actor, res.Manifest.CapsuleID, res.SizeBytes, res.LocalPath, res.Receipt != nil)
 }
 
+// startSetupSocket opens the installer setup socket. A data directory whose ancestry the
+// socket refuses (typically group-writable, as `mkdir` leaves it under umask 002) turns
+// installer setup off and is logged instead of stopping the server; any other failure,
+// such as another process owning the socket, still stops it.
+func startSetupSocket(ctx context.Context, lg *logging.Logger, dataDir string, apply func(context.Context, []byte, bool) (applysetup.Report, error), restart func()) func() error {
+	socket, err := config.InstallerSocket(dataDir)
+	if err != nil {
+		fatal("Installer IPC unavailable: %v", err)
+	}
+	if err := keyfile.RequireTrustedAncestry(filepath.Dir(socket)); err != nil {
+		lg.Log(ctx, installerSetupOff, logging.Err(err), fKeyPath(dataDir))
+		return func() error { return nil }
+	}
+	closeSetup, err := applysetup.StartLocal(ctx, socket, apply, restart)
+	if err != nil {
+		fatal("Installer IPC unavailable: %v", err)
+	}
+	return closeSetup
+}
+
 // runDeposit seals and delivers one capsule now, for cron or an operator at a shell.
 func runDeposit() {
 	cfg, err := config.LoadFromEnv()
@@ -338,7 +359,7 @@ func runDeposit() {
 	}
 	defer st.Close()
 
-	res, err := runBackup(ctx, cfg, st)
+	res, err := deposit(ctx, cfg, st)
 	recordRun(ctx, st, "cli", res, err)
 	if err != nil {
 		fatal("Backup: %v", err)
@@ -346,6 +367,15 @@ func runDeposit() {
 	if res.Receipt != nil {
 		log.Printf("✓ Capsule %s deposited at %s; digest %s", res.Manifest.CapsuleID, res.Receipt.DepositedAt.Format(time.RFC3339), res.Receipt.Digest)
 	}
+}
+
+// deposit is one CLI backup run with the installer's saved backup directory and retention
+// applied, as server startup applies them, so it never prunes copies the policy keeps.
+func deposit(ctx context.Context, cfg *config.Config, st store.Store) (recoveryclient.Result, error) {
+	if err := loadInstallerConfiguration(ctx, cfg, st); err != nil {
+		return recoveryclient.Result{}, fmt.Errorf("installer configuration invalid: %w", err)
+	}
+	return runBackup(ctx, cfg, st)
 }
 
 // runAuditVerify walks the whole audit chain against its anchor and exits non-zero when any

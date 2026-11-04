@@ -126,3 +126,56 @@ func TestPairingRequiresAKyIdentityStepUp(t *testing.T) {
 		t.Fatalf("after a step-up: got %d %s", w.Code, w.Body.String())
 	}
 }
+
+// Wrong current passwords on change-password spend the same window as the pairing step-up,
+// so a stolen session gets five guesses across both routes, not five a minute forever.
+func TestChangePasswordSharesTheStepUpWindow(t *testing.T) {
+	srv, st, _ := setupTestServer(t)
+	admin := loginAs(t, srv, st, "alice", "admin")
+	change := func(current string) int {
+		req := httptest.NewRequest("POST", "/api/auth/change-password", strings.NewReader(`{"current_password":"`+current+`","new_password":"ChosenPassword456!"}`))
+		req.Header.Set("Content-Type", "application/json")
+		req.AddCookie(admin)
+		req.AddCookie(&http.Cookie{Name: auth.CSRFCookieName, Value: "test-csrf"})
+		req.Header.Set(auth.HeaderCSRF, "test-csrf")
+		w := httptest.NewRecorder()
+		srv.ServeHTTP(w, req)
+		return w.Code
+	}
+	for range 3 {
+		postPairing(srv, admin, `{"password":"wrong-password-123"}`)
+	}
+	for range 2 {
+		if code := change("wrong-password-123"); code != http.StatusUnauthorized {
+			t.Fatalf("wrong current password: %d", code)
+		}
+	}
+	if code := change("SuperSecretPass123!"); code != http.StatusTooManyRequests {
+		t.Fatalf("right password after five wrong ones: %d, want 429", code)
+	}
+}
+
+// Step-up refusals are summarised per client, not one audit row per request, and wrong
+// passwords from one client leave another client's window open.
+func TestStepUpRefusalsAreSummarisedAndPerClient(t *testing.T) {
+	srv, st, _ := setupTestServer(t)
+	admin := loginAs(t, srv, st, "alice", "admin")
+	before := len(auditRows(t, st, "admin.log_pairing"))
+	for range 8 { // five wrong passwords, then the spent window refuses even these
+		postPairing(srv, admin, `{"password":"wrong-password-123"}`)
+	}
+	if got := len(auditRows(t, st, "admin.log_pairing")) - before; got > 2 {
+		t.Fatalf("%d audit rows for eight refusals from one client, want at most one per reason", got)
+	}
+	req := httptest.NewRequest("POST", "/api/log-sources/pairing", strings.NewReader(`{"password":"SuperSecretPass123!"}`))
+	req.RemoteAddr = "198.51.100.7:4321"
+	req.Header.Set("Content-Type", "application/json")
+	req.AddCookie(admin)
+	req.AddCookie(&http.Cookie{Name: auth.CSRFCookieName, Value: "test-csrf"})
+	req.Header.Set(auth.HeaderCSRF, "test-csrf")
+	w := httptest.NewRecorder()
+	srv.ServeHTTP(w, req)
+	if w.Code != http.StatusOK {
+		t.Fatalf("another client with the right password: %d %s", w.Code, w.Body.String())
+	}
+}
