@@ -16,6 +16,12 @@ every start logs the chain's count and head (`audit_chain_placed`), which is you
 outside the database. `/healthz` reports `audit` degraded when the chain cannot take the
 next record, and a log that cannot be placed refuses to start with the remedy in the error.
 
+## Passwords
+
+A local account changes its own password under **Settings > Account > Password** by giving the
+current one. Every session of that account, the current one included, is signed out, so it signs
+in again with the new password. Accounts that sign in through KyIdentity change it there.
+
 ## Two-factor authentication
 
 Local accounts, viewers included, turn on TOTP under **Settings > Two-factor
