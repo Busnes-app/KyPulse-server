@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Key, AlertCircle, LogIn } from 'lucide-react';
 import { CaptchaWidget } from '../components/CaptchaWidget';
 import { ThemeSwitcher } from '../components/ThemeSwitcher';
@@ -20,6 +20,14 @@ export const Login: React.FC<LoginProps> = ({ onSuccess, appName, ssoEnabled = f
   const [captchaFailed, setCaptchaFailed] = useState<boolean>(false);
   const [loading, setLoading] = useState<boolean>(false);
   const [error, setError] = useState<string>('');
+
+  // A solution expires with its challenge (five minutes, internal/auth/pow.go): solve a
+  // fresh one before then, so a sign-in page left open never sends a stale token.
+  useEffect(() => {
+    if (!captchaToken) return;
+    const renew = setTimeout(() => { setCaptchaToken(''); setCaptchaRound((n) => n + 1); }, 4 * 60_000);
+    return () => clearTimeout(renew);
+  }, [captchaToken]);
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();

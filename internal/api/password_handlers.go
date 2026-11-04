@@ -56,8 +56,14 @@ func (s *Server) handleChangePassword(w http.ResponseWriter, r *http.Request) {
 		s.writeError(w, http.StatusBadRequest, "Choose a different password")
 		return
 	}
+	key := stepUpKey(s, r, user.ID)
+	if !s.loginOpen(key, 5) {
+		s.writeError(w, http.StatusTooManyRequests, "Too many wrong passwords; wait a few minutes")
+		return
+	}
 	ok, err := password.Verify(req.CurrentPassword, user.PasswordHash)
 	if err != nil || !ok {
+		s.spendLogin(key, 15*time.Minute)
 		s.writeError(w, http.StatusUnauthorized, "Current password is incorrect")
 		return
 	}
