@@ -259,3 +259,26 @@ func TestReplacementRefusesFederatedAccounts(t *testing.T) {
 		})
 	}
 }
+
+// Sign-out answers success only once the session row is gone; otherwise it says so and keeps
+// the cookies, so the browser can try again instead of believing it signed out.
+func TestLogoutReportsAFailedRevocation(t *testing.T) {
+	srv, st, cfg := setupTestServer(t)
+	ctx := context.Background()
+	u := &store.User{ID: "user", Username: "user", Status: "active", Role: "viewer", SSOProvider: "local"}
+	if err := st.Users().CreateUser(ctx, u); err != nil {
+		t.Fatal(err)
+	}
+	_, token, err := auth.NewSessionManager(st, cfg.Security).IssueSession(ctx, httptest.NewRecorder(), httptest.NewRequest("POST", "/api/auth/login", nil), u)
+	if err != nil {
+		t.Fatal(err)
+	}
+	st.Close()
+	req := httptest.NewRequest("POST", "/api/auth/logout", nil)
+	req.Header.Set("Authorization", "Bearer "+token)
+	w := httptest.NewRecorder()
+	srv.ServeHTTP(w, req)
+	if w.Code != http.StatusInternalServerError || len(w.Result().Cookies()) != 0 {
+		t.Fatalf("logout with the store down: %d cookies=%v", w.Code, w.Result().Cookies())
+	}
+}

@@ -168,7 +168,10 @@ func (sm *SessionManager) RevokeSession(ctx context.Context, w http.ResponseWrit
 
 	if rawToken != "" {
 		tokenHash := crypto.SHA256Hex([]byte(rawToken))
-		_ = sm.store.Sessions().DeleteSession(ctx, tokenHash)
+		// Keep the cookies when the row survives, so the caller can say so and try again.
+		if err := sm.store.Sessions().DeleteSession(ctx, tokenHash); err != nil {
+			return err
+		}
 	}
 
 	http.SetCookie(w, &http.Cookie{

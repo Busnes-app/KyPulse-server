@@ -275,7 +275,10 @@ func (s *Server) handleLogout(w http.ResponseWriter, r *http.Request) {
 		s.writeError(w, http.StatusMethodNotAllowed, "Method not allowed")
 		return
 	}
-	_ = s.sessions.RevokeSession(r.Context(), w, r)
+	if err := s.sessions.RevokeSession(r.Context(), w, r); err != nil {
+		s.writeError(w, http.StatusInternalServerError, "Sign-out failed; the session is still active")
+		return
+	}
 	s.writeJSON(w, http.StatusOK, map[string]bool{"logged_out": true})
 }
 
