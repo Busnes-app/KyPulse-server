@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import { cleanup, render, screen, within } from '@testing-library/react';
+import { cleanup, fireEvent, render, screen, waitFor, within } from '@testing-library/react';
 import { Settings } from './Settings';
 import { AppHeader } from '../components/AppHeader';
 
@@ -31,6 +31,28 @@ describe('Settings', () => {
     expect(within(facts).getByText('admin')).toBeTruthy();
     expect(within(facts).getByText('KyPulse password')).toBeTruthy();
     expect(screen.getByRole('heading', { name: 'Two-factor authentication' })).toBeTruthy();
+  });
+
+  it('lets a local account change its own password and returns to sign-in', async () => {
+    const fetcher = vi.fn(async () => new Response(JSON.stringify({ password_changed: true, login_required: true }), { status: 200 }));
+    vi.stubGlobal('fetch', fetcher);
+    const changed = vi.fn();
+    render(<Settings section="account" settings={null} user={admin} onChanged={() => {}} onPasswordChanged={changed} />);
+    fireEvent.click(screen.getByRole('button', { name: 'Change password' }));
+    fireEvent.change(screen.getByLabelText('Current password'), { target: { value: 'CurrentPassword123!' } });
+    fireEvent.change(screen.getByLabelText('New password'), { target: { value: 'ChosenPassword456!' } });
+    fireEvent.change(screen.getByLabelText('Confirm new password'), { target: { value: 'ChosenPassword456!' } });
+    fireEvent.click(screen.getByRole('button', { name: 'Change password' }));
+    await waitFor(() => expect(changed).toHaveBeenCalled());
+    expect(fetcher).toHaveBeenCalledWith('/api/auth/change-password', expect.objectContaining({ method: 'POST',
+      body: JSON.stringify({ current_password: 'CurrentPassword123!', new_password: 'ChosenPassword456!' }) }));
+  });
+
+  it('offers no password change to an account that signs in through KyIdentity', () => {
+    vi.stubGlobal('fetch', vi.fn(async () => new Response('{}', { status: 200 })));
+    render(<Settings section="account" settings={null} user={{ ...admin, sso_provider: 'kysignon' }} onChanged={() => {}} />);
+    expect(screen.queryByRole('button', { name: 'Change password' })).toBeNull();
+    expect(screen.getByText('Single sign-on (KyIdentity)')).toBeTruthy();
   });
 
   it('Server keeps storage for everyone and the webhook and KyYard for administrators', () => {
