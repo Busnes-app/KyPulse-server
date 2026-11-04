@@ -426,20 +426,24 @@ func TestSavedPositionsDoNotExhaustTheStreamCap(t *testing.T) {
 	}
 }
 
-// A checkpoint keeps only the configured inputs' positions, so recreated containers' old IDs
-// do not accumulate until the state file passes its 1 MiB load limit.
+// A checkpoint drops week-old positions of Docker containers this run neither reads nor is
+// configured for, so recreated containers' old IDs do not accumulate until the state file
+// passes its 1 MiB load limit. Recent Docker and any file positions stay for a later run.
 func TestCheckpointDropsPositionsOfUnconfiguredInputs(t *testing.T) {
 	dir := filepath.Join(t.TempDir(), "state")
 	quiet := Position{Kind: "docker", Input: "quiet", Stream: "stderr", Timestamp: "2026-09-27T12:00:00Z", Ordinal: 1}
-	saved := map[string]Position{PositionKey(quiet): quiet}
+	recent := Position{Kind: "docker", Input: "paused", Stream: "stdout", Timestamp: "2026-09-27T12:00:00Z", Ordinal: 1}
+	other := Position{Kind: "file", Input: "/var/log/other.log", Offset: 42}
+	saved := map[string]Position{PositionKey(quiet): quiet, PositionKey(recent): recent, PositionKey(other): other}
 	for i := 0; i < 300; i++ {
-		p := Position{Kind: "docker", Input: fmt.Sprintf("gone%03d", i), Stream: "stdout", Timestamp: "2026-09-27T12:00:00Z", Ordinal: 1}
+		p := Position{Kind: "docker", Input: fmt.Sprintf("gone%03d", i), Stream: "stdout", Timestamp: "2026-09-10T12:00:00Z", Ordinal: 1}
 		saved[PositionKey(p)] = p
 	}
 	fresh := Position{Kind: "docker", Input: "fresh", Stream: "stdout", Timestamp: "2026-09-28T12:00:00Z", Ordinal: 1}
 	s := Sender{HTTP: postFunc(func([]byte) (*egress.Response, error) { return &egress.Response{StatusCode: 204}, nil }),
 		StateDir: dir, Token: make([]byte, 32), State: State{URL: "https://example.com", SourceID: "one", Positions: saved},
-		Inputs: map[string]bool{PositionKey(quiet): true, PositionKey(fresh): true}}
+		Inputs: map[string]bool{PositionKey(quiet): true, PositionKey(fresh): true},
+		now:    func() time.Time { return time.Date(2026, 9, 28, 12, 0, 0, 0, time.UTC) }}
 	prepareSender(t, &s)
 	items := make(chan Item, 1)
 	items <- Item{Record: ingest.Record{Line: "new deploy"}, Position: fresh}
@@ -451,7 +455,8 @@ func TestCheckpointDropsPositionsOfUnconfiguredInputs(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	if len(got.Positions) != 2 || got.Positions[PositionKey(quiet)] != quiet || got.Positions[PositionKey(fresh)] != fresh {
+	if len(got.Positions) != 4 || got.Positions[PositionKey(quiet)] != quiet || got.Positions[PositionKey(fresh)] != fresh ||
+		got.Positions[PositionKey(recent)] != recent || got.Positions[PositionKey(other)] != other {
 		t.Fatalf("positions after checkpoint: %d %+v", len(got.Positions), got.Positions[PositionKey(fresh)])
 	}
 }
