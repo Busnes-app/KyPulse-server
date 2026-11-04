@@ -29,10 +29,8 @@ func Open(ctx context.Context, cfg config.DatabaseConfig) (Store, error) {
 }
 
 func openSQLite(ctx context.Context, dsn string, auditKey []byte) (Store, error) {
-	filePath := dsn
-	if idx := strings.Index(dsn, "?"); idx != -1 {
-		filePath = dsn[:idx]
-	}
+	// A file: URI names the same path; its directory is not "file:/...".
+	filePath, _, _ := strings.Cut(strings.TrimPrefix(dsn, "file:"), "?")
 
 	dir := filepath.Dir(filePath)
 	if dir != "" && dir != "." {

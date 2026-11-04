@@ -7,9 +7,11 @@ import (
 	"fmt"
 	"io"
 	"log"
+	"net"
 	"net/http"
 	"os"
 	"os/signal"
+	"strconv"
 	"syscall"
 	"time"
 
@@ -148,7 +150,7 @@ func runServer(lg *logging.Logger) {
 	retentionDone := make(chan struct{})
 	go logRetentionLoop(ctx, st, cfg.Logs.MaxBytes, lg, retentionDone)
 
-	addr := fmt.Sprintf("%s:%d", cfg.Server.Host, cfg.Server.Port)
+	addr := net.JoinHostPort(cfg.Server.Host, strconv.Itoa(cfg.Server.Port)) // brackets an IPv6 host
 	httpServer := &http.Server{
 		Addr:         addr,
 		Handler:      srv,

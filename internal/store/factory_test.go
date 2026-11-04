@@ -2,6 +2,7 @@ package store
 
 import (
 	"context"
+	"os"
 	"path/filepath"
 	"testing"
 )
@@ -40,5 +41,20 @@ func TestSQLiteExplicitPragmasAreNotOverridden(t *testing.T) {
 	}
 	if err := db.QueryRow("PRAGMA synchronous").Scan(&sync); err != nil || sync != 2 {
 		t.Fatalf("synchronous = %d, %v: the DSN asked for FULL (2)", sync, err)
+	}
+}
+
+// A file: URI DSN names the same path; opening it must not try to create "file:<dir>".
+func TestSQLiteFileURIDSN(t *testing.T) {
+	dir := t.TempDir()
+	t.Chdir(dir)
+	sub := filepath.Join(dir, "data")
+	st, err := openSQLite(context.Background(), "file:"+filepath.Join(sub, "kypulse.db")+"?_pragma=busy_timeout(5000)", make([]byte, 32))
+	if err != nil {
+		t.Fatal(err)
+	}
+	st.Close()
+	if _, err := os.Stat("file:" + dir); err == nil {
+		t.Fatal(`created a directory named "file:..."`)
 	}
 }
