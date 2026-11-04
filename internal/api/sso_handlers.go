@@ -109,7 +109,11 @@ func (s *Server) handleKySignOnCallback(w http.ResponseWriter, r *http.Request) 
 			SSOProvider: "kysignon",
 			SSOSubject:  claims.Subject,
 		}
-		if err := s.store.Users().CreateUser(r.Context(), user); err != nil {
+		if err := s.store.Users().CreateUser(r.Context(), user); errors.Is(err, store.ErrAlreadyExists) {
+			// Usernames are unique regardless of case; a local account may already hold it.
+			s.writeError(w, http.StatusConflict, "An account with this username already exists here; ask an administrator")
+			return
+		} else if err != nil {
 			s.writeError(w, http.StatusInternalServerError, "Failed to provision SSO user")
 			return
 		}

@@ -7,6 +7,7 @@ Provides the unified Database Abstraction Layer (DAL) supporting pluggable backe
 Owns data models, store interfaces (`UserStore`, `SessionStore`, `AuditStore`, `SettingsStore`, `TargetStore`, `LogStore`, `SourceStore`), dialect translations, and schema migrations. `audit.go` owns the audit hash chain.
 
 ## Local Contracts
+- Usernames are unique regardless of case (`idx_users_username_lower`, migration 13), matching the case-insensitive lookup. Migration 13 kept an existing duplicate's name on the local account, else the oldest, and suffixed the others with `-` and the last six characters of their ID.
 - `ApplyInstaller` creates missing configuration and issuer/subject-owned administrator/viewer accounts atomically with one keyed audit-chain event; check/resume adds no rows. Foreign names/subjects, different setup ownership, inactive identities and role drift refuse without reactivation or credential changes. Configuration records retain only target-held file references.
 - `ApplyInstallerDirectory` changes only an installer-owned identity's status, fenced by `installer.directory.<user id>` (revision + body digest: older or same-revision-different-body refuses, same is a no-op). Unavailable deletes its sessions and MFA challenges in the same transaction with one audit row; it never changes a role.
 - Monitoring enrollment shares that transaction and audit. Deterministic setup/key UUIDs

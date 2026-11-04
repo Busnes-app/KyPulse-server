@@ -359,6 +359,22 @@ CREATE TABLE sso_logouts (sid TEXT PRIMARY KEY, expires_at TIMESTAMPTZ NOT NULL)
 CREATE TABLE sso_subject_logouts (provider TEXT NOT NULL, subject TEXT NOT NULL, cutoff TIMESTAMPTZ NOT NULL, expires_at TIMESTAMPTZ NOT NULL, PRIMARY KEY (provider, subject));
 DELETE FROM sessions WHERE sso_sid = '' AND user_id IN (SELECT id FROM users WHERE sso_provider <> 'local');`,
 	},
+	// Sign-in looks usernames up case-insensitively, so "Admin" beside "admin" made the lookup
+	// pick either row. Usernames become unique regardless of case. An existing case-variant
+	// duplicate keeps its name on one row only (a local account first, then the oldest); the
+	// others get "-" and six characters of their own ID appended.
+	{Version: 13, Name: "username_case_insensitive",
+		SQLite: `UPDATE users SET username = username || '-' || substr(id, length(id) - 5)
+WHERE EXISTS (SELECT 1 FROM users o WHERE o.id <> users.id AND LOWER(o.username) = LOWER(users.username)
+  AND ((o.sso_provider = 'local') > (users.sso_provider = 'local')
+    OR ((o.sso_provider = 'local') = (users.sso_provider = 'local') AND (o.created_at < users.created_at OR (o.created_at = users.created_at AND o.id < users.id)))));
+CREATE UNIQUE INDEX idx_users_username_lower ON users (LOWER(username));`,
+		Postgres: `UPDATE users SET username = users.username || '-' || right(users.id, 6)
+WHERE EXISTS (SELECT 1 FROM users o WHERE o.id <> users.id AND LOWER(o.username) = LOWER(users.username)
+  AND ((o.sso_provider = 'local') > (users.sso_provider = 'local')
+    OR ((o.sso_provider = 'local') = (users.sso_provider = 'local') AND (o.created_at < users.created_at OR (o.created_at = users.created_at AND o.id < users.id)))));
+CREATE UNIQUE INDEX idx_users_username_lower ON users (LOWER(username));`,
+	},
 }
 
 // lockKey is the Postgres session advisory lock Run holds, so replicas starting together

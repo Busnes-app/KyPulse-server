@@ -352,4 +352,11 @@ func TestKySignOnCallbackHardening(t *testing.T) {
 	if w := ssoCallback(srv, idp.Client()); w.Code != http.StatusFound || !hasSession(w) {
 		t.Fatalf("auto-provision: %d %s", w.Code, w.Body.String())
 	}
+
+	// A username already held by another account, in any case, is a clear 409, not a 500.
+	createLocalUser(t, st, "usr_taken", "taken", "active")
+	idp.sub = "TAKEN"
+	if w := ssoCallback(srv, idp.Client()); w.Code != http.StatusConflict || hasSession(w) {
+		t.Fatalf("username collision: %d %s", w.Code, w.Body.String())
+	}
 }

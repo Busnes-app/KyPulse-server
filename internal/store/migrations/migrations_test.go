@@ -85,9 +85,71 @@ func TestMigration12DropsUnreachableSSOSessions(t *testing.T) {
 	// A later start applies nothing, so it never signs out a session issued after the upgrade.
 	exec(`INSERT INTO sessions (token_hash, user_id, created_at, expires_at, sso_sid) VALUES (?, ?, ?, ?, ?)`, "after_no_sid", "usr_sso", now, now.Add(time.Hour), "")
 	exec(`INSERT INTO sessions (token_hash, user_id, created_at, expires_at, sso_sid) VALUES (?, ?, ?, ?, ?)`, "after_sid", "usr_sso", now, now.Add(time.Hour), "sid-1")
-	registry = all
-	if applied, err := Run(ctx, db, cfg.Driver); err != nil || len(applied) != 0 {
-		t.Fatalf("second start applied %v, %v; want none", applied, err)
+	if applied := runThrough(12); len(applied) != 0 {
+		t.Fatalf("second start applied %v; want none", applied)
 	}
 	sessions(map[string]int{"legacy_usr_local": 1, "after_no_sid": 1, "after_sid": 1})
+}
+
+// Migration 13 makes usernames unique regardless of case. Existing case variants keep the
+// name on the local account (else the oldest) and the rest get an ID suffix.
+func TestMigration13MakesUsernamesCaseInsensitive(t *testing.T) {
+	cfg := testdb.Config(t)
+	driverName := "sqlite"
+	if cfg.Driver == "postgres" {
+		driverName = "pgx"
+	}
+	db, err := sql.Open(driverName, cfg.DSN)
+	if err != nil {
+		t.Fatal(err)
+	}
+	t.Cleanup(func() { _ = db.Close() })
+	ctx := context.Background()
+	q := func(query string) string {
+		if cfg.Driver != "postgres" {
+			return query
+		}
+		for i := 1; strings.Contains(query, "?"); i++ {
+			query = strings.Replace(query, "?", "$"+strconv.Itoa(i), 1)
+		}
+		return query
+	}
+	all := registry
+	t.Cleanup(func() { registry = all })
+	registry = all[:12]
+	if _, err := Run(ctx, db, cfg.Driver); err != nil {
+		t.Fatal(err)
+	}
+	now := time.Now().UTC()
+	for _, u := range []struct {
+		id, name, provider string
+		age                time.Duration
+	}{
+		{"usr_sso_old_aaaaaa", "Admin", "kysignon", 2 * time.Hour},
+		{"usr_local_bbbbbb", "admin", "local", time.Hour},
+		{"usr_old_cccccc", "Bob", "kysignon", 2 * time.Hour},
+		{"usr_new_dddddd", "bob", "kysignon", time.Hour},
+		{"usr_solo_eeeeee", "carol", "local", time.Hour},
+	} {
+		if _, err := db.ExecContext(ctx, q(`INSERT INTO users (id, username, sso_provider, sso_subject, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?)`),
+			u.id, u.name, u.provider, u.id, now.Add(-u.age), now); err != nil {
+			t.Fatal(err)
+		}
+	}
+	registry = all
+	if _, err := Run(ctx, db, cfg.Driver); err != nil {
+		t.Fatal(err)
+	}
+	for id, want := range map[string]string{
+		"usr_local_bbbbbb": "admin", "usr_sso_old_aaaaaa": "Admin-aaaaaa",
+		"usr_old_cccccc": "Bob", "usr_new_dddddd": "bob-dddddd", "usr_solo_eeeeee": "carol",
+	} {
+		var got string
+		if err := db.QueryRowContext(ctx, q(`SELECT username FROM users WHERE id = ?`), id).Scan(&got); err != nil || got != want {
+			t.Errorf("%s: %q %v, want %q", id, got, err, want)
+		}
+	}
+	if _, err := db.ExecContext(ctx, q(`INSERT INTO users (id, username, created_at, updated_at) VALUES (?, ?, ?, ?)`), "usr_dup", "CAROL", now, now); err == nil {
+		t.Fatal("a case variant of an existing username was accepted")
+	}
 }
