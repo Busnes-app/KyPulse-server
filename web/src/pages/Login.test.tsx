@@ -1,5 +1,5 @@
 import { afterEach, expect, it, vi } from 'vitest';
-import { cleanup, fireEvent, render, screen, waitFor } from '@testing-library/react';
+import { act, cleanup, fireEvent, render, screen, waitFor } from '@testing-library/react';
 import { createHash } from 'node:crypto';
 import { Login } from './Login';
 
@@ -97,11 +97,14 @@ it('solves a fresh check before an idle page\'s solution expires', async () => {
     throw new Error(String(input));
   }));
   render(<Login onSuccess={vi.fn()} appName="KyPulse" />);
-  await screen.findByText('Browser check passed');
+  // The button reads "Sign in" once the token is held; act flushes the effect that sets
+  // the renewal.
+  await screen.findByRole('button', { name: 'Sign in' });
+  await act(async () => {});
   expect(round).toBe(1);
-  vi.advanceTimersByTime(3 * 60_000);
+  await act(async () => { vi.advanceTimersByTime(3 * 60_000); });
   expect(round).toBe(1);
-  vi.advanceTimersByTime(60_000);
+  await act(async () => { vi.advanceTimersByTime(60_000); });
   await waitFor(() => expect(round).toBe(2));
   await screen.findByRole('button', { name: 'Sign in' });
 });
