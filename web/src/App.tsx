@@ -143,10 +143,10 @@ export const App: React.FC = () => {
   }
 
   if (user.must_change_password) {
-    return <ChangePassword onLogout={handleLogout} onComplete={() => {
+    return <>{notice && <p role="alert" className="form-error" style={{ padding: 16 }}>{notice}</p>}<ChangePassword onLogout={handleLogout} onComplete={() => {
       setUser(null);
       setNotice('Password changed. Sign in with your new password.');
-    }} />;
+    }} /></>;
   }
 
   const head = route.parts[0] ?? 'status';

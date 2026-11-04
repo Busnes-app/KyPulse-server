@@ -80,22 +80,22 @@ export const Login: React.FC<LoginProps> = ({ onSuccess, appName, ssoEnabled = f
         }),
       });
 
-      const data = await resp.json();
+      const data = await resp.json().catch(() => ({}));
       if (!resp.ok) {
-        // The server spends the sign-in transaction on every attempt, so a retry needs a
-        // fresh one: go back to the password step instead of offering a dead form.
-        setMfaChallenge(null);
-        setMfaCode('');
-        setCaptchaToken('');
-        setCaptchaRound((n) => n + 1);
-        throw new Error(`${data.error || 'MFA verification failed'}. Sign in again.`);
+        throw new Error(data.error || 'MFA verification failed');
       }
 
       if (data.authenticated) {
         onSuccess(data.user);
       }
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Invalid verification code');
+      // The server spends the sign-in transaction on every attempt, so a retry needs a fresh
+      // one: go back to the password step instead of offering a dead form.
+      setMfaChallenge(null);
+      setMfaCode('');
+      setCaptchaToken('');
+      setCaptchaRound((n) => n + 1);
+      setError(`${err instanceof Error ? err.message : 'Invalid verification code'}. Sign in again.`);
     } finally {
       setLoading(false);
     }

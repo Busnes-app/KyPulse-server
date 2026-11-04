@@ -7,6 +7,13 @@ import { PageHead } from '../components/PageHead';
 
 interface AlertsProps { user: PageUser }
 
+// merge joins two newest-first event lists, one row per id, newest first.
+function merge(a: TargetEvent[], b: TargetEvent[]): TargetEvent[] {
+  const byId = new Map<number, TargetEvent>();
+  for (const e of [...b, ...a]) byId.set(e.id, e);
+  return [...byId.values()].sort((x, y) => y.id - x.id);
+}
+
 function delivery(e: TargetEvent): string {
   if (e.notified) return 'sent';
   if (e.notify_error) return `failed: ${e.notify_error}`;
@@ -16,21 +23,26 @@ function delivery(e: TargetEvent): string {
 // Alerts lists recent state changes and reminders with their delivery result, and which apps
 // are silenced right now.
 export const Alerts: React.FC<AlertsProps> = () => {
+  // Newest first. Once older pages are loaded, the 15-second refresh merges the newest page in
+  // instead of replacing the list, so nothing between it and the loaded pages drops out.
   const [events, setEvents] = useState<TargetEvent[] | null>(null);
-  // Older pages the user asked for, kept across the 15-second refresh of the newest page.
-  const [older, setOlder] = useState<TargetEvent[]>([]);
+  const [paged, setPaged] = useState(false);
   const [cursor, setCursor] = useState(0);
   const [loadingMore, setLoadingMore] = useState(false);
   const [targets, setTargets] = useState<Record<string, Target>>({});
   const [error, setError] = useState('');
-  const olderLoaded = older.length > 0;
 
   useEffect(() => {
     const load = async () => {
       try {
         const [a, t] = await Promise.all([listAlerts(100), listTargets()]);
-        setEvents(a.events ?? []);
-        if (!olderLoaded) setCursor(a.next_before_id);
+        const head = a.events ?? [];
+        if (paged) {
+          setEvents((prev) => merge(head, prev ?? []));
+        } else {
+          setEvents(head);
+          setCursor(a.next_before_id);
+        }
         setTargets(Object.fromEntries(t.map((x) => [x.id, x])));
         setError('');
       } catch (err) {
@@ -40,14 +52,15 @@ export const Alerts: React.FC<AlertsProps> = () => {
     void load();
     const timer = window.setInterval(() => void load(), 15_000);
     return () => window.clearInterval(timer);
-  }, [olderLoaded]);
+  }, [paged]);
 
   const loadMore = async () => {
     setLoadingMore(true);
     try {
       const page = await listAlerts(100, cursor);
-      setOlder((o) => [...o, ...(page.events ?? [])]);
+      setEvents((prev) => merge(prev ?? [], page.events ?? []));
       setCursor(page.next_before_id);
+      setPaged(true);
       setError('');
     } catch (err) {
       setError(err instanceof ApiError ? err.message : 'Could not load older alerts');
@@ -57,7 +70,7 @@ export const Alerts: React.FC<AlertsProps> = () => {
   };
 
   const silenced = Object.values(targets).filter((t) => isSilenced(t));
-  const shown = events && [...events, ...older.filter((o) => !events.some((e) => e.id === o.id))];
+  const shown = events;
 
   return (
     <div className="dr-page">
