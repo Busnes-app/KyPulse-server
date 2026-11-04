@@ -47,6 +47,10 @@ Pairs a source and delivers bounded NDJSON batches with acknowledged input posit
   138 s for a full 1 MiB batch). The `HTTP` interface exists for deterministic transport tests.
 - Each sender process owns one 0700 state directory and its Linux flock. `token` is a
   keyfile-managed 0600 hex secret; `positions.json` is a separate 0600 atomic checkpoint.
+- A run accepts at most 256 streams it sees itself; saved checkpoints do not count. Over
+  1024 saved checkpoints, each save drops the oldest Docker ones this run did not use
+  (recreated containers never return under the same ID), keeping the file well below its
+  1 MiB read limit. File checkpoints are never dropped.
 - The supported TLS profile sets `GODEBUG=fips140=on` before the sender starts.
   Preserve its state directory, token, source binding and checkpoints after a
   TLS failure; repair the peer rather than re-pairing or advancing positions.
