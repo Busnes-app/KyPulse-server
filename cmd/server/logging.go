@@ -29,6 +29,13 @@ var (
 	auditKeyBesideDB = logging.DeclareEvent("audit_key_beside_db",
 		"audit key sits beside the database; move it to its own directory and set KYPULSE_AUDIT_KEY_FILE", slog.LevelWarn)
 	fKeyPath = logging.DeclareString("path")
+
+	// usernameCaseClash names two accounts whose usernames differ only in case. While any
+	// exist the case-insensitive unique index is not created; nothing is renamed.
+	usernameCaseClash = logging.DeclareEvent("username_case_clash",
+		"two usernames differ only in case; rename or remove one so the unique index can be created", slog.LevelWarn)
+	fUsername      = logging.DeclareString("username")
+	fOtherUsername = logging.DeclareString("other_username")
 )
 
 // newLogger builds the process logger and routes the stdlib log package and the default slog
