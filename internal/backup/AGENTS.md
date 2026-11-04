@@ -75,6 +75,13 @@ live in `recoveryclient` and in the settings rows it reads and writes through th
   without installer-owned active sources remain drillable. Restore extracts the member
   inside the private restore directory and never writes its absolute references. Installer
   target placement and bridge-side copies still require suite restore qualification.
+- `split.go`: a snapshot over `capsule.MaxFileBytes` is sealed as consecutive
+  `data/kypulse.db.part-NNN` members; the recipe still names `data/kypulse.db`, which the drill
+  (`Checks`) and `cmd/server` restore rebuild with `JoinDatabase` (restore then removes the
+  parts). Single-member capsules are unchanged. A payload past 80% of
+  `capsule.MaxExpandedBytes` logs a warning. Never raise the library limits.
+- `cmd/server` restore sets `backup_interval_sec=0` in the restored database and says so: a
+  restored copy never deposits on its own.
 - `sso_credentials.go` seals `config/installer-sso-credentials.json`: the KyIdentity client
   and directory secrets the snapshot's `installer.config` row names, with those paths and
   the row's SHA-256. Every capsule carries it (empty without an installer configuration);

@@ -44,7 +44,9 @@ or an administrator no longer holding `kypulse.admin` (or the global `admin` rol
 inactive, and its sessions and pending MFA challenges end in the same transaction. A later
 assigned revision restores sign-in. Roles never change through the directory, so a viewer is
 never promoted. The legacy KySignOn format (`hex(HMAC-SHA256(body))` in
-`X-KySignOn-Signature`) is still accepted at `/api/sso/kysignon/sync`.
+`X-KySignOn-Signature`) is still accepted at `/api/sso/kysignon/sync`; for an installer-owned
+identity it can only end access (deactivate or delete become inactive), never promote, rename
+or reactivate.
 
 The application is a monitoring/control product; administrator access does not grant
 ordinary mail, notes, drive or vault content access in other products.

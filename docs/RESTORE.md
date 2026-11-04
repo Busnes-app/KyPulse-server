@@ -30,7 +30,7 @@ Everything a fresh server needs to be the old one:
 
 | Path in the capsule | What it is |
 |---|---|
-| `data/kypulse.db` | Application database: users, sessions, MFA state, keyed audit trail, settings and sealed tokens; collected history, import cursors and pending log pairing codes are excluded |
+| `data/kypulse.db` (or `data/kypulse.db.part-000`, `-001`, … when it is over 64 MiB; restore joins them) | Application database: users, sessions, MFA state, keyed audit trail, settings and sealed tokens; collected history, import cursors and pending log pairing codes are excluded |
 | `data/encryption.key` | 32 bytes. The KyRecovery pairing token, and TOTP secrets kept from the removed local MFA, are encrypted under it |
 | `data/audit.key` | 32 bytes. Keys the audit hash chain; without it the restored log cannot be verified |
 | `data/recovery.pub` | The suite recovery public key, so the restored server comes back pinned (present when the backup had a key) |
@@ -294,7 +294,9 @@ as before, and start.
 2. Open Backup & recovery. If the backup had a key, the recovery key shows as pinned with the
    same key ID as before; compare it with the ceremony card. If the backup was paired, the
    sealed token came across in the database, so the restored server can deposit again
-   without re-pairing: click Back up now to prove it. If the screen says the key is missing,
+   without re-pairing: click Back up now to prove it. Restore turned scheduled deposits off,
+   so a rehearsal never deposits beside the live server; once this server is the one in
+   service, set the schedule again under Backup. If the screen says the key is missing,
    `data/recovery.pub` did not come across; re-pair, which is refused unless KyRecovery hands
    back the same key.
 3. Check the audit log: the last events before the restore are there, followed by your

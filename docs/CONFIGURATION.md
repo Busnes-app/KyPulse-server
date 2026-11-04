@@ -34,8 +34,8 @@ there is no log file.
 | `KYPULSE_CAPTCHA_POW_DIFFICULTY` | `50000` | proof-of-work search space (hashes tried at most) |
 | `KYPULSE_SSO_ENABLED`, `KYPULSE_SSO_AUTO_PROVISION` | `true`, `true` | single sign-on |
 | `KYPULSE_KYSIGNON_ISSUER`, `_CLIENT_ID`, `_SECRET`, `_HMAC_SECRET` | empty | KySignOn; register `<app URL>/api/sso/kysignon/backchannel-logout` as the client's back-channel logout URI so signing out there ends the session here |
-| `KYPULSE_OIDC_ISSUER`, `_CLIENT_ID`, `_SECRET` | empty | generic OIDC |
-| `KYPULSE_SAML_ENTITY_ID`, `KYPULSE_SAML_METADATA_URL` | empty | SAML service provider |
+| `KYPULSE_OIDC_ISSUER`, `_CLIENT_ID`, `_SECRET` | empty | generic OIDC; not yet wired to sign-in, so it signs nobody in. Use KyIdentity |
+| `KYPULSE_SAML_ENTITY_ID`, `KYPULSE_SAML_METADATA_URL` | empty | SAML service-provider metadata only; no sign-in route yet |
 | `KYPULSE_POLL_WORKERS` | `4` | concurrent health polls, 1 to 32 |
 | `KYPULSE_ALERT_ALLOW_HTTP` | `false` | admit a plain-http webhook URL |
 | `KYPULSE_KYYARD_ALLOW_HTTP` | `false` | admit a plain-http KyYard URL |
