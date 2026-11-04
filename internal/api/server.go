@@ -133,6 +133,7 @@ type Server struct {
 	attemptsMu    sync.Mutex
 	attempts      map[string]attemptWindow
 	accounts      map[string]attemptWindow
+	logins        map[string]attemptWindow // login failures per account and client, bounded like attempts
 	claimGlobal   attemptWindow
 	refusalMu     sync.Mutex
 	refusals      map[string]*refusalBucket
@@ -251,6 +252,7 @@ func NewServer(cfg *config.Config, st store.Store, lg *logging.Logger, mon *moni
 		pow:           auth.NewPoWGuard(),
 		attempts:      make(map[string]attemptWindow),
 		accounts:      make(map[string]attemptWindow),
+		logins:        make(map[string]attemptWindow),
 		refusals:      make(map[string]*refusalBucket),
 		refusalNow:    time.Now,
 		ingestWindows: make(map[string]attemptWindow),
@@ -266,7 +268,7 @@ func (s *Server) allowAttempt(key string, limit int, window time.Duration) bool 
 	s.attemptsMu.Lock()
 	defer s.attemptsMu.Unlock()
 	if _, known := s.attempts[key]; !known && len(s.attempts) >= attemptsCap {
-		s.makeRoom(now)
+		makeRoom(s.attempts, now)
 	}
 	entry := bumpWindow(s.attempts[key], now, window)
 	s.attempts[key] = entry
@@ -289,31 +291,46 @@ func (s *Server) allowAccount(key string, limit int, window time.Duration) bool 
 	return entry.count <= limit
 }
 
-// accountOpen reports whether key has attempts left in its window, without spending one.
-func (s *Server) accountOpen(key string, limit int) bool {
-	s.attemptsMu.Lock()
-	defer s.attemptsMu.Unlock()
-	w, ok := s.accounts[key]
-	return !ok || time.Now().After(w.reset) || w.count < limit
-}
-
-// makeRoom frees a slot for a new key: it drops every expired window, and if the map is still
-// full it drops one live entry chosen at random, never the one nearest expiry. Caller holds
-// attemptsMu. The scan is O(attemptsCap) and only runs for a new key while the map is full;
-// 10 000 entries is microseconds.
-func (s *Server) makeRoom(now time.Time) {
-	for candidate, w := range s.attempts {
+// makeRoom frees a slot for a new key in m: it drops every expired window, and if the map is
+// still full it drops one live entry chosen at random, never the one nearest expiry. Caller
+// holds attemptsMu. The scan is O(attemptsCap) and only runs for a new key while the map is
+// full; 10 000 entries is microseconds.
+func makeRoom(m map[string]attemptWindow, now time.Time) {
+	for candidate, w := range m {
 		if now.After(w.reset) {
-			delete(s.attempts, candidate)
+			delete(m, candidate)
 		}
 	}
-	if len(s.attempts) >= attemptsCap {
+	if len(m) >= attemptsCap {
 		// Go randomises map iteration, so the first entry is an unbiased victim.
-		for candidate := range s.attempts {
-			delete(s.attempts, candidate)
+		for candidate := range m {
+			delete(m, candidate)
 			break
 		}
 	}
+}
+
+// loginOpen reports whether this account and client have wrong passwords left in the window,
+// without spending one.
+func (s *Server) loginOpen(key string, limit int) bool {
+	s.attemptsMu.Lock()
+	defer s.attemptsMu.Unlock()
+	w, ok := s.logins[key]
+	return !ok || time.Now().After(w.reset) || w.count < limit
+}
+
+// spendLogin records a wrong password for an account and client. The keys carry the caller's
+// address, so the map is bounded like attempts: evicting a live window only gives that one
+// address a fresh ten guesses, which a new address would give it anyway. It has its own map so
+// filling the IP limiter cannot evict it.
+func (s *Server) spendLogin(key string, window time.Duration) {
+	now := time.Now()
+	s.attemptsMu.Lock()
+	defer s.attemptsMu.Unlock()
+	if _, known := s.logins[key]; !known && len(s.logins) >= attemptsCap {
+		makeRoom(s.logins, now)
+	}
+	s.logins[key] = bumpWindow(s.logins[key], now, window)
 }
 
 func bumpWindow(entry attemptWindow, now time.Time, window time.Duration) attemptWindow {

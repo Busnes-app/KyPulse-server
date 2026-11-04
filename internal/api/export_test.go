@@ -40,3 +40,13 @@ func RegisterDetachedForTest(s *Server) func() {
 	s.detached.add()
 	return s.detached.done
 }
+
+// SpendLoginForTest records one wrong password for key; LoginWindowsForTest counts the live
+// login windows. Test-only.
+func SpendLoginForTest(s *Server, key string) { s.spendLogin(key, 15*time.Minute) }
+
+func LoginWindowsForTest(s *Server) int {
+	s.attemptsMu.Lock()
+	defer s.attemptsMu.Unlock()
+	return len(s.logins)
+}

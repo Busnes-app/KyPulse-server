@@ -124,6 +124,17 @@ func TestUnimplementedCaptchaProviderFailsClosed(t *testing.T) {
 	}
 }
 
+// Login windows carry caller-chosen addresses, so their map is bounded.
+func TestLoginWindowsAreBounded(t *testing.T) {
+	srv, _, _ := setupTestServer(t)
+	for i := 0; i < api.AttemptsCapForTest+100; i++ {
+		api.SpendLoginForTest(srv, "login-user:usr_x@"+strconv.Itoa(i))
+	}
+	if n := api.LoginWindowsForTest(srv); n > api.AttemptsCapForTest {
+		t.Fatalf("%d login windows, cap %d", n, api.AttemptsCapForTest)
+	}
+}
+
 // The account window counts failures only: a user signing in often is never locked out.
 func TestLoginAccountWindowIgnoresSuccess(t *testing.T) {
 	srv, st, _ := setupTestServer(t)
