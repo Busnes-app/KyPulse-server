@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import { cleanup, render, screen } from '@testing-library/react';
+import { cleanup, fireEvent, render, screen } from '@testing-library/react';
 import { Backup } from './Backup';
 
 function mockStatus(body: Record<string, unknown>) {
@@ -93,5 +93,17 @@ describe('Backup', () => {
     render(<Backup />);
     await screen.findByText('https://recovery.example');
     expect(screen.queryByText(/No capsule is made on PostgreSQL/)).toBeNull();
+  });
+
+  it('asks before pinning a key, which is permanent', async () => {
+    mockStatus({ key_pinned: false, paired: false, interval_sec: 0, database_driver: 'sqlite', members: [] });
+    const confirm = vi.fn(() => false);
+    vi.stubGlobal('confirm', confirm);
+    render(<Backup />);
+    fireEvent.change(await screen.findByPlaceholderText('base64 from the ceremony page'), { target: { value: 'AAAA' } });
+    fireEvent.submit(screen.getByRole('button', { name: 'Pin key' }).closest('form')!);
+    expect(confirm).toHaveBeenCalledWith(expect.stringMatching(/permanent/));
+    // Declined: nothing but the status read was sent (mockStatus throws on any other URL).
+    expect(vi.mocked(fetch).mock.calls.every(([u]) => String(u).endsWith('/api/backup/status'))).toBe(true);
   });
 });

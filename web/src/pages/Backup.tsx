@@ -303,6 +303,12 @@ export const Backup: React.FC = () => {
 
   const pin = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (
+      !window.confirm(
+        `Pin this recovery key, split ${pinK} of ${pinN}?\n\nThe pin is permanent: every capsule is sealed to this key, and changing it needs a new ceremony and a fresh data directory. Pin only the key from this suite's ceremony.`,
+      )
+    )
+      return;
     setPinning(true);
     setPinError('');
     try {
