@@ -50,11 +50,6 @@ func newSQLStore(ctx context.Context, db *sql.DB, driver string, auditKey []byte
 	s.logs = &logStore{store: s}
 	s.sources = &sourceStore{store: s}
 
-	if err := s.users.ensureUsernameIndex(ctx); err != nil {
-		_ = db.Close()
-		return nil, err
-	}
-
 	// A log with no digests is keyed only when migration 6 has just added the columns; any
 	// later start that finds one means the chain was stripped.
 	if err := s.audit.open(ctx, slices.Contains(applied, 6)); err != nil {
@@ -136,24 +131,7 @@ INSERT INTO users (
 		lastLogin = sql.NullTime{Time: *user.LastLoginAt, Valid: true}
 	}
 
-	tx, err := u.store.db.BeginTx(ctx, nil)
-	if err != nil {
-		return err
-	}
-	defer tx.Rollback()
-	// Refuse a case variant of a taken name even where existing duplicates keep the
-	// case-insensitive unique index from being created.
-	if err := u.lockUsernames(ctx, tx); err != nil {
-		return err
-	}
-	var taken int
-	if err := tx.QueryRowContext(ctx, u.store.rebind(`SELECT COUNT(1) FROM users WHERE LOWER(username) = LOWER(?)`), user.Username).Scan(&taken); err != nil {
-		return err
-	}
-	if taken > 0 {
-		return ErrAlreadyExists
-	}
-	_, err = tx.ExecContext(ctx, q,
+	_, err := u.store.db.ExecContext(ctx, q,
 		user.ID, user.Username, user.Email, user.DisplayName, user.PasswordHash,
 		user.Role, user.Status, user.SSOProvider, user.SSOSubject,
 		user.TOTPSecretEnc, user.TOTPEnabled, user.RecoveryCodesHash,
@@ -161,60 +139,12 @@ INSERT INTO users (
 		user.CreatedAt, user.UpdatedAt, lastLogin,
 	)
 	if err != nil {
-		if isUniqueViolation(err) {
+		if strings.Contains(err.Error(), "UNIQUE") || strings.Contains(err.Error(), "duplicate key") {
 			return ErrAlreadyExists
 		}
 		return err
 	}
-	return tx.Commit()
-}
-
-// ensureUsernameIndex adds the case-insensitive unique username index at every start
-// once no two names differ only in case. While some do, it renames nothing: the server
-// runs, UsernameClashes reports them, and CreateUser/UpdateUser refuse new ones.
-func (u *userStore) ensureUsernameIndex(ctx context.Context) error {
-	clashes, err := u.UsernameClashes(ctx)
-	if err != nil || len(clashes) > 0 {
-		return err
-	}
-	_, err = u.store.db.ExecContext(ctx, `CREATE UNIQUE INDEX IF NOT EXISTS idx_users_username_lower ON users (LOWER(username))`)
-	if err != nil && (isUniqueViolation(err) || strings.Contains(err.Error(), "could not create unique index")) {
-		return nil // a clash committed since the check; the next start reports it
-	}
-	return err
-}
-
-// usernameLockKey serialises username writes on PostgreSQL, whose read committed check
-// would otherwise let two transactions both see a name free while the index is absent.
-// SQLite runs one connection, so writes are serial already.
-const usernameLockKey int64 = 7345103
-
-func (u *userStore) lockUsernames(ctx context.Context, tx *sql.Tx) error {
-	if u.store.driver != "postgres" {
-		return nil
-	}
-	_, err := tx.ExecContext(ctx, "SELECT pg_advisory_xact_lock($1)", usernameLockKey)
-	return err
-}
-
-func (u *userStore) UsernameClashes(ctx context.Context) ([][]string, error) {
-	rows, err := u.store.db.QueryContext(ctx, `
-SELECT a.username, b.username FROM users a JOIN users b
-  ON LOWER(a.username) = LOWER(b.username) AND a.username < b.username
-ORDER BY a.username, b.username`)
-	if err != nil {
-		return nil, err
-	}
-	defer rows.Close()
-	var clashes [][]string
-	for rows.Next() {
-		var a, b string
-		if err := rows.Scan(&a, &b); err != nil {
-			return nil, err
-		}
-		clashes = append(clashes, []string{a, b})
-	}
-	return clashes, rows.Err()
+	return nil
 }
 
 func (u *userStore) scanUser(row interface{ Scan(...any) error }) (*User, error) {
@@ -294,8 +224,6 @@ func (u *userStore) UpdateUser(ctx context.Context, user *User) error {
 		lastLogin = sql.NullTime{Time: *user.LastLoginAt, Valid: true}
 	}
 
-	// A renamed user may not take a case variant of another user's name; an unchanged
-	// name passes, so an existing duplicate pair keeps working.
 	q := u.store.rebind(`
 UPDATE users SET
     username = ?, email = ?, display_name = ?, password_hash = ?,
@@ -303,42 +231,24 @@ UPDATE users SET
     totp_secret_enc = ?, totp_enabled = ?, recovery_codes_hash = ?,
     push_device_id = ?, must_change_password = ?, updated_at = ?,
     last_login_at = ?
-WHERE id = ? AND (username = ? OR NOT EXISTS (
-    SELECT 1 FROM users other WHERE LOWER(other.username) = LOWER(?) AND other.id <> ?))
+WHERE id = ?
 `)
 
-	tx, err := u.store.db.BeginTx(ctx, nil)
-	if err != nil {
-		return err
-	}
-	defer tx.Rollback()
-	if err := u.lockUsernames(ctx, tx); err != nil {
-		return err
-	}
-	res, err := tx.ExecContext(ctx, q,
+	res, err := u.store.db.ExecContext(ctx, q,
 		user.Username, user.Email, user.DisplayName, user.PasswordHash,
 		user.Role, user.Status, user.SSOProvider, user.SSOSubject,
 		user.TOTPSecretEnc, user.TOTPEnabled, user.RecoveryCodesHash,
 		user.PushDeviceID, user.MustChangePassword, user.UpdatedAt,
-		lastLogin, user.ID, user.Username, user.Username, user.ID,
+		lastLogin, user.ID,
 	)
 	if err != nil {
-		if isUniqueViolation(err) {
-			return ErrAlreadyExists
-		}
 		return err
 	}
-	if rows, _ := res.RowsAffected(); rows == 0 {
-		var exists int
-		if err := tx.QueryRowContext(ctx, u.store.rebind(`SELECT COUNT(1) FROM users WHERE id = ?`), user.ID).Scan(&exists); err != nil {
-			return err
-		}
-		if exists > 0 {
-			return ErrAlreadyExists
-		}
+	rows, _ := res.RowsAffected()
+	if rows == 0 {
 		return ErrNotFound
 	}
-	return tx.Commit()
+	return nil
 }
 
 func (u *userStore) AdvanceSyncOrder(ctx context.Context, provider, subject string, at, floor int64) (bool, error) {

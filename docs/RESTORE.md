@@ -186,7 +186,7 @@ Delete it afterwards; a file holding k shares is the suite key in a file.
 On success it prints the authenticated manifest:
 
 ```
-Restored 4 files from capsule cap-kyPulse-1788605720094118543
+Restored 6 files from capsule cap-kyPulse-1788605720094118543
   service:      kyPulse (v0.1.0)
   created:      2026-09-05T12:15:20Z
   recovery key: 886ff52c...
@@ -289,8 +289,8 @@ as before, and start.
 ## Step 4: prove it
 
 1. Open the app URL and sign in with an existing admin account. Sign-in does not read
-   `encryption.key`; for a paired server, step 2's Back up now does, through the sealed
-   pairing token.
+   `encryption.key`; for a paired server, Back up now in item 2 does, through the sealed
+   pairing token, once this server is the one in service.
 2. Open Backup & recovery. If the backup had a key, the recovery key shows as pinned with the
    same key ID as before; compare it with the ceremony card. If the backup was paired, the
    sealed token came across in the database, so the restored server can deposit again

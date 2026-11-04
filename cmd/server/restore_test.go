@@ -12,6 +12,7 @@ import (
 	"github.com/Busnes-app/ky-primitives/capsule"
 	"github.com/Busnes-app/ky-primitives/recoveryclient"
 	"github.com/Busnes-app/ky-primitives/recoverykey"
+	"github.com/Busnes-app/kypulse-server/internal/backup"
 	"github.com/Busnes-app/kypulse-server/internal/config"
 	"github.com/Busnes-app/kypulse-server/internal/store"
 )
@@ -92,6 +93,9 @@ func TestRestoreTurnsScheduledDepositsOff(t *testing.T) {
 	if err := st.Settings().SetSetting(ctx, "backup_interval_sec", "86400"); err != nil {
 		t.Fatal(err)
 	}
+	if err := st.Settings().SetSetting(ctx, backup.LastRunErrorKey, "the old server's failure"); err != nil {
+		t.Fatal(err)
+	}
 	st.Close()
 	raw, err := os.ReadFile(live)
 	if err != nil {
@@ -127,5 +131,8 @@ func TestRestoreTurnsScheduledDepositsOff(t *testing.T) {
 	defer st.Close()
 	if v, err := st.Settings().GetSetting(ctx, "backup_interval_sec"); err != nil || v != "0" {
 		t.Fatalf("restored schedule: %q %v, want 0 (off)", v, err)
+	}
+	if _, err := st.Settings().GetSetting(ctx, backup.LastRunErrorKey); err == nil {
+		t.Fatal("restored server shows the old server's backup failure")
 	}
 }

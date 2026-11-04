@@ -82,12 +82,6 @@ func (s *SQLStore) ApplyInstaller(ctx context.Context, b config.InstallerBundle,
 			return r, err
 		}
 	}
-	if len(b.Admins)+len(b.Everyday) > 0 {
-		// The same lock CreateUser/UpdateUser take, so no writer adds a case variant meanwhile.
-		if err := s.users.lockUsernames(ctx, tx); err != nil {
-			return r, err
-		}
-	}
 	for i, list := range [][]applysetup.Identity{b.Admins, b.Everyday} {
 		role := "viewer"
 		if i == 0 {
@@ -123,15 +117,6 @@ func (s *SQLStore) ApplyInstaller(ctx context.Context, b config.InstallerBundle,
 			var count int
 			if err = tx.QueryRowContext(ctx, s.rebind(`SELECT COUNT(*) FROM users WHERE lower(username)=lower(?) OR (sso_subject<>'' AND sso_subject=?)`), identity.Username, identity.Subject).Scan(&count); err != nil {
 				return r, err
-			}
-			if count == 0 && s.driver == "postgres" {
-				// This serializable snapshot predates the username lock, so it can miss a
-				// case variant CreateUser committed while we waited. Ask outside it: the lock
-				// keeps any other writer out until we commit. (SQLite has one connection.)
-				err = s.db.QueryRowContext(ctx, `SELECT COUNT(*) FROM users WHERE lower(username)=lower($1)`, identity.Username).Scan(&count)
-				if err != nil {
-					return r, err
-				}
 			}
 			if count != 0 {
 				return r, errors.New("installer refuses to adopt an existing identity")

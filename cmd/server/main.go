@@ -119,13 +119,6 @@ func runServer(lg *logging.Logger) {
 	}
 	placed := st.Audit().Placement()
 	lg.Log(ctx, auditChainPlaced, fChainMode(placed.Mode), logging.Count(int64(placed.Count)), fChainHead(placed.Head))
-	clashes, err := st.Users().UsernameClashes(ctx)
-	if err != nil {
-		fatal("Failed to check usernames: %v", err)
-	}
-	for _, c := range clashes {
-		lg.Log(ctx, usernameCaseClash, fUsername(c[0]), fOtherUsername(c[1]))
-	}
 
 	if err := ensureBootstrapAdmin(ctx, st, cfg.Database.DataDir, lg); err != nil {
 		fatal("%v", err)
@@ -559,6 +552,10 @@ func scheduleOff(dbPath string, stdout io.Writer) error {
 	if _, err := db.Exec(`INSERT INTO server_settings (key, value, updated_at) VALUES ('backup_interval_sec', '0', ?)
 ON CONFLICT (key) DO UPDATE SET value = excluded.value, updated_at = excluded.updated_at`, time.Now().UTC()); err != nil {
 		return fmt.Errorf("turn scheduled deposits off in the restored database: %w", err)
+	}
+	// The old server's last scheduled failure says nothing about this one.
+	if _, err := db.Exec(`DELETE FROM server_settings WHERE key = ?`, backup.LastRunErrorKey); err != nil {
+		return fmt.Errorf("clear the old backup error in the restored database: %w", err)
 	}
 	fmt.Fprintln(stdout, "Scheduled deposits are off on the restored server. Turn them on under Backup once it is the server in service.")
 	return nil
