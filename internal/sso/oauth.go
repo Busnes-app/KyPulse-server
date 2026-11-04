@@ -161,9 +161,18 @@ func claimsFromIDToken(idToken *oidc.IDToken) (*IdentityClaims, error) {
 		return nil, ErrInvalidIDToken
 	}
 	var roles []string
-	if len(raw.Roles) > 0 { // present: it must be an array of strings (null too is malformed)
-		if string(raw.Roles) == "null" || json.Unmarshal(raw.Roles, &roles) != nil {
+	if len(raw.Roles) > 0 { // present: it must be an array of strings (a null anywhere is malformed)
+		var list []any
+		if string(raw.Roles) == "null" || json.Unmarshal(raw.Roles, &list) != nil {
 			return nil, ErrInvalidIDToken
+		}
+		roles = make([]string, 0, len(list))
+		for _, v := range list {
+			r, ok := v.(string)
+			if !ok {
+				return nil, ErrInvalidIDToken
+			}
+			roles = append(roles, r)
 		}
 	}
 	username := raw.PreferredUsername

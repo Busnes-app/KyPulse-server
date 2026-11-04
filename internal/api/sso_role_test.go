@@ -102,10 +102,10 @@ func TestSSOSignInReadsPerAppRoles(t *testing.T) {
 	}
 	// A malformed roles claim fails the sign-in and changes nothing.
 	idp.role = "viewer"
-	for _, bad := range []any{"admin", map[string]any{"admin": true}, []any{1}} {
+	for _, bad := range []any{"admin", map[string]any{"admin": true}, []any{1}, []any{nil}, []any{nil, "admin"}} {
 		idp.roles = bad
-		if w := ssoLogin(srv, idp, "ivy", "s5"); w.Code != http.StatusUnauthorized || role() != store.RoleAdmin {
-			t.Fatalf("roles %v: status %d, role %q", bad, w.Code, role())
+		if w := ssoLogin(srv, idp, "ivy", "s5"); w.Code != http.StatusUnauthorized || role() != store.RoleAdmin || !signedIn(srv, third) {
+			t.Fatalf("roles %v: status %d, role %q, other session kept %v", bad, w.Code, role(), signedIn(srv, third))
 		}
 	}
 }
