@@ -3,6 +3,7 @@ package sso_test
 import (
 	"context"
 	"encoding/json"
+	"errors"
 	"net/http"
 	"net/http/httptest"
 	"net/url"
@@ -204,9 +205,9 @@ func TestKySignOnDeprovisioningFailsOnStoreError(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
+	defer st.Close()
 	const secret = "webhook-secret-999"
-	client := sso.NewKySignOnClient(config.SSOConfig{KySignOnHMACSecret: secret}, st)
-	st.Close()
+	client := sso.NewKySignOnClient(config.SSOConfig{KySignOnHMACSecret: secret}, lookupFails{st})
 	for _, event := range []string{"user.deactivated", "user.deleted"} {
 		body, _ := json.Marshal(sso.KySignOnSyncPayload{Event: event, ID: "ext-gone", Timestamp: time.Now().Unix()})
 		if err := client.HandleSyncWebhook(context.Background(), body, crypto.ComputeHMACSHA256(body, secret)); err == nil {
@@ -241,4 +242,16 @@ func TestRoleForMapsUnknownRolesToViewer(t *testing.T) {
 			t.Errorf("RoleFor(%q) = %q, want %q", claimed, got, want)
 		}
 	}
+}
+
+// lookupFails is a store whose user lookup by SSO subject fails with a transient error, while
+// everything else (the delivery order included) works.
+type lookupFails struct{ store.Store }
+
+func (s lookupFails) Users() store.UserStore { return failingUsers{s.Store.Users()} }
+
+type failingUsers struct{ store.UserStore }
+
+func (failingUsers) GetUserBySSO(context.Context, string, string) (*store.User, error) {
+	return nil, errors.New("database unavailable")
 }

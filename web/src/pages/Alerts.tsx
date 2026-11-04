@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { BellOff } from 'lucide-react';
 import { hrefFor } from '../router';
 import { ApiError, causeLabel, isSilenced, listAlerts, listTargets, stateWord, timeLabel, type Target, type TargetEvent } from '../monitor';
@@ -27,6 +27,9 @@ export const Alerts: React.FC<AlertsProps> = () => {
   // instead of replacing the list, so nothing between it and the loaded pages drops out.
   const [events, setEvents] = useState<TargetEvent[] | null>(null);
   const [paged, setPaged] = useState(false);
+  // Read when a refresh resolves, not when it started: a refresh in flight during "Load older
+  // alerts" must merge, not replace the page just loaded.
+  const pagedRef = useRef(false);
   const [cursor, setCursor] = useState(0);
   const [loadingMore, setLoadingMore] = useState(false);
   const [targets, setTargets] = useState<Record<string, Target>>({});
@@ -37,7 +40,7 @@ export const Alerts: React.FC<AlertsProps> = () => {
       try {
         const [a, t] = await Promise.all([listAlerts(100), listTargets()]);
         const head = a.events ?? [];
-        if (paged) {
+        if (pagedRef.current) {
           setEvents((prev) => merge(head, prev ?? []));
         } else {
           setEvents(head);
@@ -60,6 +63,7 @@ export const Alerts: React.FC<AlertsProps> = () => {
       const page = await listAlerts(100, cursor);
       setEvents((prev) => merge(prev ?? [], page.events ?? []));
       setCursor(page.next_before_id);
+      pagedRef.current = true;
       setPaged(true);
       setError('');
     } catch (err) {
