@@ -22,6 +22,20 @@ A local account changes its own password under **Settings > Account > Password**
 current one. Every session of that account, the current one included, is signed out, so it signs
 in again with the new password. Accounts that sign in through KyIdentity change it there.
 
+## KyIdentity administrator roles before upgrading
+
+Before upgrading, assign `kypulse.admin` (or `admin`) to every dedicated KyPulse
+administrator in the KyPulse application's KyIdentity role assignments. A global
+KyIdentity administrator role alone does not grant application administrator access.
+Verify the application's ID token contains that role in its `roles` array before
+upgrading; keep a working local recovery administrator available during the change.
+
+At each sign-in, a present per-app `roles` array is authoritative: an empty array,
+or one without either administrator role, makes the account a viewer and ends its
+other sessions when the role changes. If `roles` is absent, the legacy `role` claim
+is used when present; with neither claim an existing role stays unchanged.
+Installer-owned identities remain governed by their directory assignments.
+
 ## Two-factor authentication
 
 MFA is a KyIdentity feature. KyPulse has no second factor of its own: for one, sign in with

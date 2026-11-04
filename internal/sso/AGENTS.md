@@ -35,6 +35,8 @@ Owns the application adapters around OAuth/OIDC login, KySignOn HMAC-SHA256 sign
   ID token's `auth_time` (zero when absent).
 - KyIdentity is the authority for an SSO user's role: every KySignOn callback applies `IdentityClaims.LocalRole` (`admin` or `kypulse.admin` in KyIdentity's per-app `roles` array means admin, otherwise viewer; without `roles` the legacy `role` through `RoleFor`; with neither the role is left unchanged, never demoted; a `roles` that is not an array of strings fails the sign-in) to an existing user that is not installer-owned (`store.InstallerUserKey`), ends all of that user's sessions before issuing the new one when it changes, and audits `auth.sso_role_changed`. Installer-owned identities keep the role the installer directory gave them (`internal/api/sso_handlers.go`).
 
+- Before an upgrade, operators must assign the per-app `kypulse.admin` or `admin` role in KyIdentity and verify its ID-token claim; a present empty `roles` array is authoritative and demotes to viewer. `docs/OPERATIONS.md` owns the migration instructions.
+
 ## Verification
 - `go test -v ./internal/sso/...` (`TestVerifyLogoutToken` holds one rejection case per logout-token rule)
 - Repeat in configured mode: real key-size/casing regressions exercise both
