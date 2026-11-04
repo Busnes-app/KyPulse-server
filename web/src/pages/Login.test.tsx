@@ -42,7 +42,10 @@ it('offers KySignOn only when the server reports a configured issuer', () => {
   const { rerender } = render(<Login onSuccess={vi.fn()} appName="KyPulse" />);
   expect(screen.queryByRole('link', { name: 'Continue with single sign-on' })).toBeNull();
   expect(screen.queryByRole('separator')).toBeNull();
-  expect(screen.getByRole('button', { name: 'Sign in' }).querySelector('svg')).not.toBeNull();
+  // Until the browser check solves, an early submit would only fail and restart it.
+  const submit = screen.getByRole('button', { name: 'Checking this browser…' });
+  expect(submit.querySelector('svg')).not.toBeNull();
+  expect((submit as HTMLButtonElement).disabled).toBe(true);
   expect(screen.getByText('Health and alerts for your Ky apps.')).toBeTruthy();
   rerender(<Login onSuccess={vi.fn()} appName="KyPulse" ssoEnabled />);
   expect(screen.getByRole('link', { name: 'Continue with single sign-on' }).getAttribute('href')).toBe('/api/sso/kysignon/login');

@@ -76,9 +76,10 @@ export const Login: React.FC<LoginProps> = ({ onSuccess, appName, ssoEnabled = f
                 value={password} onChange={(e) => setPassword(e.target.value)} required />
             </div>
             <CaptchaWidget key={captchaRound} onToken={setCaptchaToken} />
-            <button type="submit" className="ky-auth-submit" disabled={loading}>
+            {/* An early submit carries no token, fails, and restarts the check from zero. */}
+            <button type="submit" className="ky-auth-submit" disabled={loading || !captchaToken}>
               <LogIn aria-hidden="true" />
-              <span>{loading ? 'Signing in…' : 'Sign in'}</span>
+              <span>{loading ? 'Signing in…' : captchaToken ? 'Sign in' : 'Checking this browser…'}</span>
             </button>
             {ssoEnabled && <>
               <hr className="ky-auth-divider" />
