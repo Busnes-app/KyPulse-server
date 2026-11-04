@@ -134,10 +134,9 @@ func (s *Sender) Run(ctx context.Context, input <-chan Item) error {
 	}
 	queue := make([]queued, 0, 500)
 	dropped := map[string]Position{}
-	inputs := make(map[string]bool, len(s.State.Positions))
-	for k := range s.State.Positions {
-		inputs[k] = true
-	}
+	// The cap counts the streams this run reads. Saved positions of containers long since
+	// recreated (each deploy is a new ID) must not use it up and stop the sender for good.
+	inputs := make(map[string]bool)
 	var droppedCount uint64
 	var used int
 	var active *batch
@@ -314,7 +313,7 @@ func (s *Sender) deliver(ctx context.Context, body []byte) error {
 		if ctx.Err() != nil {
 			return ctx.Err()
 		}
-		if err == nil && (resp.StatusCode == 400 || resp.StatusCode == 401 || resp.StatusCode == 403 || resp.StatusCode == 413 || resp.StatusCode == 415) {
+		if err == nil && (resp.StatusCode == 400 || resp.StatusCode == 401 || resp.StatusCode == 403 || resp.StatusCode == 409 || resp.StatusCode == 413 || resp.StatusCode == 415) {
 			return fmt.Errorf("sender: delivery refused (HTTP %d); fix sender configuration or protocol", resp.StatusCode)
 		}
 		delay := backoff + time.Duration(rand.Int64N(int64(backoff/2)+1))

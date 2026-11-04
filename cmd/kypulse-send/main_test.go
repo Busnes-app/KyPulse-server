@@ -112,6 +112,45 @@ func TestCLITerminalFailureJoinsStdin(t *testing.T) {
 	}
 }
 
+// stuckStdin is a blocking pipe with an idle writer: Close does not interrupt its Read.
+type stuckStdin struct {
+	sent  bool
+	never chan struct{}
+}
+
+func (s *stuckStdin) Read(p []byte) (int, error) {
+	if !s.sent {
+		s.sent = true
+		return copy(p, "line\n"), nil
+	}
+	<-s.never
+	return 0, io.EOF
+}
+func (s *stuckStdin) Close() error { return nil }
+
+func TestCLITerminalFailureExitsDespiteAStuckStdin(t *testing.T) {
+	dir := filepath.Join(t.TempDir(), "state")
+	state := sender.State{URL: "https://example.com", SourceID: "test", Positions: map[string]sender.Position{}}
+	if err := sender.SaveState(dir, state); err != nil {
+		t.Fatal(err)
+	}
+	if err := keyfile.Store(filepath.Join(dir, "token"), make([]byte, 32), keyfile.Hex); err != nil {
+		t.Fatal(err)
+	}
+	stdin := &stuckStdin{never: make(chan struct{})}
+	defer close(stdin.never)
+	done := make(chan error, 1)
+	go func() { done <- runWith([]string{"stdin", "--state-dir", dir}, stdin, rejectHTTP{}, nil) }()
+	select {
+	case err := <-done:
+		if err == nil || !strings.Contains(err.Error(), "HTTP 400") {
+			t.Fatalf("delivery: %v", err)
+		}
+	case <-time.After(6 * time.Second):
+		t.Fatal("sender hung on a stdin read it cannot interrupt")
+	}
+}
+
 func TestDockerContainerLimitBeforeSocketAccess(t *testing.T) {
 	dir := filepath.Join(t.TempDir(), "state")
 	state := sender.State{URL: "https://example.com", SourceID: "test", Positions: map[string]sender.Position{}}

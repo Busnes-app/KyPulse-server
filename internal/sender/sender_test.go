@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"errors"
+	"fmt"
 	"net/http"
 	"path/filepath"
 	"strings"
@@ -310,7 +311,7 @@ func TestHTTPRetryAndPermanentRefusal(t *testing.T) {
 		retry bool
 		after string
 		want  time.Duration
-	}{{"rate_seconds", 429, true, "600", 5 * time.Minute}, {"rate_date", 429, true, now.Add(30 * time.Second).Format(http.TimeFormat), 30 * time.Second}, {"server", 503, true, "", 0}, {"bad_request", 400, false, "", 0}, {"auth", 401, false, "", 0}, {"forbidden", 403, false, "", 0}, {"oversize", 413, false, "", 0}, {"media", 415, false, "", 0}} {
+	}{{"rate_seconds", 429, true, "600", 5 * time.Minute}, {"rate_date", 429, true, now.Add(30 * time.Second).Format(http.TimeFormat), 30 * time.Second}, {"server", 503, true, "", 0}, {"bad_request", 400, false, "", 0}, {"auth", 401, false, "", 0}, {"forbidden", 403, false, "", 0}, {"conflict", 409, false, "", 0}, {"oversize", 413, false, "", 0}, {"media", 415, false, "", 0}} {
 		t.Run(tc.name, func(t *testing.T) {
 			calls := 0
 			var waited time.Duration
@@ -403,5 +404,24 @@ func TestDockerStreamsShareQueueButCheckpointIndependently(t *testing.T) {
 	}
 	if calls < 3 || saved.Positions[PositionKey(quiet)] != quiet || saved.Positions["docker:busy:stdout"].Ordinal != 500 || len(saved.Positions) != 2 {
 		t.Fatalf("calls=%d positions=%+v", calls, saved.Positions)
+	}
+}
+
+// Positions saved for containers that no longer exist do not count toward the stream cap.
+func TestSavedPositionsDoNotExhaustTheStreamCap(t *testing.T) {
+	dir := filepath.Join(t.TempDir(), "state")
+	old := map[string]Position{}
+	for i := 0; i < 300; i++ {
+		p := Position{Kind: "docker", Input: fmt.Sprintf("gone%03d", i), Stream: "stdout", Timestamp: "2026-09-27T12:00:00Z", Ordinal: 1}
+		old[PositionKey(p)] = p
+	}
+	s := Sender{HTTP: postFunc(func([]byte) (*egress.Response, error) { return &egress.Response{StatusCode: 204}, nil }),
+		StateDir: dir, Token: make([]byte, 32), State: State{URL: "https://example.com", SourceID: "one", Positions: old}}
+	prepareSender(t, &s)
+	items := make(chan Item, 1)
+	items <- Item{Record: ingest.Record{Line: "new deploy"}, Position: Position{Kind: "docker", Input: "fresh", Stream: "stdout", Timestamp: "2026-09-28T12:00:00Z", Ordinal: 1}}
+	close(items)
+	if err := s.Run(context.Background(), items); err != nil {
+		t.Fatalf("new container refused: %v", err)
 	}
 }

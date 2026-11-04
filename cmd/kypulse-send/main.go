@@ -224,9 +224,18 @@ func runInput(kind, path, containers, socket, dir string, stdin io.ReadCloser, h
 			cancelReader()
 			closeStdin()
 			if readerDone != nil {
-				joinedErr := <-readerDone
-				if deliveryErr == nil {
-					readerErr = joinedErr
+				// Closing a blocking stdin pipe does not interrupt a pending read, so an idle
+				// upstream would hold the exit forever; the process is ending, so stop waiting.
+				var stdinStuck <-chan time.Time
+				if kind == "stdin" {
+					stdinStuck = time.After(time.Second)
+				}
+				select {
+				case joinedErr := <-readerDone:
+					if deliveryErr == nil {
+						readerErr = joinedErr
+					}
+				case <-stdinStuck:
 				}
 			}
 			if readerErr != nil && signalCtx.Err() == nil {
