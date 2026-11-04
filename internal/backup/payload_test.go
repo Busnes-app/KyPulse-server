@@ -437,3 +437,23 @@ func TestCollectRefusesADriverItCannotSnapshot(t *testing.T) {
 		t.Fatalf("got %v, want ErrNoDatabaseSnapshot", err)
 	}
 }
+
+// KyNotes Q8 A: a database larger than one capsule member travels as ordered parts and
+// the drill joins them before checking it.
+func TestLargeDatabaseSealsAsPartsAndDrills(t *testing.T) {
+	t.Setenv("KYPULSE_PORT", "8080")
+	t.Setenv("KYPULSE_DB_DRIVER", "sqlite")
+	defer backup.SetMemberLimitForTest(4096)()
+	cfg, _ := sqliteInstance(t)
+	payload, err := backup.Collect(context.Background(), cfg, "test")
+	if err != nil {
+		t.Fatal(err)
+	}
+	if findFile(payload.Files, "data/kypulse.db") != nil || findFile(payload.Files, "data/kypulse.db.part-001") == nil {
+		t.Fatal("database not split into parts")
+	}
+	result, err := recoveryclient.Drill(context.Background(), t.TempDir(), payload, backup.Checks)
+	if err != nil || !result.Passed {
+		t.Fatalf("drill of a split database: %+v %v", result, err)
+	}
+}

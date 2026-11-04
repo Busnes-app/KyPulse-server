@@ -57,6 +57,13 @@ func Checks(dir string, opened capsule.Manifest) []recoveryclient.Check {
 			return recipeFailure("required_files omits a capsule member")
 		}
 	}
+	if !members[dbPath] {
+		joined, err := JoinDatabase(dir, false)
+		if err != nil {
+			return recipeFailure("database parts: " + err.Error())
+		}
+		members[dbPath] = joined
+	}
 	for _, paths := range [][]string{required, sqlitePaths} {
 		for _, name := range paths {
 			if _, safe := drillPath(dir, name); !safe || !members[name] {

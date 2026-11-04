@@ -10,6 +10,7 @@ import (
 	"os"
 	"path/filepath"
 	"regexp"
+	"slices"
 	"strings"
 
 	"github.com/Busnes-app/ky-primitives/recoveryclient"
@@ -54,8 +55,7 @@ func Collect(ctx context.Context, cfg *config.Config, appVersion string) (recove
 	if err != nil {
 		return recoveryclient.Payload{}, err
 	}
-	const dbPath = "data/kypulse.db"
-	files := append([]recoveryclient.File{{Path: dbPath, Data: dbBytes, Mode: 0600}}, credentials...)
+	files := append(dbMembers(dbBytes), credentials...)
 	sqlitePaths := []string{dbPath}
 
 	cfgJSON, _ := json.MarshalIndent(map[string]any{
@@ -86,6 +86,11 @@ func Collect(ctx context.Context, cfg *config.Config, appVersion string) (recove
 		files = append(files, recoveryclient.File{Path: recoveryPubPath, Data: pub, Mode: 0600})
 	}
 
+	warnNearLimit(files)
+	required := requiredFiles(files)
+	if !slices.Contains(required, dbPath) {
+		required = append(required, dbPath) // split: the drill joins the parts first
+	}
 	payload := recoveryclient.Payload{
 		ServiceName: cfg.Server.AppName,
 		AppVersion:  appVersion,
@@ -97,7 +102,7 @@ func Collect(ctx context.Context, cfg *config.Config, appVersion string) (recove
 		VerificationRecipe: map[string]any{
 			"check_sqlite_integrity": true,
 			"sqlite_paths":           sqlitePaths,
-			"required_files":         requiredFiles(files),
+			"required_files":         required,
 			"expected_env":           []string{"KYPULSE_PORT", "KYPULSE_DB_DRIVER"},
 			"expected_ports":         []int{cfg.Server.Port},
 		},

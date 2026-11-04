@@ -526,6 +526,9 @@ func restore(capsulePath, targetDir, expectService string, shares []string, stdo
 	if err := recoveryclient.Restore(capsulePath, targetDir, expectService, shares, stdout); err != nil {
 		return err
 	}
+	if _, err := backup.JoinDatabase(targetDir, true); err != nil {
+		return err
+	}
 	return scheduleOff(filepath.Join(targetDir, "data", "kypulse.db"), stdout)
 }
 
