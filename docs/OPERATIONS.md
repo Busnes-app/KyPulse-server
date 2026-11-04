@@ -34,9 +34,9 @@ codes; the admin sets TOTP up again after signing in.
 
 ```sh
 kypulse                                   # run the server
-kypulse init-admin -password <pw> [-username admin]   # create an admin, or reset its password
+kypulse init-admin -password <pw> [-username admin] [-promote]   # create an admin, or reset its password; -promote makes an existing non-admin local account an admin
 kypulse audit-verify                      # verify the audit chain
-kypulse backup-drill                      # seal and reopen a capsule with a throwaway key
+kypulse backup-drill                      # seal and reopen a capsule with a throwaway key; exits 1 when the drill fails
 kypulse export-capsule [-out <file>]      # write a sealed capsule to a file
 kypulse deposit                           # run one backup now (for cron)
 kypulse restore -capsule <f> -to <dir>    # restore a capsule; shares are read from stdin

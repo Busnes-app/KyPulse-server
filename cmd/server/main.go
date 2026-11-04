@@ -362,6 +362,7 @@ func runInitAdmin(args []string) {
 	fs := flag.NewFlagSet("init-admin", flag.ExitOnError)
 	username := fs.String("username", "admin", "Admin username")
 	passwordFlag := fs.String("password", "", "Admin password (minimum 12 characters)")
+	promote := fs.Bool("promote", false, "Allow making an existing non-admin local account an admin")
 	_ = fs.Parse(args)
 
 	if *passwordFlag == "" || len(*passwordFlag) < 12 {
@@ -384,30 +385,49 @@ func runInitAdmin(args []string) {
 		fatal("Password hashing error: %v", err)
 	}
 
-	existing, err := st.Users().GetUserByUsername(ctx, *username)
-	if err == nil && existing != nil {
+	done, err := initAdmin(ctx, st, *username, hash, *promote)
+	if err != nil {
+		fatal("Error: %v", err)
+	}
+	log.Printf("✓ %s", done)
+}
+
+// initAdmin creates the local admin, or resets an existing local admin's password. It makes
+// an existing non-admin account an admin only when promote is set, so a typo in -username
+// cannot silently hand a viewer the keys.
+func initAdmin(ctx context.Context, st store.Store, username, hash string, promote bool) (string, error) {
+	existing, err := st.Users().GetUserByUsername(ctx, username)
+	switch {
+	case err == nil && existing.SSOProvider != "local":
+		return "", fmt.Errorf("%q signs in through %s; init-admin manages local accounts only", username, existing.SSOProvider)
+	case err == nil && existing.Role != store.RoleAdmin && !promote:
+		return "", fmt.Errorf("%q is a %s account; pass -promote to make it an administrator", username, existing.Role)
+	case err == nil:
 		if err := st.Users().ResetAdminPassword(ctx, existing.ID, hash); err != nil {
-			fatal("Failed to update admin: %v", err)
+			return "", fmt.Errorf("failed to update admin: %w", err)
 		}
-		log.Printf("✓ Admin user %q password successfully reset", *username)
-		return
+		if existing.Role != store.RoleAdmin {
+			return fmt.Sprintf("User %q promoted to admin and password reset", username), nil
+		}
+		return fmt.Sprintf("Admin user %q password successfully reset", username), nil
+	case !errors.Is(err, store.ErrNotFound):
+		return "", fmt.Errorf("DB error: %w", err)
 	}
 
 	user := &store.User{
 		ID:                 fmt.Sprintf("usr_%s", crypto.RandomHex(12)),
-		Username:           *username,
+		Username:           username,
 		DisplayName:        "Administrator",
 		PasswordHash:       hash,
-		Role:               "admin",
+		Role:               store.RoleAdmin,
 		Status:             "active",
 		SSOProvider:        "local",
 		MustChangePassword: true,
 	}
-
 	if err := st.Users().CreateUser(ctx, user); err != nil {
-		fatal("Failed to create admin: %v", err)
+		return "", fmt.Errorf("failed to create admin: %w", err)
 	}
-	log.Printf("✓ Admin user %q created successfully", *username)
+	return fmt.Sprintf("Admin user %q created successfully", username), nil
 }
 
 // collectFiles is what every CLI seal uses; the sealed-only members are safe here and nowhere else.
@@ -448,6 +468,9 @@ func runBackupDrill(args []string) {
 		fmt.Printf("  [%s] %s: %s\n", status, check.Name, check.Message)
 	}
 	fmt.Println("==================================================")
+	if !result.Passed {
+		os.Exit(1) // so cron and scripts see a failed drill as a failure
+	}
 }
 
 func runExportCapsule(args []string) {
