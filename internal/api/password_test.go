@@ -186,11 +186,57 @@ func TestRestrictedSessionCannotInheritClearedFlag(t *testing.T) {
 	}
 }
 
-func TestReplacementRefusesUnflaggedAndFederatedAccounts(t *testing.T) {
+// A local account may change its own password at any time after proving the current one;
+// the change ends every session, the caller's included.
+func TestLocalAccountChangesItsOwnPassword(t *testing.T) {
+	srv, st, cfg := setupTestServer(t)
+	ctx := context.Background()
+	hash, _ := password.Hash("CurrentPassword123!")
+	u := &store.User{ID: "user", Username: "user", PasswordHash: hash, Status: "active", Role: "viewer", SSOProvider: "local"}
+	if err := st.Users().CreateUser(ctx, u); err != nil {
+		t.Fatal(err)
+	}
+	manager := auth.NewSessionManager(st, cfg.Security)
+	_, token, err := manager.IssueSession(ctx, httptest.NewRecorder(), httptest.NewRequest("POST", "/api/auth/login", nil), u)
+	if err != nil {
+		t.Fatal(err)
+	}
+	_, other, err := manager.IssueSession(ctx, httptest.NewRecorder(), httptest.NewRequest("POST", "/api/auth/login", nil), u)
+	if err != nil {
+		t.Fatal(err)
+	}
+	change := func(current string) *httptest.ResponseRecorder {
+		req := httptest.NewRequest("POST", "/api/auth/change-password", strings.NewReader(`{"current_password":"`+current+`","new_password":"ChosenPassword456!"}`))
+		req.Header.Set("Authorization", "Bearer "+token)
+		req.Header.Set("Content-Type", "application/json")
+		w := httptest.NewRecorder()
+		srv.ServeHTTP(w, req)
+		return w
+	}
+	if w := change("WrongPassword123!"); w.Code != http.StatusUnauthorized {
+		t.Fatalf("wrong current password: %d %s", w.Code, w.Body)
+	}
+	if w := change("CurrentPassword123!"); w.Code != http.StatusOK || !strings.Contains(w.Body.String(), `"login_required":true`) {
+		t.Fatalf("voluntary change: %d %s", w.Code, w.Body)
+	}
+	got, _ := st.Users().GetUserByID(ctx, "user")
+	if ok, _ := password.Verify("ChosenPassword456!", got.PasswordHash); !ok {
+		t.Fatal("new password not stored")
+	}
+	for _, tok := range []string{token, other} {
+		req := httptest.NewRequest("GET", "/api/auth/me", nil)
+		req.Header.Set("Authorization", "Bearer "+tok)
+		if _, _, err := manager.AuthenticateRequest(req); err == nil {
+			t.Fatal("a session survived the password change")
+		}
+	}
+}
+
+func TestReplacementRefusesFederatedAccounts(t *testing.T) {
 	for _, tc := range []struct {
 		name, provider string
 		flag           bool
-	}{{"unflagged", "local", false}, {"federated", "kysignon", true}} {
+	}{{"federated", "kysignon", true}, {"federated unflagged", "kysignon", false}} {
 		t.Run(tc.name, func(t *testing.T) {
 			srv, st, cfg := setupTestServer(t)
 			ctx := context.Background()
@@ -211,5 +257,28 @@ func TestReplacementRefusesUnflaggedAndFederatedAccounts(t *testing.T) {
 				t.Fatal(w.Code, w.Body)
 			}
 		})
+	}
+}
+
+// Sign-out answers success only once the session row is gone; otherwise it says so and keeps
+// the cookies, so the browser can try again instead of believing it signed out.
+func TestLogoutReportsAFailedRevocation(t *testing.T) {
+	srv, st, cfg := setupTestServer(t)
+	ctx := context.Background()
+	u := &store.User{ID: "user", Username: "user", Status: "active", Role: "viewer", SSOProvider: "local"}
+	if err := st.Users().CreateUser(ctx, u); err != nil {
+		t.Fatal(err)
+	}
+	_, token, err := auth.NewSessionManager(st, cfg.Security).IssueSession(ctx, httptest.NewRecorder(), httptest.NewRequest("POST", "/api/auth/login", nil), u)
+	if err != nil {
+		t.Fatal(err)
+	}
+	st.Close()
+	req := httptest.NewRequest("POST", "/api/auth/logout", nil)
+	req.Header.Set("Authorization", "Bearer "+token)
+	w := httptest.NewRecorder()
+	srv.ServeHTTP(w, req)
+	if w.Code != http.StatusInternalServerError || len(w.Result().Cookies()) != 0 {
+		t.Fatalf("logout with the store down: %d cookies=%v", w.Code, w.Result().Cookies())
 	}
 }

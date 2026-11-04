@@ -14,6 +14,7 @@ import (
 	"net/http"
 	"net/http/httptest"
 	"os"
+	"path/filepath"
 	"strconv"
 	"strings"
 	"testing"
@@ -63,6 +64,9 @@ func setupTestServerWith(t *testing.T, poster notify.Poster, yardHTTP kyyard.HTT
 	cfg, _ := config.LoadFromEnv()
 	db := testdb.Config(t)
 	db.DataDir = cfg.Database.DataDir // testdb only picks the backend; keep the temp data dir
+	if db.Driver == "sqlite" {
+		db.DSN = filepath.Join(db.DataDir, "kypulse.db") // the only path a capsule can restore
+	}
 	cfg.Database = db
 	cfg.Captcha.Provider = "none" // disable captcha for unit test speed
 
@@ -209,6 +213,15 @@ func TestSettingsOfferSSOOnlyWithAnIssuer(t *testing.T) {
 	t.Setenv("KYPULSE_SSO_ENABLED", "false")
 	if got := ssoEnabled(); got != false {
 		t.Errorf("disabled: sso_enabled = %v, want false", got)
+	}
+	// Turning SSO off must stop sign-in, not just hide the button.
+	srv, _, _ := setupTestServer(t)
+	for _, path := range []string{"/api/sso/kysignon/login", "/api/sso/kysignon/callback?code=c&state=s"} {
+		w := httptest.NewRecorder()
+		srv.ServeHTTP(w, httptest.NewRequest("GET", path, nil))
+		if w.Code != http.StatusNotFound {
+			t.Errorf("%s with SSO disabled: %d %s", path, w.Code, w.Body.String())
+		}
 	}
 }
 

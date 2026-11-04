@@ -117,9 +117,9 @@ type BackupConfig struct {
 	AllowPrivateRecovery bool `json:"allow_private_recovery"`
 }
 
-// CaptchaConfig holds anti-abuse settings (PoW default, Turnstile, Friendly).
+// CaptchaConfig holds anti-abuse settings. Proof-of-work is the only CAPTCHA implemented.
 type CaptchaConfig struct {
-	Provider      string `json:"provider"` // "pow", "turnstile", "friendly", "none"
+	Provider      string `json:"provider"` // "pow" or "none"; any other value acts as "pow"
 	SiteKey       string `json:"site_key"`
 	SecretKey     string `json:"secret_key"`
 	DifficultyPoW int    `json:"difficulty_pow"`

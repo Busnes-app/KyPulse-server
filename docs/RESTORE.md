@@ -58,9 +58,12 @@ it; the webhook opens only under the same encryption key.
 collector snapshots SQLite with `VACUUM INTO`; on `KYPULSE_DB_DRIVER=postgres` no snapshot is
 possible, so no capsule is made at all and there is nothing here to restore from. Back a
 Postgres deployment up with `pg_dump` on its own schedule, guard that dump as the plaintext of
-everything above, and copy `data/encryption.key` and `data/recovery.pub` separately — the
-recovery key pin, the pairing and the schedule are rows in the database and come back with the
-dump, but nothing in it can be decrypted without `encryption.key`.
+everything above, and copy `data/encryption.key`, `data/recovery.pub` and the audit key
+separately — the audit key is the file `KYPULSE_AUDIT_KEY_FILE` names (`secrets/audit.key` under
+Compose, otherwise `data/audit.key`), or the `KYPULSE_AUDIT_KEY` value itself. The recovery key
+pin, the pairing and the schedule are rows in the database and come back with the dump, but
+nothing in it can be decrypted without `encryption.key`, and a server given a different audit
+key refuses to start on the restored audit log.
 
 ## Before you start
 

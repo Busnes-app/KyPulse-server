@@ -21,7 +21,8 @@ A request times out after 5 s, reads at most 64 KiB and never follows redirects.
 LAN addresses are allowed; loopback, link-local and cloud metadata addresses are refused,
 also when a name resolves to one at connect time.
 
-An app turns **down** after 3 down polls in a row, **degraded** after 2, and **ok** after 2.
+An app turns **down** after 3 down polls in a row, **degraded** after 2 degraded polls in a
+row (or 3 failing polls in a row that mix both kinds), and **ok** after 2.
 Each change sends one webhook message and is recorded under Alerts. While an app stays down
 or degraded, a reminder goes out every hour. Silencing (1 h, 8 h or until fixed) stops
 webhook messages only; the alert bar and Alerts keep showing the problem, and "until fixed"

@@ -87,26 +87,51 @@ func TestLoginDoesNotEnumerateAccounts(t *testing.T) {
 	}
 }
 
-// A botnet must not outrun the per-IP window on one account, a full IP limiter must not
-// reset the account window, and a locked account answers like any other rejection.
+// Ten wrong passwords lock the account for that client only (IPv6 by its /64): a full IP
+// limiter must not reset the window, a locked client answers like any other rejection, and
+// the owner signing in from another address is never locked out by someone else's guesses.
 func TestLoginPerAccountWindow(t *testing.T) {
 	srv, st, _ := setupTestServer(t)
 	createLocalUser(t, st, "usr_target", "target", "active")
 	for i := 1; i <= 10; i++ {
-		if w := loginFrom(t, srv, fmt.Sprintf("203.0.113.%d:1", i), "target", "WrongPassword123!"); w.Code != http.StatusUnauthorized {
+		if w := loginFrom(t, srv, fmt.Sprintf("[2001:db8:1:1::%x]:1", i), "target", "WrongPassword123!"); w.Code != http.StatusUnauthorized {
 			t.Fatalf("attempt %d: %d", i, w.Code)
 		}
 	}
 	for i := 0; i < api.AttemptsCapForTest+50; i++ {
 		api.AllowAttemptForTest(srv, "filler:"+strconv.Itoa(i), 3, 5*time.Minute)
 	}
-	locked := loginFrom(t, srv, "198.51.100.50:1", "target", "SuperSecretPass123!")
+	locked := loginFrom(t, srv, "[2001:db8:1:1::99]:1", "target", "SuperSecretPass123!")
 	wrong := loginFrom(t, srv, "198.51.100.51:1", "nobody", "SuperSecretPass123!")
 	if locked.Code != http.StatusUnauthorized || locked.Body.String() != wrong.Body.String() {
 		t.Fatalf("locked account: %d %s, unknown: %s", locked.Code, locked.Body.String(), wrong.Body.String())
 	}
+	if w := loginFrom(t, srv, "198.51.100.50:1", "target", "SuperSecretPass123!"); w.Code != http.StatusOK {
+		t.Fatalf("owner from another address locked out: %d %s", w.Code, w.Body.String())
+	}
 	if w := loginFrom(t, srv, "198.51.100.52:1", "other", "x"); w.Code != http.StatusUnauthorized {
 		t.Fatalf("other account affected: %d", w.Code)
+	}
+}
+
+// A provider name with no implementation must not switch the CAPTCHA off.
+func TestUnimplementedCaptchaProviderFailsClosed(t *testing.T) {
+	srv, st, cfg := setupTestServer(t)
+	cfg.Captcha.Provider = "turnstile"
+	createLocalUser(t, st, "usr_cap", "cap", "active")
+	if w := loginFrom(t, srv, "192.0.2.77:1", "cap", "SuperSecretPass123!"); w.Code != http.StatusForbidden {
+		t.Fatalf("login without a PoW solution: %d %s", w.Code, w.Body.String())
+	}
+}
+
+// Login windows carry caller-chosen addresses, so their map is bounded.
+func TestLoginWindowsAreBounded(t *testing.T) {
+	srv, _, _ := setupTestServer(t)
+	for i := 0; i < api.AttemptsCapForTest+100; i++ {
+		api.SpendLoginForTest(srv, "login-user:usr_x@"+strconv.Itoa(i))
+	}
+	if n := api.LoginWindowsForTest(srv); n > api.AttemptsCapForTest {
+		t.Fatalf("%d login windows, cap %d", n, api.AttemptsCapForTest)
 	}
 }
 
@@ -337,5 +362,12 @@ func TestKySignOnCallbackHardening(t *testing.T) {
 	api.SetStoreForTest(srv, st)
 	if w := ssoCallback(srv, idp.Client()); w.Code != http.StatusFound || !hasSession(w) {
 		t.Fatalf("auto-provision: %d %s", w.Code, w.Body.String())
+	}
+
+	// A username already held by another account is a clear 409, not a 500.
+	createLocalUser(t, st, "usr_taken", "taken", "active")
+	idp.sub = "taken"
+	if w := ssoCallback(srv, idp.Client()); w.Code != http.StatusConflict || hasSession(w) {
+		t.Fatalf("username collision: %d %s", w.Code, w.Body.String())
 	}
 }

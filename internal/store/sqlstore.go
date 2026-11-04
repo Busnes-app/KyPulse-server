@@ -353,6 +353,19 @@ func (u *userStore) totpTransition(ctx context.Context, userID, keepSession, ip,
 	return err
 }
 
+func (u *userStore) AdvanceSyncOrder(ctx context.Context, provider, subject string, at, floor int64) (bool, error) {
+	if _, err := u.store.db.ExecContext(ctx, u.store.rebind(`DELETE FROM sso_sync_order WHERE latest < ?`), floor); err != nil {
+		return false, err
+	}
+	res, err := u.store.db.ExecContext(ctx, u.store.rebind(`INSERT INTO sso_sync_order (provider, subject, latest) VALUES (?, ?, ?)
+ON CONFLICT (provider, subject) DO UPDATE SET latest = excluded.latest WHERE sso_sync_order.latest <= excluded.latest`), provider, subject, at)
+	if err != nil {
+		return false, err
+	}
+	n, err := res.RowsAffected()
+	return n == 1, err
+}
+
 func (u *userStore) DeleteUser(ctx context.Context, id string) error {
 	q := u.store.rebind("DELETE FROM users WHERE id = ?")
 	res, err := u.store.db.ExecContext(ctx, q, id)
@@ -540,7 +553,7 @@ ON CONFLICT (provider, subject) DO UPDATE SET cutoff = excluded.cutoff, expires_
 func (u *userStore) CompletePasswordChange(ctx context.Context, userID, oldHash, newHash, ip string) error {
 	return u.store.withPassword(ctx, userID, oldHash, func(tx *sql.Tx) (func(bool), error) {
 		now := time.Now().UTC()
-		result, err := tx.ExecContext(ctx, u.store.rebind(`UPDATE users SET password_hash = ?, must_change_password = ?, updated_at = ? WHERE id = ? AND must_change_password = ? AND sso_provider = 'local'`), newHash, false, now, userID, true)
+		result, err := tx.ExecContext(ctx, u.store.rebind(`UPDATE users SET password_hash = ?, must_change_password = ?, updated_at = ? WHERE id = ? AND sso_provider = 'local'`), newHash, false, now, userID)
 		if err != nil {
 			return nil, err
 		}
@@ -551,7 +564,7 @@ func (u *userStore) CompletePasswordChange(ctx context.Context, userID, oldHash,
 		if n != 1 {
 			return nil, ErrNotFound
 		}
-		return u.revokePasswordGrants(ctx, tx, userID, "forced replacement; sessions revoked", ip, now)
+		return u.revokePasswordGrants(ctx, tx, userID, "password replaced; sessions revoked", ip, now)
 	})
 }
 

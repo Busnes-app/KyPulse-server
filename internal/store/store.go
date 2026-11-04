@@ -74,6 +74,10 @@ type UserStore interface {
 	EnableTOTP(ctx context.Context, userID, passwordHash, secretEnc, recoveryHashes, keepSession, ip string) error
 	DisableTOTP(ctx context.Context, userID, passwordHash, keepSession, ip string) error
 	DeleteUser(ctx context.Context, id string) error
+	// AdvanceSyncOrder records at (unix seconds) as subject's newest directory delivery and
+	// reports true, unless a newer one was already recorded. It first forgets entries older
+	// than floor.
+	AdvanceSyncOrder(ctx context.Context, provider, subject string, at, floor int64) (bool, error)
 	ListUsers(ctx context.Context, offset, limit int, search string) ([]*User, int, error)
 	CountUsers(ctx context.Context) (int, error)
 }

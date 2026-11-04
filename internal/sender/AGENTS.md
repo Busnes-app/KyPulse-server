@@ -35,6 +35,8 @@ Pairs a source and delivers bounded NDJSON batches with acknowledged input posit
 - Stdin and the outage queue live in memory and cannot survive a crash. File and Docker
   checkpoints replay only while upstream history exists. Overflow deliberately drops
   records and emits a marker, so delivery has no unconditional no-loss guarantee.
+- HTTP 400, 401, 403, 409, 413 and 415 are permanent refusals that stop delivery; 409 means
+  the source requires the sequenced or offboarding protocol this sender does not speak.
 - `Run` freezes one batch per request. A 2xx acknowledges its records and marker; only then
   does it atomically save positions. A failed save stops delivery, allowing replay.
   Every exit cancels and joins the active delivery worker before releasing the state lock.

@@ -359,6 +359,13 @@ CREATE TABLE sso_logouts (sid TEXT PRIMARY KEY, expires_at TIMESTAMPTZ NOT NULL)
 CREATE TABLE sso_subject_logouts (provider TEXT NOT NULL, subject TEXT NOT NULL, cutoff TIMESTAMPTZ NOT NULL, expires_at TIMESTAMPTZ NOT NULL, PRIMARY KEY (provider, subject));
 DELETE FROM sessions WHERE sso_sid = '' AND user_id IN (SELECT id FROM users WHERE sso_provider <> 'local');`,
 	},
+	// sso_sync_order holds each subject's newest applied directory-webhook timestamp, so a
+	// delayed older delivery cannot undo a newer one, across restarts too. Rows older than the
+	// webhook's acceptance window are pruned: nothing older than that is accepted anyway.
+	{Version: 13, Name: "sso_sync_order",
+		SQLite:   `CREATE TABLE sso_sync_order (provider TEXT NOT NULL, subject TEXT NOT NULL, latest INTEGER NOT NULL, PRIMARY KEY (provider, subject));`,
+		Postgres: `CREATE TABLE sso_sync_order (provider TEXT NOT NULL, subject TEXT NOT NULL, latest BIGINT NOT NULL, PRIMARY KEY (provider, subject));`,
+	},
 }
 
 // lockKey is the Postgres session advisory lock Run holds, so replicas starting together

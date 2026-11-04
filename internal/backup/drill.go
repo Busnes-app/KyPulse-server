@@ -87,6 +87,9 @@ func Checks(dir string, opened capsule.Manifest) []recoveryclient.Check {
 		message := "Missing"
 		if found {
 			message = "Configured"
+		} else if name == "KYPULSE_PORT" || name == "KYPULSE_DB_DRIVER" {
+			// config.LoadFromEnv defaults both, so leaving them unset is a working install.
+			found, message = true, "Not set; the default applies"
 		}
 		checks = append(checks, recoveryclient.Check{Name: "Environment: " + name, Passed: found, Message: message})
 	}

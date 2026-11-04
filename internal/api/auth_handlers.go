@@ -72,8 +72,9 @@ func (s *Server) handleLogin(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// Verify PoW CAPTCHA if enabled
-	if s.config.Captcha.Provider == "pow" {
+	// PoW is the only CAPTCHA implemented; only an explicit "none" turns it off, so a value
+	// naming an unimplemented provider fails closed instead of disabling the check.
+	if s.config.Captcha.Provider != "none" {
 		if req.CaptchaToken == "" || !s.pow.Verify(req.CaptchaToken, s.config.Security.SessionSecret) {
 			fail("", "captcha", http.StatusForbidden, "Security check failed. Please complete the CAPTCHA puzzle.")
 			return
@@ -92,17 +93,18 @@ func (s *Server) handleLogin(w http.ResponseWriter, r *http.Request) {
 		s.writeError(w, http.StatusInternalServerError, "Authentication error")
 		return
 	}
-	// Per account, so a botnet spread across many IPs cannot outrun the per-IP window. Only
-	// wrong passwords spend it, so signing in often never locks an account.
-	accountKey := "login-user:" + user.ID
-	if !s.accountOpen(accountKey, 10) {
+	// Per account and client (IPv6 by /64): one address cannot keep guessing past the per-IP
+	// window, and nobody elsewhere can lock the real owner out. Only wrong passwords spend it,
+	// so signing in often never locks an account.
+	accountKey := "login-user:" + user.ID + "@" + s.limitIP(r)
+	if !s.loginOpen(accountKey, 10) {
 		password.DummyVerify()
 		fail(user.ID, "account_rate_limit", http.StatusUnauthorized, loginFailed)
 		return
 	}
 	ok, err := password.Verify(req.Password, user.PasswordHash)
 	if err != nil || !ok {
-		s.allowAccount(accountKey, 10, 15*time.Minute)
+		s.spendLogin(accountKey, 15*time.Minute)
 		fail(user.ID, "password", http.StatusUnauthorized, loginFailed)
 		return
 	}
@@ -273,7 +275,10 @@ func (s *Server) handleLogout(w http.ResponseWriter, r *http.Request) {
 		s.writeError(w, http.StatusMethodNotAllowed, "Method not allowed")
 		return
 	}
-	_ = s.sessions.RevokeSession(r.Context(), w, r)
+	if err := s.sessions.RevokeSession(r.Context(), w, r); err != nil {
+		s.writeError(w, http.StatusInternalServerError, "Sign-out failed; the session is still active")
+		return
+	}
 	s.writeJSON(w, http.StatusOK, map[string]bool{"logged_out": true})
 }
 

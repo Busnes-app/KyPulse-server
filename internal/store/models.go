@@ -128,6 +128,7 @@ type TargetEvent struct {
 
 // PollUpdate is what one observation writes back.
 type PollUpdate struct {
+	URL        string // the URL polled; the row is updated only while it is still the target's URL
 	PolledAt   time.Time
 	LatencyMS  int64
 	LastResult string

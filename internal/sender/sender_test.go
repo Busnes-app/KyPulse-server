@@ -310,7 +310,7 @@ func TestHTTPRetryAndPermanentRefusal(t *testing.T) {
 		retry bool
 		after string
 		want  time.Duration
-	}{{"rate_seconds", 429, true, "600", 5 * time.Minute}, {"rate_date", 429, true, now.Add(30 * time.Second).Format(http.TimeFormat), 30 * time.Second}, {"server", 503, true, "", 0}, {"bad_request", 400, false, "", 0}, {"auth", 401, false, "", 0}, {"forbidden", 403, false, "", 0}, {"oversize", 413, false, "", 0}, {"media", 415, false, "", 0}} {
+	}{{"rate_seconds", 429, true, "600", 5 * time.Minute}, {"rate_date", 429, true, now.Add(30 * time.Second).Format(http.TimeFormat), 30 * time.Second}, {"server", 503, true, "", 0}, {"bad_request", 400, false, "", 0}, {"auth", 401, false, "", 0}, {"forbidden", 403, false, "", 0}, {"conflict", 409, false, "", 0}, {"oversize", 413, false, "", 0}, {"media", 415, false, "", 0}} {
 		t.Run(tc.name, func(t *testing.T) {
 			calls := 0
 			var waited time.Duration

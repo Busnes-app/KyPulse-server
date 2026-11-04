@@ -40,7 +40,8 @@ Design authority: `docs/superpowers/specs/2026-09-26-kypulse-design.md`. Plans l
 - Every process line is a JSON record on stderr through `ky-primitives/logging`; there is no
   log file and no log socket.
 - Sender CLI SIGINT/SIGTERM and reader failures allow a five-second delivery drain, then
-  cancel HTTP/retry waits and join readers. Clean EOF alone continues normal retries.
+  cancel HTTP/retry waits and join readers; a stdin read the OS cannot interrupt (an idle
+  blocking pipe) is abandoned after one second so the process can exit. Clean EOF alone continues normal retries.
   Reader failures surface after draining; unacknowledged positions remain unchanged.
 - Collected Logs and imported Activity are admin-only, including app-detail queries.
   Sender Bearer tokens authenticate only log ingestion; source identity and watched-target

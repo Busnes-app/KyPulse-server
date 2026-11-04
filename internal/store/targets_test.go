@@ -38,7 +38,7 @@ func TestTargetLifecycle(t *testing.T) {
 	}
 
 	now := time.Date(2026, 9, 26, 10, 41, 0, 0, time.UTC)
-	err = st.Targets().RecordPoll(ctx, "tgt_1", store.PollUpdate{PolledAt: now, LatencyMS: 12, LastResult: `{"state":"down","cause":"refused"}`, TrackJSON: `{"state":"down"}`, State: "down", StateSince: now, Cause: "refused"})
+	err = st.Targets().RecordPoll(ctx, "tgt_1", store.PollUpdate{URL: "https://vault.lan/healthz", PolledAt: now, LatencyMS: 12, LastResult: `{"state":"down","cause":"refused"}`, TrackJSON: `{"state":"down"}`, State: "down", StateSince: now, Cause: "refused"})
 	if err != nil {
 		t.Fatalf("record poll: %v", err)
 	}
@@ -182,7 +182,7 @@ func TestUpdateTargetResetsHealthOnNewURL(t *testing.T) {
 		t.Fatal(err)
 	}
 	polled := time.Now().UTC().Add(-time.Hour).Truncate(time.Microsecond)
-	if err := st.Targets().RecordPoll(ctx, "a", store.PollUpdate{PolledAt: polled, LatencyMS: 5, LastResult: `{"state":"down"}`,
+	if err := st.Targets().RecordPoll(ctx, "a", store.PollUpdate{URL: "https://a/", PolledAt: polled, LatencyMS: 5, LastResult: `{"state":"down"}`,
 		TrackJSON: `{"state":"down","down_streak":5}`, State: "down", StateSince: polled, Cause: "refused"}); err != nil {
 		t.Fatal(err)
 	}
@@ -228,5 +228,21 @@ func TestTransitionsSince(t *testing.T) {
 	got, err := st.Targets().TransitionsSince(ctx, since)
 	if err != nil || len(got) != 2 || got[0].ToState != "ok" || got[1].ToState != "degraded" || !got[0].At.Equal(since.Add(time.Hour)) {
 		t.Fatalf("%v %+v", err, got)
+	}
+}
+
+// A poll result for a URL the target no longer has is not recorded.
+func TestRecordPollRefusesAnEditedURL(t *testing.T) {
+	ctx := context.Background()
+	st := newTestStore(t)
+	if err := st.Targets().CreateTarget(ctx, &store.Target{ID: "a", Name: "a", URL: "https://new/", IntervalSec: 30, Enabled: true}); err != nil {
+		t.Fatal(err)
+	}
+	err := st.Targets().RecordPoll(ctx, "a", store.PollUpdate{URL: "https://old/", PolledAt: time.Now(), State: "ok", StateSince: time.Now()})
+	if !errors.Is(err, store.ErrNotFound) {
+		t.Fatalf("stale URL recorded: %v", err)
+	}
+	if tg, _ := st.Targets().GetTarget(ctx, "a"); tg.LastPolledAt != nil {
+		t.Fatal("stale poll stamped the target")
 	}
 }

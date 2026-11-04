@@ -23,7 +23,7 @@ func (s *Server) handleGetSettings(w http.ResponseWriter, r *http.Request) {
 		"theme":            theme,
 		"captcha_provider": s.config.Captcha.Provider,
 		// The login button goes to KySignOn, so it is offered only once an issuer is set.
-		"sso_enabled": s.config.SSO.Enabled && s.config.SSO.KySignOnIssuer != "",
+		"sso_enabled": s.ssoOn(),
 	}
 
 	user, _, err := s.sessions.AuthenticateRequest(r)

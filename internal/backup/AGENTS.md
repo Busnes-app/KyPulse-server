@@ -21,8 +21,10 @@ live in `recoveryclient` and in the settings rows it reads and writes through th
   setting will not open.
 - `Collect` snapshots SQLite with the lib's `SQLiteSnapshot` (`VACUUM INTO`; the store runs in
   WAL mode, so a plain file read misses uncheckpointed commits) and returns
-  `ErrNoDatabaseSnapshot` for any other driver, so a capsule without a consistent database is
-  never sealed. Each snapshot holds `<data dir>/snapshot.lock` shared; whoever first takes
+  `ErrNoDatabaseSnapshot` for any other driver, and for a SQLite DSN other than
+  `<data dir>/kypulse.db` (the only path a restore puts it back at), so a capsule without a
+  consistent, restorable database is never sealed. The drill's environment checks pass an
+  unset `KYPULSE_PORT` or `KYPULSE_DB_DRIVER`, since the server defaults both. Each snapshot holds `<data dir>/snapshot.lock` shared; whoever first takes
   it exclusively (startup `SweepSnapshots`, or any snapshot while no other runs) removes
   leftover `snapshot-<digits>` directories a crash left with an unsanitized copy. Symlinks
   and other names are never touched; a removal failure refuses the snapshot and startup.

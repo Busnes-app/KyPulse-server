@@ -21,6 +21,10 @@ type KySignOnClient struct {
 	flow   *oauthFlow
 	mu     sync.Mutex
 	seen   map[[32]byte]time.Time // sync body hash -> end of its timestamp window
+	// applyMu serialises applying deliveries, so the stored per-subject order and the account
+	// change it guards cannot interleave within this process.
+	applyMu sync.Mutex
+	now     func() time.Time // time.Now; tests replace it
 }
 
 func NewKySignOnClient(cfg config.SSOConfig, st store.Store) *KySignOnClient {
@@ -29,6 +33,7 @@ func NewKySignOnClient(cfg config.SSOConfig, st store.Store) *KySignOnClient {
 		store:  st,
 		flow:   newOAuthFlow(cfg.KySignOnIssuer, cfg.KySignOnClientID, cfg.KySignOnSecret),
 		seen:   make(map[[32]byte]time.Time),
+		now:    time.Now,
 	}
 }
 
@@ -79,13 +84,32 @@ func (k *KySignOnClient) HandleSyncWebhook(ctx context.Context, body []byte, sig
 		return fmt.Errorf("invalid json payload: %w", err)
 	}
 	sent := time.Unix(payload.Timestamp, 0)
-	if payload.Timestamp == 0 || time.Since(sent).Abs() > syncWindow {
+	if payload.Timestamp == 0 || k.now().Sub(sent).Abs() > syncWindow {
 		return errors.New("webhook timestamp is missing or expired")
 	}
 	// The payload carries no event ID, so the signed body itself is the replay key.
 	key := sha256.Sum256(body)
 	if err := k.reserve(key, sent.Add(syncWindow)); err != nil {
 		return err
+	}
+	k.applyMu.Lock()
+	defer k.applyMu.Unlock()
+	// Judge the window again now the lock is held, with the same clock reading that prunes:
+	// a delivery that queued past its window could otherwise prune a newer fence and apply.
+	now := k.now()
+	if now.Sub(sent) > syncWindow {
+		k.release(key)
+		return errors.New("webhook timestamp is missing or expired")
+	}
+	// The order is stored before applying: a failed apply leaves it at this timestamp, so the
+	// provider's retry of the same delivery still passes, while an older one does not.
+	newest, err := k.store.Users().AdvanceSyncOrder(ctx, "kysignon", payload.ID, payload.Timestamp, now.Add(-syncWindow).Unix())
+	if err != nil {
+		k.release(key)
+		return err
+	}
+	if !newest {
+		return nil // superseded by a newer delivery for this subject: acknowledge, change nothing
 	}
 	if err := k.applySync(ctx, payload); err != nil {
 		k.release(key) // a failed delivery may be retried
@@ -173,8 +197,11 @@ func (k *KySignOnClient) applySync(ctx context.Context, payload KySignOnSyncPayl
 
 	case "user.deactivated":
 		existing, err := k.store.Users().GetUserBySSO(ctx, "kysignon", payload.ID)
-		if err != nil {
+		if errors.Is(err, store.ErrNotFound) {
 			return nil // User might not exist locally
+		}
+		if err != nil {
+			return err
 		}
 		existing.Status = "inactive"
 		if err := k.store.Users().UpdateUser(ctx, existing); err != nil {
@@ -184,8 +211,11 @@ func (k *KySignOnClient) applySync(ctx context.Context, payload KySignOnSyncPayl
 
 	case "user.deleted":
 		existing, err := k.store.Users().GetUserBySSO(ctx, "kysignon", payload.ID)
-		if err != nil {
+		if errors.Is(err, store.ErrNotFound) {
 			return nil
+		}
+		if err != nil {
+			return err
 		}
 		return k.store.Users().DeleteUser(ctx, existing.ID)
 	}

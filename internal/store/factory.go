@@ -4,6 +4,7 @@ import (
 	"context"
 	"database/sql"
 	"fmt"
+	"net/url"
 	"os"
 	"path/filepath"
 	"strings"
@@ -40,12 +41,25 @@ func openSQLite(ctx context.Context, dsn string, auditKey []byte) (Store, error)
 		}
 	}
 
-	if !strings.Contains(dsn, "_pragma") {
+	// A DSN without pragmas gets the defaults. One that sets its own keeps them, but always
+	// gets foreign_keys(ON): the schema's ON DELETE rules depend on it.
+	_, rawQuery, _ := strings.Cut(dsn, "?")
+	query, _ := url.ParseQuery(rawQuery)
+	add := "_pragma=busy_timeout(5000)&_pragma=journal_mode(WAL)&_pragma=foreign_keys(ON)&_pragma=synchronous(NORMAL)"
+	if len(query["_pragma"]) > 0 {
+		add = "_pragma=foreign_keys(ON)"
+		for _, p := range query["_pragma"] {
+			if strings.HasPrefix(strings.ToLower(strings.TrimSpace(p)), "foreign_keys") {
+				add = ""
+			}
+		}
+	}
+	if add != "" {
 		delim := "?"
 		if strings.Contains(dsn, "?") {
 			delim = "&"
 		}
-		dsn = fmt.Sprintf("%s%s_pragma=busy_timeout(5000)&_pragma=journal_mode(WAL)&_pragma=foreign_keys(ON)&_pragma=synchronous(NORMAL)", dsn, delim)
+		dsn += delim + add
 	}
 
 	db, err := sql.Open("sqlite", dsn)

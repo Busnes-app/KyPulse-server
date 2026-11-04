@@ -104,7 +104,14 @@ export const App: React.FC = () => {
   }, []);
 
   const handleLogout = async () => {
-    await secureFetch('/api/auth/logout', { method: 'POST' });
+    // Only a server answer ends the session: a proxy error page or a dropped connection
+    // leaves the cookie in place, so say so instead of showing the sign-in screen.
+    const response = await secureFetch('/api/auth/logout', { method: 'POST' }).catch(() => null);
+    if (!response?.ok) {
+      setNotice('Sign-out did not reach the server, so this session may still be active. Try again.');
+      return;
+    }
+    setNotice('');
     setUser(null);
     setStatus(null);
     navigate('/status');
@@ -136,10 +143,10 @@ export const App: React.FC = () => {
   }
 
   if (user.must_change_password) {
-    return <ChangePassword onLogout={handleLogout} onComplete={() => {
+    return <>{notice && <p role="alert" className="form-error" style={{ padding: 16 }}>{notice}</p>}<ChangePassword onLogout={handleLogout} onComplete={() => {
       setUser(null);
       setNotice('Password changed. Sign in with your new password.');
-    }} />;
+    }} /></>;
   }
 
   const head = route.parts[0] ?? 'status';
@@ -154,6 +161,7 @@ export const App: React.FC = () => {
       />
 
       <main className="ky-content">
+        {notice && <p role="alert" className="form-error" style={{ padding: 16 }}>{notice}</p>}
         <PageBanner.Provider value={<AlertBar status={status} loading={statusLoading} isAdmin={isAdmin} />}>
         {head === 'status' && <Status user={user} onChanged={refreshStatus} />}
         {head === 'alerts' && <Alerts user={user} />}
@@ -162,7 +170,7 @@ export const App: React.FC = () => {
         {head === 'activity' && isAdmin && <Activity user={user} />}
         {head === 'backup' && isAdmin && <Backup />}
         {head === 'settings' && settingsSections.some((s) => s.id === route.parts[1]) && (
-          <Settings section={route.parts[1] as SettingsSection} settings={settings} user={user} onChanged={refreshStatus} onTOTPChange={(totp_enabled) => setUser((u: any) => (u ? { ...u, totp_enabled } : u))} />
+          <Settings section={route.parts[1] as SettingsSection} settings={settings} user={user} onChanged={refreshStatus} onTOTPChange={(totp_enabled) => setUser((u: any) => (u ? { ...u, totp_enabled } : u))} onPasswordChanged={() => { setUser(null); setStatus(null); setNotice('Password changed. Sign in with your new password.'); }} />
         )}
         </PageBanner.Provider>
         <LicenseFooter className="ky-content-foot" appName={brand(settings?.app_name)} version={status?.version} />

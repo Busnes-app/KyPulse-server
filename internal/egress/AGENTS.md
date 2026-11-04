@@ -9,7 +9,7 @@ KyYard, webhook and sender network callers. OIDC/recovery retain their library
 transport integration; local Docker reads use a separate Unix-socket client.
 
 ## Local Contracts
-- `ValidateURL` is the save-time check; the dialer repeats the address check on every resolved IP, so a DNS rebind cannot pass.
+- `ValidateURL` is the save-time check; the dialer repeats the address check on every resolved IP, so a DNS rebind cannot pass, and dials the allowed addresses in turn until one connects.
 - `AllowHTTP` is per client: on for health targets, off for webhooks unless `KYPULSE_ALERT_ALLOW_HTTP`, always off for KyYard.
 - A body over `MaxBody` is `ErrBodyTooLarge`, never a truncated success.
 - `Cause` is the fixed vocabulary the UI shows and tests pin.

@@ -314,7 +314,7 @@ func (s *Sender) deliver(ctx context.Context, body []byte) error {
 		if ctx.Err() != nil {
 			return ctx.Err()
 		}
-		if err == nil && (resp.StatusCode == 400 || resp.StatusCode == 401 || resp.StatusCode == 403 || resp.StatusCode == 413 || resp.StatusCode == 415) {
+		if err == nil && (resp.StatusCode == 400 || resp.StatusCode == 401 || resp.StatusCode == 403 || resp.StatusCode == 409 || resp.StatusCode == 413 || resp.StatusCode == 415) {
 			return fmt.Errorf("sender: delivery refused (HTTP %d); fix sender configuration or protocol", resp.StatusCode)
 		}
 		delay := backoff + time.Duration(rand.Int64N(int64(backoff/2)+1))

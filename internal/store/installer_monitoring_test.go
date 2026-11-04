@@ -55,7 +55,7 @@ func TestInstallerMonitoringOwnedCheckResumeAndDrift(t *testing.T) {
 		t.Fatal(err)
 	}
 	// Health and silence are not installer-owned fields.
-	if err := st.Targets().RecordPoll(ctx, source.TargetID, store.PollUpdate{PolledAt: time.Now(), State: "down", StateSince: time.Now(), Cause: "fixture", TrackJSON: `{"state":"down"}`}); err != nil {
+	if err := st.Targets().RecordPoll(ctx, source.TargetID, store.PollUpdate{URL: "https://identity.example/healthz", PolledAt: time.Now(), State: "down", StateSince: time.Now(), Cause: "fixture", TrackJSON: `{"state":"down"}`}); err != nil {
 		t.Fatal(err)
 	}
 	for _, check := range []bool{true, false} {
