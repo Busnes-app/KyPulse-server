@@ -115,6 +115,28 @@ func TestDialFallsBackToTheNextAllowedAddress(t *testing.T) {
 	}
 }
 
+// A first address that never answers gets only its share of the request budget, so the live
+// second address is still reached in time.
+func TestDialFallsBackPastABlackholedAddress(t *testing.T) {
+	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {}))
+	defer srv.Close()
+	lookup := func(context.Context, string, string) ([]net.IP, error) {
+		return []net.IP{net.ParseIP("10.0.0.1"), net.ParseIP("10.0.0.2")}, nil
+	}
+	dial := func(ctx context.Context, network, addr string) (net.Conn, error) {
+		if strings.HasPrefix(addr, "10.0.0.1:") {
+			<-ctx.Done() // packets dropped: no answer until the caller gives up
+			return nil, ctx.Err()
+		}
+		return (&net.Dialer{}).DialContext(ctx, network, srv.Listener.Addr().String())
+	}
+	c := newClient(Options{AllowHTTP: true, Timeout: 2 * time.Second}, lookup, dial)
+	resp, err := c.Get(context.Background(), "http://multi.lan/healthz")
+	if err != nil || resp.StatusCode != 200 {
+		t.Fatalf("resp=%v err=%v", resp, err)
+	}
+}
+
 func TestRedirectIsRefused(t *testing.T) {
 	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		http.Redirect(w, r, "http://evil.test/", http.StatusFound)

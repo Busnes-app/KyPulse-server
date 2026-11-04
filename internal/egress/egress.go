@@ -78,14 +78,24 @@ func newClient(o Options, lookup lookupFunc, dial dialFunc) *Client {
 			if err != nil {
 				return nil, err
 			}
-			// Try each allowed address in turn, as the standard dialer would: one dead address
-			// of a multi-homed name must not fail the whole request.
-			dialErr := error(ErrRefusedAddress)
+			var allowed []net.IP
 			for _, ip := range ips {
-				if !allowedIP(ip) {
-					continue
+				if allowedIP(ip) {
+					allowed = append(allowed, ip)
 				}
-				conn, err := dial(ctx, network, net.JoinHostPort(ip.String(), port))
+			}
+			// Try each allowed address in turn, as the standard dialer would: one dead address
+			// of a multi-homed name must not fail the whole request. Each attempt but the last
+			// gets an equal share of the request budget, so one that never answers cannot use it
+			// all. (Client.Timeout puts no deadline on the dial context, hence o.Timeout.)
+			dialErr := error(ErrRefusedAddress)
+			for i, ip := range allowed {
+				attempt, cancel := ctx, context.CancelFunc(func() {})
+				if i < len(allowed)-1 {
+					attempt, cancel = context.WithTimeout(ctx, o.Timeout/time.Duration(len(allowed)))
+				}
+				conn, err := dial(attempt, network, net.JoinHostPort(ip.String(), port))
+				cancel()
 				if err == nil {
 					return conn, nil
 				}
