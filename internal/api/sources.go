@@ -13,6 +13,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/Busnes-app/ky-primitives/password"
 	"github.com/Busnes-app/kypulse-server/internal/store"
 )
 
@@ -66,10 +67,14 @@ func (s *Server) handleCreateLogPairing(w http.ResponseWriter, r *http.Request) 
 	var req struct {
 		TargetID          string `json:"target_id"`
 		OffboardingAlerts bool   `json:"offboarding_alerts"`
+		Password          string `json:"password"`
 	}
 	if err := oneJSON(w, r, &req); err != nil {
 		s.audit(r.Context(), s.actorID(r), r, "admin.log_pairing", "", "outcome=refused reason=bad_json")
 		s.writeError(w, http.StatusBadRequest, "Invalid request")
+		return
+	}
+	if !s.pairingStepUp(w, r, req.Password) {
 		return
 	}
 	expires := time.Now().UTC().Add(15 * time.Minute)
@@ -109,6 +114,41 @@ func (s *Server) handleCreateLogPairing(w http.ResponseWriter, r *http.Request) 
 	}
 	s.audit(r.Context(), s.actorID(r), r, "admin.log_pairing", "", "outcome=refused reason=collision")
 	s.writeError(w, http.StatusServiceUnavailable, "Could not create pairing code")
+}
+
+// stepUpWindow is how long a KyIdentity step-up sign-in counts as proof of presence.
+const stepUpWindow = 10 * time.Minute
+
+// pairingStepUp requires proof of presence before minting a credential that outlives the
+// session: a local account's current password, or a KyIdentity step-up sign-in (max_age=0)
+// within stepUpWindow. It reports false after answering 403 step_up_required.
+func (s *Server) pairingStepUp(w http.ResponseWriter, r *http.Request, pw string) bool {
+	user, sess, err := s.sessions.AuthenticateRequest(r)
+	if err != nil {
+		s.writeError(w, http.StatusUnauthorized, "Authentication required")
+		return false
+	}
+	refuse := func(reason, method, message string) bool {
+		s.audit(r.Context(), user.ID, r, "admin.log_pairing", "", "outcome=refused reason="+reason)
+		s.writeJSON(w, http.StatusForbidden, map[string]string{"error": message, "code": "step_up_required", "method": method})
+		return false
+	}
+	if user.SSOProvider != "local" {
+		if sess.StepUpAt == nil || time.Since(*sess.StepUpAt) > stepUpWindow {
+			return refuse("step_up", "kyidentity", "Confirm it is you with KyIdentity before adding a log source")
+		}
+		return true
+	}
+	// Only wrong passwords spend the window, so a stolen session cannot guess on for long.
+	key := "step-up:" + user.ID
+	if !s.loginOpen(key, 5) {
+		return refuse("step_up_rate_limit", "password", "Too many wrong passwords; wait a few minutes")
+	}
+	if ok, err := password.Verify(pw, user.PasswordHash); pw == "" || err != nil || !ok {
+		s.spendLogin(key, 15*time.Minute)
+		return refuse("step_up", "password", "Enter your current password to add a log source")
+	}
+	return true
 }
 
 func (s *Server) handleClaimLogSource(w http.ResponseWriter, r *http.Request) {

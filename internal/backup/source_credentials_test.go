@@ -182,3 +182,25 @@ func TestInstallerSourceBackupDoesNotReactivateRevokedSource(t *testing.T) {
 		t.Fatal("revoked credential retained", err)
 	}
 }
+
+// Deleting an installer-owned source's watched app clears its target. Backup names the
+// source and how to recover instead of failing on the NULL; revoking it recovers.
+func TestInstallerSourceWithDeletedTargetDoesNotBreakBackupForGood(t *testing.T) {
+	cfg, st, _, _, id := sourceInstance(t)
+	targets, err := st.Targets().ListTargets(context.Background())
+	if err != nil || len(targets) != 1 {
+		t.Fatal(err)
+	}
+	if err := st.Targets().DeleteTarget(context.Background(), targets[0].ID); err != nil {
+		t.Fatal(err)
+	}
+	if _, err := backup.Collect(context.Background(), cfg, "test"); err == nil || !strings.Contains(err.Error(), "revoke it under Logs") {
+		t.Fatalf("got %v, want the recovery instruction", err)
+	}
+	if err := st.Sources().Revoke(context.Background(), id, time.Now()); err != nil {
+		t.Fatal(err)
+	}
+	if _, err := backup.Collect(context.Background(), cfg, "test"); err != nil {
+		t.Fatalf("backup after revoking the orphaned source: %v", err)
+	}
+}

@@ -12,6 +12,7 @@ import (
 	"github.com/Busnes-app/kypulse-server/internal/config"
 	"github.com/Busnes-app/kypulse-server/internal/crypto"
 	"github.com/Busnes-app/kypulse-server/internal/store"
+	"golang.org/x/oauth2"
 )
 
 // KySignOnClient manages interactions with the central KySignOn identity provider.
@@ -40,6 +41,12 @@ func NewKySignOnClient(cfg config.SSOConfig, st store.Store) *KySignOnClient {
 // BuildAuthURL generates the authorization code URL with PKCE for KySignOn.
 func (k *KySignOnClient) BuildAuthURL(ctx context.Context, redirectURI, state, verifier, nonce string) (string, error) {
 	return k.flow.authCodeURL(ctx, redirectURI, state, verifier, nonce)
+}
+
+// BuildStepUpAuthURL is BuildAuthURL asking KyIdentity to check the user's credentials
+// again (max_age=0, prompt=login), so the ID token's auth_time proves presence.
+func (k *KySignOnClient) BuildStepUpAuthURL(ctx context.Context, redirectURI, state, verifier, nonce string) (string, error) {
+	return k.flow.authCodeURL(ctx, redirectURI, state, verifier, nonce, oauth2.SetAuthURLParam("max_age", "0"), oauth2.SetAuthURLParam("prompt", "login"))
 }
 
 // ExchangeCode exchanges the authorization code and verifier for identity claims.
@@ -154,6 +161,17 @@ func (k *KySignOnClient) release(key [32]byte) {
 }
 
 func (k *KySignOnClient) applySync(ctx context.Context, payload KySignOnSyncPayload) error {
+	// The installer directory governs installer-owned identities: this legacy format may
+	// end their access, but never promote, rename, reactivate or delete them.
+	_, err := k.store.Settings().GetSetting(ctx, store.InstallerUserKey(k.config.KySignOnIssuer, payload.ID))
+	switch {
+	case err == nil && (payload.Event == "user.deactivated" || payload.Event == "user.deleted" || payload.Status != "" && payload.Status != "active"):
+		payload.Event = "user.deactivated"
+	case err == nil:
+		return nil
+	case !errors.Is(err, store.ErrNotFound):
+		return err
+	}
 	switch payload.Event {
 	case "user.created", "user.updated":
 		existing, err := k.store.Users().GetUserBySSO(ctx, "kysignon", payload.ID)

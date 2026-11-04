@@ -15,6 +15,12 @@ import (
 
 const InstallerConfigKey = "installer.config"
 
+// InstallerUserKey is the setting that marks issuer/subject as an installer-owned identity.
+func InstallerUserKey(issuer, subject string) string {
+	hash := sha256.Sum256([]byte(issuer + "\x00" + subject))
+	return "installer.user." + hex.EncodeToString(hash[:])
+}
+
 type installerIdentity struct {
 	SetupID string `json:"setupId"`
 	Issuer  string `json:"issuer"`

@@ -65,9 +65,10 @@ Design authority: `docs/superpowers/specs/2026-09-26-kypulse-design.md`. Plans l
   place refuses to start.
 - `web/dist` is committed after every frontend change; CI diffs it. `web/src/ky-ui/` is
   vendored and hash-pinned; never hand-edit it.
-- No device pairing, no SCIM. Local login with MFA, SSO (KySignOn, OIDC, SAML metadata) and
-  KyRecovery backup are kept from the scaffold. Local accounts enrol and remove TOTP
-  themselves in Settings (`internal/api/AGENTS.md`); identity providers own SSO accounts' MFA.
+- No device pairing, no SCIM. Local password login, SSO (KySignOn, OIDC, SAML metadata) and
+  KyRecovery backup are kept from the scaffold. MFA is KyIdentity's: there is no local TOTP
+  (removed, owner decision Q3 A). Its `users` columns, the `mfa_challenges` table and their
+  data stay; do not reintroduce local second factors or write a migration that clears them.
 
 ## Work Guidance
 
@@ -100,7 +101,7 @@ Design authority: `docs/superpowers/specs/2026-09-26-kypulse-design.md`. Plans l
 - `docs/ui-pulse-eight/AGENTS.md`: sequential UI council captures, source provenance, scores and audits.
 
 - `internal/api/AGENTS.md`: HTTP routes, auth wrappers, backup handlers, `/healthz`, SPA hosting.
-- `internal/auth/AGENTS.md`: password policy, TOTP, recovery codes, sessions, PoW CAPTCHA.
+- `internal/auth/AGENTS.md`: password policy, sessions, PoW CAPTCHA.
 - `internal/backup/AGENTS.md`: KyRecovery adapter over `ky-primitives/recoveryclient`.
 - `internal/config/AGENTS.md`: `KYPULSE_*` loading, defaults, validation.
 - `internal/crypto/AGENTS.md`: AES-GCM, HMAC, randomness.

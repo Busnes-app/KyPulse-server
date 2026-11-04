@@ -56,23 +56,12 @@ type UserStore interface {
 	GetUserByEmail(ctx context.Context, email string) (*User, error)
 	GetUserBySSO(ctx context.Context, provider, subject string) (*User, error)
 	UpdateUser(ctx context.Context, u *User) error
+	// ChangeRole moves an active user from one role to another and deletes all of the
+	// user's sessions in one transaction. ErrAlreadyExists when the row moved on meanwhile
+	// (another role, or no longer active), so a concurrent deactivation is never undone.
+	ChangeRole(ctx context.Context, userID, from, to string) error
 	ResetAdminPassword(ctx context.Context, userID, newHash string) error
 	CompletePasswordChange(ctx context.Context, userID, oldHash, newHash, ip string) error
-	UpdateRecoveryCodes(ctx context.Context, userID, oldHashes, newHashes string) error
-	// SpendTOTPCounter records counter as used. It returns ErrAlreadyExists when counter is
-	// not greater than the stored one, which is how a replayed code inside the skew window fails.
-	SpendTOTPCounter(ctx context.Context, userID string, counter int64) error
-	// SetTOTPSecret stores a sealed pending secret on a local account while TOTP is off,
-	// compare-and-swapped on the previous ciphertext. ErrAlreadyExists when the row moved on
-	// (enabled, a concurrent enrolment, not local), so an enabled secret is never replaced.
-	SetTOTPSecret(ctx context.Context, userID, oldEnc, newEnc string) error
-	// EnableTOTP turns on the pending secretEnc with recoveryHashes, and DisableTOTP clears
-	// secret and recovery codes. Each is one transaction that also deletes every session but
-	// keepSession (a token hash), every MFA challenge, and chains an audit row.
-	// ErrAlreadyExists when the account is not in the expected state, including a passwordHash
-	// that has since changed; ErrNotFound when keepSession has been revoked meanwhile.
-	EnableTOTP(ctx context.Context, userID, passwordHash, secretEnc, recoveryHashes, keepSession, ip string) error
-	DisableTOTP(ctx context.Context, userID, passwordHash, keepSession, ip string) error
 	DeleteUser(ctx context.Context, id string) error
 	// AdvanceSyncOrder records at (unix seconds) as subject's newest directory delivery and
 	// reports true, unless a newer one was already recorded. It first forgets entries older
@@ -96,8 +85,6 @@ type SessionStore interface {
 	// EndSSOSession ends every session of an SSO login and fences its sid until fenceUntil.
 	EndSSOSession(ctx context.Context, sid string, fenceUntil time.Time) error
 	CleanExpiredSessions(ctx context.Context) error
-	CreateMFAChallenge(ctx context.Context, challenge *MFAChallenge, expectedPasswordHash string) error
-	ConsumeMFAChallenge(ctx context.Context, tokenHash string) (userID, passwordHash string, err error)
 }
 
 // AuditStore logs security events as links of a keyed hash chain.

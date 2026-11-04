@@ -19,22 +19,28 @@ export const Alerts: React.FC<AlertsProps> = () => {
   const [events, setEvents] = useState<TargetEvent[] | null>(null);
   const [targets, setTargets] = useState<Record<string, Target>>({});
   const [error, setError] = useState('');
+  // cursor 0 is the newest page, which refreshes; an older page is a fixed slice of history.
+  const [cursor, setCursor] = useState(0);
+  const [older, setOlder] = useState(0);
 
   useEffect(() => {
+    let live = true;
     const load = async () => {
       try {
-        const [a, t] = await Promise.all([listAlerts(100), listTargets()]);
+        const [a, t] = await Promise.all([listAlerts(100, cursor), listTargets()]);
+        if (!live) return;
         setEvents(a.events ?? []);
+        setOlder(a.next_before_id || 0);
         setTargets(Object.fromEntries(t.map((x) => [x.id, x])));
         setError('');
       } catch (err) {
-        setError(err instanceof ApiError ? err.message : 'Could not load alerts');
+        if (live) setError(err instanceof ApiError ? err.message : 'Could not load alerts');
       }
     };
     void load();
-    const timer = window.setInterval(() => void load(), 15_000);
-    return () => window.clearInterval(timer);
-  }, []);
+    const timer = cursor === 0 ? window.setInterval(() => void load(), 15_000) : undefined;
+    return () => { live = false; window.clearInterval(timer); };
+  }, [cursor]);
 
   const silenced = Object.values(targets).filter((t) => isSilenced(t));
 
@@ -69,6 +75,12 @@ export const Alerts: React.FC<AlertsProps> = () => {
               })}
             </tbody>
           </table>
+        </div>
+      )}
+      {(cursor !== 0 || older > 0) && (
+        <div className="filter-actions">
+          {cursor !== 0 && <button type="button" className="btn-secondary" onClick={() => setCursor(0)}>Newest</button>}
+          {older > 0 && <button type="button" className="btn-secondary" onClick={() => setCursor(older)}>Older</button>}
         </div>
       )}
     </div>

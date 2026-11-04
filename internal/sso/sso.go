@@ -26,6 +26,9 @@ type IdentityClaims struct {
 	SessionID string `json:"sid,omitempty"`
 	// IssuedAt is the ID token's iat: when the provider vouched for this login.
 	IssuedAt time.Time `json:"-"`
+	// AuthTime is the ID token's auth_time: when the user last gave the provider their
+	// credentials. Zero when the provider did not say.
+	AuthTime time.Time `json:"-"`
 }
 
 // RoleFor maps a role asserted by an identity provider onto KyPulse's two roles. Only an

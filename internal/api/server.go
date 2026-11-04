@@ -392,12 +392,6 @@ func (s *Server) routes() {
 	// Auth
 	s.mux.HandleFunc("/api/auth/pow-challenge", s.handlePoWChallenge)
 	s.mux.HandleFunc("/api/auth/login", s.handleLogin)
-	s.mux.HandleFunc("/api/auth/mfa/totp", s.handleMFATOTP)
-	s.mux.HandleFunc("/api/auth/mfa/recovery-code", s.handleMFARecovery)
-	// TOTP management for the signed-in local account: session routes, CSRF-protected.
-	s.mux.HandleFunc("POST /api/auth/mfa/enroll", s.requireSession(s.handleMFAEnroll))
-	s.mux.HandleFunc("POST /api/auth/mfa/enroll/confirm", s.requireSession(s.handleMFAEnrollConfirm))
-	s.mux.HandleFunc("POST /api/auth/mfa/disable", s.requireSession(s.handleMFADisable))
 	s.mux.HandleFunc("/api/auth/logout", s.handleLogout)
 	s.mux.HandleFunc("/api/auth/me", s.handleMe)
 	s.mux.HandleFunc("/api/auth/change-password", s.handleChangePassword)
@@ -558,12 +552,11 @@ func hasSessionCookie(r *http.Request) bool {
 	return err == nil && cookie.Value != ""
 }
 
-// csrfExempt lists exact paths: the pre-session sign-in steps (login and the two MFA answers,
-// which hold no session yet and require a JSON body) and the token- or signature-authenticated
-// machine routes. A prefix here would also exempt the session routes under /api/auth/mfa/.
+// csrfExempt lists exact paths, never a prefix: the pre-session login (which holds no session
+// yet and requires a JSON body) and the token- or signature-authenticated machine routes.
 func csrfExempt(path string) bool {
 	switch path {
-	case "/api/auth/login", "/api/auth/mfa/totp", "/api/auth/mfa/recovery-code",
+	case "/api/auth/login",
 		"/api/sso/kysignon/sync", "/api/installer/directory", "/api/ingest/logs":
 		return true
 	}

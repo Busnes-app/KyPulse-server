@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"errors"
+	"fmt"
 	"net/http"
 	"path/filepath"
 	"strings"
@@ -403,5 +404,41 @@ func TestDockerStreamsShareQueueButCheckpointIndependently(t *testing.T) {
 	}
 	if calls < 3 || saved.Positions[PositionKey(quiet)] != quiet || saved.Positions["docker:busy:stdout"].Ordinal != 500 || len(saved.Positions) != 2 {
 		t.Fatalf("calls=%d positions=%+v", calls, saved.Positions)
+	}
+}
+
+// F3: checkpoints of containers recreated long ago neither count toward the per-run
+// stream cap nor grow the state file past what LoadState reads back.
+func TestSavedPositionsDoNotExhaustTheStreamCapOrStateFile(t *testing.T) {
+	dir := filepath.Join(t.TempDir(), "state")
+	old := map[string]Position{}
+	for i := 0; i < 2000; i++ {
+		p := Position{Kind: "docker", Input: fmt.Sprintf("%064d", i), Stream: "stdout", Timestamp: fmt.Sprintf("2026-09-27T12:%02d:%02d.%09dZ", i/3600%60, i/60%60, i), Ordinal: 1}
+		old[PositionKey(p)] = p
+	}
+	keep := Position{Kind: "file", Input: "/var/log/app.log", Offset: 7}
+	old[PositionKey(keep)] = keep
+	newest := Position{Kind: "docker", Input: fmt.Sprintf("%064d", 1999), Stream: "stdout"}
+	s := Sender{HTTP: postFunc(func([]byte) (*egress.Response, error) { return &egress.Response{StatusCode: 204}, nil }),
+		StateDir: dir, Token: make([]byte, 32), State: State{URL: "https://example.com", SourceID: "one", Positions: old}}
+	prepareSender(t, &s)
+	items := make(chan Item, 1)
+	fresh := Position{Kind: "docker", Input: strings.Repeat("f", 64), Stream: "stdout", Timestamp: "2026-09-28T12:00:00Z", Ordinal: 1}
+	items <- Item{Record: ingest.Record{Line: "new deploy"}, Position: fresh}
+	close(items)
+	if err := s.Run(context.Background(), items); err != nil {
+		t.Fatalf("new container refused: %v", err)
+	}
+	got, _, err := LoadState(dir)
+	if err != nil {
+		t.Fatalf("state no longer loads: %v", err)
+	}
+	if len(got.Positions) != maxSavedPositions {
+		t.Fatalf("saved %d positions, want %d", len(got.Positions), maxSavedPositions)
+	}
+	for _, p := range []Position{fresh, keep, newest} {
+		if _, ok := got.Positions[PositionKey(p)]; !ok {
+			t.Fatalf("dropped %s", PositionKey(p))
+		}
 	}
 }

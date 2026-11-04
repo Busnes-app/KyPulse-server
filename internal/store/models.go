@@ -49,12 +49,9 @@ type Session struct {
 	ExpiresAt time.Time `json:"expires_at"`
 	// SSOSID is the identity provider's sid for an SSO login; empty for local sign-in.
 	SSOSID string `json:"-"`
-}
-
-type MFAChallenge struct {
-	TokenHash string
-	UserID    string
-	ExpiresAt time.Time
+	// StepUpAt is when a KyIdentity step-up sign-in last checked the user's credentials
+	// (the ID token's auth_time); nil for any other sign-in.
+	StepUpAt *time.Time `json:"-"`
 }
 
 // AuditRecord logs security and operational events with tamper-evident structure.

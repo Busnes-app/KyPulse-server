@@ -85,12 +85,13 @@ func (f *oauthFlow) config(ctx context.Context, redirectURI string) (*oauth2.Con
 	return &oauth2.Config{ClientID: f.clientID, ClientSecret: f.clientSecret, Endpoint: provider.Endpoint(), RedirectURL: redirectURI, Scopes: []string{oidc.ScopeOpenID, "profile", "email"}}, provider, nil
 }
 
-func (f *oauthFlow) authCodeURL(ctx context.Context, redirectURI, state, verifier, nonce string) (string, error) {
+func (f *oauthFlow) authCodeURL(ctx context.Context, redirectURI, state, verifier, nonce string, extra ...oauth2.AuthCodeOption) (string, error) {
 	config, _, err := f.config(ctx, redirectURI)
 	if err != nil {
 		return "", err
 	}
-	return config.AuthCodeURL(state, oauth2.S256ChallengeOption(verifier), oauth2.SetAuthURLParam("nonce", nonce)), nil
+	opts := append([]oauth2.AuthCodeOption{oauth2.S256ChallengeOption(verifier), oauth2.SetAuthURLParam("nonce", nonce)}, extra...)
+	return config.AuthCodeURL(state, opts...), nil
 }
 
 func (f *oauthFlow) exchange(ctx context.Context, code, verifier, redirectURI, expectedNonce string) (*IdentityClaims, error) {
@@ -152,6 +153,7 @@ func claimsFromIDToken(idToken *oidc.IDToken) (*IdentityClaims, error) {
 		Name              string `json:"name"`
 		PreferredUsername string `json:"preferred_username"`
 		Role              string `json:"role"`
+		AuthTime          int64  `json:"auth_time"`
 	}
 	if err := idToken.Claims(&raw); err != nil || raw.Sub == "" {
 		return nil, ErrInvalidIDToken
@@ -163,5 +165,13 @@ func claimsFromIDToken(idToken *oidc.IDToken) (*IdentityClaims, error) {
 	if username == "" {
 		username = raw.Sub
 	}
-	return &IdentityClaims{Subject: raw.Sub, Email: raw.Email, Name: raw.Name, PreferredUsername: username, Role: raw.Role, SessionID: raw.SID, IssuedAt: idToken.IssuedAt}, nil
+	return &IdentityClaims{Subject: raw.Sub, Email: raw.Email, Name: raw.Name, PreferredUsername: username, Role: raw.Role, SessionID: raw.SID, IssuedAt: idToken.IssuedAt, AuthTime: authTime(raw.AuthTime)}, nil
+}
+
+// authTime is the auth_time claim as a time; zero when absent.
+func authTime(sec int64) time.Time {
+	if sec <= 0 {
+		return time.Time{}
+	}
+	return time.Unix(sec, 0)
 }

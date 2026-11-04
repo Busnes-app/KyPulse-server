@@ -9,19 +9,15 @@ interface LoginProps {
   ssoEnabled?: boolean;
 }
 
-interface MFAChallenge {
-  mfa_token: string;
-}
-
 export const Login: React.FC<LoginProps> = ({ onSuccess, appName, ssoEnabled = false }) => {
   const [username, setUsername] = useState<string>('');
   const [password, setPassword] = useState<string>('');
   const [captchaToken, setCaptchaToken] = useState<string>('');
   // A solved challenge is single-use; remounting the widget fetches and solves a fresh one.
   const [captchaRound, setCaptchaRound] = useState<number>(0);
-  const [mfaChallenge, setMfaChallenge] = useState<MFAChallenge | null>(null);
-  const [mfaCode, setMfaCode] = useState<string>('');
-  const [isRecoveryCode, setIsRecoveryCode] = useState<boolean>(false);
+  // A failed check must not leave sign-in dead: the server may not require it, and a
+  // rejected attempt starts a fresh check.
+  const [captchaFailed, setCaptchaFailed] = useState<boolean>(false);
   const [loading, setLoading] = useState<boolean>(false);
   const [error, setError] = useState<string>('');
 
@@ -44,13 +40,9 @@ export const Login: React.FC<LoginProps> = ({ onSuccess, appName, ssoEnabled = f
       const data = await resp.json();
       if (!resp.ok) {
         setCaptchaToken('');
+        setCaptchaFailed(false);
         setCaptchaRound((n) => n + 1);
         throw new Error(data.error || 'Login failed');
-      }
-
-      if (data.mfa_required) {
-        setMfaChallenge(data);
-        return;
       }
 
       if (data.authenticated) {
@@ -58,44 +50,6 @@ export const Login: React.FC<LoginProps> = ({ onSuccess, appName, ssoEnabled = f
       }
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Login failed');
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const handleMFASubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!mfaChallenge) return;
-    setError('');
-    setLoading(true);
-
-    try {
-      const endpoint = isRecoveryCode ? '/api/auth/mfa/recovery-code' : '/api/auth/mfa/totp';
-      const resp = await fetch(endpoint, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          mfa_token: mfaChallenge.mfa_token,
-          code: mfaCode.trim(),
-        }),
-      });
-
-      const data = await resp.json().catch(() => ({}));
-      if (!resp.ok) {
-        throw new Error(data.error || 'MFA verification failed');
-      }
-
-      if (data.authenticated) {
-        onSuccess(data.user);
-      }
-    } catch (err) {
-      // The server spends the sign-in transaction on every attempt, so a retry needs a fresh
-      // one: go back to the password step instead of offering a dead form.
-      setMfaChallenge(null);
-      setMfaCode('');
-      setCaptchaToken('');
-      setCaptchaRound((n) => n + 1);
-      setError(`${err instanceof Error ? err.message : 'Invalid verification code'}. Sign in again.`);
     } finally {
       setLoading(false);
     }
@@ -114,50 +68,31 @@ export const Login: React.FC<LoginProps> = ({ onSuccess, appName, ssoEnabled = f
         <div className="ky-auth-card">
           {error && <p role="alert" className="ky-auth-error"><AlertCircle size={16} aria-hidden="true" /><span>{error}</span></p>}
 
-          {mfaChallenge ? (
-            <form onSubmit={handleMFASubmit}>
-              <h2>Two-factor verification</h2>
-              <p className="ky-auth-note">
-                {isRecoveryCode ? 'Enter one of your single-use recovery codes.' : 'Enter the 6-digit code from your authenticator app.'}
-              </p>
-              <div className="ky-auth-field">
-                <label htmlFor="login-mfa-code">{isRecoveryCode ? 'Recovery code' : 'Authenticator code'}</label>
-                <input id="login-mfa-code" className="ky-code-input" type="text" inputMode={isRecoveryCode ? 'text' : 'numeric'}
-                  autoComplete="one-time-code" autoFocus value={mfaCode} onChange={(e) => setMfaCode(e.target.value)} required />
-              </div>
-              <button type="submit" className="ky-auth-submit" disabled={loading}>
-                {loading ? 'Verifying…' : 'Verify and sign in'}
-              </button>
-              <button type="button" className="ky-auth-link" onClick={() => setIsRecoveryCode(!isRecoveryCode)}>
-                {isRecoveryCode ? 'Use your authenticator app' : 'Use a recovery code'}
-              </button>
-            </form>
-          ) : (
-            <form onSubmit={handleLogin}>
-              <div className="ky-auth-field">
-                <label htmlFor="login-username">Username</label>
-                <input id="login-username" type="text" autoComplete="username" autoCapitalize="none" spellCheck={false} autoFocus
-                  value={username} onChange={(e) => setUsername(e.target.value)} required />
-              </div>
-              <div className="ky-auth-field">
-                <label htmlFor="login-password">Password</label>
-                <input id="login-password" type="password" autoComplete="current-password"
-                  value={password} onChange={(e) => setPassword(e.target.value)} required />
-              </div>
-              <CaptchaWidget key={captchaRound} onToken={setCaptchaToken} />
-              <button type="submit" className="ky-auth-submit" disabled={loading}>
-                <LogIn aria-hidden="true" />
-                <span>{loading ? 'Signing in…' : 'Sign in'}</span>
-              </button>
-              {ssoEnabled && <>
-                <hr className="ky-auth-divider" />
-                <a href="/api/sso/kysignon/login" className="ky-auth-sso">
-                  <Key aria-hidden="true" />
-                  <span>Continue with single sign-on</span>
-                </a>
-              </>}
-            </form>
-          )}
+          <form onSubmit={handleLogin}>
+            <div className="ky-auth-field">
+              <label htmlFor="login-username">Username</label>
+              <input id="login-username" type="text" autoComplete="username" autoCapitalize="none" spellCheck={false} autoFocus
+                value={username} onChange={(e) => setUsername(e.target.value)} required />
+            </div>
+            <div className="ky-auth-field">
+              <label htmlFor="login-password">Password</label>
+              <input id="login-password" type="password" autoComplete="current-password"
+                value={password} onChange={(e) => setPassword(e.target.value)} required />
+            </div>
+            <CaptchaWidget key={captchaRound} onToken={setCaptchaToken} onFail={() => setCaptchaFailed(true)} />
+            {/* An early submit carries no token, fails, and restarts the check from zero. */}
+            <button type="submit" className="ky-auth-submit" disabled={loading || (!captchaToken && !captchaFailed)}>
+              <LogIn aria-hidden="true" />
+              <span>{loading ? 'Signing in…' : captchaToken || captchaFailed ? 'Sign in' : 'Checking this browser…'}</span>
+            </button>
+            {ssoEnabled && <>
+              <hr className="ky-auth-divider" />
+              <a href="/api/sso/kysignon/login" className="ky-auth-sso">
+                <Key aria-hidden="true" />
+                <span>Continue with single sign-on</span>
+              </a>
+            </>}
+          </form>
         </div>
       </div>
     </main>

@@ -284,34 +284,38 @@ func TestCookieAuthenticatedWriteRequiresCSRF(t *testing.T) {
 	}
 }
 
-func TestMFATOTPRefusesReplay(t *testing.T) {
+// Local TOTP is gone: an account that had it enabled signs in with its password alone,
+// and the stored TOTP data is left as it was.
+func TestLoginIgnoresStoredTOTP(t *testing.T) {
 	srv, st, cfg := setupTestServer(t)
 	ctx := context.Background()
 	secret, _ := totp.GenerateSecret()
 	enc, _ := crypto.EncryptAESGCM([]byte(secret), cfg.Security.EncryptionKey)
-	_ = st.Users().CreateUser(ctx, &store.User{
-		ID: "usr_mfa", Username: "mfa", Role: store.RoleViewer, Status: "active", SSOProvider: "local",
-		TOTPEnabled: true, TOTPSecretEnc: enc,
-	})
-	code, _ := totp.Code(secret, time.Now())
+	hash, _ := password.Hash("SuperSecretPass123!")
+	if err := st.Users().CreateUser(ctx, &store.User{
+		ID: "usr_mfa", Username: "mfa", PasswordHash: hash, Role: store.RoleViewer, Status: "active",
+		SSOProvider: "local", TOTPEnabled: true, TOTPSecretEnc: enc, RecoveryCodesHash: `["x"]`,
+	}); err != nil {
+		t.Fatal(err)
+	}
 
-	post := func() int {
-		raw := crypto.RandomHex(32)
-		_ = st.Sessions().CreateMFAChallenge(ctx, &store.MFAChallenge{
-			TokenHash: crypto.SHA256Hex([]byte(raw)), UserID: "usr_mfa", ExpiresAt: time.Now().Add(time.Minute),
-		}, "")
-		body, _ := json.Marshal(map[string]string{"mfa_token": raw, "code": code})
-		req := httptest.NewRequest("POST", "/api/auth/mfa/totp", bytes.NewReader(body))
-		req.Header.Set("Content-Type", "application/json")
-		w := httptest.NewRecorder()
-		srv.ServeHTTP(w, req)
-		return w.Code
+	body, _ := json.Marshal(map[string]string{"username": "mfa", "password": "SuperSecretPass123!"})
+	req := httptest.NewRequest("POST", "/api/auth/login", bytes.NewReader(body))
+	req.Header.Set("Content-Type", "application/json")
+	w := httptest.NewRecorder()
+	srv.ServeHTTP(w, req)
+	if w.Code != http.StatusOK || strings.Contains(w.Body.String(), "mfa_required") {
+		t.Fatalf("login: %d %s", w.Code, w.Body.String())
 	}
-	if got := post(); got != http.StatusOK {
-		t.Fatalf("first use: %d", got)
+	if !signedIn(srv, sessionCookie(t, w)) {
+		t.Fatal("the issued session does not authenticate")
 	}
-	if got := post(); got != http.StatusUnauthorized {
-		t.Fatalf("replay: got %d, want 401", got)
+	u, err := st.Users().GetUserByID(ctx, "usr_mfa")
+	if err != nil {
+		t.Fatal(err)
+	}
+	if !u.TOTPEnabled || u.TOTPSecretEnc != enc || u.RecoveryCodesHash != `["x"]` {
+		t.Fatalf("stored TOTP data changed: %+v", u)
 	}
 }
 
@@ -462,7 +466,8 @@ func TestExportCapsuleRefusesAMismatchedRecoveryKey(t *testing.T) {
 
 // A database that has outgrown the capsule's per-member cap must say so: an operator whose
 // backups have silently stopped working needs the limit, not a bare 500.
-func TestExportCapsuleRejectsAnOversizedPayload(t *testing.T) {
+// KyNotes Q8 A: a database past one capsule member exports, split into ordered parts.
+func TestExportCapsuleSplitsALargeDatabase(t *testing.T) {
 	srv, st, cfg := setupSQLiteServer(t)
 	ctx := context.Background()
 
@@ -488,45 +493,13 @@ func TestExportCapsuleRejectsAnOversizedPayload(t *testing.T) {
 	_ = db.Close()
 	w := adminPost(t, srv, loginAs(t, srv, st, "alice", "admin"), "/api/backup/export-capsule")
 
-	if w.Code != http.StatusRequestEntityTooLarge {
-		t.Fatalf("oversized export: got %d, want 413: %s", w.Code, w.Body.String())
-	}
-	if !strings.Contains(w.Body.String(), "64 MiB per file") {
-		t.Errorf("body does not name the limit: %s", w.Body.String())
+	if w.Code != http.StatusOK || !strings.Contains(w.Body.String(), `"format":"kycap/`) {
+		t.Fatalf("large export: got %d, want 200 and a capsule", w.Code)
 	}
 }
 
-// The MFA routes are unauthenticated and the token is caller-supplied up to the 1 MiB body
-// cap. Keying the limiter on it let a caller pin arbitrary memory for the whole window.
-func TestMFALimiterKeyIsBounded(t *testing.T) {
+func TestFullLimiterEvictsRatherThanRefuses(t *testing.T) {
 	srv, _, _ := setupTestServer(t)
-
-	for i := 0; i < 500; i++ {
-		token := strings.Repeat("a", 700_000) + strconv.Itoa(i)
-		body, _ := json.Marshal(map[string]string{"mfa_token": token, "code": "000000"})
-		req := httptest.NewRequest("POST", "/api/auth/mfa/totp", bytes.NewReader(body))
-		req.Header.Set("Content-Type", "application/json")
-		req.RemoteAddr = "192.0.2.9:41000"
-		srv.ServeHTTP(httptest.NewRecorder(), req)
-	}
-
-	keys := api.AttemptKeysForTest(srv)
-	if len(keys) > api.AttemptsCapForTest {
-		t.Errorf("limiter holds %d keys, want at most %d", len(keys), api.AttemptsCapForTest)
-	}
-	mfaKeys := 0
-	for _, k := range keys {
-		if len(k) >= 200 {
-			t.Fatalf("limiter key is %d bytes; keys must not carry the request body", len(k))
-		}
-		if strings.HasPrefix(k, "mfa:") {
-			mfaKeys++
-		}
-	}
-	// One client, 500 distinct oversized tokens, one slot: nothing caller-supplied is in the key.
-	if mfaKeys > 1 {
-		t.Errorf("500 tokens from one IP took %d MFA slots, want at most 1: %v", mfaKeys, keys)
-	}
 
 	// Fill the limiter past the cap with live windows. A full map must evict, not refuse:
 	// refusing would let one caller lock every new client out of the auth routes.
@@ -537,45 +510,32 @@ func TestMFALimiterKeyIsBounded(t *testing.T) {
 		t.Fatalf("limiter grew to %d keys, want at most %d", n, api.AttemptsCapForTest)
 	}
 
-	body, _ := json.Marshal(map[string]string{"mfa_token": "a-fresh-token", "code": "000000"})
-	req := httptest.NewRequest("POST", "/api/auth/mfa/totp", bytes.NewReader(body))
-	req.Header.Set("Content-Type", "application/json")
-	req.RemoteAddr = "198.51.100.7:2000"
-	w := httptest.NewRecorder()
-	srv.ServeHTTP(w, req)
+	w := loginFrom(t, srv, "198.51.100.7:2000", "nobody", "WrongPass123!")
 	if w.Code == http.StatusTooManyRequests {
 		t.Fatal("a full limiter locked out a new client; it must evict, not refuse")
 	}
 	if w.Code != http.StatusUnauthorized {
-		t.Fatalf("fresh client expected 401 from MFA validation, got %d: %s", w.Code, w.Body.String())
+		t.Fatalf("fresh client expected 401 from the password check, got %d: %s", w.Code, w.Body.String())
 	}
 	if n := len(api.AttemptKeysForTest(srv)); n > api.AttemptsCapForTest {
 		t.Errorf("limiter holds %d keys after admitting a new client, want at most %d", n, api.AttemptsCapForTest)
 	}
 }
 
-// Eviction must not favour long windows. Login windows are a minute and MFA windows a minute,
-// but any caller that can mint keys at all would starve whichever window is shortest.
+// Eviction must not favour long windows: any caller that can mint keys at all would starve
+// whichever window is shortest.
 func TestFullLimiterStillThrottlesLogin(t *testing.T) {
 	srv, _, _ := setupTestServer(t)
 
-	// Fill the map with the long windows an attacker minting MFA keys would leave behind.
-	// Login's window is a minute, so "evict the entry nearest expiry" would always pick it.
+	// Fill the map with long windows. Login's window is a minute, so "evict the entry
+	// nearest expiry" would always pick it.
 	for i := 0; i < api.AttemptsCapForTest; i++ {
-		api.AllowAttemptForTest(srv, "mfa:"+strconv.Itoa(i), 3, 5*time.Minute)
+		api.AllowAttemptForTest(srv, "filler:"+strconv.Itoa(i), 3, 5*time.Minute)
 	}
 
 	loginBody, _ := json.Marshal(map[string]string{"username": "nobody", "password": "WrongPass123!"})
 	throttled := false
 	for i := 1; i <= 25; i++ {
-		// A fresh MFA token before each login: under the old design this minted a new key and
-		// evicted login's window before it could ever count to its limit.
-		mfaBody, _ := json.Marshal(map[string]string{"mfa_token": "tok-" + strconv.Itoa(i), "code": "000000"})
-		mreq := httptest.NewRequest("POST", "/api/auth/mfa/totp", bytes.NewReader(mfaBody))
-		mreq.Header.Set("Content-Type", "application/json")
-		mreq.RemoteAddr = "192.0.2.9:41000"
-		srv.ServeHTTP(httptest.NewRecorder(), mreq)
-
 		req := httptest.NewRequest("POST", "/api/auth/login", bytes.NewReader(loginBody))
 		req.Header.Set("Content-Type", "application/json")
 		req.RemoteAddr = "192.0.2.9:41000"
@@ -598,58 +558,11 @@ func TestFullLimiterStillThrottlesLogin(t *testing.T) {
 	}
 }
 
-// A botnet spread across many IPs must not outrun the per-IP window when guessing one account.
-func TestMFAPerAccountWindow(t *testing.T) {
-	srv, st, _ := setupTestServer(t)
-	ctx := context.Background()
-
-	passHash, _ := password.Hash("SuperSecretPass123!")
-	if err := st.Users().CreateUser(ctx, &store.User{
-		ID: "usr_carol", Username: "carol", Email: "carol@busnes.app",
-		PasswordHash: passHash, Role: store.RoleViewer, Status: "active", SSOProvider: "local",
-	}); err != nil {
-		t.Fatal(err)
-	}
-
-	var codes int
-	for i := 1; i <= 6; i++ {
-		raw := "challenge-token-" + strconv.Itoa(i)
-		if err := st.Sessions().CreateMFAChallenge(ctx, &store.MFAChallenge{
-			TokenHash: crypto.SHA256Hex([]byte(raw)),
-			UserID:    "usr_carol",
-			ExpiresAt: time.Now().UTC().Add(5 * time.Minute),
-		}, passHash); err != nil {
-			t.Fatal(err)
-		}
-
-		body, _ := json.Marshal(map[string]string{"mfa_token": raw, "code": "000000"})
-		req := httptest.NewRequest("POST", "/api/auth/mfa/totp", bytes.NewReader(body))
-		req.Header.Set("Content-Type", "application/json")
-		req.RemoteAddr = "203.0.113." + strconv.Itoa(i) + ":40000" // a different client every time
-		w := httptest.NewRecorder()
-		srv.ServeHTTP(w, req)
-
-		if i < 6 {
-			if w.Code == http.StatusTooManyRequests {
-				t.Fatalf("attempt %d for the account was throttled, want no earlier than 6", i)
-			}
-			codes++
-			continue
-		}
-		if w.Code != http.StatusTooManyRequests {
-			t.Fatalf("attempt 6 for the account answered %d, want 429", w.Code)
-		}
-	}
-	if codes != 5 {
-		t.Fatalf("only %d attempts got through before the account window closed, want 5", codes)
-	}
-}
-
-// mfaStatus fires one MFA attempt from peer, optionally claiming to be forwarded for xff.
-func mfaStatus(t *testing.T, srv *api.Server, peer, xff string) int {
+// loginStatus fires one login attempt from peer, optionally claiming to be forwarded for xff.
+func loginStatus(t *testing.T, srv *api.Server, peer, xff string) int {
 	t.Helper()
-	body, _ := json.Marshal(map[string]string{"mfa_token": "tok", "code": "000000"})
-	req := httptest.NewRequest("POST", "/api/auth/mfa/totp", bytes.NewReader(body))
+	body, _ := json.Marshal(map[string]string{"username": "nobody", "password": "WrongPass123!"})
+	req := httptest.NewRequest("POST", "/api/auth/login", bytes.NewReader(body))
 	req.Header.Set("Content-Type", "application/json")
 	req.RemoteAddr = peer
 	if xff != "" {
@@ -670,11 +583,11 @@ func TestLimiterIgnoresForgedForwardedFor(t *testing.T) {
 		if i%2 == 0 {
 			xff = "198.51.100.2"
 		}
-		if code := mfaStatus(t, srv, "203.0.113.5:41000", xff); code == http.StatusTooManyRequests {
+		if code := loginStatus(t, srv, "203.0.113.5:41000", xff); code == http.StatusTooManyRequests {
 			t.Fatalf("attempt %d throttled, want no earlier than 21", i)
 		}
 	}
-	if code := mfaStatus(t, srv, "203.0.113.5:41000", "198.51.100.3"); code != http.StatusTooManyRequests {
+	if code := loginStatus(t, srv, "203.0.113.5:41000", "198.51.100.3"); code != http.StatusTooManyRequests {
 		t.Fatalf("attempt 21 answered %d, want 429: a forged header bought a second window", code)
 	}
 }
@@ -687,12 +600,12 @@ func TestLimiterSplitsPerForwardedClientBehindTrustedProxy(t *testing.T) {
 
 	for i := 1; i <= 20; i++ {
 		for _, client := range []string{"198.51.100.1", "198.51.100.2"} {
-			if code := mfaStatus(t, srv, "192.0.2.7:41000", client); code == http.StatusTooManyRequests {
+			if code := loginStatus(t, srv, "192.0.2.7:41000", client); code == http.StatusTooManyRequests {
 				t.Fatalf("client %s throttled at attempt %d; the two clients share a window", client, i)
 			}
 		}
 	}
-	if code := mfaStatus(t, srv, "192.0.2.7:41000", "198.51.100.1"); code != http.StatusTooManyRequests {
+	if code := loginStatus(t, srv, "192.0.2.7:41000", "198.51.100.1"); code != http.StatusTooManyRequests {
 		t.Fatalf("attempt 21 for one forwarded client answered %d, want 429", code)
 	}
 }
@@ -704,15 +617,15 @@ func TestLimiterFallsBackWhenTheChainIsAllTrusted(t *testing.T) {
 	srv, _, _ := setupTestServer(t)
 
 	for i := 1; i <= 20; i++ {
-		if code := mfaStatus(t, srv, "192.0.2.7:41000", "192.0.2.8, 192.0.2.9"); code == http.StatusTooManyRequests {
+		if code := loginStatus(t, srv, "192.0.2.7:41000", "192.0.2.8, 192.0.2.9"); code == http.StatusTooManyRequests {
 			t.Fatalf("attempt %d throttled, want no earlier than 21", i)
 		}
 	}
-	if code := mfaStatus(t, srv, "192.0.2.7:41000", "192.0.2.8, 192.0.2.9"); code != http.StatusTooManyRequests {
+	if code := loginStatus(t, srv, "192.0.2.7:41000", "192.0.2.8, 192.0.2.9"); code != http.StatusTooManyRequests {
 		t.Fatalf("attempt 21 answered %d, want 429", code)
 	}
 	for _, k := range api.AttemptKeysForTest(srv) {
-		if k == "mfa:192.0.2.7" {
+		if k == "login:192.0.2.7" {
 			return
 		}
 	}
@@ -996,46 +909,5 @@ func TestDepositOutlivesTheRequest(t *testing.T) {
 	}
 	if !audited {
 		t.Error("no successful admin.backup_run audit record for the acting admin after the request went away")
-	}
-}
-
-func TestMFAChallengeRejectedAfterPasswordRotation(t *testing.T) {
-	srv, st, cfg := setupTestServer(t)
-	ctx := context.Background()
-	secret, _ := totp.GenerateSecret()
-	enc, _ := crypto.EncryptAESGCM([]byte(secret), cfg.Security.EncryptionKey)
-	if err := st.Users().CreateUser(ctx, &store.User{
-		ID: "usr_mfa", Username: "mfa", Role: store.RoleViewer, Status: "active", SSOProvider: "local",
-		PasswordHash: "old", TOTPEnabled: true, TOTPSecretEnc: enc,
-	}); err != nil {
-		t.Fatal(err)
-	}
-	code, _ := totp.Code(secret, time.Now())
-
-	post := func() int {
-		raw := crypto.RandomHex(32)
-		if err := st.Sessions().CreateMFAChallenge(ctx, &store.MFAChallenge{
-			TokenHash: crypto.SHA256Hex([]byte(raw)), UserID: "usr_mfa", ExpiresAt: time.Now().Add(time.Minute),
-		}, "old"); err != nil {
-			t.Fatal(err)
-		}
-		user, err := st.Users().GetUserByID(ctx, "usr_mfa")
-		if err != nil {
-			t.Fatal(err)
-		}
-		user.PasswordHash = "new"
-		if err := st.Users().UpdateUser(ctx, user); err != nil {
-			t.Fatal(err)
-		}
-
-		body, _ := json.Marshal(map[string]string{"mfa_token": raw, "code": code})
-		req := httptest.NewRequest("POST", "/api/auth/mfa/totp", bytes.NewReader(body))
-		req.Header.Set("Content-Type", "application/json")
-		w := httptest.NewRecorder()
-		srv.ServeHTTP(w, req)
-		return w.Code
-	}
-	if got := post(); got != http.StatusForbidden {
-		t.Fatalf("stale challenge: got %d, want 403", got)
 	}
 }

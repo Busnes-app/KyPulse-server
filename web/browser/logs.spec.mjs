@@ -79,6 +79,7 @@ test('admin logs, activity, pairing, filters, retry and viewer boundaries', asyn
     await page.getByLabel('Log source name', { exact: true }).fill(sourceName);
     await expect(page.getByLabel('Sender HTTPS origin')).toHaveValue('');
     await page.getByLabel('Sender HTTPS origin').fill('https://pulse.example.com:8443/');
+    await page.getByLabel('Your current password').fill('BrowserUpdated456!');
     await page.getByRole('button', { name: 'Add source', exact: true }).click();
     const command = page.locator('.log-command');
     await expect(command).toContainText(`--name ${sourceName}`);

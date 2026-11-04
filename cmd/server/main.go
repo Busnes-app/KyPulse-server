@@ -2,14 +2,20 @@ package main
 
 import (
 	"context"
+	"database/sql"
 	"errors"
 	"flag"
 	"fmt"
 	"io"
 	"log"
+	"net"
 	"net/http"
+	"net/url"
 	"os"
 	"os/signal"
+	"path/filepath"
+	"strconv"
+	"strings"
 	"syscall"
 	"time"
 
@@ -141,7 +147,8 @@ func runServer(lg *logging.Logger) {
 	retentionDone := make(chan struct{})
 	go logRetentionLoop(ctx, st, cfg.Logs.MaxBytes, lg, retentionDone)
 
-	addr := fmt.Sprintf("%s:%d", cfg.Server.Host, cfg.Server.Port)
+	// JoinHostPort brackets an IPv6 host; one already bracketed ([::]) worked before too.
+	addr := net.JoinHostPort(strings.Trim(cfg.Server.Host, "[]"), strconv.Itoa(cfg.Server.Port))
 	httpServer := &http.Server{
 		Addr:         addr,
 		Handler:      srv,
@@ -304,6 +311,13 @@ func recordRun(ctx context.Context, st store.Store, actor string, res recoverycl
 	details["outcome"] = outcome
 	_ = st.Audit().LogAudit(ctx, &store.AuditRecord{UserID: actor, Action: action,
 		Resource: res.Manifest.CapsuleID, Details: api.AuditDetails(details)})
+	message := ""
+	if err != nil {
+		message = recoveryclient.AuditSafe(err.Error())
+	}
+	if rerr := backup.RecordRunResult(ctx, st.Settings(), actor == "system", outcome, message); rerr != nil {
+		log.Printf("[BACKUP] could not record the run for the Backup page: %v", rerr)
+	}
 	if err != nil {
 		log.Printf("[BACKUP] %s: %s", actor, recoveryclient.AuditSafe(err.Error()))
 		return
@@ -511,7 +525,40 @@ func runExportCapsule(args []string) {
 // combined, used once, dropped; a capsule from another service refused before the key is
 // touched; the authenticated manifest printed for comparison with KyRecovery's record.
 func restore(capsulePath, targetDir, expectService string, shares []string, stdout io.Writer) error {
-	return recoveryclient.Restore(capsulePath, targetDir, expectService, shares, stdout)
+	if err := recoveryclient.Restore(capsulePath, targetDir, expectService, shares, stdout); err != nil {
+		return err
+	}
+	if _, err := backup.JoinDatabase(targetDir, true); err != nil {
+		return err
+	}
+	return scheduleOff(filepath.Join(targetDir, "data", "kypulse.db"), stdout)
+}
+
+// scheduleOff turns scheduled deposits off in a restored database: the copy would
+// otherwise deposit as the original service, maybe while that one is still running.
+func scheduleOff(dbPath string, stdout io.Writer) error {
+	if _, err := os.Stat(dbPath); errors.Is(err, os.ErrNotExist) {
+		return nil
+	}
+	abs, err := filepath.Abs(dbPath) // a relative path would read as file://<authority>/...
+	if err != nil {
+		return err
+	}
+	db, err := sql.Open("sqlite", (&url.URL{Scheme: "file", Path: filepath.ToSlash(abs)}).String())
+	if err != nil {
+		return err
+	}
+	defer db.Close()
+	if _, err := db.Exec(`INSERT INTO server_settings (key, value, updated_at) VALUES ('backup_interval_sec', '0', ?)
+ON CONFLICT (key) DO UPDATE SET value = excluded.value, updated_at = excluded.updated_at`, time.Now().UTC()); err != nil {
+		return fmt.Errorf("turn scheduled deposits off in the restored database: %w", err)
+	}
+	// The old server's last scheduled failure says nothing about this one.
+	if _, err := db.Exec(`DELETE FROM server_settings WHERE key = ?`, backup.LastRunErrorKey); err != nil {
+		return fmt.Errorf("clear the old backup error in the restored database: %w", err)
+	}
+	fmt.Fprintln(stdout, "Scheduled deposits are off on the restored server. Turn them on under Backup once it is the server in service.")
+	return nil
 }
 
 // stdinIsTerminal reports whether a human is typing, so a pipeline gets no stray prompt.

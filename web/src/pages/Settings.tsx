@@ -2,7 +2,6 @@ import React from 'react';
 import { Database, UserRound } from 'lucide-react';
 import { WebhookForm } from '../components/WebhookForm';
 import { KyYardCard } from '../components/KyYardCard';
-import { TwoFactorCard } from '../components/TwoFactorCard';
 import { PasswordCard } from '../components/PasswordCard';
 import { PageHead } from '../components/PageHead';
 import { Appearance } from './Appearance';
@@ -14,7 +13,6 @@ interface SettingsUser {
   username?: string;
   display_name?: string;
   sso_provider?: string;
-  totp_enabled?: boolean;
 }
 
 interface SettingsProps {
@@ -22,12 +20,11 @@ interface SettingsProps {
   settings: any;
   user: SettingsUser;
   onChanged: () => void;
-  onTOTPChange?: (enabled: boolean) => void;
   onPasswordChanged?: () => void;
 }
 
 /** Settings: the page head, one tab per section (each its own hash), then the open section. */
-export const Settings: React.FC<SettingsProps> = ({ section, settings, user, onChanged, onTOTPChange, onPasswordChanged }) => {
+export const Settings: React.FC<SettingsProps> = ({ section, settings, user, onChanged, onPasswordChanged }) => {
   const open = settingsSections.find((s) => s.id === section) ?? settingsSections[0];
   const isAdmin = user.role === 'admin';
   return (
@@ -41,7 +38,7 @@ export const Settings: React.FC<SettingsProps> = ({ section, settings, user, onC
         ))}
       </nav>
       <section aria-label={open.label}>
-        {open.id === 'account' && <Account user={user} onTOTPChange={onTOTPChange} onPasswordChanged={onPasswordChanged} />}
+        {open.id === 'account' && <Account user={user} onPasswordChanged={onPasswordChanged} />}
         {open.id === 'appearance' && <Appearance />}
         {open.id === 'server' && <Server settings={settings} isAdmin={isAdmin} onChanged={onChanged} />}
       </section>
@@ -51,7 +48,7 @@ export const Settings: React.FC<SettingsProps> = ({ section, settings, user, onC
 
 const signInLabel = (provider?: string) => (!provider || provider === 'local' ? 'KyPulse password' : provider === 'kysignon' ? 'Single sign-on (KyIdentity)' : 'Single sign-on');
 
-function Account({ user, onTOTPChange, onPasswordChanged }: { user: SettingsUser; onTOTPChange?: (enabled: boolean) => void; onPasswordChanged?: () => void }) {
+function Account({ user, onPasswordChanged }: { user: SettingsUser; onPasswordChanged?: () => void }) {
   const role = user.role === 'admin' ? 'Administrator' : 'Everyday account';
   return (
     <div className="settings-stack">
@@ -70,9 +67,8 @@ function Account({ user, onTOTPChange, onPasswordChanged }: { user: SettingsUser
           <div className="dr-fact"><span className="dr-fact-label">Signs in with</span><span className="dr-fact-value">{signInLabel(user.sso_provider)}</span></div>
         </div>
       </section>
-      {/* Local accounts only: an identity provider owns passwords and MFA for SSO accounts. */}
+      {/* Local accounts only: an identity provider owns passwords for SSO accounts. Second factors are KyIdentity's. */}
       {user.sso_provider === 'local' && <PasswordCard onChanged={() => onPasswordChanged?.()} />}
-      {user.sso_provider === 'local' && <TwoFactorCard key={user.id} enabled={!!user.totp_enabled} onEnabledChange={onTOTPChange} />}
     </div>
   );
 }

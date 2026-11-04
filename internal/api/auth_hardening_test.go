@@ -37,6 +37,17 @@ func loginFrom(t *testing.T, srv *api.Server, addr, username, pass string) *http
 	return w
 }
 
+func sessionCookie(t *testing.T, w *httptest.ResponseRecorder) *http.Cookie {
+	t.Helper()
+	for _, c := range w.Result().Cookies() {
+		if c.Name == auth.SessionCookieName && c.Value != "" {
+			return c
+		}
+	}
+	t.Fatalf("no session cookie: %d %s", w.Code, w.Body.String())
+	return nil
+}
+
 func createLocalUser(t *testing.T, st store.Store, id, username, status string) {
 	t.Helper()
 	hash, _ := password.Hash("SuperSecretPass123!")
@@ -162,11 +173,11 @@ func TestLoginLimiterKeysIPv6ByPrefix(t *testing.T) {
 	}
 }
 
-// Login and MFA are CSRF-exempt, so a cross-site form posting text/plain must not reach them.
+// Login is CSRF-exempt, so a cross-site form posting text/plain must not reach it.
 func TestCSRFExemptRoutesRequireJSON(t *testing.T) {
 	srv, st, _ := setupTestServer(t)
 	createLocalUser(t, st, "usr_form", "form", "active")
-	for _, path := range []string{"/api/auth/login", "/api/auth/mfa/totp", "/api/auth/mfa/recovery-code"} {
+	for _, path := range []string{"/api/auth/login"} {
 		for _, ct := range []string{"", "text/plain", "application/x-www-form-urlencoded", "multipart/form-data; boundary=x"} {
 			req := httptest.NewRequest("POST", path, strings.NewReader(`{"username":"form","password":"SuperSecretPass123!"}`))
 			if ct != "" {
@@ -239,6 +250,8 @@ type fakeIdP struct {
 	sid  string
 	iat  time.Time // the ID token's iat; zero means now
 	fail string
+	role string    // the ID token's role claim; empty sends none
+	auth time.Time // the ID token's auth_time; zero sends none
 }
 
 func newFakeIdP(t *testing.T) *fakeIdP {
@@ -270,8 +283,15 @@ func newFakeIdP(t *testing.T) *fakeIdP {
 				iat = time.Now()
 			}
 			header, _ := json.Marshal(map[string]string{"alg": "RS256", "kid": "k1", "typ": "JWT"})
-			claims, _ := json.Marshal(map[string]any{"iss": issuer, "aud": "pulse", "sub": idp.sub, "sid": idp.sid, "nonce": "n1",
-				"preferred_username": idp.sub, "iat": iat.Unix(), "exp": time.Now().Add(time.Minute).Unix()})
+			fields := map[string]any{"iss": issuer, "aud": "pulse", "sub": idp.sub, "sid": idp.sid, "nonce": "n1",
+				"preferred_username": idp.sub, "iat": iat.Unix(), "exp": time.Now().Add(time.Minute).Unix()}
+			if idp.role != "" {
+				fields["role"] = idp.role
+			}
+			if !idp.auth.IsZero() {
+				fields["auth_time"] = idp.auth.Unix()
+			}
+			claims, _ := json.Marshal(fields)
 			input := b64(header) + "." + b64(claims)
 			digest := sha256.Sum256([]byte(input))
 			sig, _ := rsa.SignPKCS1v15(rand.Reader, key, crypto.SHA256, digest[:])

@@ -170,7 +170,7 @@ export const App: React.FC = () => {
         {head === 'activity' && isAdmin && <Activity user={user} />}
         {head === 'backup' && isAdmin && <Backup />}
         {head === 'settings' && settingsSections.some((s) => s.id === route.parts[1]) && (
-          <Settings section={route.parts[1] as SettingsSection} settings={settings} user={user} onChanged={refreshStatus} onTOTPChange={(totp_enabled) => setUser((u: any) => (u ? { ...u, totp_enabled } : u))} onPasswordChanged={() => { setUser(null); setStatus(null); setNotice('Password changed. Sign in with your new password.'); }} />
+          <Settings section={route.parts[1] as SettingsSection} settings={settings} user={user} onChanged={refreshStatus} onPasswordChanged={() => { setUser(null); setStatus(null); setNotice('Password changed. Sign in with your new password.'); }} />
         )}
         </PageBanner.Provider>
         <LicenseFooter className="ky-content-foot" appName={brand(settings?.app_name)} version={status?.version} />

@@ -3,6 +3,7 @@ import { ShieldCheck, Loader2, AlertCircle } from 'lucide-react';
 
 interface CaptchaProps {
   onToken: (token: string) => void;
+  onFail?: () => void;
 }
 
 interface Challenge {
@@ -14,7 +15,7 @@ interface Challenge {
   signature: string;
 }
 
-export const CaptchaWidget: React.FC<CaptchaProps> = ({ onToken }) => {
+export const CaptchaWidget: React.FC<CaptchaProps> = ({ onToken, onFail }) => {
   const [status, setStatus] = useState<'working' | 'done' | 'failed'>('working');
   const [progress, setProgress] = useState<number>(0);
   const [errorMsg, setErrorMsg] = useState<string>('');
@@ -70,6 +71,7 @@ export const CaptchaWidget: React.FC<CaptchaProps> = ({ onToken }) => {
         if (!cancelled) {
           setStatus('failed');
           setErrorMsg(err instanceof Error ? err.message : 'Security check failed');
+          onFail?.();
         }
       }
     };

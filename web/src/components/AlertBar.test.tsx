@@ -45,6 +45,11 @@ describe('AlertBar', () => {
     expect(screen.queryByText(/All 0 apps/)).toBeNull();
   });
 
+  it('still reports stale KyYard data when no app is watched', () => {
+    render(<AlertBar status={{ ...healthy, total: 0, ok: 0, problems: [], kyyard: { paired: true, stale: true, error: 'unauthorized', fetched_at: null } }} loading={false} isAdmin={false} />);
+    expect(screen.getByText(/KyYard data stale/)).toBeTruthy();
+  });
+
   it('shows checking while loading', () => {
     render(<AlertBar status={null} loading={true} isAdmin={false} />);
     expect(screen.getByRole('status').textContent).toMatch(/Checking/);

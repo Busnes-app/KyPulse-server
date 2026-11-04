@@ -42,14 +42,18 @@ it('offers KySignOn only when the server reports a configured issuer', () => {
   const { rerender } = render(<Login onSuccess={vi.fn()} appName="KyPulse" />);
   expect(screen.queryByRole('link', { name: 'Continue with single sign-on' })).toBeNull();
   expect(screen.queryByRole('separator')).toBeNull();
-  expect(screen.getByRole('button', { name: 'Sign in' }).querySelector('svg')).not.toBeNull();
+  // Until the browser check solves, an early submit would only fail and restart it.
+  const submit = screen.getByRole('button', { name: 'Checking this browser…' });
+  expect(submit.querySelector('svg')).not.toBeNull();
+  expect((submit as HTMLButtonElement).disabled).toBe(true);
   expect(screen.getByText('Health and alerts for your Ky apps.')).toBeTruthy();
   rerender(<Login onSuccess={vi.fn()} appName="KyPulse" ssoEnabled />);
   expect(screen.getByRole('link', { name: 'Continue with single sign-on' }).getAttribute('href')).toBe('/api/sso/kysignon/login');
   expect(screen.getAllByText(/single sign-on/i)).toHaveLength(1);
 });
 
-it('returns to the password step after a rejected MFA code, since the transaction is spent', async () => {
+it('signs in with the password alone; there is no local second-factor step', async () => {
+  const user = { id: 'u1', username: 'alice', totp_enabled: true };
   const fetcher = vi.fn(async (input: RequestInfo | URL) => {
     const url = String(input);
     if (url === '/api/auth/pow-challenge') {
@@ -57,19 +61,26 @@ it('returns to the password step after a rejected MFA code, since the transactio
       const challenge = createHash('sha256').update(`${salt}1`).digest('hex');
       return new Response(JSON.stringify({ algorithm: 'SHA-256', salt, challenge, maxnumber: 1, expires_at: 0, signature: 'sig' }));
     }
-    if (url === '/api/auth/login') return new Response(JSON.stringify({ mfa_required: true, mfa_token: 't', methods: ['totp'] }));
-    if (url === '/api/auth/mfa/totp') return new Response(JSON.stringify({ error: 'Invalid TOTP verification code' }), { status: 401 });
+    if (url === '/api/auth/login') return new Response(JSON.stringify({ authenticated: true, user }));
     throw new Error(url);
   });
   vi.stubGlobal('fetch', fetcher);
-  render(<Login onSuccess={vi.fn()} appName="KyPulse" />);
+  const onSuccess = vi.fn();
+  render(<Login onSuccess={onSuccess} appName="KyPulse" />);
   await screen.findByText('Browser check passed');
   fireEvent.change(screen.getByLabelText('Username'), { target: { value: 'alice' } });
   fireEvent.change(screen.getByLabelText('Password'), { target: { value: 'RightPassword123!' } });
   fireEvent.click(screen.getByRole('button', { name: 'Sign in' }));
-  const code = await screen.findByLabelText(/code/i);
-  fireEvent.change(code, { target: { value: '123456' } });
-  fireEvent.submit(code.closest('form')!);
-  expect(await screen.findByText(/Invalid TOTP verification code\. Sign in again\./)).toBeTruthy();
-  expect(screen.getByLabelText('Username')).toBeTruthy();
+  await waitFor(() => expect(onSuccess).toHaveBeenCalledWith(user));
+  expect(fetcher.mock.calls.map(([input]) => String(input)).filter((u) => u.includes('/mfa/'))).toEqual([]);
+});
+
+it('still offers sign-in when the browser check fails', async () => {
+  vi.stubGlobal('fetch', vi.fn(async (input: RequestInfo | URL) => {
+    if (String(input) === '/api/auth/pow-challenge') return new Response('{}', { status: 503 });
+    return new Response(JSON.stringify({ authenticated: true, user: { id: 'u1' } }));
+  }));
+  render(<Login onSuccess={vi.fn()} appName="KyPulse" />);
+  const submit = await screen.findByRole('button', { name: 'Sign in' });
+  expect((submit as HTMLButtonElement).disabled).toBe(false);
 });

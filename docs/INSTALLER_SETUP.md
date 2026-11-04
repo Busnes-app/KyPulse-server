@@ -44,7 +44,9 @@ or an administrator no longer holding `kypulse.admin` (or the global `admin` rol
 inactive, and its sessions and pending MFA challenges end in the same transaction. A later
 assigned revision restores sign-in. Roles never change through the directory, so a viewer is
 never promoted. The legacy KySignOn format (`hex(HMAC-SHA256(body))` in
-`X-KySignOn-Signature`) is still accepted at `/api/sso/kysignon/sync`.
+`X-KySignOn-Signature`) is still accepted at `/api/sso/kysignon/sync`; for an installer-owned
+identity it can only end access (deactivate or delete become inactive), never promote, rename
+or reactivate.
 
 The application is a monitoring/control product; administrator access does not grant
 ordinary mail, notes, drive or vault content access in other products.
@@ -89,6 +91,9 @@ check all active source bindings and token hashes. Revoked sources are not react
 require no token file. The member records original target paths for explicit restoration;
 extraction stays inside the private restore directory. Placement back on product and bridge
 targets, including bridge receipt state, remains an end-to-end suite restore gate.
+The KyIdentity client and directory webhook secrets the installer configuration names travel
+the same way, in `config/installer-sso-credentials.json`, bound to that configuration by path
+and SHA-256; a missing secret file refuses backup and the drill fails without the member.
 
 Applying stages immutable configuration and reports `activation: restart` until observed
 live. `apply-setup --restart` requests graceful shutdown; the workload controller must

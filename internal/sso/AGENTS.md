@@ -28,6 +28,12 @@ Owns the application adapters around OAuth/OIDC login, KySignOn HMAC-SHA256 sign
   `IdentityClaims.SessionID` and `IssuedAt` carry the ID token `sid` and `iat` so sessions can be ended by them.
   Only KySignOn has a login route, so `sid` values come from one issuer.
 - Provider-asserted roles pass through `RoleFor`: exactly `admin` grants admin, everything else is a viewer.
+- A legacy sync delivery for an installer-owned identity (`store.InstallerUserKey`) only ends
+  access: deactivation, deletion or a non-active status make it inactive; anything else is
+  acknowledged without change.
+- `BuildStepUpAuthURL` adds `max_age=0` and `prompt=login`; `IdentityClaims.AuthTime` is the
+  ID token's `auth_time` (zero when absent).
+- KyIdentity is the authority for an SSO user's role: every KySignOn callback applies `RoleFor(role claim)` to an existing user that is not installer-owned (`store.InstallerUserKey`), ends all of that user's sessions before issuing the new one when it changes, and audits `auth.sso_role_changed`. Installer-owned identities keep the role the installer directory gave them (`internal/api/sso_handlers.go`).
 
 ## Verification
 - `go test -v ./internal/sso/...` (`TestVerifyLogoutToken` holds one rejection case per logout-token rule)

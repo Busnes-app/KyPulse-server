@@ -18,7 +18,7 @@ there is no log file.
 | `KYPULSE_ENV` | `development` (`production` in the image and Compose) | `development` or `production`. Development listens on loopback only, mints a session secret per start and sends cookies without `Secure` |
 | `KYPULSE_ALLOW_INSECURE_DEV` | `false` | let development listen on a non-loopback `KYPULSE_HOST` |
 | `KYPULSE_SESSION_SECRET` | `<data dir>/session.key` in production, random per start in development | signs the proof-of-work login challenge |
-| `KYPULSE_ENCRYPTION_KEY` | `<data dir>/encryption.key` | 32-byte key sealing the webhook, KyYard token, TOTP secrets and KyRecovery token |
+| `KYPULSE_ENCRYPTION_KEY` | `<data dir>/encryption.key` | 32-byte key sealing the webhook, KyYard token and KyRecovery token, and TOTP secrets kept from the removed local MFA |
 | `KYPULSE_AUDIT_KEY` | read from `KYPULSE_AUDIT_KEY_FILE` | 32-byte key of the audit hash chain; must differ from the encryption key |
 | `KYPULSE_AUDIT_KEY_FILE` | `<data dir>/audit.key` (`/app/secrets/audit.key` in Compose) | audit keyfile, minted on first start; an existing `<data dir>/audit.key` wins while this file does not exist |
 | `KYPULSE_ADMIN_PASSWORD` | generated into `<data dir>/initial-admin-password` (0600; never logged) | first admin's password on an empty database |
@@ -34,8 +34,8 @@ there is no log file.
 | `KYPULSE_CAPTCHA_POW_DIFFICULTY` | `50000` | proof-of-work search space (hashes tried at most) |
 | `KYPULSE_SSO_ENABLED`, `KYPULSE_SSO_AUTO_PROVISION` | `true`, `true` | single sign-on |
 | `KYPULSE_KYSIGNON_ISSUER`, `_CLIENT_ID`, `_SECRET`, `_HMAC_SECRET` | empty | KySignOn; register `<app URL>/api/sso/kysignon/backchannel-logout` as the client's back-channel logout URI so signing out there ends the session here |
-| `KYPULSE_OIDC_ISSUER`, `_CLIENT_ID`, `_SECRET` | empty | generic OIDC |
-| `KYPULSE_SAML_ENTITY_ID`, `KYPULSE_SAML_METADATA_URL` | empty | SAML service provider |
+| `KYPULSE_OIDC_ISSUER`, `_CLIENT_ID`, `_SECRET` | empty | generic OIDC; not yet wired to sign-in, so it signs nobody in. Use KyIdentity |
+| `KYPULSE_SAML_ENTITY_ID`, `KYPULSE_SAML_METADATA_URL` | empty | SAML service-provider metadata only; no sign-in route yet |
 | `KYPULSE_POLL_WORKERS` | `4` | concurrent health polls, 1 to 32 |
 | `KYPULSE_ALERT_ALLOW_HTTP` | `false` | admit a plain-http webhook URL |
 | `KYPULSE_KYYARD_ALLOW_HTTP` | `false` | admit a plain-http KyYard URL |

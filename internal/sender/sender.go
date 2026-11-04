@@ -11,6 +11,7 @@ import (
 	"math/rand/v2"
 	"net/http"
 	"reflect"
+	"sort"
 	"strconv"
 	"strings"
 	"time"
@@ -134,10 +135,9 @@ func (s *Sender) Run(ctx context.Context, input <-chan Item) error {
 	}
 	queue := make([]queued, 0, 500)
 	dropped := map[string]Position{}
-	inputs := make(map[string]bool, len(s.State.Positions))
-	for k := range s.State.Positions {
-		inputs[k] = true
-	}
+	// Only streams seen in this run count toward the cap: saved checkpoints of containers
+	// recreated long ago must not stop the next one.
+	inputs := map[string]bool{}
 	var droppedCount uint64
 	var used int
 	var active *batch
@@ -260,6 +260,7 @@ func (s *Sender) Run(ctx context.Context, input <-chan Item) error {
 			for _, entry := range active.items {
 				next.Positions[PositionKey(entry.item.Position)] = entry.item.Position
 			}
+			boundPositions(next.Positions, inputs)
 			if err := save(s.StateDir, next); err != nil {
 				return fmt.Errorf("sender: checkpoint: %w", err)
 			}
@@ -281,6 +282,31 @@ func (s *Sender) Run(ctx context.Context, input <-chan Item) error {
 				tick = timer(2 * time.Second)
 			}
 		}
+	}
+}
+
+// maxSavedPositions keeps the state file far below its 1 MiB read limit.
+const maxSavedPositions = 1024
+
+// boundPositions drops the oldest Docker checkpoints this run has not used once more than
+// maxSavedPositions are saved. Each recreated container leaves two behind under an ID that
+// never returns; only a container idle that long would replay its retained history.
+func boundPositions(positions map[string]Position, inUse map[string]bool) {
+	if len(positions) <= maxSavedPositions {
+		return
+	}
+	var stale []string
+	for k, p := range positions {
+		if p.Kind == "docker" && !inUse[k] {
+			stale = append(stale, k)
+		}
+	}
+	sort.Slice(stale, func(i, j int) bool { return positions[stale[i]].Timestamp < positions[stale[j]].Timestamp })
+	for _, k := range stale {
+		if len(positions) <= maxSavedPositions {
+			return
+		}
+		delete(positions, k)
 	}
 }
 

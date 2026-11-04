@@ -24,17 +24,15 @@ in again with the new password. Accounts that sign in through KyIdentity change 
 
 ## Two-factor authentication
 
-Local accounts, viewers included, turn on TOTP under **Settings > Two-factor
-authentication**: start setup, add the account to an authenticator app from the setup link
-(`otpauth://`) or the key shown beside it (there is no QR code), and enter the code the app
-shows and the account password. KyPulse then shows ten single-use recovery codes once and signs out the account's
-other sessions. From then on sign-in asks for a code or a recovery code after the password.
-Turning it off needs the password and a current code or an unused recovery code, and also
-signs out the other sessions. Setup cannot be restarted while TOTP is on: turn it off first.
-Accounts that sign in through KyIdentity or another identity provider manage their second
-factor there. `kypulse init-admin` resets the admin's password and also turns TOTP off for that
-account, which is the way back for an admin who lost both the authenticator and the recovery
-codes; the admin sets TOTP up again after signing in.
+MFA is a KyIdentity feature. KyPulse has no second factor of its own: for one, sign in with
+KyIdentity and turn MFA on there.
+
+**Removed: local two-factor sign-in.** Earlier versions let a local account turn on TOTP under
+Settings. The Settings card, the code and recovery-code step at sign-in and the
+`/api/auth/mfa/*` routes are gone. Admins who want MFA should move their people to KyIdentity
+sign-in and enable it there. A local account that had TOTP on now signs in with its password
+alone, so nobody is locked out by a lost factor. The stored TOTP data (sealed secrets,
+recovery-code hashes) is kept in the database, unused; nothing is cleared.
 
 ## Command line
 

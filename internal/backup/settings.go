@@ -48,3 +48,22 @@ func RunConfig(cfg *config.Config, appVersion string) (recoveryclient.RunConfig,
 		BackupDir: cfg.Backup.Dir, Keep: cfg.Backup.Keep, Sealer: sealer,
 	}, nil
 }
+
+// LastRunErrorKey holds the audit-safe message of the most recent failed scheduled run, for
+// the Backup page; any successful run deletes it.
+const LastRunErrorKey = "backup_last_run_error"
+
+// RecordRunResult keeps LastRunErrorKey in step with a run: a scheduled failure stores
+// its message, a success of any kind clears it. Other failures leave it as it is.
+func RecordRunResult(ctx context.Context, st store.SettingsStore, scheduled bool, outcome, message string) error {
+	if outcome == "success" {
+		if err := st.DeleteSetting(ctx, LastRunErrorKey); err != nil && !errors.Is(err, store.ErrNotFound) {
+			return err
+		}
+		return nil
+	}
+	if !scheduled {
+		return nil
+	}
+	return st.SetSetting(ctx, LastRunErrorKey, message)
+}
