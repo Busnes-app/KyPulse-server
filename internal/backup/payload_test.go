@@ -194,6 +194,11 @@ func payloadConfig(t *testing.T) (*config.Config, []byte) {
 func TestCollectRefusesANonDefaultDatabasePath(t *testing.T) {
 	cfg, _ := payloadConfig(t)
 	cfg.Database.DSN = filepath.Join(t.TempDir(), "elsewhere.db") + "?_pragma=busy_timeout(5000)"
+	elsewhere, err := store.Open(context.Background(), cfg.Database) // a real, snapshottable database
+	if err != nil {
+		t.Fatal(err)
+	}
+	elsewhere.Close()
 	if _, err := backup.Collect(context.Background(), cfg, "1.0.0"); !errors.Is(err, backup.ErrNoDatabaseSnapshot) {
 		t.Fatalf("err = %v, want ErrNoDatabaseSnapshot", err)
 	}
