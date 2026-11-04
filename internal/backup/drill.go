@@ -82,6 +82,7 @@ func Checks(dir string, opened capsule.Manifest) []recoveryclient.Check {
 		checks = append(checks, sqliteIntegrityCheck(name, full))
 	}
 	checks = append(checks, sourceCredentialsCheck(dir, members[sourceCredentialsPath]))
+	checks = append(checks, ssoCredentialsCheck(dir, members[ssoCredentialsPath]))
 	for _, name := range env {
 		_, found := os.LookupEnv(name)
 		message := "Missing"

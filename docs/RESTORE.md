@@ -36,6 +36,7 @@ Everything a fresh server needs to be the old one:
 | `data/recovery.pub` | The suite recovery public key, so the restored server comes back pinned (present when the backup had a key) |
 | `config/settings.json` | App name, URL, port, database driver. For your reference when re-deploying; nothing reads it |
 | `config/installer-source-credentials.json` | Protected plaintext tokens and original file references for active installer-owned log sources; sealed inside the capsule and checked against its database |
+| `config/installer-sso-credentials.json` | For an installer-managed instance: the KyIdentity client secret and directory webhook secret in plaintext, with the file paths the installer configuration names; sealed inside the capsule and bound to that configuration by its SHA-256 |
 
 The restored directory is the live directory in the clear. Treat it like the running server's
 `data/`.
@@ -50,6 +51,14 @@ empty destination directory; recorded absolute paths are references, not write i
 Revoked sources remain revoked and have no token in this member. Older capsules may lack
 the member: an active installer-owned source then fails the credential drill and needs an
 independently retained credential. Complete unattended cross-target recovery is not yet qualified.
+
+An installer-managed server reads its KyIdentity client secret and directory webhook secret
+from the files its installer configuration names, and refuses to start when they are
+missing. Before starting the restored server, write `clientSecret` to `clientSecretFile` and
+`directorySecret` to `directorySecretFile` from `config/installer-sso-credentials.json`,
+each with mode 0600 and the product container's owner, under the same checks as the source
+tokens above. The drill fails a capsule whose installer configuration has no matching
+member; older capsules of instances without an installer configuration still pass.
 
 Watched apps, their alert history and the sealed webhook are in the database and restore with
 it; the webhook opens only under the same encryption key.

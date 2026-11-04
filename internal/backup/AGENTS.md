@@ -75,6 +75,12 @@ live in `recoveryclient` and in the settings rows it reads and writes through th
   without installer-owned active sources remain drillable. Restore extracts the member
   inside the private restore directory and never writes its absolute references. Installer
   target placement and bridge-side copies still require suite restore qualification.
+- `sso_credentials.go` seals `config/installer-sso-credentials.json`: the KyIdentity client
+  and directory secrets the snapshot's `installer.config` row names, with those paths and
+  the row's SHA-256. Every capsule carries it (empty without an installer configuration);
+  an unreadable secret refuses backup. The drill fails when the snapshot has an installer
+  configuration and the member is missing or does not match; older capsules without one
+  still pass. Restore only extracts it; `docs/RESTORE.md` says where the secrets go.
 
 ## Verification
 - `go test -v ./internal/backup/...` covers decoded seal/open checks, malformed recipes,

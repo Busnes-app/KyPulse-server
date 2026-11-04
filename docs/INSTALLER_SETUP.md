@@ -89,6 +89,9 @@ check all active source bindings and token hashes. Revoked sources are not react
 require no token file. The member records original target paths for explicit restoration;
 extraction stays inside the private restore directory. Placement back on product and bridge
 targets, including bridge receipt state, remains an end-to-end suite restore gate.
+The KyIdentity client and directory webhook secrets the installer configuration names travel
+the same way, in `config/installer-sso-credentials.json`, bound to that configuration by path
+and SHA-256; a missing secret file refuses backup and the drill fails without the member.
 
 Applying stages immutable configuration and reports `activation: restart` until observed
 live. `apply-setup --restart` requests graceful shutdown; the workload controller must

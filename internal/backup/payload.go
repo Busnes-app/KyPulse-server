@@ -55,7 +55,7 @@ func Collect(ctx context.Context, cfg *config.Config, appVersion string) (recove
 		return recoveryclient.Payload{}, err
 	}
 	const dbPath = "data/kypulse.db"
-	files := []recoveryclient.File{{Path: dbPath, Data: dbBytes, Mode: 0600}, credentials}
+	files := append([]recoveryclient.File{{Path: dbPath, Data: dbBytes, Mode: 0600}}, credentials...)
 	sqlitePaths := []string{dbPath}
 
 	cfgJSON, _ := json.MarshalIndent(map[string]any{
@@ -110,35 +110,39 @@ func Collect(ctx context.Context, cfg *config.Config, appVersion string) (recove
 // under a concurrent checkpoint; the lib's SQLiteSnapshot runs VACUUM INTO through a live
 // connection. The scaffold opens its own handle from the DSN because store.Store exposes no
 // *sql.DB.
-func snapshotSQLite(ctx context.Context, dsn, dataDir string) ([]byte, recoveryclient.File, error) {
+func snapshotSQLite(ctx context.Context, dsn, dataDir string) ([]byte, []recoveryclient.File, error) {
 	db, err := sql.Open("sqlite", dsn)
 	if err != nil {
-		return nil, recoveryclient.File{}, err
+		return nil, nil, err
 	}
 	defer db.Close()
 	lock, err := lockSnapshots(dataDir)
 	if err != nil {
-		return nil, recoveryclient.File{}, err
+		return nil, nil, err
 	}
 	defer lock.Close()
 	dir, err := os.MkdirTemp(dataDir, "snapshot-*")
 	if err != nil {
-		return nil, recoveryclient.File{}, err
+		return nil, nil, err
 	}
 	defer os.RemoveAll(dir)
 	path := filepath.Join(dir, "kypulse.db")
 	if err := recoveryclient.SQLiteSnapshot(ctx, db, path); err != nil {
-		return nil, recoveryclient.File{}, fmt.Errorf("%w: %v", ErrNoDatabaseSnapshot, err)
+		return nil, nil, fmt.Errorf("%w: %v", ErrNoDatabaseSnapshot, err)
 	}
 	if err := sanitizeSnapshot(ctx, path); err != nil {
-		return nil, recoveryclient.File{}, fmt.Errorf("%w: sanitize SQLite snapshot: %v", ErrNoDatabaseSnapshot, err)
+		return nil, nil, fmt.Errorf("%w: sanitize SQLite snapshot: %v", ErrNoDatabaseSnapshot, err)
 	}
-	credentials, err := collectSourceCredentials(ctx, path)
+	sources, err := collectSourceCredentials(ctx, path)
 	if err != nil {
-		return nil, recoveryclient.File{}, err
+		return nil, nil, err
+	}
+	sso, err := collectSSOCredentials(ctx, path)
+	if err != nil {
+		return nil, nil, err
 	}
 	raw, err := os.ReadFile(path)
-	return raw, credentials, err
+	return raw, []recoveryclient.File{sources, sso}, err
 }
 
 // snapshotName matches only the names os.MkdirTemp(dataDir, "snapshot-*") creates.
@@ -236,7 +240,7 @@ func sanitizeSnapshot(ctx context.Context, path string) (err error) {
 
 // Members names what a capsule carries, for the screen; it is what Collect would seal now.
 func Members(cfg *config.Config) []string {
-	m := []string{"data/kypulse.db", "config/settings.json", encryptionKeyPath, auditKeyPath, sourceCredentialsPath}
+	m := []string{"data/kypulse.db", "config/settings.json", encryptionKeyPath, auditKeyPath, sourceCredentialsPath, ssoCredentialsPath}
 	if _, err := os.Stat(recoveryclient.RecoveryKeyPath(cfg.Database.DataDir)); err == nil {
 		m = append(m, recoveryPubPath)
 	}
