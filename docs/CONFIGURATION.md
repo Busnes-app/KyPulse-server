@@ -28,7 +28,7 @@ there is no log file.
 | `KYPULSE_DB_DSN` | SQLite file in the data dir; required for `postgres` | connection string; backups need SQLite at `<data dir>/kypulse.db` and refuse any other path |
 | `KYPULSE_DB_MAX_OPEN_CONNS`, `KYPULSE_DB_MAX_IDLE_CONNS` | `25`, `5` | PostgreSQL pool |
 | `KYPULSE_TRUSTED_PROXIES` | none | proxy IPs or CIDRs allowed to set `X-Forwarded-For`; `0.0.0.0/0` is refused |
-| `KYPULSE_COOKIE_SECURE`, `KYPULSE_COOKIE_DOMAIN` | on in production or with an `https` app URL, empty | session cookie `Secure` flag (also gates HSTS) |
+| `KYPULSE_COOKIE_SECURE`, `KYPULSE_COOKIE_DOMAIN` | on in production or with an `https` app URL, empty | session cookie `Secure` flag (also gates HSTS); leave the domain empty and give KyPulse its own hostname: Ky apps share cookie names, so a shared domain or host signs users out of one app and sends this app's session to the other |
 | `KYPULSE_CAPTCHA_PROVIDER` | `pow` | `pow` or `none`; proof-of-work is the only CAPTCHA implemented, so any other value also requires it |
 | `KYPULSE_CAPTCHA_SITE_KEY`, `KYPULSE_CAPTCHA_SECRET_KEY` | empty | reserved; no provider uses them yet |
 | `KYPULSE_CAPTCHA_POW_DIFFICULTY` | `50000` | proof-of-work search space (hashes tried at most) |
