@@ -280,12 +280,12 @@ func (s *Service) Observe(ctx context.Context, o poller.Observation) {
 	trackJSON, _ := json.Marshal(track)
 	resultJSON, _ := json.Marshal(o.Result)
 	err = s.Store.Targets().RecordPoll(ctx, tg.ID, store.PollUpdate{
-		PolledAt: o.At, LatencyMS: o.Latency.Milliseconds(), LastResult: string(resultJSON),
+		URL: o.Target.URL, PolledAt: o.At, LatencyMS: o.Latency.Milliseconds(), LastResult: string(resultJSON),
 		TrackJSON: string(trackJSON), State: string(track.State), StateSince: track.Since, Cause: track.Cause,
 	})
 	if err != nil {
 		if errors.Is(err, store.ErrNotFound) {
-			return // deleted between GetTarget and RecordPoll
+			return // deleted, or its URL edited, between GetTarget and RecordPoll
 		}
 		s.Logger.Log(ctx, evPollStoreError, logging.TargetID(tg.ID), logging.Err(err))
 		return

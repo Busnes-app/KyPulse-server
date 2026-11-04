@@ -177,10 +177,10 @@ func (t *targetStore) RecordPoll(ctx context.Context, id string, u PollUpdate) e
 	q := t.store.rebind(`
 UPDATE targets SET last_polled_at = ?, last_latency_ms = ?, last_result = ?, track_json = ?,
     state = ?, state_since = ?, cause = ?, updated_at = ?
-WHERE id = ?
+WHERE id = ? AND url = ?
 `)
 	res, err := t.store.db.ExecContext(ctx, q, u.PolledAt, u.LatencyMS, u.LastResult, u.TrackJSON,
-		u.State, u.StateSince, u.Cause, time.Now().UTC(), id)
+		u.State, u.StateSince, u.Cause, time.Now().UTC(), id, u.URL)
 	if err != nil {
 		return err
 	}
