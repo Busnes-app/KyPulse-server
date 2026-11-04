@@ -8,6 +8,7 @@ import (
 	"encoding/hex"
 	"encoding/json"
 	"errors"
+	"fmt"
 	"io"
 	"net/url"
 	"os"
@@ -83,7 +84,8 @@ func sourceReferences(ctx context.Context, path string) ([]sourceReference, erro
 		if own.SetupID == "" || own.Definition.Key == "" || own.ID != wantID || key != "installer.source."+hex.EncodeToString(keyHash[:]) || !filepath.IsAbs(own.Definition.TokenFile) || filepath.Clean(own.Definition.TokenFile) != own.Definition.TokenFile || strings.ContainsAny(own.Definition.TokenFile, "\x00\r\n") {
 			return nil, errors.New("invalid source ownership binding")
 		}
-		var name, target, hash string
+		var name, hash string
+		var target sql.NullString // deleting the watched app clears it
 		var revoked sql.NullTime
 		var alerts bool
 		if err := db.QueryRowContext(ctx, "SELECT name,target_id,token_hash,revoked_at,offboarding_alerts FROM log_sources WHERE id=?", own.ID).Scan(&name, &target, &hash, &revoked, &alerts); err != nil {
@@ -92,8 +94,11 @@ func sourceReferences(ctx context.Context, path string) ([]sourceReference, erro
 		if revoked.Valid {
 			continue
 		}
+		if !target.Valid {
+			return nil, fmt.Errorf("installer-owned log source %q lost its watched app; revoke it under Logs, then back up again", name)
+		}
 		wantTarget := uuid.NewSHA1(uuid.NameSpaceOID, []byte(own.SetupID+"\x00target\x00"+own.Definition.Target)).String()
-		if name != own.Definition.Name || target != wantTarget || alerts != own.Definition.OffboardingAlerts {
+		if name != own.Definition.Name || target.String != wantTarget || alerts != own.Definition.OffboardingAlerts {
 			return nil, errors.New("owned source conflicts with snapshot")
 		}
 		refs = append(refs, sourceReference{own.ID, own.Definition.TokenFile, hash})
