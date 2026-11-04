@@ -24,6 +24,7 @@ type KySignOnClient struct {
 	// applyMu serialises applying deliveries, so the stored per-subject order and the account
 	// change it guards cannot interleave within this process.
 	applyMu sync.Mutex
+	now     func() time.Time // time.Now; tests replace it
 }
 
 func NewKySignOnClient(cfg config.SSOConfig, st store.Store) *KySignOnClient {
@@ -32,6 +33,7 @@ func NewKySignOnClient(cfg config.SSOConfig, st store.Store) *KySignOnClient {
 		store:  st,
 		flow:   newOAuthFlow(cfg.KySignOnIssuer, cfg.KySignOnClientID, cfg.KySignOnSecret),
 		seen:   make(map[[32]byte]time.Time),
+		now:    time.Now,
 	}
 }
 
@@ -82,7 +84,7 @@ func (k *KySignOnClient) HandleSyncWebhook(ctx context.Context, body []byte, sig
 		return fmt.Errorf("invalid json payload: %w", err)
 	}
 	sent := time.Unix(payload.Timestamp, 0)
-	if payload.Timestamp == 0 || time.Since(sent).Abs() > syncWindow {
+	if payload.Timestamp == 0 || k.now().Sub(sent).Abs() > syncWindow {
 		return errors.New("webhook timestamp is missing or expired")
 	}
 	// The payload carries no event ID, so the signed body itself is the replay key.
@@ -92,9 +94,16 @@ func (k *KySignOnClient) HandleSyncWebhook(ctx context.Context, body []byte, sig
 	}
 	k.applyMu.Lock()
 	defer k.applyMu.Unlock()
+	// Judge the window again now the lock is held, with the same clock reading that prunes:
+	// a delivery that queued past its window could otherwise prune a newer fence and apply.
+	now := k.now()
+	if now.Sub(sent) > syncWindow {
+		k.release(key)
+		return errors.New("webhook timestamp is missing or expired")
+	}
 	// The order is stored before applying: a failed apply leaves it at this timestamp, so the
 	// provider's retry of the same delivery still passes, while an older one does not.
-	newest, err := k.store.Users().AdvanceSyncOrder(ctx, "kysignon", payload.ID, payload.Timestamp, time.Now().Add(-syncWindow).Unix())
+	newest, err := k.store.Users().AdvanceSyncOrder(ctx, "kysignon", payload.ID, payload.Timestamp, now.Add(-syncWindow).Unix())
 	if err != nil {
 		k.release(key)
 		return err
