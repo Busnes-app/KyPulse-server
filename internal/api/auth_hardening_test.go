@@ -245,13 +245,14 @@ func TestIngestLimitsClientsBeforeAuthentication(t *testing.T) {
 // fails with a body or returns an RS256 ID token for sub (and sid when set).
 type fakeIdP struct {
 	*httptest.Server
-	key  *rsa.PrivateKey
-	sub  string
-	sid  string
-	iat  time.Time // the ID token's iat; zero means now
-	fail string
-	role string    // the ID token's role claim; empty sends none
-	auth time.Time // the ID token's auth_time; zero sends none
+	key   *rsa.PrivateKey
+	sub   string
+	sid   string
+	iat   time.Time // the ID token's iat; zero means now
+	fail  string
+	role  string    // the ID token's role claim; empty sends none
+	roles any       // the ID token's per-app roles claim; nil sends none
+	auth  time.Time // the ID token's auth_time; zero sends none
 }
 
 func newFakeIdP(t *testing.T) *fakeIdP {
@@ -287,6 +288,9 @@ func newFakeIdP(t *testing.T) *fakeIdP {
 				"preferred_username": idp.sub, "iat": iat.Unix(), "exp": time.Now().Add(time.Minute).Unix()}
 			if idp.role != "" {
 				fields["role"] = idp.role
+			}
+			if idp.roles != nil {
+				fields["roles"] = idp.roles
 			}
 			if !idp.auth.IsZero() {
 				fields["auth_time"] = idp.auth.Unix()

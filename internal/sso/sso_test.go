@@ -255,3 +255,23 @@ type failingUsers struct{ store.UserStore }
 func (failingUsers) GetUserBySSO(context.Context, string, string) (*store.User, error) {
 	return nil, errors.New("database unavailable")
 }
+
+func TestLocalRolePrefersPerAppRoles(t *testing.T) {
+	cases := []struct {
+		claims sso.IdentityClaims
+		want   string
+		ok     bool
+	}{
+		{sso.IdentityClaims{Roles: []string{"admin"}}, "admin", true},
+		{sso.IdentityClaims{Roles: []string{"user"}, Role: "admin"}, "viewer", true},
+		{sso.IdentityClaims{Roles: []string{}, Role: "admin"}, "viewer", true},
+		{sso.IdentityClaims{Role: "admin"}, "admin", true},
+		{sso.IdentityClaims{Role: "user"}, "viewer", true},
+		{sso.IdentityClaims{}, "", false},
+	}
+	for _, c := range cases {
+		if got, ok := c.claims.LocalRole(); got != c.want || ok != c.ok {
+			t.Errorf("LocalRole(%+v) = %q, %v; want %q, %v", c.claims, got, ok, c.want, c.ok)
+		}
+	}
+}

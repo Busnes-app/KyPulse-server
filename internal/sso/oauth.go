@@ -3,6 +3,7 @@ package sso
 import (
 	"context"
 	"crypto/fips140"
+	"encoding/json"
 	"errors"
 	"net/http"
 	"net/url"
@@ -147,16 +148,23 @@ func strongOIDCContext(ctx context.Context) context.Context {
 
 func claimsFromIDToken(idToken *oidc.IDToken) (*IdentityClaims, error) {
 	var raw struct {
-		Sub               string `json:"sub"`
-		SID               string `json:"sid"`
-		Email             string `json:"email"`
-		Name              string `json:"name"`
-		PreferredUsername string `json:"preferred_username"`
-		Role              string `json:"role"`
-		AuthTime          int64  `json:"auth_time"`
+		Sub               string          `json:"sub"`
+		SID               string          `json:"sid"`
+		Email             string          `json:"email"`
+		Name              string          `json:"name"`
+		PreferredUsername string          `json:"preferred_username"`
+		Role              string          `json:"role"`
+		Roles             json.RawMessage `json:"roles"`
+		AuthTime          int64           `json:"auth_time"`
 	}
 	if err := idToken.Claims(&raw); err != nil || raw.Sub == "" {
 		return nil, ErrInvalidIDToken
+	}
+	var roles []string
+	if len(raw.Roles) > 0 { // present: it must be an array of strings (null too is malformed)
+		if string(raw.Roles) == "null" || json.Unmarshal(raw.Roles, &roles) != nil {
+			return nil, ErrInvalidIDToken
+		}
 	}
 	username := raw.PreferredUsername
 	if username == "" {
@@ -165,7 +173,7 @@ func claimsFromIDToken(idToken *oidc.IDToken) (*IdentityClaims, error) {
 	if username == "" {
 		username = raw.Sub
 	}
-	return &IdentityClaims{Subject: raw.Sub, Email: raw.Email, Name: raw.Name, PreferredUsername: username, Role: raw.Role, SessionID: raw.SID, IssuedAt: idToken.IssuedAt, AuthTime: authTime(raw.AuthTime)}, nil
+	return &IdentityClaims{Subject: raw.Sub, Email: raw.Email, Name: raw.Name, PreferredUsername: username, Role: raw.Role, Roles: roles, SessionID: raw.SID, IssuedAt: idToken.IssuedAt, AuthTime: authTime(raw.AuthTime)}, nil
 }
 
 // authTime is the auth_time claim as a time; zero when absent.
