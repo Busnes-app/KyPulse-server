@@ -61,7 +61,8 @@ func TestTransitions(t *testing.T) {
 		{"two degraded are degraded", []poller.State{OK, Degraded, Degraded}, []State{OK, Degraded}},
 		{"degraded then down", []poller.State{OK, Degraded, Degraded, Down, Down, Down}, []State{OK, Degraded, Down}},
 		{"down then degraded", []poller.State{Down, Down, Down, Degraded, Degraded}, []State{Down, Degraded}},
-		{"mixed bad polls never reach a threshold", []poller.State{OK, Down, Degraded, Down, Degraded, Down}, []State{OK}},
+		{"three mixed bad polls are degraded", []poller.State{OK, Down, Degraded, Down, Degraded, Down}, []State{OK, Degraded}},
+		{"two mixed bad polls change nothing", []poller.State{OK, Down, Degraded, OK}, []State{OK}},
 	}
 	for _, tc := range cases {
 		t.Run(tc.name, func(t *testing.T) {

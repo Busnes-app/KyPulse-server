@@ -45,6 +45,9 @@ type Track struct {
 	OKStreak       int       `json:"ok_streak"`
 	DegradedStreak int       `json:"degraded_streak"`
 	DownStreak     int       `json:"down_streak"`
+	// BadStreak counts consecutive polls that were not ok, of either kind: alternating down
+	// and degraded answers reset each other's streak but are still an outage.
+	BadStreak int `json:"bad_streak,omitempty"`
 	// LastNotified is when the last webhook for the current problem went out; zero when the
 	// target is fine. Reminders are counted from it.
 	LastNotified time.Time `json:"last_notified,omitempty"`
@@ -77,11 +80,11 @@ func Next(t Track, obs poller.Result, now time.Time) (Track, *Transition) {
 	}
 	switch obs.State {
 	case OK:
-		t.OKStreak, t.DegradedStreak, t.DownStreak = t.OKStreak+1, 0, 0
+		t.OKStreak, t.DegradedStreak, t.DownStreak, t.BadStreak = t.OKStreak+1, 0, 0, 0
 	case Degraded:
-		t.OKStreak, t.DegradedStreak, t.DownStreak = 0, t.DegradedStreak+1, 0
+		t.OKStreak, t.DegradedStreak, t.DownStreak, t.BadStreak = 0, t.DegradedStreak+1, 0, t.BadStreak+1
 	case Down:
-		t.OKStreak, t.DegradedStreak, t.DownStreak = 0, 0, t.DownStreak+1
+		t.OKStreak, t.DegradedStreak, t.DownStreak, t.BadStreak = 0, 0, t.DownStreak+1, t.BadStreak+1
 	}
 	next := t.State
 	switch {
@@ -91,7 +94,7 @@ func Next(t Track, obs poller.Result, now time.Time) (Track, *Transition) {
 		next = OK
 	case t.State != Down && t.DownStreak >= DownAfter:
 		next = Down
-	case t.State != Degraded && t.State != Down && t.DegradedStreak >= DegradedAfter:
+	case t.State != Degraded && t.State != Down && (t.DegradedStreak >= DegradedAfter || t.BadStreak >= DownAfter):
 		next = Degraded
 	case t.State == Down && t.DegradedStreak >= DegradedAfter:
 		next = Degraded
