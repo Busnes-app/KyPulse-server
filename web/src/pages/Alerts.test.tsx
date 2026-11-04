@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import { cleanup, render, screen } from '@testing-library/react';
+import { cleanup, fireEvent, render, screen } from '@testing-library/react';
 import { Alerts } from './Alerts';
 import type { Target, TargetEvent } from '../monitor';
 
@@ -48,5 +48,27 @@ describe('Alerts', () => {
     }));
     render(<Alerts user={{ role: 'viewer' }} />);
     expect(await screen.findByText(/No alerts yet/)).toBeTruthy();
+  });
+
+  it('pages to older alerts and back to the newest', async () => {
+    const asked: string[] = [];
+    vi.stubGlobal('fetch', vi.fn(async (input: RequestInfo | URL) => {
+      const url = String(input);
+      if (url.startsWith('/api/alerts')) {
+        asked.push(url);
+        return url.includes('before_id=2')
+          ? new Response(JSON.stringify({ events: [events[2]], next_before_id: 0 }))
+          : new Response(JSON.stringify({ events: events.slice(0, 2), next_before_id: 2 }));
+      }
+      return new Response(JSON.stringify({ targets }));
+    }));
+    render(<Alerts user={{ role: 'viewer' }} />);
+    fireEvent.click(await screen.findByRole('button', { name: 'Older' }));
+    expect(await screen.findByText('tgt_gone')).toBeTruthy();
+    expect(asked.at(-1)).toBe('/api/alerts?limit=100&before_id=2');
+    expect(screen.queryByRole('button', { name: 'Older' })).toBeNull();
+    fireEvent.click(screen.getByRole('button', { name: 'Newest' }));
+    expect(await screen.findByRole('button', { name: 'Older' })).toBeTruthy();
+    expect(screen.queryByText('tgt_gone')).toBeNull();
   });
 });

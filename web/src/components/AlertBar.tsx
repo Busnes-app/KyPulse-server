@@ -67,6 +67,8 @@ export const AlertBar: React.FC<AlertBarProps> = ({ status, loading, isAdmin }) 
       <div role="status" className="alert-bar alert-bar-neutral">
         <CircleDashed size={16} />
         <span>No apps watched yet{isAdmin ? <> · <a href={hrefFor('/status')}>add one on Status</a></> : null}</span>
+        {delivery}
+        {yard}
       </div>
     );
   }

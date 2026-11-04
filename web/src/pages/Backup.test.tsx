@@ -79,13 +79,13 @@ describe('Backup', () => {
   it('says so on Postgres, where no capsule carries the database', async () => {
     mockStatus({ ...PAIRED, database_driver: 'postgres' });
     render(<Backup />);
-    expect(await screen.findByText(/Backups do not include the PostgreSQL database/)).toBeTruthy();
+    expect(await screen.findByText(/No capsule is made on PostgreSQL/)).toBeTruthy();
   });
 
   it('does not warn about the database on SQLite', async () => {
     mockStatus(PAIRED);
     render(<Backup />);
     await screen.findByText('https://recovery.example');
-    expect(screen.queryByText(/Backups do not include the PostgreSQL database/)).toBeNull();
+    expect(screen.queryByText(/No capsule is made on PostgreSQL/)).toBeNull();
   });
 });

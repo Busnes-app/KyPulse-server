@@ -435,8 +435,8 @@ export const Backup: React.FC = () => {
       {status?.recovery_key_error && <Alert kind="error">{status.recovery_key_error}</Alert>}
       {status && status.database_driver !== 'sqlite' && (
         <Alert kind="warn">
-          Backups do not include the PostgreSQL database: a capsule can only snapshot SQLite. Back this database up
-          with pg_dump on its own schedule.
+          No capsule is made on PostgreSQL: a capsule needs a SQLite snapshot, so nothing here is backed up, keys
+          included. Back the database up with pg_dump, and keep the encryption and audit keys with it.
         </Alert>
       )}
       {status && !keyPinned && <Alert kind="warn">No backups are being made. Pair with KyRecovery or pin the suite recovery key below.</Alert>}
