@@ -318,6 +318,13 @@ func recordRun(ctx context.Context, st store.Store, actor string, res recoverycl
 	details["outcome"] = outcome
 	_ = st.Audit().LogAudit(ctx, &store.AuditRecord{UserID: actor, Action: action,
 		Resource: res.Manifest.CapsuleID, Details: api.AuditDetails(details)})
+	message := ""
+	if err != nil {
+		message = recoveryclient.AuditSafe(err.Error())
+	}
+	if rerr := backup.RecordRunResult(ctx, st.Settings(), actor == "system", outcome, message); rerr != nil {
+		log.Printf("[BACKUP] could not record the run for the Backup page: %v", rerr)
+	}
 	if err != nil {
 		log.Printf("[BACKUP] %s: %s", actor, recoveryclient.AuditSafe(err.Error()))
 		return

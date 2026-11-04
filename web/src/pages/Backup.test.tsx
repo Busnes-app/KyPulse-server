@@ -82,6 +82,12 @@ describe('Backup', () => {
     expect(await screen.findByText(/No capsule is made on PostgreSQL/)).toBeTruthy();
   });
 
+  it('shows the last scheduled failure (Q6 A)', async () => {
+    mockStatus({ ...PAIRED, interval_sec: 86400, last_run_error: 'backup: no consistent database snapshot' });
+    render(<Backup />);
+    expect(await screen.findByText(/The last scheduled backup failed: backup: no consistent database snapshot/)).toBeTruthy();
+  });
+
   it('does not warn about the database on SQLite', async () => {
     mockStatus(PAIRED);
     render(<Backup />);

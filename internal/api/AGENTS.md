@@ -41,6 +41,7 @@ Owns HTTP routing, request parsing, session cookie validation, CORS headers, and
   browser CORS preflights keep their existing response and expose no source capability.
   Revoked/invalid credentials get 401 without capability headers; source tokens still cannot
   read collected logs/activity or administer sources.
+- `GET /api/backup/status` adds `last_run_error` while the most recent scheduled backup failed (cleared by any success).
 - Creating a pairing code is a step-up: a local admin sends `password` (current password; five
   wrong ones in 15 minutes refuse even a right one), a KyIdentity admin's session must come
   from a step-up sign-in (`/api/sso/kysignon/login?step_up=1`: `max_age=0`, `prompt=login`, an

@@ -8,6 +8,7 @@ import (
 	"os"
 	"path/filepath"
 	"sort"
+	"strings"
 
 	"github.com/Busnes-app/ky-primitives/capsule"
 	"github.com/Busnes-app/ky-primitives/recoveryclient"
@@ -49,9 +50,23 @@ func warnNearLimit(files []recoveryclient.File) {
 // database holds, removing them when remove is set. A capsule with a single member
 // needs nothing and returns false.
 func JoinDatabase(dir string, remove bool) (bool, error) {
-	parts, err := filepath.Glob(filepath.Join(dir, dbPath+".part-*"))
-	if err != nil || len(parts) == 0 {
+	// Read the directory, not filepath.Glob: a destination such as /srv/[restore] is a
+	// valid path but a glob pattern that matches nothing.
+	entries, err := os.ReadDir(filepath.Join(dir, "data"))
+	if errors.Is(err, os.ErrNotExist) {
+		return false, nil
+	}
+	if err != nil {
 		return false, err
+	}
+	var parts []string
+	for _, e := range entries {
+		if strings.HasPrefix(e.Name(), "kypulse.db.part-") {
+			parts = append(parts, filepath.Join(dir, "data", e.Name()))
+		}
+	}
+	if len(parts) == 0 {
+		return false, nil
 	}
 	sort.Strings(parts)
 	for i, p := range parts {

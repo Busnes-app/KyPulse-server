@@ -39,4 +39,14 @@ func TestDBMembersSplitAndJoin(t *testing.T) {
 	if _, err := JoinDatabase(gap, true); err == nil {
 		t.Fatal("non-consecutive parts joined")
 	}
+
+	// A destination that is a glob pattern ([restore]) is still a literal directory.
+	odd := filepath.Join(t.TempDir(), "[restore]")
+	os.MkdirAll(filepath.Join(odd, "data"), 0700)
+	for _, p := range parts {
+		os.WriteFile(filepath.Join(odd, p.Path), p.Data, 0600)
+	}
+	if joined, err := JoinDatabase(odd, true); err != nil || !joined {
+		t.Fatal("parts under a bracketed path not joined:", joined, err)
+	}
 }

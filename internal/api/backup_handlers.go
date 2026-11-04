@@ -277,6 +277,7 @@ func (s *Server) handleRunBackup(w http.ResponseWriter, r *http.Request) {
 	action, outcome, details := recoveryclient.Outcome(res, err)
 	details["outcome"] = outcome
 	s.audit(ctx, actor, r, action, res.Manifest.CapsuleID, AuditDetails(details))
+	_ = backup.RecordRunResult(ctx, s.store.Settings(), false, outcome, "") // a success clears the page's error
 
 	if errors.Is(err, recoveryclient.ErrReceiptUnrecorded) {
 		// The store has the capsule; only this side's record is missing. This is the one path
@@ -477,6 +478,9 @@ func (s *Server) handleBackupStatus(w http.ResponseWriter, r *http.Request) {
 		out["recovery_key_error"] = "recovery.pub does not match the pinned key ID"
 	case recoveryclient.HasPairing(settings):
 		out["recovery_key_error"] = "paired, but recovery.pub is missing; restore it or re-pair"
+	}
+	if msg, err := s.store.Settings().GetSetting(ctx, backup.LastRunErrorKey); err == nil && msg != "" {
+		out["last_run_error"] = msg
 	}
 	if last, ok, err := recoveryclient.LastDeposit(settings); err == nil && ok {
 		out["last_deposit"] = last

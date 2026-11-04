@@ -80,6 +80,9 @@ live in `recoveryclient` and in the settings rows it reads and writes through th
   (`Checks`) and `cmd/server` restore rebuild with `JoinDatabase` (restore then removes the
   parts). Single-member capsules are unchanged. A payload past 80% of
   `capsule.MaxExpandedBytes` logs a warning. Never raise the library limits.
+- `RecordRunResult` keeps `backup_last_run_error` (Q6 A): a scheduled run's failure stores its
+  audit-safe message, any success (scheduled, CLI or Back up now) deletes it; the status route
+  returns it as `last_run_error` and the Backup page shows it, with a red Schedule badge.
 - `cmd/server` restore sets `backup_interval_sec=0` in the restored database and says so: a
   restored copy never deposits on its own.
 - `sso_credentials.go` seals `config/installer-sso-credentials.json`: the KyIdentity client

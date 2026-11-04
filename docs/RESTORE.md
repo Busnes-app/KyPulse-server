@@ -213,7 +213,7 @@ Failures you may see, and what they mean:
 find restored -type f -printf '%m %p\n'
 ```
 
-Expect four or five files, all mode `600`, under `restored/data` and `restored/config`.
+Expect six or seven files, all mode `600`, under `restored/data` and `restored/config`.
 `cat restored/config/settings.json` shows the app URL and port the old server ran with.
 
 ## Step 3: put it in service
@@ -294,9 +294,10 @@ as before, and start.
 2. Open Backup & recovery. If the backup had a key, the recovery key shows as pinned with the
    same key ID as before; compare it with the ceremony card. If the backup was paired, the
    sealed token came across in the database, so the restored server can deposit again
-   without re-pairing: click Back up now to prove it. Restore turned scheduled deposits off,
-   so a rehearsal never deposits beside the live server; once this server is the one in
-   service, set the schedule again under Backup. If the screen says the key is missing,
+   without re-pairing. Restore turned scheduled deposits off, so the restored server makes
+   none on its own. In a rehearsal beside the live server, do not click Back up now: it
+   deposits as the live service. Once this server is the one in service, click Back up now
+   to prove the pairing, and set the schedule again under Backup. If the screen says the key is missing,
    `data/recovery.pub` did not come across; re-pair, which is refused unless KyRecovery hands
    back the same key.
 3. Check the audit log: the last events before the restore are there, followed by your

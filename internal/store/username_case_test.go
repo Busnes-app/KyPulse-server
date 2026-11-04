@@ -4,10 +4,14 @@ import (
 	"context"
 	"database/sql"
 	"errors"
+	"fmt"
+	"strings"
 	"sync"
 	"testing"
 	"time"
 
+	"github.com/Busnes-app/ky-primitives/applysetup"
+	"github.com/Busnes-app/kypulse-server/internal/config"
 	"github.com/Busnes-app/kypulse-server/internal/store"
 	"github.com/Busnes-app/kypulse-server/internal/testdb"
 	"github.com/google/uuid"
@@ -177,5 +181,41 @@ func TestConcurrentCaseVariantsWithoutTheIndex(t *testing.T) {
 	}
 	if created != 1 {
 		t.Fatalf("%d case variants of bob created, want 1", created)
+	}
+}
+
+// The installer's identity insert takes the same lock, so it cannot race an ordinary
+// provisioning of a case variant while the index is absent.
+func TestInstallerAndProvisioningCannotBothTakeACaseVariant(t *testing.T) {
+	ctx := context.Background()
+	cfg := testdb.Config(t)
+	st, err := store.Open(ctx, cfg)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if err := st.Users().CreateUser(ctx, newUser("admin")); err != nil {
+		t.Fatal(err)
+	}
+	st.Close()
+	now := time.Now().UTC().Format(time.RFC3339)
+	rawExec(t, cfg.Driver, cfg.DSN, `DROP INDEX idx_users_username_lower`,
+		`INSERT INTO users (id, username, role, status, sso_provider, created_at, updated_at) VALUES ('`+uuid.NewString()+`', 'ADMIN', 'viewer', 'active', 'kysignon', '`+now+`', '`+now+`')`)
+	st, err = store.Open(ctx, cfg)
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer st.Close()
+	for i := range 10 {
+		name := fmt.Sprintf("bob%d", i)
+		b := applysetup.Common{Schema: applysetup.Schema, Service: "kypulse", SetupID: "271333e2-c221-4601-b249-563b3d828530",
+			Everyday: []applysetup.Identity{{Issuer: "https://identity.test", Subject: "sub-" + name, Username: strings.ToUpper(name)}}}
+		var wg sync.WaitGroup
+		wg.Add(2)
+		go func() { defer wg.Done(); _, _ = st.ApplyInstaller(ctx, config.InstallerBundle{Common: b}, false) }()
+		go func() { defer wg.Done(); _ = st.Users().CreateUser(ctx, newUser(name)) }()
+		wg.Wait()
+		if clashes, _ := st.Users().UsernameClashes(ctx); len(clashes) != 1 {
+			t.Fatalf("round %d: installer and provisioning both created %s: %v", i, name, clashes)
+		}
 	}
 }

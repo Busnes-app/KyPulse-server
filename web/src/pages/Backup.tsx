@@ -51,6 +51,7 @@ export interface BackupStatus {
   interval_sec?: number;
   min_interval_sec?: number;
   next_run_at?: string;
+  last_run_error?: string;
 }
 
 interface DrillCheck {
@@ -433,6 +434,7 @@ export const Backup: React.FC = () => {
 
       {statusError && <Alert kind="error">{statusError}</Alert>}
       {status?.recovery_key_error && <Alert kind="error">{status.recovery_key_error}</Alert>}
+      {status?.last_run_error && <Alert kind="error">The last scheduled backup failed: {status.last_run_error}</Alert>}
       {status && status.database_driver !== 'sqlite' && (
         <Alert kind="warn">
           No capsule is made on PostgreSQL: a capsule needs a SQLite snapshot, so nothing here is backed up, keys
@@ -479,7 +481,7 @@ export const Backup: React.FC = () => {
         <div className="dr-fact">
           <div className="dr-fact-label">
             <span>Schedule</span>
-            <Badge tone={!scheduleOn ? 'danger' : canBackUp ? 'success' : 'muted'}>{every(status?.interval_sec)}</Badge>
+            <Badge tone={!scheduleOn || status?.last_run_error ? 'danger' : canBackUp ? 'success' : 'muted'}>{every(status?.interval_sec)}</Badge>
           </div>
           <div className="dr-fact-value">
             {!scheduleOn ? 'Manual only' : !keyPinned ? 'Waiting for recovery key' : !canBackUp ? 'Waiting for a destination'
