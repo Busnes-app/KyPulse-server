@@ -72,8 +72,9 @@ func (s *Server) handleLogin(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// Verify PoW CAPTCHA if enabled
-	if s.config.Captcha.Provider == "pow" {
+	// PoW is the only CAPTCHA implemented; only an explicit "none" turns it off, so a value
+	// naming an unimplemented provider fails closed instead of disabling the check.
+	if s.config.Captcha.Provider != "none" {
 		if req.CaptchaToken == "" || !s.pow.Verify(req.CaptchaToken, s.config.Security.SessionSecret) {
 			fail("", "captcha", http.StatusForbidden, "Security check failed. Please complete the CAPTCHA puzzle.")
 			return

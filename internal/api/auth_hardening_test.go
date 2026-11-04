@@ -114,6 +114,16 @@ func TestLoginPerAccountWindow(t *testing.T) {
 	}
 }
 
+// A provider name with no implementation must not switch the CAPTCHA off.
+func TestUnimplementedCaptchaProviderFailsClosed(t *testing.T) {
+	srv, st, cfg := setupTestServer(t)
+	cfg.Captcha.Provider = "turnstile"
+	createLocalUser(t, st, "usr_cap", "cap", "active")
+	if w := loginFrom(t, srv, "192.0.2.77:1", "cap", "SuperSecretPass123!"); w.Code != http.StatusForbidden {
+		t.Fatalf("login without a PoW solution: %d %s", w.Code, w.Body.String())
+	}
+}
+
 // The account window counts failures only: a user signing in often is never locked out.
 func TestLoginAccountWindowIgnoresSuccess(t *testing.T) {
 	srv, st, _ := setupTestServer(t)
