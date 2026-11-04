@@ -462,7 +462,11 @@ func (s *SQLStore) withGuard(ctx context.Context, where string, args []any, appl
 
 func (s *sessionStore) CreateSession(ctx context.Context, sess *Session, expected Credentials) error {
 	err := s.store.withCredentials(ctx, sess.UserID, expected, func(tx *sql.Tx) (func(bool), error) {
-		_, err := tx.ExecContext(ctx, s.store.rebind(`INSERT INTO sessions (token_hash, user_id, user_agent, ip_address, created_at, expires_at, sso_sid) VALUES (?, ?, ?, ?, ?, ?, ?)`), sess.TokenHash, sess.UserID, sess.UserAgent, sess.IPAddress, sess.CreatedAt, sess.ExpiresAt, sess.SSOSID)
+		var stepUp sql.NullTime
+		if sess.StepUpAt != nil {
+			stepUp = sql.NullTime{Time: sess.StepUpAt.UTC(), Valid: true}
+		}
+		_, err := tx.ExecContext(ctx, s.store.rebind(`INSERT INTO sessions (token_hash, user_id, user_agent, ip_address, created_at, expires_at, sso_sid, step_up_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?)`), sess.TokenHash, sess.UserID, sess.UserAgent, sess.IPAddress, sess.CreatedAt, sess.ExpiresAt, sess.SSOSID, stepUp)
 		return nil, err
 	})
 	if err != nil {
@@ -572,14 +576,18 @@ func (u *userStore) revokePasswordGrants(ctx context.Context, tx *sql.Tx, userID
 
 func (s *sessionStore) GetSession(ctx context.Context, tokenHash string) (*Session, error) {
 	q := s.store.rebind(`
-SELECT token_hash, user_id, user_agent, ip_address, created_at, expires_at
+SELECT token_hash, user_id, user_agent, ip_address, created_at, expires_at, step_up_at
 FROM sessions WHERE token_hash = ?
 `)
 	var sess Session
+	var stepUp sql.NullTime
 	err := s.store.db.QueryRowContext(ctx, q, tokenHash).Scan(
 		&sess.TokenHash, &sess.UserID, &sess.UserAgent, &sess.IPAddress,
-		&sess.CreatedAt, &sess.ExpiresAt,
+		&sess.CreatedAt, &sess.ExpiresAt, &stepUp,
 	)
+	if stepUp.Valid {
+		sess.StepUpAt = &stepUp.Time
+	}
 	if err != nil {
 		if errorsIs(err, sql.ErrNoRows) {
 			return nil, ErrNotFound

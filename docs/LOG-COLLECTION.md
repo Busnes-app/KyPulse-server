@@ -7,7 +7,10 @@ Commands and unlinked file paths below are relative to the repository root.
 ## Sending logs
 
 An admin creates a six-digit code with `POST /api/log-sources/pairing` and JSON
-`{"target_id":"<watched target ID>"}`. Omit `target_id` for a source that appears only in
+`{"target_id":"<watched target ID>","password":"<your current password>"}`. The token a
+code turns into outlives your session, so the Logs page asks a local admin for the current
+password; a KyIdentity admin is sent to KyIdentity to sign in again, then back to Logs, and
+has ten minutes to add the source. Omit `target_id` for a source that appears only in
 global log queries. The code expires after 15 minutes and can be claimed once. A sender
 claims it without a user session using `POST /api/log-sources/claim` and
 `{"pairing_code":"123456","name":"host-app"}`. Keep the returned `token` secret: it is

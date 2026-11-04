@@ -366,6 +366,12 @@ DELETE FROM sessions WHERE sso_sid = '' AND user_id IN (SELECT id FROM users WHE
 		SQLite:   `CREATE TABLE sso_sync_order (provider TEXT NOT NULL, subject TEXT NOT NULL, latest INTEGER NOT NULL, PRIMARY KEY (provider, subject));`,
 		Postgres: `CREATE TABLE sso_sync_order (provider TEXT NOT NULL, subject TEXT NOT NULL, latest BIGINT NOT NULL, PRIMARY KEY (provider, subject));`,
 	},
+	// step_up_at is the auth_time of a KyIdentity step-up sign-in (max_age=0): proof the
+	// user was present, which creating a log-source pairing code requires.
+	{Version: 14, Name: "session_step_up",
+		SQLite:   `ALTER TABLE sessions ADD COLUMN step_up_at DATETIME;`,
+		Postgres: `ALTER TABLE sessions ADD COLUMN step_up_at TIMESTAMPTZ;`,
+	},
 }
 
 // lockKey is the Postgres session advisory lock Run holds, so replicas starting together

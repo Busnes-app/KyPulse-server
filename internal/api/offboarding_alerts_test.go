@@ -42,14 +42,14 @@ func TestOffboardingAlertPairingAndIngestBoundary(t *testing.T) {
 		srv.ServeHTTP(w, r)
 		return w
 	}
-	const intent = `{"target_id":"bridge","offboarding_alerts":true}`
+	const intent = `{"target_id":"bridge","offboarding_alerts":true,"password":"SuperSecretPass123!"}`
 	for _, cookie := range []*http.Cookie{nil, viewer} {
 		w := call("/api/log-sources/pairing", intent, cookie, "source-token", "")
 		if w.Code != 401 && w.Code != 403 {
 			t.Fatalf("non-admin granted alerts: %d", w.Code)
 		}
 	}
-	for _, body := range []string{`{"offboarding_alerts":true}`, `{"target_id":"missing","offboarding_alerts":true}`} {
+	for _, body := range []string{`{"offboarding_alerts":true,"password":"SuperSecretPass123!"}`, `{"target_id":"missing","offboarding_alerts":true,"password":"SuperSecretPass123!"}`} {
 		if w := call("/api/log-sources/pairing", body, admin, "", ""); w.Code != 400 {
 			t.Fatalf("missing target: %d %s", w.Code, w.Body)
 		}

@@ -1,7 +1,7 @@
 import { secureFetch } from './api';
 import { ApiError } from './monitor';
 
-export interface LogUser { role: string; id?: string }
+export interface LogUser { role: string; id?: string; sso_provider?: string }
 export interface LogLine {
   id: number; time: string; received_at: string; source_id: string; source: string;
   target_id: string; app: string; level: string; event: string; message: string; raw: string; truncated: boolean;
@@ -86,8 +86,19 @@ export async function getSourceTargets(signal: AbortSignal): Promise<{ id: strin
   const v = object(await read(await fetch('/api/targets', { signal })));
   return list(v.targets, value => { const t = object(value); return { id: text(t.id), name: text(t.name) }; });
 }
-export async function createPairing(target_id: string, signal: AbortSignal): Promise<Pairing> {
-  const v = object(await read(await secureFetch('/api/log-sources/pairing', { method: 'POST', signal, headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ target_id }) })));
+// StepUpRequired: the server wants proof of presence first, the current password
+// (method "password") or a fresh KyIdentity sign-in (method "kyidentity").
+export class StepUpRequired extends Error {
+  constructor(message: string, readonly method: string) { super(message); }
+}
+export async function createPairing(target_id: string, password: string, signal: AbortSignal): Promise<Pairing> {
+  const response = await secureFetch('/api/log-sources/pairing', { method: 'POST', signal, headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(password ? { target_id, password } : { target_id }) });
+  if (response.status === 403) {
+    // Not a lost session: read() would sign the shell out.
+    const body = object(await response.clone().json().catch(() => ({})));
+    if (body.code === 'step_up_required') throw new StepUpRequired(text(body.error) || 'Confirm it is you first.', text(body.method));
+  }
+  const v = object(await read(response));
   const code = text(v.code);
   if (!/^\d{6}$/.test(code)) throw new Error('Unexpected pairing code');
   return { code, expires_at: date(v.expires_at) };

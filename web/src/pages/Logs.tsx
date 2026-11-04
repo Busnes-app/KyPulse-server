@@ -7,9 +7,9 @@ import { PageHead } from '../components/PageHead';
 
 const empty = { app: '', level: '', text: '', from: '', to: '' };
 export function Logs({ user }: { user: LogUser }) {
-  return user.role === 'admin' ? <AdminLogs key={user.id ?? ''} /> : null;
+  return user.role === 'admin' ? <AdminLogs key={user.id ?? ''} local={user.sso_provider === 'local'} /> : null;
 }
-function AdminLogs() {
+function AdminLogs({ local }: { local: boolean }) {
   const [filters, setFilters] = useState(empty);
   const [hasAppliedFilters, setHasAppliedFilters] = useState(false);
   const page = useLogPage(getLogs);
@@ -35,6 +35,6 @@ function AdminLogs() {
     {!page.loading && !page.error && !page.items.length && <p className="dr-hint log-empty">No logs found.</p>}
     <KyYardCollection />
     <LogLines items={page.items} />
-    <LogSources />
+    <LogSources local={local} />
   </div>;
 }

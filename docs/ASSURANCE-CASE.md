@@ -118,8 +118,13 @@ publishes on loopback by default; TLS is the reverse proxy's job.
 
 ## Residual risk
 
-- KyPulse has no step-up re-authentication; admin-only access plus the per-route tests stand in
-  for it on destructive backup routes ([internal/api/AGENTS.md](../internal/api/AGENTS.md)).
+- The only step-up re-authentication guards log-source pairing codes, whose claimed token
+  outlives the session: a local admin gives the current password (five wrong ones close the
+  window), a KyIdentity admin signs in again with `max_age=0` and an `auth_time` from after the
+  request, within ten minutes, the start time MACed to the OAuth state (`internal/api/sources.go`,
+  `TestPairingRequiresTheCurrentPassword`, `TestPairingRequiresAKyIdentityStepUp`). Elsewhere,
+  admin-only access plus the per-route tests stand in for it on destructive backup routes
+  ([internal/api/AGENTS.md](../internal/api/AGENTS.md)).
 - A local account has no second factor in KyPulse; MFA is KyIdentity's. A deployment that
   needs MFA signs its people in with KyIdentity.
 - TOTP secrets kept from the removed local MFA stay sealed under `encryption.key` directly

@@ -160,7 +160,7 @@ func TestLogSourcePairingRoutes(t *testing.T) {
 	if w := call("POST", "/api/log-sources/pairing", `{} {}`, admin, ""); w.Code != http.StatusBadRequest {
 		t.Fatalf("two objects=%d", w.Code)
 	}
-	pair := call("POST", "/api/log-sources/pairing", `{}`, admin, "")
+	pair := call("POST", "/api/log-sources/pairing", `{"password":"SuperSecretPass123!"}`, admin, "")
 	if pair.Code != 200 {
 		t.Fatalf("pair=%d %s", pair.Code, pair.Body.String())
 	}
@@ -188,7 +188,7 @@ func TestLogSourcePairingRoutes(t *testing.T) {
 		cookie *http.Cookie
 		bearer string
 	}{{admin, ""}, {viewer, ""}, {nil, claimed.Token}} {
-		fresh := call("POST", "/api/log-sources/pairing", `{}`, admin, "")
+		fresh := call("POST", "/api/log-sources/pairing", `{"password":"SuperSecretPass123!"}`, admin, "")
 		if fresh.Code != 200 {
 			t.Fatalf("fresh pairing=%d", fresh.Code)
 		}

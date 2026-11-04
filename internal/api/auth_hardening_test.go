@@ -250,7 +250,8 @@ type fakeIdP struct {
 	sid  string
 	iat  time.Time // the ID token's iat; zero means now
 	fail string
-	role string // the ID token's role claim; empty sends none
+	role string    // the ID token's role claim; empty sends none
+	auth time.Time // the ID token's auth_time; zero sends none
 }
 
 func newFakeIdP(t *testing.T) *fakeIdP {
@@ -286,6 +287,9 @@ func newFakeIdP(t *testing.T) *fakeIdP {
 				"preferred_username": idp.sub, "iat": iat.Unix(), "exp": time.Now().Add(time.Minute).Unix()}
 			if idp.role != "" {
 				fields["role"] = idp.role
+			}
+			if !idp.auth.IsZero() {
+				fields["auth_time"] = idp.auth.Unix()
 			}
 			claims, _ := json.Marshal(fields)
 			input := b64(header) + "." + b64(claims)

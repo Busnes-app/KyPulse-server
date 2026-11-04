@@ -1,7 +1,9 @@
 import { useEffect, useRef, useState } from 'react';
-import { createPairing, getSources, getSourceTargets, logError, revokeSource, senderOrigin, type LogSource, type Pairing } from '../logs';
+import { createPairing, getSources, getSourceTargets, logError, revokeSource, senderOrigin, StepUpRequired, type LogSource, type Pairing } from '../logs';
 
-export function LogSources() {
+// local: the admin signs in with a password here, so adding a source asks for it; a
+// KyIdentity admin confirms with a fresh KyIdentity sign-in instead.
+export function LogSources({ local }: { local: boolean }) {
   const [sources, setSources] = useState<LogSource[]>([]);
   const [targets, setTargets] = useState<{ id: string; name: string }[]>([]);
   const [target, setTarget] = useState('');
@@ -9,6 +11,8 @@ export function LogSources() {
   const [origin, setOrigin] = useState(() => window.location.protocol === 'https:' ? window.location.origin : '');
   const [pairing, setPairing] = useState<Pairing | null>(null);
   const [error, setError] = useState('');
+  const [password, setPassword] = useState('');
+  const [stepUp, setStepUp] = useState('');
   const [busy, setBusy] = useState(false);
   const [loading, setLoading] = useState(true);
   const [refresh, setRefresh] = useState(0);
@@ -37,15 +41,18 @@ export function LogSources() {
   const generate = async () => {
     const controller = lifetime.current;
     if (!controller) return;
-    setError('');
+    setError(''); setStepUp('');
     let validated: string;
     try { validated = senderOrigin(origin); } catch (err) { setError(logError(err)); return; }
     setOrigin(validated); setBusy(true); setPairing(null);
     try {
-      const next = await createPairing(target, controller.signal);
+      const next = await createPairing(target, local ? password : '', controller.signal);
       if (!controller.signal.aborted && Date.parse(next.expires_at) > Date.now()) setPairing(next);
-    } catch (err) { if (!controller.signal.aborted) setError(logError(err)); }
-    finally { if (!controller.signal.aborted) setBusy(false); }
+    } catch (err) {
+      if (controller.signal.aborted) return;
+      if (err instanceof StepUpRequired && err.method === 'kyidentity') setStepUp(err.message);
+      else setError(logError(err));
+    } finally { if (!controller.signal.aborted) { setBusy(false); setPassword(''); } }
   };
   const revoke = async (source: LogSource) => {
     if (!window.confirm(`Revoke ${source.name}? This sender will no longer be able to send logs.`)) return;
@@ -67,6 +74,7 @@ export function LogSources() {
       </select></label>
       <label>Sender HTTPS origin<input type="url" required aria-describedby="sender-origin-help" placeholder="https://pulse.example.com" value={origin} disabled={busy || !!pairing} onChange={e => setOrigin(e.target.value)} /></label>
       <label>Log source name<input value={name} disabled={busy || !!pairing} required pattern="[A-Za-z0-9][A-Za-z0-9_.\-]{0,63}" maxLength={64} onChange={e => setName(e.target.value)} /></label>
+      {local && <label>Your current password<input type="password" autoComplete="current-password" required value={password} disabled={busy || !!pairing} onChange={e => setPassword(e.target.value)} /></label>}
       <div className="filter-actions"><button type="submit" className="btn-secondary" disabled={busy || loading || !!pairing}>Add source</button>
       <button type="button" className="btn-tertiary" disabled={busy || loading} onClick={() => setRefresh(r => r + 1)}>Refresh sources</button></div>
     </form>
@@ -76,6 +84,8 @@ export function LogSources() {
       <button type="button" className="btn-secondary" onClick={() => setPairing(null)}>Hide code</button>
     </div>}
     {error && <p className="form-error" role="alert">{error}</p>}
+    {stepUp && <div role="alert"><p>{stepUp}. KyIdentity will ask for your password again, then bring you back here.</p>
+      <a className="btn-secondary" href="/api/sso/kysignon/login?step_up=1">Confirm with KyIdentity</a></div>}
     {loading && <p>Loading sources…</p>}
     {!loading && !error && !sources.length && <p className="dr-hint">No paired sources.</p>}
     <ul className="log-lines">{sources.map(source => <li key={source.id}>

@@ -35,17 +35,22 @@ func NewSessionManager(st store.Store, cfg config.SecurityConfig) *SessionManage
 
 // IssueSession creates an active session in the database and writes HttpOnly cookie + CSRF token.
 func (sm *SessionManager) IssueSession(ctx context.Context, w http.ResponseWriter, r *http.Request, user *store.User) (*store.Session, string, error) {
-	return sm.issue(ctx, w, r, user, time.Now().UTC(), "")
+	return sm.issue(ctx, w, r, user, time.Now().UTC(), "", nil)
 }
 
 // IssueSSOSession issues a session for an SSO login the provider names by sid and dates
 // it by the ID token's issuedAt, so a back-channel logout for that sid or subject ends it.
 // It fails with store.ErrSSOSessionEnded when the provider already ended that login.
-func (sm *SessionManager) IssueSSOSession(ctx context.Context, w http.ResponseWriter, r *http.Request, user *store.User, sid string, issuedAt time.Time) (*store.Session, string, error) {
-	return sm.issue(ctx, w, r, user, issuedAt.UTC(), sid)
+// A non-zero stepUpAt marks a step-up sign-in that KyIdentity verified at that time.
+func (sm *SessionManager) IssueSSOSession(ctx context.Context, w http.ResponseWriter, r *http.Request, user *store.User, sid string, issuedAt, stepUpAt time.Time) (*store.Session, string, error) {
+	var at *time.Time
+	if !stepUpAt.IsZero() {
+		at = &stepUpAt
+	}
+	return sm.issue(ctx, w, r, user, issuedAt.UTC(), sid, at)
 }
 
-func (sm *SessionManager) issue(ctx context.Context, w http.ResponseWriter, r *http.Request, user *store.User, createdAt time.Time, sid string) (*store.Session, string, error) {
+func (sm *SessionManager) issue(ctx context.Context, w http.ResponseWriter, r *http.Request, user *store.User, createdAt time.Time, sid string, stepUpAt *time.Time) (*store.Session, string, error) {
 	rawToken := crypto.RandomHex(32)
 	tokenHash := crypto.SHA256Hex([]byte(rawToken))
 
@@ -62,6 +67,7 @@ func (sm *SessionManager) issue(ctx context.Context, w http.ResponseWriter, r *h
 		CreatedAt: createdAt,
 		ExpiresAt: time.Now().UTC().Add(ttl),
 		SSOSID:    sid,
+		StepUpAt:  stepUpAt,
 	}
 
 	if err := sm.store.Sessions().CreateSession(ctx, sess, user.Credentials()); err != nil {

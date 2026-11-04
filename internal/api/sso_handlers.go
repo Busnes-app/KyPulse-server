@@ -1,11 +1,13 @@
 package api
 
 import (
+	"crypto/hmac"
 	"errors"
 	"fmt"
 	"io"
 	"log/slog"
 	"net/http"
+	"strconv"
 	"strings"
 	"time"
 
@@ -34,7 +36,16 @@ func (s *Server) handleKySignOnLogin(w http.ResponseWriter, r *http.Request) {
 	verifier := oauth2.GenerateVerifier()
 
 	redirectURI := s.config.Server.AppURL + ssoCallbackPath
-	authURL, err := s.kysignon.BuildAuthURL(r.Context(), redirectURI, state, verifier, nonce)
+	build := s.kysignon.BuildAuthURL
+	stepUp := r.URL.Query().Get("step_up") == "1"
+	if stepUp {
+		// KyIdentity must check the credentials again; the callback then needs an auth_time
+		// from after this moment, carried in a cookie MACed to this login's state.
+		build = s.kysignon.BuildStepUpAuthURL
+		started := strconv.FormatInt(time.Now().Unix(), 10)
+		s.setSSOCookie(w, "ky_stepup_"+state, started+"."+s.stepUpMAC(state, started), 300)
+	}
+	authURL, err := build(r.Context(), redirectURI, state, verifier, nonce)
 	if err != nil {
 		s.lg.Log(r.Context(), evSSOFailed, logging.Err(err))
 		s.writeError(w, http.StatusBadRequest, "SSO is unavailable")
@@ -73,6 +84,7 @@ func (s *Server) handleKySignOnCallback(w http.ResponseWriter, r *http.Request) 
 	// One attempt per login: the verifier and nonce are spent whatever happens next.
 	s.setSSOCookie(w, "ky_pkce_"+state, "", -1)
 	s.setSSOCookie(w, "ky_nonce_"+state, "", -1)
+	s.setSSOCookie(w, "ky_stepup_"+state, "", -1)
 
 	cookie, err := r.Cookie("ky_pkce_" + state)
 	if err != nil || cookie.Value == "" {
@@ -134,7 +146,19 @@ func (s *Server) handleKySignOnCallback(w http.ResponseWriter, r *http.Request) 
 		}
 	}
 
-	_, _, err = s.sessions.IssueSSOSession(r.Context(), w, r, user, claims.SessionID, claims.IssuedAt)
+	// A step-up must show KyIdentity checked the credentials after it started (a minute's
+	// leeway for clocks); a silent sign-in on a live KyIdentity session proves nothing.
+	var stepUpAt time.Time
+	if c, err := r.Cookie("ky_stepup_" + state); err == nil && c.Value != "" {
+		started, mac, _ := strings.Cut(c.Value, ".")
+		start, err := strconv.ParseInt(started, 10, 64)
+		if err != nil || !hmac.Equal([]byte(mac), []byte(s.stepUpMAC(state, started))) || claims.AuthTime.IsZero() || claims.AuthTime.Before(time.Unix(start, 0).Add(-time.Minute)) {
+			s.writeError(w, http.StatusUnauthorized, "KyIdentity did not ask for your password again, so this sign-in cannot confirm it is you")
+			return
+		}
+		stepUpAt = claims.AuthTime
+	}
+	_, _, err = s.sessions.IssueSSOSession(r.Context(), w, r, user, claims.SessionID, claims.IssuedAt, stepUpAt)
 	if errors.Is(err, store.ErrSSOSessionEnded) {
 		s.writeError(w, http.StatusUnauthorized, "SSO session already ended")
 		return
@@ -144,7 +168,16 @@ func (s *Server) handleKySignOnCallback(w http.ResponseWriter, r *http.Request) 
 		return
 	}
 
+	if !stepUpAt.IsZero() {
+		http.Redirect(w, r, "/#/logs", http.StatusFound) // the only step-up is for log pairing
+		return
+	}
 	http.Redirect(w, r, "/", http.StatusFound)
+}
+
+// stepUpMAC binds a step-up's start time to its OAuth state, so the browser cannot edit it.
+func (s *Server) stepUpMAC(state, started string) string {
+	return crypto.ComputeHMACSHA256([]byte("kypulse:sso-step-up\x00"+state+"\x00"+started), s.config.Security.SessionSecret)
 }
 
 // applySSORole moves a non-installer-owned user to role and ends every session they hold,
