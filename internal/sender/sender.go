@@ -46,6 +46,10 @@ type Sender struct {
 	Token     []byte
 	State     State
 	Logger    *logging.Logger
+	// Inputs, when set, names the position keys this run is configured to read. A checkpoint
+	// keeps only those and any stream seen this run, so positions of containers long since
+	// recreated (each deploy is a new ID) do not pile up until the state file is too large.
+	Inputs    map[string]bool
 	newTimer  func(time.Duration) <-chan time.Time
 	wait      func(context.Context, time.Duration) error
 	now       func() time.Time
@@ -251,7 +255,9 @@ func (s *Sender) Run(ctx context.Context, input <-chan Item) error {
 			next := s.State
 			next.Positions = make(map[string]Position, len(s.State.Positions)+len(active.items)+len(active.dropped))
 			for k, v := range s.State.Positions {
-				next.Positions[k] = v
+				if s.Inputs == nil || s.Inputs[k] || inputs[k] {
+					next.Positions[k] = v
+				}
 			}
 			for k, v := range active.dropped {
 				next.Positions[k] = v

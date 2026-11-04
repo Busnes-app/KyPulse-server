@@ -425,3 +425,33 @@ func TestSavedPositionsDoNotExhaustTheStreamCap(t *testing.T) {
 		t.Fatalf("new container refused: %v", err)
 	}
 }
+
+// A checkpoint keeps only the configured inputs' positions, so recreated containers' old IDs
+// do not accumulate until the state file passes its 1 MiB load limit.
+func TestCheckpointDropsPositionsOfUnconfiguredInputs(t *testing.T) {
+	dir := filepath.Join(t.TempDir(), "state")
+	quiet := Position{Kind: "docker", Input: "quiet", Stream: "stderr", Timestamp: "2026-09-27T12:00:00Z", Ordinal: 1}
+	saved := map[string]Position{PositionKey(quiet): quiet}
+	for i := 0; i < 300; i++ {
+		p := Position{Kind: "docker", Input: fmt.Sprintf("gone%03d", i), Stream: "stdout", Timestamp: "2026-09-27T12:00:00Z", Ordinal: 1}
+		saved[PositionKey(p)] = p
+	}
+	fresh := Position{Kind: "docker", Input: "fresh", Stream: "stdout", Timestamp: "2026-09-28T12:00:00Z", Ordinal: 1}
+	s := Sender{HTTP: postFunc(func([]byte) (*egress.Response, error) { return &egress.Response{StatusCode: 204}, nil }),
+		StateDir: dir, Token: make([]byte, 32), State: State{URL: "https://example.com", SourceID: "one", Positions: saved},
+		Inputs: map[string]bool{PositionKey(quiet): true, PositionKey(fresh): true}}
+	prepareSender(t, &s)
+	items := make(chan Item, 1)
+	items <- Item{Record: ingest.Record{Line: "new deploy"}, Position: fresh}
+	close(items)
+	if err := s.Run(context.Background(), items); err != nil {
+		t.Fatal(err)
+	}
+	got, _, err := LoadState(dir)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if len(got.Positions) != 2 || got.Positions[PositionKey(quiet)] != quiet || got.Positions[PositionKey(fresh)] != fresh {
+		t.Fatalf("positions after checkpoint: %d %+v", len(got.Positions), got.Positions[PositionKey(fresh)])
+	}
+}

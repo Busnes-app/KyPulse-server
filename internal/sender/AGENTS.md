@@ -36,6 +36,9 @@ Pairs a source and delivers bounded NDJSON batches with acknowledged input posit
   checkpoints replay only while upstream history exists. Overflow deliberately drops
   records and emits a marker, so delivery has no unconditional no-loss guarantee.
 - Up to 256 streams per run; saved positions of streams this run does not read do not count.
+  A checkpoint keeps only the CLI's configured inputs (`Sender.Inputs`: the file path, the
+  resolved container IDs' two streams, or stdin) and streams seen this run, so recreated
+  containers' old IDs are dropped instead of growing the state file past its 1 MiB limit.
   HTTP 400, 401, 403, 409, 413 and 415 are permanent refusals that stop delivery; 409 means
   the source requires the sequenced or offboarding protocol this sender does not speak.
 - `Run` freezes one batch per request. A 2xx acknowledges its records and marker; only then

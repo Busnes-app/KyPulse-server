@@ -187,7 +187,20 @@ func runInput(kind, path, containers, socket, dir string, stdin io.ReadCloser, h
 			readerDone <- first
 		}
 	}()
-	s := sender.Sender{HTTP: http, StateDir: dir, Token: token, State: state, Logger: logger}
+	configured := map[string]bool{}
+	switch kind {
+	case "stdin":
+		configured[sender.PositionKey(sender.Position{Kind: "stdin", Input: "stdin"})] = true
+	case "file":
+		configured[sender.PositionKey(sender.Position{Kind: "file", Input: path})] = true
+	case "docker":
+		for _, id := range ids {
+			for _, stream := range []string{"stdout", "stderr"} {
+				configured[sender.PositionKey(sender.Position{Kind: "docker", Input: id, Stream: stream})] = true
+			}
+		}
+	}
+	s := sender.Sender{HTTP: http, StateDir: dir, Token: token, State: state, Logger: logger, Inputs: configured}
 	deliveryDone := make(chan error, 1)
 	go func() { deliveryDone <- s.Run(deliveryCtx, items) }()
 	var readerErr error
