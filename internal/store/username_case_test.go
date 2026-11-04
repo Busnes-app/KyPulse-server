@@ -4,6 +4,7 @@ import (
 	"context"
 	"database/sql"
 	"errors"
+	"sync"
 	"testing"
 	"time"
 
@@ -134,5 +135,47 @@ func TestChangeRoleRefusesAMovedRow(t *testing.T) {
 	}
 	if got, _ := st.Users().GetUserByID(ctx, u.ID); got.Status != "inactive" {
 		t.Fatal("ChangeRole reactivated a deactivated user")
+	}
+}
+
+// While a legacy clash keeps the index away, concurrent writers still cannot add a new
+// case variant: on PostgreSQL the check would otherwise race under read committed.
+func TestConcurrentCaseVariantsWithoutTheIndex(t *testing.T) {
+	ctx := context.Background()
+	cfg := testdb.Config(t)
+	st, err := store.Open(ctx, cfg)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if err := st.Users().CreateUser(ctx, newUser("admin")); err != nil {
+		t.Fatal(err)
+	}
+	st.Close()
+	now := time.Now().UTC().Format(time.RFC3339)
+	rawExec(t, cfg.Driver, cfg.DSN, `DROP INDEX idx_users_username_lower`,
+		`INSERT INTO users (id, username, role, status, sso_provider, created_at, updated_at) VALUES ('`+uuid.NewString()+`', 'ADMIN', 'viewer', 'active', 'kysignon', '`+now+`', '`+now+`')`)
+	st, err = store.Open(ctx, cfg)
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer st.Close()
+	names := []string{"bob", "Bob", "BOB", "bOb", "boB", "BOb", "bOB", "BoB"}
+	results := make(chan error, len(names))
+	var start sync.WaitGroup
+	start.Add(1)
+	for _, n := range names {
+		go func() { start.Wait(); results <- st.Users().CreateUser(ctx, newUser(n)) }()
+	}
+	start.Done()
+	created := 0
+	for range names {
+		if err := <-results; err == nil {
+			created++
+		} else if !errors.Is(err, store.ErrAlreadyExists) {
+			t.Fatal(err)
+		}
+	}
+	if created != 1 {
+		t.Fatalf("%d case variants of bob created, want 1", created)
 	}
 }

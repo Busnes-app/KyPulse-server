@@ -540,7 +540,11 @@ func scheduleOff(dbPath string, stdout io.Writer) error {
 	if _, err := os.Stat(dbPath); errors.Is(err, os.ErrNotExist) {
 		return nil
 	}
-	db, err := sql.Open("sqlite", (&url.URL{Scheme: "file", Path: filepath.ToSlash(dbPath)}).String())
+	abs, err := filepath.Abs(dbPath) // a relative path would read as file://<authority>/...
+	if err != nil {
+		return err
+	}
+	db, err := sql.Open("sqlite", (&url.URL{Scheme: "file", Path: filepath.ToSlash(abs)}).String())
 	if err != nil {
 		return err
 	}

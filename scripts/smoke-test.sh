@@ -180,8 +180,10 @@ VIEWER_LOGIN="$(curl -s -c "$WORK/viewer-cookies" -H 'Content-Type: application/
 contains "viewer signs in" "$VIEWER_LOGIN" '"role":"viewer"'
 TARGETS="$(curl -s -b "$WORK/cookies" "$BASE/api/targets")"
 TARGET_ID="$(printf '%s' "$TARGETS" | python3 -c 'import json,sys; print(next(t["id"] for t in json.load(sys.stdin)["targets"] if t["name"] == "self"))')"
+check "pairing without the current password is refused" "$(status -b "$WORK/cookies" -H "X-CSRF-Token: $CSRF" \
+  -H 'Content-Type: application/json' -d '{"target_id":"'"$TARGET_ID"'"}' "$BASE/api/log-sources/pairing")" "403"
 PAIRING="$(curl -s -b "$WORK/cookies" -H "X-CSRF-Token: $CSRF" -H 'Content-Type: application/json' \
-  -d '{"target_id":"'"$TARGET_ID"'"}' "$BASE/api/log-sources/pairing")"
+  -d '{"target_id":"'"$TARGET_ID"'","password":"'"$FINAL_PASS"'"}' "$BASE/api/log-sources/pairing")"
 PAIRING_CODE="$(printf '%s' "$PAIRING" | python3 -c 'import json,sys; print(json.load(sys.stdin)["code"])')"
 CLAIM="$(curl -s -H 'Content-Type: application/json' \
   -d '{"pairing_code":"'"$PAIRING_CODE"'","name":"smoke-sender"}' "$BASE/api/log-sources/claim")"

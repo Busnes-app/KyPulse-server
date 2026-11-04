@@ -109,9 +109,12 @@ func TestRestoreTurnsScheduledDepositsOff(t *testing.T) {
 	if err := os.WriteFile(path, sealed, 0600); err != nil {
 		t.Fatal(err)
 	}
-	target := t.TempDir()
+	// RESTORE.md restores into ./restored: a relative target.
+	base := t.TempDir()
+	t.Chdir(base)
+	target := filepath.Join(base, "restored")
 	var out bytes.Buffer
-	if err := restore(path, target, "busnes_app", []string{shares[0].String(), shares[2].String()}, &out); err != nil {
+	if err := restore(path, "restored", "busnes_app", []string{shares[0].String(), shares[2].String()}, &out); err != nil {
 		t.Fatal(err)
 	}
 	if !strings.Contains(out.String(), "Scheduled deposits are off") {
