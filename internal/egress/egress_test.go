@@ -115,23 +115,26 @@ func TestDialFallsBackToTheNextAllowedAddress(t *testing.T) {
 	}
 }
 
-// A first address that never answers gets only its share of the request budget, so the live
-// second address is still reached in time.
+// Addresses that never answer get a bounded attempt each, so a live last address is still
+// reached inside the request budget, also when the client's own timeout is long (the sender's
+// client allows minutes while each request has seconds).
 func TestDialFallsBackPastABlackholedAddress(t *testing.T) {
 	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {}))
 	defer srv.Close()
 	lookup := func(context.Context, string, string) ([]net.IP, error) {
-		return []net.IP{net.ParseIP("10.0.0.1"), net.ParseIP("10.0.0.2")}, nil
+		return []net.IP{net.ParseIP("10.0.0.1"), net.ParseIP("10.0.0.3"), net.ParseIP("10.0.0.2")}, nil
 	}
 	dial := func(ctx context.Context, network, addr string) (net.Conn, error) {
-		if strings.HasPrefix(addr, "10.0.0.1:") {
+		if !strings.HasPrefix(addr, "10.0.0.2:") {
 			<-ctx.Done() // packets dropped: no answer until the caller gives up
 			return nil, ctx.Err()
 		}
 		return (&net.Dialer{}).DialContext(ctx, network, srv.Listener.Addr().String())
 	}
-	c := newClient(Options{AllowHTTP: true, Timeout: 2 * time.Second}, lookup, dial)
-	resp, err := c.Get(context.Background(), "http://multi.lan/healthz")
+	c := newClient(Options{AllowHTTP: true, Timeout: 2 * time.Minute}, lookup, dial)
+	ctx, cancel := context.WithTimeout(context.Background(), 6*time.Second)
+	defer cancel()
+	resp, err := c.Get(ctx, "http://multi.lan/healthz")
 	if err != nil || resp.StatusCode != 200 {
 		t.Fatalf("resp=%v err=%v", resp, err)
 	}

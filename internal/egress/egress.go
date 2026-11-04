@@ -48,6 +48,10 @@ type Response struct {
 type lookupFunc func(ctx context.Context, network, host string) ([]net.IP, error)
 type dialFunc func(ctx context.Context, network, address string) (net.Conn, error)
 
+// fallbackDial bounds a connect attempt while another resolved address remains to try. A
+// reachable LAN or internet host connects well inside it.
+const fallbackDial = 2 * time.Second
+
 // Client is safe for concurrent use.
 type Client struct {
 	http      *http.Client
@@ -85,14 +89,19 @@ func newClient(o Options, lookup lookupFunc, dial dialFunc) *Client {
 				}
 			}
 			// Try each allowed address in turn, as the standard dialer would: one dead address
-			// of a multi-homed name must not fail the whole request. Each attempt but the last
-			// gets an equal share of the request budget, so one that never answers cannot use it
-			// all. (Client.Timeout puts no deadline on the dial context, hence o.Timeout.)
+			// of a multi-homed name must not fail the whole request. The dial context carries no
+			// request deadline, so each attempt but the last is capped at fallbackDial (or its
+			// share of the client timeout, if smaller): one that never answers cannot use the
+			// whole budget before a live address is tried.
+			share := o.Timeout / time.Duration(max(len(allowed), 1))
+			if share > fallbackDial {
+				share = fallbackDial
+			}
 			dialErr := error(ErrRefusedAddress)
 			for i, ip := range allowed {
 				attempt, cancel := ctx, context.CancelFunc(func() {})
 				if i < len(allowed)-1 {
-					attempt, cancel = context.WithTimeout(ctx, o.Timeout/time.Duration(len(allowed)))
+					attempt, cancel = context.WithTimeout(ctx, share)
 				}
 				conn, err := dial(attempt, network, net.JoinHostPort(ip.String(), port))
 				cancel()
