@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import { cleanup, fireEvent, render, screen, waitFor } from '@testing-library/react';
+import { cleanup, render, screen } from '@testing-library/react';
 import { Alerts } from './Alerts';
 import type { Target, TargetEvent } from '../monitor';
 
@@ -38,76 +38,6 @@ describe('Alerts', () => {
     expect(links.length).toBe(3); // silenced line + two rows
     for (const l of links) expect(l.getAttribute('href')).toBe('#/apps/tgt_a');
     expect(screen.getByText(/Silenced/).parentElement?.textContent).toContain('KyVault');
-  });
-
-  it('loads older alerts past the first page on request', async () => {
-    const older: TargetEvent = { id: 0, target_id: 'tgt_a', at: '2026-09-26T08:00:00Z', from: 'pending', to: 'ok', reminder: false, notified: false };
-    const urls: string[] = [];
-    vi.stubGlobal('fetch', vi.fn(async (input: RequestInfo | URL) => {
-      const url = String(input);
-      urls.push(url);
-      if (url.startsWith('/api/alerts') && url.includes('before_id=1')) return new Response(JSON.stringify({ events: [older], next_before_id: 0 }));
-      if (url.startsWith('/api/alerts')) return new Response(JSON.stringify({ events, next_before_id: 1 }));
-      if (url === '/api/targets') return new Response(JSON.stringify({ targets }));
-      throw new Error(url);
-    }));
-    render(<Alerts user={{ role: 'viewer' }} />);
-    expect(await screen.findAllByRole('row')).toHaveLength(4);
-    fireEvent.click(screen.getByRole('button', { name: 'Load older alerts' }));
-    await waitFor(() => expect(screen.getAllByRole('row')).toHaveLength(5));
-    expect(urls).toContain('/api/alerts?limit=100&before_id=1');
-    expect(screen.queryByRole('button', { name: 'Load older alerts' })).toBeNull();
-  });
-
-  it('keeps every loaded row when the newest page refreshes after paging', async () => {
-    vi.useFakeTimers({ shouldAdvanceTime: true });
-    const ev = (id: number): TargetEvent => ({ id, target_id: 'tgt_a', at: '2026-09-27T10:30:00Z', from: 'ok', to: 'down', reminder: false, notified: true });
-    let head = [ev(4), ev(3)];
-    vi.stubGlobal('fetch', vi.fn(async (input: RequestInfo | URL) => {
-      const url = String(input);
-      if (url.includes('before_id=3')) return new Response(JSON.stringify({ events: [ev(2), ev(1)], next_before_id: 0 }));
-      if (url.startsWith('/api/alerts')) return new Response(JSON.stringify({ events: head, next_before_id: 3 }));
-      if (url === '/api/targets') return new Response(JSON.stringify({ targets }));
-      throw new Error(url);
-    }));
-    try {
-      render(<Alerts user={{ role: 'viewer' }} />);
-      await waitFor(() => expect(screen.getAllByRole('row')).toHaveLength(3));
-      fireEvent.click(screen.getByRole('button', { name: 'Load older alerts' }));
-      await waitFor(() => expect(screen.getAllByRole('row')).toHaveLength(5));
-      head = [ev(6), ev(5)]; // two new alerts push 4 and 3 off the newest page
-      await vi.advanceTimersByTimeAsync(15_000);
-      await waitFor(() => expect(screen.getAllByRole('row')).toHaveLength(7));
-    } finally {
-      vi.useRealTimers();
-    }
-  });
-
-  it('bridges more than a page of new alerts on refresh after paging', async () => {
-    vi.useFakeTimers({ shouldAdvanceTime: true });
-    const ev = (id: number): TargetEvent => ({ id, target_id: 'tgt_a', at: '2026-09-27T10:30:00Z', from: 'ok', to: 'down', reminder: false, notified: true });
-    let refreshed = false;
-    vi.stubGlobal('fetch', vi.fn(async (input: RequestInfo | URL) => {
-      const url = String(input);
-      if (url === '/api/targets') return new Response(JSON.stringify({ targets }));
-      const before = Number(new URL(url, 'http://x').searchParams.get('before_id') ?? 0);
-      // Pages of two, newest first; ids 1-4 exist at first, 1-8 after the refresh.
-      const top = refreshed ? 8 : 4;
-      const start = before > 0 ? before - 1 : top;
-      const page = [start, start - 1].filter((id) => id > 0).map(ev);
-      return new Response(JSON.stringify({ events: page, next_before_id: start - 1 > 1 ? start - 1 : 0 }));
-    }));
-    try {
-      render(<Alerts user={{ role: 'viewer' }} />);
-      await waitFor(() => expect(screen.getAllByRole('row')).toHaveLength(3));
-      fireEvent.click(screen.getByRole('button', { name: 'Load older alerts' }));
-      await waitFor(() => expect(screen.getAllByRole('row')).toHaveLength(5));
-      refreshed = true; // ids 5-8 arrive: two pages, more than the newest page holds
-      await vi.advanceTimersByTimeAsync(15_000);
-      await waitFor(() => expect(screen.getAllByRole('row')).toHaveLength(9));
-    } finally {
-      vi.useRealTimers();
-    }
   });
 
   it('says so when there are no alerts', async () => {

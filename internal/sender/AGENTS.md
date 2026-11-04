@@ -35,12 +35,7 @@ Pairs a source and delivers bounded NDJSON batches with acknowledged input posit
 - Stdin and the outage queue live in memory and cannot survive a crash. File and Docker
   checkpoints replay only while upstream history exists. Overflow deliberately drops
   records and emits a marker, so delivery has no unconditional no-loss guarantee.
-- Up to 256 streams per run; saved positions of streams this run does not read do not count.
-  A checkpoint drops a Docker position that is neither configured (`Sender.Inputs`: the
-  resolved container IDs' two streams) nor seen this run once its last line is over seven days
-  old (KyPulse's log retention), so recreated containers' old IDs do not grow the state file
-  past its 1 MiB limit. File, stdin and recent Docker positions stay for a later run.
-  HTTP 400, 401, 403, 409, 413 and 415 are permanent refusals that stop delivery; 409 means
+- HTTP 400, 401, 403, 409, 413 and 415 are permanent refusals that stop delivery; 409 means
   the source requires the sequenced or offboarding protocol this sender does not speak.
 - `Run` freezes one batch per request. A 2xx acknowledges its records and marker; only then
   does it atomically save positions. A failed save stops delivery, allowing replay.

@@ -41,17 +41,11 @@ type HTTP interface {
 }
 
 type Sender struct {
-	HTTP     HTTP
-	StateDir string
-	Token    []byte
-	State    State
-	Logger   *logging.Logger
-	// Inputs, when set, names the position keys this run is configured to read. A checkpoint
-	// drops a Docker position that is neither configured nor seen this run once its last line
-	// is older than dockerPositionTTL, so positions of containers long since recreated (each
-	// deploy is a new ID) do not pile up until the state file is too large. File and stdin
-	// positions, and recent Docker ones, are kept for a later run that reads them again.
-	Inputs    map[string]bool
+	HTTP      HTTP
+	StateDir  string
+	Token     []byte
+	State     State
+	Logger    *logging.Logger
 	newTimer  func(time.Duration) <-chan time.Time
 	wait      func(context.Context, time.Duration) error
 	now       func() time.Time
@@ -109,16 +103,6 @@ func makeBatch(queue []queued, count uint64, positions map[string]Position) batc
 	return b
 }
 
-// dockerPositionTTL matches KyPulse's seven-day log retention. A container ID unread for that
-// long is taken as gone; if it is read again, its retained history replays.
-const dockerPositionTTL = 7 * 24 * time.Hour
-
-// staleDocker reports a Docker checkpoint whose last line is older than dockerPositionTTL.
-func staleDocker(p Position, now time.Time) bool {
-	t, err := time.Parse(time.RFC3339Nano, p.Timestamp)
-	return p.Kind == "docker" && err == nil && now.Sub(t) > dockerPositionTTL
-}
-
 func (s *Sender) Run(ctx context.Context, input <-chan Item) error {
 	ctx, cancel := context.WithCancel(ctx)
 	defer cancel()
@@ -140,10 +124,6 @@ func (s *Sender) Run(ctx context.Context, input <-chan Item) error {
 	if subtle.ConstantTimeCompare(token, s.Token) != 1 || !reflect.DeepEqual(stored, s.State) {
 		return errors.New("sender: local state does not match paired credentials")
 	}
-	clock := s.now
-	if clock == nil {
-		clock = time.Now
-	}
 	save := s.saveState
 	if save == nil {
 		save = SaveState
@@ -154,9 +134,10 @@ func (s *Sender) Run(ctx context.Context, input <-chan Item) error {
 	}
 	queue := make([]queued, 0, 500)
 	dropped := map[string]Position{}
-	// The cap counts the streams this run reads. Saved positions of containers long since
-	// recreated (each deploy is a new ID) must not use it up and stop the sender for good.
-	inputs := make(map[string]bool)
+	inputs := make(map[string]bool, len(s.State.Positions))
+	for k := range s.State.Positions {
+		inputs[k] = true
+	}
 	var droppedCount uint64
 	var used int
 	var active *batch
@@ -271,9 +252,7 @@ func (s *Sender) Run(ctx context.Context, input <-chan Item) error {
 			next := s.State
 			next.Positions = make(map[string]Position, len(s.State.Positions)+len(active.items)+len(active.dropped))
 			for k, v := range s.State.Positions {
-				if s.Inputs == nil || s.Inputs[k] || inputs[k] || !staleDocker(v, clock()) {
-					next.Positions[k] = v
-				}
+				next.Positions[k] = v
 			}
 			for k, v := range active.dropped {
 				next.Positions[k] = v
