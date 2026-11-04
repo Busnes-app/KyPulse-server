@@ -41,11 +41,11 @@ type HTTP interface {
 }
 
 type Sender struct {
-	HTTP      HTTP
-	StateDir  string
-	Token     []byte
-	State     State
-	Logger    *logging.Logger
+	HTTP     HTTP
+	StateDir string
+	Token    []byte
+	State    State
+	Logger   *logging.Logger
 	// Inputs, when set, names the position keys this run is configured to read. A checkpoint
 	// keeps only those and any stream seen this run, so positions of containers long since
 	// recreated (each deploy is a new ID) do not pile up until the state file is too large.
