@@ -30,6 +30,7 @@ export const Alerts: React.FC<AlertsProps> = () => {
   // Read when a refresh resolves, not when it started: a refresh in flight during "Load older
   // alerts" must merge, not replace the page just loaded.
   const pagedRef = useRef(false);
+  const newestRef = useRef(0); // the newest loaded id, for bridging a refresh to loaded history
   const [cursor, setCursor] = useState(0);
   const [loadingMore, setLoadingMore] = useState(false);
   const [targets, setTargets] = useState<Record<string, Target>>({});
@@ -39,9 +40,18 @@ export const Alerts: React.FC<AlertsProps> = () => {
     const load = async () => {
       try {
         const [a, t] = await Promise.all([listAlerts(100), listTargets()]);
-        const head = a.events ?? [];
+        let head = a.events ?? [];
         if (pagedRef.current) {
-          setEvents((prev) => merge(head, prev ?? []));
+          // More than a page may have arrived since: fetch on until the pages meet what is
+          // loaded (bounded), so no alert between them is skipped.
+          let next = a.next_before_id;
+          for (let i = 0; i < 10 && next > 0 && head.length > 0 && head[head.length - 1].id > newestRef.current; i++) {
+            const page = await listAlerts(100, next);
+            head = [...head, ...(page.events ?? [])];
+            next = page.next_before_id;
+          }
+          const fetched = head;
+          setEvents((prev) => merge(fetched, prev ?? []));
         } else {
           setEvents(head);
           setCursor(a.next_before_id);
@@ -56,6 +66,8 @@ export const Alerts: React.FC<AlertsProps> = () => {
     const timer = window.setInterval(() => void load(), 15_000);
     return () => window.clearInterval(timer);
   }, [paged]);
+
+  useEffect(() => { newestRef.current = events?.[0]?.id ?? 0; }, [events]);
 
   const loadMore = async () => {
     setLoadingMore(true);
