@@ -113,6 +113,13 @@ func runServer(lg *logging.Logger) {
 	}
 	placed := st.Audit().Placement()
 	lg.Log(ctx, auditChainPlaced, fChainMode(placed.Mode), logging.Count(int64(placed.Count)), fChainHead(placed.Head))
+	clashes, err := st.Users().UsernameClashes(ctx)
+	if err != nil {
+		fatal("Failed to check usernames: %v", err)
+	}
+	for _, c := range clashes {
+		lg.Log(ctx, usernameCaseClash, fUsername(c[0]), fOtherUsername(c[1]))
+	}
 
 	if err := ensureBootstrapAdmin(ctx, st, cfg.Database.DataDir, lg); err != nil {
 		fatal("%v", err)

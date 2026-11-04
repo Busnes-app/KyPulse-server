@@ -55,7 +55,12 @@ type UserStore interface {
 	GetUserByUsername(ctx context.Context, username string) (*User, error)
 	GetUserByEmail(ctx context.Context, email string) (*User, error)
 	GetUserBySSO(ctx context.Context, provider, subject string) (*User, error)
+	// UpdateUser returns ErrAlreadyExists when a changed username is a case variant of
+	// another user's.
 	UpdateUser(ctx context.Context, u *User) error
+	// UsernameClashes lists pairs of usernames that differ only in case. While any exist
+	// the case-insensitive unique index is not created; cmd/server logs them at start.
+	UsernameClashes(ctx context.Context) ([][]string, error)
 	ResetAdminPassword(ctx context.Context, userID, newHash string) error
 	CompletePasswordChange(ctx context.Context, userID, oldHash, newHash, ip string) error
 	UpdateRecoveryCodes(ctx context.Context, userID, oldHashes, newHashes string) error

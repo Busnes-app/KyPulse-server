@@ -100,4 +100,9 @@ docker compose down && sudo mv -n data/audit.key secrets/audit.key && docker com
 After the first start you may mount `./secrets` read-only (`./secrets:/app/secrets:ro`); a
 fresh install needs it writable once to mint the key. Back `./secrets` up with `./data`.
 
+Usernames are unique regardless of case. An older install may hold two accounts whose names
+differ only in case (`admin` and `Admin`); each start then logs `username_case_clash` with
+both names, renames nothing, and refuses any new case variant. Rename or remove one of them
+and restart: the start after that adds the case-insensitive unique index.
+
 Watch KyPulse's own `GET /healthz` from outside. KyPulse does not monitor itself.
