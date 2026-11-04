@@ -154,6 +154,17 @@ func (k *KySignOnClient) release(key [32]byte) {
 }
 
 func (k *KySignOnClient) applySync(ctx context.Context, payload KySignOnSyncPayload) error {
+	// The installer directory governs installer-owned identities: this legacy format may
+	// end their access, but never promote, rename, reactivate or delete them.
+	_, err := k.store.Settings().GetSetting(ctx, store.InstallerUserKey(k.config.KySignOnIssuer, payload.ID))
+	switch {
+	case err == nil && (payload.Event == "user.deactivated" || payload.Event == "user.deleted" || payload.Status != "" && payload.Status != "active"):
+		payload.Event = "user.deactivated"
+	case err == nil:
+		return nil
+	case !errors.Is(err, store.ErrNotFound):
+		return err
+	}
 	switch payload.Event {
 	case "user.created", "user.updated":
 		existing, err := k.store.Users().GetUserBySSO(ctx, "kysignon", payload.ID)
