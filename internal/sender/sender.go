@@ -109,8 +109,8 @@ func makeBatch(queue []queued, count uint64, positions map[string]Position) batc
 	return b
 }
 
-// dockerPositionTTL matches KyPulse's seven-day log retention: lines older than that would be
-// pruned on arrival anyway.
+// dockerPositionTTL matches KyPulse's seven-day log retention. A container ID unread for that
+// long is taken as gone; if it is read again, its retained history replays.
 const dockerPositionTTL = 7 * 24 * time.Hour
 
 // staleDocker reports a Docker checkpoint whose last line is older than dockerPositionTTL.
