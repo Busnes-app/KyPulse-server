@@ -1,10 +1,10 @@
 # Auth
 
 ## Purpose
-Manages user authentication, password policies, Multi-Factor Authentication (RFC 6238 TOTP), recovery codes, session token lifecycle, and anti-abuse CAPTCHA (Proof-of-Work default).
+Manages user authentication, password policies, session token lifecycle, and anti-abuse CAPTCHA (Proof-of-Work default). There is no local MFA: second factors are KyIdentity's.
 
 ## Ownership
-Owns session issuance and verification, TOTP token generation/validation, recovery code redemption, and client-side PoW verification.
+Owns session issuance and verification and client-side PoW verification.
 
 ## Local Contracts
 - `RequestNetwork` exposes the same `ClientIP` result, actual peer trust and TLS/trusted nearest-proxy scheme for G11; untrusted forwarding headers cannot change them.
@@ -14,12 +14,7 @@ Owns session issuance and verification, TOTP token generation/validation, recove
 - `IssueSSOSession` stores the provider's `sid` and dates the session by the ID token's `iat`, so back-channel logout by `sid` or by subject can end it; it fails with `store.ErrSSOSessionEnded` when that login was already ended.
 - Session authentication rejects inactive accounts and deletes their presented session.
 - PoW solutions must carry unexpired server-signed challenge metadata, and `PoWGuard` accepts each challenge salt once until it expires (bounded set; eviction only reopens a replay after a fresh solve).
-- Password verification creates a five-minute opaque MFA transaction; MFA endpoints never accept a user ID and consume the transaction once.
-- Single-use recovery codes are invalidated immediately upon redemption.
-- `GenerateTOTPSecret`/`GenerateTOTPURL` serve enrolment (`internal/api/mfa_handlers.go`); every accepted `ValidateTOTP` counter, at sign-in, enrolment confirm or disable, is spent through `SpendTOTPCounter` before it is trusted.
-- Shared TOTP authentication requires sixteen decoded key bytes; generation
-  remains twenty random bytes. Preserve readable sealed legacy records and
-  recovery methods while refusing short-key authentication.
+- A correct password issues a session directly; stored TOTP state from the removed local MFA is never asked for. `IssueSession` still passes the user's `Credentials()` so the store's grant check holds.
 - `ClientIP` is the one client-address helper: the rate limiter and session binding both use it. `X-Forwarded-For` is honoured only when the peer is in `KYPULSE_TRUSTED_PROXIES`, walking the chain from the right past trusted hops; `X-Real-IP` is ignored. Each entry may be a bare IP or `ip:port` (Azure App Service/Application Gateway append the port); anything else ends the walk and falls back to the peer.
 
 ## Verification

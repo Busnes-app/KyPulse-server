@@ -51,12 +51,6 @@ type Session struct {
 	SSOSID string `json:"-"`
 }
 
-type MFAChallenge struct {
-	TokenHash string
-	UserID    string
-	ExpiresAt time.Time
-}
-
 // AuditRecord logs security and operational events with tamper-evident structure.
 type AuditRecord struct {
 	ID        int64     `json:"id"`

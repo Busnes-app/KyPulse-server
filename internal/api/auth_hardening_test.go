@@ -37,6 +37,17 @@ func loginFrom(t *testing.T, srv *api.Server, addr, username, pass string) *http
 	return w
 }
 
+func sessionCookie(t *testing.T, w *httptest.ResponseRecorder) *http.Cookie {
+	t.Helper()
+	for _, c := range w.Result().Cookies() {
+		if c.Name == auth.SessionCookieName && c.Value != "" {
+			return c
+		}
+	}
+	t.Fatalf("no session cookie: %d %s", w.Code, w.Body.String())
+	return nil
+}
+
 func createLocalUser(t *testing.T, st store.Store, id, username, status string) {
 	t.Helper()
 	hash, _ := password.Hash("SuperSecretPass123!")
@@ -162,11 +173,11 @@ func TestLoginLimiterKeysIPv6ByPrefix(t *testing.T) {
 	}
 }
 
-// Login and MFA are CSRF-exempt, so a cross-site form posting text/plain must not reach them.
+// Login is CSRF-exempt, so a cross-site form posting text/plain must not reach it.
 func TestCSRFExemptRoutesRequireJSON(t *testing.T) {
 	srv, st, _ := setupTestServer(t)
 	createLocalUser(t, st, "usr_form", "form", "active")
-	for _, path := range []string{"/api/auth/login", "/api/auth/mfa/totp", "/api/auth/mfa/recovery-code"} {
+	for _, path := range []string{"/api/auth/login"} {
 		for _, ct := range []string{"", "text/plain", "application/x-www-form-urlencoded", "multipart/form-data; boundary=x"} {
 			req := httptest.NewRequest("POST", path, strings.NewReader(`{"username":"form","password":"SuperSecretPass123!"}`))
 			if ct != "" {

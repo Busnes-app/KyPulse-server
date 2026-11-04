@@ -9,7 +9,6 @@ import (
 
 	"github.com/Busnes-app/ky-primitives/password"
 	"github.com/Busnes-app/kypulse-server/internal/auth"
-	"github.com/Busnes-app/kypulse-server/internal/crypto"
 	"github.com/Busnes-app/kypulse-server/internal/store"
 )
 
@@ -21,11 +20,6 @@ type LoginRequest struct {
 
 // loginFailed answers every rejected credential, locked accounts included.
 const loginFailed = "Invalid credentials or too many attempts"
-
-type MFARequest struct {
-	MFAToken string `json:"mfa_token"`
-	Code     string `json:"code"`
-}
 
 func (s *Server) handlePoWChallenge(w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodGet {
@@ -113,26 +107,8 @@ func (s *Server) handleLogin(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// Check if MFA is required
-	if user.TOTPEnabled {
-		rawChallenge := crypto.RandomHex(32)
-		if err := s.store.Sessions().CreateMFAChallenge(r.Context(), &store.MFAChallenge{
-			TokenHash: crypto.SHA256Hex([]byte(rawChallenge)),
-			UserID:    user.ID,
-			ExpiresAt: time.Now().UTC().Add(5 * time.Minute),
-		}, user.PasswordHash); err != nil {
-			s.writeError(w, http.StatusInternalServerError, "Failed to start MFA verification")
-			return
-		}
-		s.writeJSON(w, http.StatusOK, map[string]any{
-			"mfa_required": true,
-			"mfa_token":    rawChallenge,
-			"methods":      []string{"totp", "recovery_code"},
-		})
-		return
-	}
-
-	// Issue active session
+	// A correct password signs in. Second factors are KyIdentity's; a stored local TOTP
+	// state is kept but no longer asked for.
 	_, _, err = s.sessions.IssueSession(r.Context(), w, r, user)
 	if err != nil {
 		s.writeError(w, http.StatusInternalServerError, "Failed to issue session")
@@ -140,129 +116,6 @@ func (s *Server) handleLogin(w http.ResponseWriter, r *http.Request) {
 	}
 
 	s.audit(r.Context(), user.ID, r, "auth.login", "session", "outcome=success")
-
-	s.writeJSON(w, http.StatusOK, map[string]any{
-		"authenticated": true,
-		"user":          user,
-	})
-}
-
-// mfaUser runs the checks both MFA routes share and returns the account the transaction
-// belongs to. It has answered and audited the request when ok is false.
-func (s *Server) mfaUser(w http.ResponseWriter, r *http.Request, action string) (user *store.User, req MFARequest, ok bool) {
-	if r.Method != http.MethodPost {
-		s.writeError(w, http.StatusMethodNotAllowed, "Method not allowed")
-		return nil, req, false
-	}
-	if !isJSON(r) {
-		s.writeError(w, http.StatusUnsupportedMediaType, "Expected application/json")
-		return nil, req, false
-	}
-	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
-		s.writeError(w, http.StatusBadRequest, "Invalid request body")
-		return nil, req, false
-	}
-	fail := func(userID, reason string, status int, message string) {
-		s.auditRefusal(r.Context(), userID, r, action, "outcome=failure reason="+reason)
-		s.writeError(w, status, message)
-	}
-	// Key on the client alone. Nothing caller-supplied may reach the key: a token in the key
-	// lets one client mint unbounded slots and starve every other window. Same shape as the
-	// login limit, so a client occupies one MFA slot no matter how it spends it.
-	if !s.allowAttempt("mfa:"+s.limitIP(r), 20, time.Minute) {
-		fail("", "rate_limit", http.StatusTooManyRequests, "Too many MFA attempts")
-		return nil, req, false
-	}
-
-	userID, verifiedHash, err := s.store.Sessions().ConsumeMFAChallenge(r.Context(), crypto.SHA256Hex([]byte(req.MFAToken)))
-	if err != nil {
-		fail("", "transaction", http.StatusUnauthorized, "Invalid or expired MFA transaction")
-		return nil, req, false
-	}
-	// Per-account, so a botnet spread across many IPs cannot outrun the per-IP window. Each
-	// guess already costs a fresh password login, since the challenge is consumed either way.
-	if !s.allowAccount("mfa-user:"+userID, 5, 5*time.Minute) {
-		fail(userID, "account_rate_limit", http.StatusTooManyRequests, "Too many MFA attempts for this account")
-		return nil, req, false
-	}
-	user, err = s.store.Users().GetUserByID(r.Context(), userID)
-	if err != nil {
-		fail(userID, "unknown_user", http.StatusUnauthorized, "User not found")
-		return nil, req, false
-	}
-	if user.Status != "active" || !user.TOTPEnabled || user.PasswordHash != verifiedHash {
-		fail(userID, "ineligible", http.StatusForbidden, "Account is not eligible for MFA login")
-		return nil, req, false
-	}
-	return user, req, true
-}
-
-func (s *Server) handleMFATOTP(w http.ResponseWriter, r *http.Request) {
-	const action = "auth.mfa_totp"
-	user, req, ok := s.mfaUser(w, r, action)
-	if !ok {
-		return
-	}
-
-	secretBytes, err := crypto.DecryptAESGCM(user.TOTPSecretEnc, s.config.Security.EncryptionKey)
-	if err != nil {
-		s.writeError(w, http.StatusInternalServerError, "Failed to decrypt MFA secret")
-		return
-	}
-
-	counter, ok := auth.ValidateTOTP(string(secretBytes), req.Code)
-	if !ok {
-		s.auditRefusal(r.Context(), user.ID, r, action, "outcome=failure reason=code")
-		s.writeError(w, http.StatusUnauthorized, "Invalid TOTP verification code")
-		return
-	}
-	if err := s.store.Users().SpendTOTPCounter(r.Context(), user.ID, counter); err != nil {
-		s.auditRefusal(r.Context(), user.ID, r, action, "outcome=failure reason=replay")
-		s.writeError(w, http.StatusUnauthorized, "TOTP code already used")
-		return
-	}
-
-	_, _, err = s.sessions.IssueSession(r.Context(), w, r, user)
-	if err != nil {
-		s.writeError(w, http.StatusInternalServerError, "Failed to issue session")
-		return
-	}
-
-	s.audit(r.Context(), user.ID, r, action, "session", "outcome=success")
-
-	s.writeJSON(w, http.StatusOK, map[string]any{
-		"authenticated": true,
-		"user":          user,
-	})
-}
-
-func (s *Server) handleMFARecovery(w http.ResponseWriter, r *http.Request) {
-	const action = "auth.mfa_recovery_code"
-	user, req, ok := s.mfaUser(w, r, action)
-	if !ok {
-		return
-	}
-
-	updatedHashes, ok := auth.RedeemRecoveryCode(req.Code, user.RecoveryCodesHash)
-	if !ok {
-		s.auditRefusal(r.Context(), user.ID, r, action, "outcome=failure reason=code")
-		s.writeError(w, http.StatusUnauthorized, "Invalid or already used recovery code")
-		return
-	}
-
-	if err := s.store.Users().UpdateRecoveryCodes(r.Context(), user.ID, user.RecoveryCodesHash, updatedHashes); err != nil {
-		s.auditRefusal(r.Context(), user.ID, r, action, "outcome=failure reason=replay")
-		s.writeError(w, http.StatusUnauthorized, "Recovery code was already used")
-		return
-	}
-
-	_, _, err := s.sessions.IssueSession(r.Context(), w, r, user)
-	if err != nil {
-		s.writeError(w, http.StatusInternalServerError, "Failed to issue session")
-		return
-	}
-
-	s.audit(r.Context(), user.ID, r, action, "session", "outcome=success")
 
 	s.writeJSON(w, http.StatusOK, map[string]any{
 		"authenticated": true,

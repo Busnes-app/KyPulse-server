@@ -8,7 +8,7 @@ afterEach(() => {
   vi.unstubAllGlobals();
 });
 
-const admin = { id: 'u1', role: 'admin', username: 'admin', display_name: 'Administrator', sso_provider: 'local', totp_enabled: false };
+const admin = { id: 'u1', role: 'admin', username: 'admin', display_name: 'Administrator', sso_provider: 'local' };
 
 describe('Settings', () => {
   it('shows one head, the section tabs in order, and marks the open tab', () => {
@@ -23,14 +23,14 @@ describe('Settings', () => {
     expect(screen.getByRole('group', { name: 'Theme' })).toBeTruthy();
   });
 
-  it('Account names the user once and offers two-factor sign-in to a local account', () => {
+  it('Account names the user once and offers no local two-factor sign-in', () => {
     vi.stubGlobal('fetch', vi.fn(async () => new Response('{}', { status: 200 })));
     render(<Settings section="account" settings={null} user={admin} onChanged={() => {}} />);
     const facts = screen.getByRole('region', { name: 'Signed in as' });
     expect(within(facts).queryByText('Name')).toBeNull();
     expect(within(facts).getByText('admin')).toBeTruthy();
     expect(within(facts).getByText('KyPulse password')).toBeTruthy();
-    expect(screen.getByRole('heading', { name: 'Two-factor authentication' })).toBeTruthy();
+    expect(screen.queryByRole('heading', { name: 'Two-factor authentication' })).toBeNull();
   });
 
   it('lets a local account change its own password and returns to sign-in', async () => {

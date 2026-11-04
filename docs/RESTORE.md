@@ -31,7 +31,7 @@ Everything a fresh server needs to be the old one:
 | Path in the capsule | What it is |
 |---|---|
 | `data/kypulse.db` | Application database: users, sessions, MFA state, keyed audit trail, settings and sealed tokens; collected history, import cursors and pending log pairing codes are excluded |
-| `data/encryption.key` | 32 bytes. Every TOTP secret and the KyRecovery pairing token are encrypted under it |
+| `data/encryption.key` | 32 bytes. The KyRecovery pairing token, and TOTP secrets kept from the removed local MFA, are encrypted under it |
 | `data/audit.key` | 32 bytes. Keys the audit hash chain; without it the restored log cannot be verified |
 | `data/recovery.pub` | The suite recovery public key, so the restored server comes back pinned (present when the backup had a key) |
 | `config/settings.json` | App name, URL, port, database driver. For your reference when re-deploying; nothing reads it |
@@ -288,8 +288,9 @@ as before, and start.
 
 ## Step 4: prove it
 
-1. Open the app URL and sign in with an existing admin account and its second factor. TOTP
-   working proves `encryption.key` is right.
+1. Open the app URL and sign in with an existing admin account. Sign-in does not read
+   `encryption.key`; for a paired server, step 2's Back up now does, through the sealed
+   pairing token.
 2. Open Backup & recovery. If the backup had a key, the recovery key shows as pinned with the
    same key ID as before; compare it with the ceremony card. If the backup was paired, the
    sealed token came across in the database, so the restored server can deposit again
@@ -309,7 +310,7 @@ as before, and start.
 ## Step 5: decide what to trust
 
 The restore proves the service works. It does not make the restored state current or safe.
-Everything comes back as of the capsule's `created_at`: users, passwords, MFA enrolments,
+Everything comes back as of the capsule's `created_at`: users, passwords,
 sessions. Anything you revoked or changed after that moment is
 undone, and a session cookie minted before the capsule still validates against the restored
 server, because sessions are database rows and the capsule brought them back.
@@ -331,14 +332,13 @@ refuses to seal without a consistent SQLite snapshot.
    Everyone signs in again. After hardware loss that is enough.
 2. Walk the old audit log in `old-data/kypulse.db` from `created_at` to the moment the old
    server was lost (the restored server's log stops at `created_at`), and re-apply what
-   happened after the capsule: disabled accounts, rotated passwords, reset MFA.
+   happened after the capsule: disabled accounts, rotated passwords.
 3. If the reason for the restore was a suspected compromise rather than hardware loss, treat
    the restored secrets as exposed and rotate the ones that can be rotated. A restore from
    before a compromise brings the attacker's access back with the service unless you do this.
 
-   **Never rotate `encryption.key`.** Every TOTP secret and the KyRecovery pairing token are
-   encrypted under it. Remove it and every user's second factor and the pairing are gone for
-   good, on a server you just recovered.
+   **Never rotate `encryption.key`.** The KyRecovery pairing token is encrypted under it.
+   Remove it and the pairing is gone for good, on a server you just recovered.
 
    What can be rotated, and how:
 
@@ -349,8 +349,8 @@ refuses to seal without a consistent SQLite snapshot.
    - The KyRecovery pairing token: ask the KyRecovery admin to revoke this service and pair
      again from the screen; the same key comes back, so the pairing is accepted.
 
-   Then have every admin re-enrol their second factor, and confirm with a Back up now so the
-   recovered server has a capsule that reflects the rotation.
+   Then confirm with a Back up now so the recovered server has a capsule that reflects the
+   rotation.
 
 ## Afterwards
 

@@ -34,7 +34,7 @@ upgrading an installation.
 | Directory webhook | Nonempty `KYPULSE_KYSIGNON_HMAC_SECRET` requires at least 16 literal bytes at startup and before legacy webhook use. Installer directory credentials meet the same floor before active configuration changes. Syncauth delivery retains its shared signature/replay rules and account binding. Coordinate a replacement with the sender; empty leaves legacy webhooks unconfigured. |
 | Data and audit keys | Encryption and independent audit keys each require exactly 32 decoded bytes, whether supplied or retained in keyfiles. AES-256-GCM records and the HMAC-SHA256 audit chain retain their original keys. |
 | OIDC | Every fetched RSA JWKS member needs at least 2048 actual modulus bits. Envelope/member parsing matches go-oidc/go-jose, including member casing; input is bounded and redirects refused before caching. Maintained libraries retain algorithm, signature, issuer/audience/expiry and nonce checks, with supported strong EC/Ed25519 keys. `RoleFor` retains admin/viewer mapping. |
-| TOTP | Generate twenty random decoded bytes. Authentication requires at least sixteen through the shared RFC 4226/6238 implementation. Existing sealed records remain readable but a short key cannot authenticate. Use an enrolled recovery method or deliberate administrator reset to re-enroll; preserve unrelated credentials. |
+| TOTP | Local TOTP sign-in is removed; MFA is KyIdentity's. Existing sealed TOTP records stay in the database under the original encryption key, unused. |
 | Source/sender credentials | Source tokens are 32 random bytes with existing format/hash, privilege and target/source binding. Sender state/token/checkpoints remain separate private files. The Docker reader uses an absolute local Unix socket, not a remote TLS key. |
 | Recovery | Fixed-suite `kycap/3` containers seal to the pinned suite public key. The product server never receives custodial shares; offline restore retains the recorded digest and original custody procedure. Collected log/activity payloads remain excluded under the existing retention/backup contract; this does not create an independent log archive. |
 
@@ -48,7 +48,7 @@ after upgrade to replace the in-memory verifier/cache with the repaired policy.
 Use the toolchain in `go.mod` and the pinned Docker builder. Set
 `GODEBUG=fips140=on` before every server, sender or remote Go CLI process starts.
 Preserve other needed GODEBUG entries with `fips140` set to `on`, then restart.
-Use `on`, not the diagnostic `only` mode: Argon2id, HMAC-SHA1 TOTP and fixed-suite
+Use `on`, not the diagnostic `only` mode: Argon2id and fixed-suite
 recovery remain available.
 
 The profile requires direct HTTPS OIDC issuer/authorization/token/JWKS URLs
@@ -105,7 +105,7 @@ Run complete ordinary/configured race suites on SQLite/PostgreSQL, frontend
 build/tests and browser regressions, module/vulnerability checks, Compose
 preservation, repeatable binaries, static sender build and Docker auth/health,
 key/audit/source continuity and recovery-drill checks. Then verify real sign-in,
-TOTP/recovery access, directory revocation, polling, alert delivery, KyYard and
+directory revocation, polling, alert delivery, KyYard and
 sender acknowledgments, audit verification, backup receipts and a custody-correct
 offline restore. Local checks do not establish live operational readiness.
 

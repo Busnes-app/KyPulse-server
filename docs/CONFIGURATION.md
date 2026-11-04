@@ -18,7 +18,7 @@ there is no log file.
 | `KYPULSE_ENV` | `development` (`production` in the image and Compose) | `development` or `production`. Development listens on loopback only, mints a session secret per start and sends cookies without `Secure` |
 | `KYPULSE_ALLOW_INSECURE_DEV` | `false` | let development listen on a non-loopback `KYPULSE_HOST` |
 | `KYPULSE_SESSION_SECRET` | `<data dir>/session.key` in production, random per start in development | signs the proof-of-work login challenge |
-| `KYPULSE_ENCRYPTION_KEY` | `<data dir>/encryption.key` | 32-byte key sealing the webhook, KyYard token, TOTP secrets and KyRecovery token |
+| `KYPULSE_ENCRYPTION_KEY` | `<data dir>/encryption.key` | 32-byte key sealing the webhook, KyYard token and KyRecovery token, and TOTP secrets kept from the removed local MFA |
 | `KYPULSE_AUDIT_KEY` | read from `KYPULSE_AUDIT_KEY_FILE` | 32-byte key of the audit hash chain; must differ from the encryption key |
 | `KYPULSE_AUDIT_KEY_FILE` | `<data dir>/audit.key` (`/app/secrets/audit.key` in Compose) | audit keyfile, minted on first start; an existing `<data dir>/audit.key` wins while this file does not exist |
 | `KYPULSE_ADMIN_PASSWORD` | generated into `<data dir>/initial-admin-password` (0600; never logged) | first admin's password on an empty database |
