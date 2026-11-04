@@ -43,15 +43,16 @@ func RoleFor(claimed string) string {
 	return store.RoleViewer
 }
 
-// LocalRole maps KyIdentity's role claims onto KyPulse's roles: "admin" in the per-app
-// `roles` claim means admin, otherwise viewer. Without `roles` the legacy IdP-wide `role`
+// LocalRole maps KyIdentity's role claims onto KyPulse's roles: "admin" or "kypulse.admin"
+// (the name the installer directory also honours) in the per-app `roles` claim means admin,
+// otherwise viewer. Without `roles` the legacy IdP-wide `role`
 // goes through RoleFor. ok is false when the token carries neither, and then a stored role
 // must not change.
 func (c *IdentityClaims) LocalRole() (role string, ok bool) {
 	switch {
 	case c.Roles != nil:
 		for _, r := range c.Roles {
-			if r == store.RoleAdmin {
+			if r == store.RoleAdmin || r == "kypulse.admin" {
 				return store.RoleAdmin, true
 			}
 		}

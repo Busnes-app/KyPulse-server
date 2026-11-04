@@ -263,6 +263,8 @@ func TestLocalRolePrefersPerAppRoles(t *testing.T) {
 		ok     bool
 	}{
 		{sso.IdentityClaims{Roles: []string{"admin"}}, "admin", true},
+		{sso.IdentityClaims{Roles: []string{"kypulse.admin"}}, "admin", true},
+		{sso.IdentityClaims{Roles: []string{"kycalendar.admin"}, Role: "admin"}, "viewer", true},
 		{sso.IdentityClaims{Roles: []string{"user"}, Role: "admin"}, "viewer", true},
 		{sso.IdentityClaims{Roles: []string{}, Role: "admin"}, "viewer", true},
 		{sso.IdentityClaims{Role: "admin"}, "admin", true},

@@ -77,7 +77,7 @@ func TestSSOSignInReadsPerAppRoles(t *testing.T) {
 		return u.Role
 	}
 
-	idp.roles = []string{"editor", "admin"}
+	idp.roles = []string{"editor", "kypulse.admin"}
 	first := sessionCookie(t, ssoLogin(srv, idp, "ivy", "s1"))
 	if role() != store.RoleAdmin {
 		t.Fatalf("provisioned as %q, want admin from roles", role())

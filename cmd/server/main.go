@@ -20,6 +20,7 @@ import (
 	"time"
 
 	"github.com/Busnes-app/ky-primitives/applysetup"
+	"github.com/Busnes-app/ky-primitives/keyfile"
 	"github.com/Busnes-app/ky-primitives/logging"
 	"github.com/Busnes-app/ky-primitives/password"
 	"github.com/Busnes-app/ky-primitives/recoveryclient"
@@ -325,19 +326,24 @@ func recordRun(ctx context.Context, st store.Store, actor string, res recoverycl
 	log.Printf("[BACKUP] %s: capsule %s (%d bytes) local=%q deposited=%t", actor, res.Manifest.CapsuleID, res.SizeBytes, res.LocalPath, res.Receipt != nil)
 }
 
-// startSetupSocket opens the installer setup socket. When it cannot (typically a data
-// directory `mkdir` left group-writable under umask 002, which the socket's ancestry check
-// refuses), installer setup is turned off and logged instead of stopping the server.
+// startSetupSocket opens the installer setup socket. A data directory whose ancestry the
+// socket refuses (typically group-writable, as `mkdir` leaves it under umask 002) turns
+// installer setup off and is logged instead of stopping the server; any other failure,
+// such as another process owning the socket, still stops it.
 func startSetupSocket(ctx context.Context, lg *logging.Logger, dataDir string, apply func(context.Context, []byte, bool) (applysetup.Report, error), restart func()) func() error {
 	socket, err := config.InstallerSocket(dataDir)
-	if err == nil {
-		var closeSetup func() error
-		if closeSetup, err = applysetup.StartLocal(ctx, socket, apply, restart); err == nil {
-			return closeSetup
-		}
+	if err != nil {
+		fatal("Installer IPC unavailable: %v", err)
 	}
-	lg.Log(ctx, installerSetupOff, logging.Err(err), fKeyPath(dataDir))
-	return func() error { return nil }
+	if err := keyfile.RequireTrustedAncestry(filepath.Dir(socket)); err != nil {
+		lg.Log(ctx, installerSetupOff, logging.Err(err), fKeyPath(dataDir))
+		return func() error { return nil }
+	}
+	closeSetup, err := applysetup.StartLocal(ctx, socket, apply, restart)
+	if err != nil {
+		fatal("Installer IPC unavailable: %v", err)
+	}
+	return closeSetup
 }
 
 // runDeposit seals and delivers one capsule now, for cron or an operator at a shell.

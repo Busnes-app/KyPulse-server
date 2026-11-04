@@ -6,6 +6,7 @@ import (
 	"log"
 	"log/slog"
 	"os"
+	"os/exec"
 	"path/filepath"
 	"strings"
 	"testing"
@@ -58,5 +59,36 @@ func TestSetupSocketOffForAGroupWritableDataDir(t *testing.T) {
 	}
 	if _, err := os.Lstat(filepath.Join(data, "installer", "setup.sock")); err != nil {
 		t.Fatalf("setup socket not opened: %v", err)
+	}
+}
+
+// Only the directory's ancestry degrades: a second server on the same data directory (the
+// socket is already owned) still stops, as before.
+func TestSetupSocketOwnedByAnotherProcessIsFatal(t *testing.T) {
+	data := os.Getenv("KYPULSE_TEST_SECOND_SERVER")
+	if data != "" {
+		lg, _ := newLogger(os.Stderr)
+		apply := func(context.Context, []byte, bool) (applysetup.Report, error) { return applysetup.Report{}, nil }
+		startSetupSocket(context.Background(), lg, data, apply, func() {})
+		os.Exit(0)
+	}
+	data = filepath.Join(t.TempDir(), "data")
+	if err := os.Mkdir(data, 0o700); err != nil {
+		t.Fatal(err)
+	}
+	var buf bytes.Buffer
+	lg, err := newLogger(&buf)
+	if err != nil {
+		t.Fatal(err)
+	}
+	t.Cleanup(func() { log.SetOutput(os.Stderr); log.SetFlags(log.LstdFlags) })
+	apply := func(context.Context, []byte, bool) (applysetup.Report, error) { return applysetup.Report{}, nil }
+	closeSetup := startSetupSocket(context.Background(), lg, data, apply, func() {})
+	defer closeSetup()
+	cmd := exec.Command(os.Args[0], "-test.run=^TestSetupSocketOwnedByAnotherProcessIsFatal$")
+	cmd.Env = append(os.Environ(), "KYPULSE_TEST_SECOND_SERVER="+data)
+	out, err := cmd.CombinedOutput()
+	if err == nil || !strings.Contains(string(out), "another product process owns the setup socket") {
+		t.Fatalf("second server on the same data directory did not stop: %v\n%s", err, out)
 	}
 }
