@@ -25,7 +25,7 @@ there is no log file.
 | `KYPULSE_BIND` | `127.0.0.1` | Compose only: host address the `8080` port is published on |
 | `KYPULSE_DATA_DIR` | `./data` (`/app/data` in Compose) | database, keyfiles |
 | `KYPULSE_DB_DRIVER` | `sqlite` | `sqlite` or `postgres` |
-| `KYPULSE_DB_DSN` | SQLite file in the data dir; required for `postgres` | connection string |
+| `KYPULSE_DB_DSN` | SQLite file in the data dir; required for `postgres` | connection string; backups need SQLite at `<data dir>/kypulse.db` and refuse any other path |
 | `KYPULSE_DB_MAX_OPEN_CONNS`, `KYPULSE_DB_MAX_IDLE_CONNS` | `25`, `5` | PostgreSQL pool |
 | `KYPULSE_TRUSTED_PROXIES` | none | proxy IPs or CIDRs allowed to set `X-Forwarded-For`; `0.0.0.0/0` is refused |
 | `KYPULSE_COOKIE_SECURE`, `KYPULSE_COOKIE_DOMAIN` | on in production or with an `https` app URL, empty | session cookie `Secure` flag (also gates HSTS) |

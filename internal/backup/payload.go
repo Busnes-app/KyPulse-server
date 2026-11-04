@@ -42,6 +42,14 @@ func Collect(ctx context.Context, cfg *config.Config, appVersion string) (recove
 	if strings.ToLower(cfg.Database.Driver) != "sqlite" {
 		return recoveryclient.Payload{}, fmt.Errorf("%w: %s", ErrNoDatabaseSnapshot, cfg.Database.Driver)
 	}
+	// A restore puts the database back as <data dir>/kypulse.db. Sealing one that lives
+	// elsewhere would restore to a path the server never opens: it would start empty.
+	db, _, _ := strings.Cut(strings.TrimPrefix(cfg.Database.DSN, "file:"), "?")
+	live, errLive := filepath.Abs(db)
+	want, errWant := filepath.Abs(filepath.Join(cfg.Database.DataDir, "kypulse.db"))
+	if errLive != nil || errWant != nil || live != want {
+		return recoveryclient.Payload{}, fmt.Errorf("%w: KYPULSE_DB_DSN names %s, but a capsule restores only <data dir>/kypulse.db (%s)", ErrNoDatabaseSnapshot, db, want)
+	}
 	dbBytes, credentials, err := snapshotSQLite(ctx, cfg.Database.DSN, cfg.Database.DataDir)
 	if err != nil {
 		return recoveryclient.Payload{}, err

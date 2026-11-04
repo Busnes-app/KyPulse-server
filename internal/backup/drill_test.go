@@ -91,6 +91,34 @@ func TestChecksPassesOnACompleteScratchDir(t *testing.T) {
 	}
 }
 
+// A bare install that leaves the port and driver at their defaults is a working install.
+func TestChecksAcceptDefaultedPortAndDriver(t *testing.T) {
+	for _, name := range []string{"KYPULSE_PORT", "KYPULSE_DB_DRIVER"} {
+		t.Setenv(name, "restored after the test")
+		os.Unsetenv(name)
+	}
+	cfg, _ := payloadConfig(t)
+	payload, err := backup.Collect(context.Background(), cfg, "1.0.0")
+	if err != nil {
+		t.Fatal(err)
+	}
+	scratch := t.TempDir()
+	for _, f := range payload.Files {
+		full := filepath.Join(scratch, f.Path)
+		if err := os.MkdirAll(filepath.Dir(full), 0700); err != nil {
+			t.Fatal(err)
+		}
+		if err := os.WriteFile(full, f.Data, 0600); err != nil {
+			t.Fatal(err)
+		}
+	}
+	for _, c := range backup.Checks(scratch, manifestFor(payload)) {
+		if !c.Passed {
+			t.Errorf("check %q failed: %s", c.Name, c.Message)
+		}
+	}
+}
+
 func TestDrillRootIsUnderTheDataDir(t *testing.T) {
 	cfg, _ := payloadConfig(t)
 	root := backup.DrillRoot(cfg)

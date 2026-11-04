@@ -189,6 +189,16 @@ func payloadConfig(t *testing.T) (*config.Config, []byte) {
 	return cfg, cfg.Security.EncryptionKey
 }
 
+// A database outside <data dir>/kypulse.db would restore to a path the server never opens, so
+// it is refused like any other configuration a capsule cannot carry.
+func TestCollectRefusesANonDefaultDatabasePath(t *testing.T) {
+	cfg, _ := payloadConfig(t)
+	cfg.Database.DSN = filepath.Join(t.TempDir(), "elsewhere.db") + "?_pragma=busy_timeout(5000)"
+	if _, err := backup.Collect(context.Background(), cfg, "1.0.0"); !errors.Is(err, backup.ErrNoDatabaseSnapshot) {
+		t.Fatalf("err = %v, want ErrNoDatabaseSnapshot", err)
+	}
+}
+
 // The encryption key must ride in the capsule: users.totp_secret_enc is AES-GCM under it, so
 // a restore without it hands the operator a database whose MFA secrets are gone for good.
 func TestCollectCarriesTheEncryptionKey(t *testing.T) {

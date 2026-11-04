@@ -14,6 +14,7 @@ import (
 	"net/http"
 	"net/http/httptest"
 	"os"
+	"path/filepath"
 	"strconv"
 	"strings"
 	"testing"
@@ -63,6 +64,9 @@ func setupTestServerWith(t *testing.T, poster notify.Poster, yardHTTP kyyard.HTT
 	cfg, _ := config.LoadFromEnv()
 	db := testdb.Config(t)
 	db.DataDir = cfg.Database.DataDir // testdb only picks the backend; keep the temp data dir
+	if db.Driver == "sqlite" {
+		db.DSN = filepath.Join(db.DataDir, "kypulse.db") // the only path a capsule can restore
+	}
 	cfg.Database = db
 	cfg.Captcha.Provider = "none" // disable captcha for unit test speed
 
