@@ -175,7 +175,7 @@ func (u *userStore) ensureUsernameIndex(ctx context.Context) error {
 		return err
 	}
 	_, err = u.store.db.ExecContext(ctx, `CREATE UNIQUE INDEX IF NOT EXISTS idx_users_username_lower ON users (LOWER(username))`)
-	if err != nil && isUniqueViolation(err) {
+	if err != nil && (isUniqueViolation(err) || strings.Contains(err.Error(), "could not create unique index")) {
 		return nil // a clash committed since the check; the next start reports it
 	}
 	return err
@@ -325,6 +325,28 @@ ON CONFLICT (provider, subject) DO UPDATE SET latest = excluded.latest WHERE sso
 	}
 	n, err := res.RowsAffected()
 	return n == 1, err
+}
+
+func (u *userStore) ChangeRole(ctx context.Context, userID, from, to string) error {
+	if !validRole(to) {
+		return ErrInvalidRole
+	}
+	tx, err := u.store.db.BeginTx(ctx, nil)
+	if err != nil {
+		return err
+	}
+	defer tx.Rollback()
+	res, err := tx.ExecContext(ctx, u.store.rebind(`UPDATE users SET role = ?, updated_at = ? WHERE id = ? AND role = ? AND status = 'active'`), to, time.Now().UTC(), userID, from)
+	if err != nil {
+		return err
+	}
+	if n, _ := res.RowsAffected(); n == 0 {
+		return ErrAlreadyExists
+	}
+	if _, err := tx.ExecContext(ctx, u.store.rebind(`DELETE FROM sessions WHERE user_id = ?`), userID); err != nil {
+		return err
+	}
+	return tx.Commit()
 }
 
 func (u *userStore) DeleteUser(ctx context.Context, id string) error {

@@ -195,15 +195,16 @@ func (s *Server) applySSORole(w http.ResponseWriter, r *http.Request, user *stor
 		return false
 	}
 	from := user.Role
+	err = s.store.Users().ChangeRole(r.Context(), user.ID, from, role)
+	if errors.Is(err, store.ErrAlreadyExists) {
+		s.writeError(w, http.StatusConflict, "Your account changed while you were signing in; sign in again")
+		return false
+	}
+	if err != nil {
+		s.writeError(w, http.StatusInternalServerError, "Authentication error")
+		return false
+	}
 	user.Role = role
-	if err := s.store.Users().UpdateUser(r.Context(), user); err != nil {
-		s.writeError(w, http.StatusInternalServerError, "Authentication error")
-		return false
-	}
-	if err := s.store.Sessions().DeleteUserSessions(r.Context(), user.ID); err != nil {
-		s.writeError(w, http.StatusInternalServerError, "Authentication error")
-		return false
-	}
 	s.audit(r.Context(), user.ID, r, "auth.sso_role_changed", "user", "from="+from+" to="+role)
 	return true
 }

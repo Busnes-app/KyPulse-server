@@ -74,3 +74,13 @@ it('signs in with the password alone; there is no local second-factor step', asy
   await waitFor(() => expect(onSuccess).toHaveBeenCalledWith(user));
   expect(fetcher.mock.calls.map(([input]) => String(input)).filter((u) => u.includes('/mfa/'))).toEqual([]);
 });
+
+it('still offers sign-in when the browser check fails', async () => {
+  vi.stubGlobal('fetch', vi.fn(async (input: RequestInfo | URL) => {
+    if (String(input) === '/api/auth/pow-challenge') return new Response('{}', { status: 503 });
+    return new Response(JSON.stringify({ authenticated: true, user: { id: 'u1' } }));
+  }));
+  render(<Login onSuccess={vi.fn()} appName="KyPulse" />);
+  const submit = await screen.findByRole('button', { name: 'Sign in' });
+  expect((submit as HTMLButtonElement).disabled).toBe(false);
+});

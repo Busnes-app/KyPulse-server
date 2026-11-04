@@ -15,6 +15,9 @@ export const Login: React.FC<LoginProps> = ({ onSuccess, appName, ssoEnabled = f
   const [captchaToken, setCaptchaToken] = useState<string>('');
   // A solved challenge is single-use; remounting the widget fetches and solves a fresh one.
   const [captchaRound, setCaptchaRound] = useState<number>(0);
+  // A failed check must not leave sign-in dead: the server may not require it, and a
+  // rejected attempt starts a fresh check.
+  const [captchaFailed, setCaptchaFailed] = useState<boolean>(false);
   const [loading, setLoading] = useState<boolean>(false);
   const [error, setError] = useState<string>('');
 
@@ -37,6 +40,7 @@ export const Login: React.FC<LoginProps> = ({ onSuccess, appName, ssoEnabled = f
       const data = await resp.json();
       if (!resp.ok) {
         setCaptchaToken('');
+        setCaptchaFailed(false);
         setCaptchaRound((n) => n + 1);
         throw new Error(data.error || 'Login failed');
       }
@@ -75,11 +79,11 @@ export const Login: React.FC<LoginProps> = ({ onSuccess, appName, ssoEnabled = f
               <input id="login-password" type="password" autoComplete="current-password"
                 value={password} onChange={(e) => setPassword(e.target.value)} required />
             </div>
-            <CaptchaWidget key={captchaRound} onToken={setCaptchaToken} />
+            <CaptchaWidget key={captchaRound} onToken={setCaptchaToken} onFail={() => setCaptchaFailed(true)} />
             {/* An early submit carries no token, fails, and restarts the check from zero. */}
-            <button type="submit" className="ky-auth-submit" disabled={loading || !captchaToken}>
+            <button type="submit" className="ky-auth-submit" disabled={loading || (!captchaToken && !captchaFailed)}>
               <LogIn aria-hidden="true" />
-              <span>{loading ? 'Signing in…' : captchaToken ? 'Sign in' : 'Checking this browser…'}</span>
+              <span>{loading ? 'Signing in…' : captchaToken || captchaFailed ? 'Sign in' : 'Checking this browser…'}</span>
             </button>
             {ssoEnabled && <>
               <hr className="ky-auth-divider" />

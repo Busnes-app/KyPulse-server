@@ -15,6 +15,7 @@ import (
 	"os/signal"
 	"path/filepath"
 	"strconv"
+	"strings"
 	"syscall"
 	"time"
 
@@ -153,7 +154,8 @@ func runServer(lg *logging.Logger) {
 	retentionDone := make(chan struct{})
 	go logRetentionLoop(ctx, st, cfg.Logs.MaxBytes, lg, retentionDone)
 
-	addr := net.JoinHostPort(cfg.Server.Host, strconv.Itoa(cfg.Server.Port)) // brackets an IPv6 host
+	// JoinHostPort brackets an IPv6 host; one already bracketed ([::]) worked before too.
+	addr := net.JoinHostPort(strings.Trim(cfg.Server.Host, "[]"), strconv.Itoa(cfg.Server.Port))
 	httpServer := &http.Server{
 		Addr:         addr,
 		Handler:      srv,
