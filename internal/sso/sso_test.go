@@ -175,6 +175,17 @@ func TestKySignOnWebhookOrdersPerSubject(t *testing.T) {
 	if u.Role != store.RoleViewer {
 		t.Fatalf("older delivery restored role %q", u.Role)
 	}
+	// The order survives a restart: a fresh client on the same store still refuses it.
+	restarted := sso.NewKySignOnClient(config.SSOConfig{KySignOnHMACSecret: secret}, st)
+	stale := promoted
+	stale.DisplayName = "a different body, so not a replay"
+	body, _ := json.Marshal(stale)
+	if err := restarted.HandleSyncWebhook(context.Background(), body, crypto.ComputeHMACSHA256(body, secret)); err != nil {
+		t.Fatalf("stale delivery after restart: %v", err)
+	}
+	if u, _ := st.Users().GetUserBySSO(context.Background(), "kysignon", "ext-order"); u.Role != store.RoleViewer {
+		t.Fatalf("older delivery after a restart restored role %q", u.Role)
+	}
 	// Another subject is ordered on its own.
 	other := promoted
 	other.ID, other.Username = "ext-other", "bea"

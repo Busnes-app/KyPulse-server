@@ -21,10 +21,9 @@ type KySignOnClient struct {
 	flow   *oauthFlow
 	mu     sync.Mutex
 	seen   map[[32]byte]time.Time // sync body hash -> end of its timestamp window
-	// applyMu serialises applying deliveries; latest is each subject's newest applied
-	// timestamp, so a delayed older delivery cannot undo a newer one (say, a demotion).
+	// applyMu serialises applying deliveries, so the stored per-subject order and the account
+	// change it guards cannot interleave within this process.
 	applyMu sync.Mutex
-	latest  map[string]int64
 }
 
 func NewKySignOnClient(cfg config.SSOConfig, st store.Store) *KySignOnClient {
@@ -33,7 +32,6 @@ func NewKySignOnClient(cfg config.SSOConfig, st store.Store) *KySignOnClient {
 		store:  st,
 		flow:   newOAuthFlow(cfg.KySignOnIssuer, cfg.KySignOnClientID, cfg.KySignOnSecret),
 		seen:   make(map[[32]byte]time.Time),
-		latest: make(map[string]int64),
 	}
 }
 
@@ -94,20 +92,19 @@ func (k *KySignOnClient) HandleSyncWebhook(ctx context.Context, body []byte, sig
 	}
 	k.applyMu.Lock()
 	defer k.applyMu.Unlock()
-	if payload.Timestamp < k.latest[payload.ID] {
+	// The order is stored before applying: a failed apply leaves it at this timestamp, so the
+	// provider's retry of the same delivery still passes, while an older one does not.
+	newest, err := k.store.Users().AdvanceSyncOrder(ctx, "kysignon", payload.ID, payload.Timestamp, time.Now().Add(-syncWindow).Unix())
+	if err != nil {
+		k.release(key)
+		return err
+	}
+	if !newest {
 		return nil // superseded by a newer delivery for this subject: acknowledge, change nothing
 	}
 	if err := k.applySync(ctx, payload); err != nil {
 		k.release(key) // a failed delivery may be retried
 		return err
-	}
-	k.latest[payload.ID] = payload.Timestamp
-	// An entry older than the window can no longer order anything: older bodies are refused.
-	oldest := time.Now().Add(-syncWindow).Unix()
-	for id, ts := range k.latest {
-		if ts < oldest {
-			delete(k.latest, id)
-		}
 	}
 	return nil
 }

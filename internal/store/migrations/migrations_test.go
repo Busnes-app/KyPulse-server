@@ -85,9 +85,8 @@ func TestMigration12DropsUnreachableSSOSessions(t *testing.T) {
 	// A later start applies nothing, so it never signs out a session issued after the upgrade.
 	exec(`INSERT INTO sessions (token_hash, user_id, created_at, expires_at, sso_sid) VALUES (?, ?, ?, ?, ?)`, "after_no_sid", "usr_sso", now, now.Add(time.Hour), "")
 	exec(`INSERT INTO sessions (token_hash, user_id, created_at, expires_at, sso_sid) VALUES (?, ?, ?, ?, ?)`, "after_sid", "usr_sso", now, now.Add(time.Hour), "sid-1")
-	registry = all
-	if applied, err := Run(ctx, db, cfg.Driver); err != nil || len(applied) != 0 {
-		t.Fatalf("second start applied %v, %v; want none", applied, err)
+	if applied := runThrough(12); len(applied) != 0 {
+		t.Fatalf("second start applied %v; want none", applied)
 	}
 	sessions(map[string]int{"legacy_usr_local": 1, "after_no_sid": 1, "after_sid": 1})
 }

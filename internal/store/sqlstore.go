@@ -353,6 +353,19 @@ func (u *userStore) totpTransition(ctx context.Context, userID, keepSession, ip,
 	return err
 }
 
+func (u *userStore) AdvanceSyncOrder(ctx context.Context, provider, subject string, at, floor int64) (bool, error) {
+	if _, err := u.store.db.ExecContext(ctx, u.store.rebind(`DELETE FROM sso_sync_order WHERE latest < ?`), floor); err != nil {
+		return false, err
+	}
+	res, err := u.store.db.ExecContext(ctx, u.store.rebind(`INSERT INTO sso_sync_order (provider, subject, latest) VALUES (?, ?, ?)
+ON CONFLICT (provider, subject) DO UPDATE SET latest = excluded.latest WHERE sso_sync_order.latest <= excluded.latest`), provider, subject, at)
+	if err != nil {
+		return false, err
+	}
+	n, err := res.RowsAffected()
+	return n == 1, err
+}
+
 func (u *userStore) DeleteUser(ctx context.Context, id string) error {
 	q := u.store.rebind("DELETE FROM users WHERE id = ?")
 	res, err := u.store.db.ExecContext(ctx, q, id)
