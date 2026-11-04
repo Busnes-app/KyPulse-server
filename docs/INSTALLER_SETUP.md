@@ -5,6 +5,9 @@ Run `kypulse apply-setup --capabilities` to discover the source interface.
 `ky.product-setup/1` envelope from ky-primitives/applysetup. The CLI talks to
 `<KYPULSE_DATA_DIR>/installer/setup.sock`; the active server owns this private
 socket, so inspection never opens/migrates a separate database or generates keys.
+The socket opens only when the data directory and its ancestors are private (group- or
+world-writable ones are refused); otherwise the server runs with installer setup off and logs
+`installer_setup_off`. `chmod 700` the data directory and restart.
 The shared package must be released before a standalone product release can consume it.
 
 In the Compose install the binary is `/app/kypulse` and runs as uid 10001, so the bundle and

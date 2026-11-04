@@ -7,7 +7,7 @@ Commands and unlinked file paths below are relative to the repository root.
 ## Quick start
 
 ```sh
-mkdir -p data backups secrets && sudo chown 10001:10001 data backups secrets
+mkdir -p data backups secrets && sudo chown 10001:10001 data backups secrets && sudo chmod 700 data backups secrets
 docker compose up -d
 docker compose exec app cat /app/data/initial-admin-password   # the generated admin password
 ```

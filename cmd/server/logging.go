@@ -30,6 +30,10 @@ var (
 		"audit key sits beside the database; move it to its own directory and set KYPULSE_AUDIT_KEY_FILE", slog.LevelWarn)
 	fKeyPath = logging.DeclareString("path")
 
+	// installerSetupOff says the installer setup socket is closed and how to open it.
+	installerSetupOff = logging.DeclareEvent("installer_setup_off",
+		"installer setup is off: its socket could not be opened; make the data directory private to the server user (chmod 700) and restart", slog.LevelWarn)
+
 	// usernameCaseClash names two accounts whose usernames differ only in case. While any
 	// exist the case-insensitive unique index is not created; nothing is renamed.
 	usernameCaseClash = logging.DeclareEvent("username_case_clash",

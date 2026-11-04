@@ -167,19 +167,12 @@ func runServer(lg *logging.Logger) {
 	stop := make(chan os.Signal, 1)
 	signal.Notify(stop, os.Interrupt, syscall.SIGTERM)
 
-	socket, err := config.InstallerSocket(cfg.Database.DataDir)
-	if err != nil {
-		fatal("Installer IPC unavailable: %v", err)
-	}
-	closeSetup, err := applysetup.StartLocal(ctx, socket, srv.ApplyInstaller, func() {
+	closeSetup := startSetupSocket(ctx, lg, cfg.Database.DataDir, srv.ApplyInstaller, func() {
 		select {
 		case stop <- syscall.SIGTERM:
 		default:
 		}
 	})
-	if err != nil {
-		fatal("Installer IPC unavailable: %v", err)
-	}
 	defer closeSetup()
 
 	go func() {
@@ -330,6 +323,21 @@ func recordRun(ctx context.Context, st store.Store, actor string, res recoverycl
 		return
 	}
 	log.Printf("[BACKUP] %s: capsule %s (%d bytes) local=%q deposited=%t", actor, res.Manifest.CapsuleID, res.SizeBytes, res.LocalPath, res.Receipt != nil)
+}
+
+// startSetupSocket opens the installer setup socket. When it cannot (typically a data
+// directory `mkdir` left group-writable under umask 002, which the socket's ancestry check
+// refuses), installer setup is turned off and logged instead of stopping the server.
+func startSetupSocket(ctx context.Context, lg *logging.Logger, dataDir string, apply func(context.Context, []byte, bool) (applysetup.Report, error), restart func()) func() error {
+	socket, err := config.InstallerSocket(dataDir)
+	if err == nil {
+		var closeSetup func() error
+		if closeSetup, err = applysetup.StartLocal(ctx, socket, apply, restart); err == nil {
+			return closeSetup
+		}
+	}
+	lg.Log(ctx, installerSetupOff, logging.Err(err), fKeyPath(dataDir))
+	return func() error { return nil }
 }
 
 // runDeposit seals and delivers one capsule now, for cron or an operator at a shell.

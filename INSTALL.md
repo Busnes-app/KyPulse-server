@@ -38,6 +38,7 @@ container facts and log collection.
 chmod 600 .env
 mkdir -p data backups secrets
 sudo chown 10001:10001 data backups secrets
+sudo chmod 700 data backups secrets
 docker compose config --quiet
 docker compose pull
 docker compose up -d
