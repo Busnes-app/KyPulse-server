@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"database/sql"
 	"errors"
 	"flag"
 	"fmt"
@@ -9,8 +10,10 @@ import (
 	"log"
 	"net"
 	"net/http"
+	"net/url"
 	"os"
 	"os/signal"
+	"path/filepath"
 	"strconv"
 	"syscall"
 	"time"
@@ -520,7 +523,29 @@ func runExportCapsule(args []string) {
 // combined, used once, dropped; a capsule from another service refused before the key is
 // touched; the authenticated manifest printed for comparison with KyRecovery's record.
 func restore(capsulePath, targetDir, expectService string, shares []string, stdout io.Writer) error {
-	return recoveryclient.Restore(capsulePath, targetDir, expectService, shares, stdout)
+	if err := recoveryclient.Restore(capsulePath, targetDir, expectService, shares, stdout); err != nil {
+		return err
+	}
+	return scheduleOff(filepath.Join(targetDir, "data", "kypulse.db"), stdout)
+}
+
+// scheduleOff turns scheduled deposits off in a restored database: the copy would
+// otherwise deposit as the original service, maybe while that one is still running.
+func scheduleOff(dbPath string, stdout io.Writer) error {
+	if _, err := os.Stat(dbPath); errors.Is(err, os.ErrNotExist) {
+		return nil
+	}
+	db, err := sql.Open("sqlite", (&url.URL{Scheme: "file", Path: filepath.ToSlash(dbPath)}).String())
+	if err != nil {
+		return err
+	}
+	defer db.Close()
+	if _, err := db.Exec(`INSERT INTO server_settings (key, value, updated_at) VALUES ('backup_interval_sec', '0', ?)
+ON CONFLICT (key) DO UPDATE SET value = excluded.value, updated_at = excluded.updated_at`, time.Now().UTC()); err != nil {
+		return fmt.Errorf("turn scheduled deposits off in the restored database: %w", err)
+	}
+	fmt.Fprintln(stdout, "Scheduled deposits are off on the restored server. Turn them on under Backup once it is the server in service.")
+	return nil
 }
 
 // stdinIsTerminal reports whether a human is typing, so a pipeline gets no stray prompt.
