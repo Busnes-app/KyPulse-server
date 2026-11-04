@@ -126,6 +126,12 @@ func (s *Server) handleKySignOnCallback(w http.ResponseWriter, r *http.Request) 
 	case user.Status != "active":
 		s.writeError(w, http.StatusForbidden, "Account is disabled or inactive")
 		return
+	default:
+		// KyIdentity is the authority for an SSO user's role, except an installer-owned
+		// identity's, which the installer directory governs.
+		if !s.applySSORole(w, r, user, sso.RoleFor(claims.Role)) {
+			return
+		}
 	}
 
 	_, _, err = s.sessions.IssueSSOSession(r.Context(), w, r, user, claims.SessionID, claims.IssuedAt)
@@ -139,6 +145,34 @@ func (s *Server) handleKySignOnCallback(w http.ResponseWriter, r *http.Request) 
 	}
 
 	http.Redirect(w, r, "/", http.StatusFound)
+}
+
+// applySSORole moves a non-installer-owned user to role and ends every session they hold,
+// before the new one is issued. It reports false after writing an error.
+func (s *Server) applySSORole(w http.ResponseWriter, r *http.Request, user *store.User, role string) bool {
+	if user.Role == role {
+		return true
+	}
+	_, err := s.store.Settings().GetSetting(r.Context(), store.InstallerUserKey(s.config.SSO.KySignOnIssuer, user.SSOSubject))
+	if err == nil {
+		return true
+	}
+	if !errors.Is(err, store.ErrNotFound) {
+		s.writeError(w, http.StatusInternalServerError, "Authentication error")
+		return false
+	}
+	from := user.Role
+	user.Role = role
+	if err := s.store.Users().UpdateUser(r.Context(), user); err != nil {
+		s.writeError(w, http.StatusInternalServerError, "Authentication error")
+		return false
+	}
+	if err := s.store.Sessions().DeleteUserSessions(r.Context(), user.ID); err != nil {
+		s.writeError(w, http.StatusInternalServerError, "Authentication error")
+		return false
+	}
+	s.audit(r.Context(), user.ID, r, "auth.sso_role_changed", "user", "from="+from+" to="+role)
+	return true
 }
 
 func (s *Server) handleKySignOnSyncWebhook(w http.ResponseWriter, r *http.Request) {

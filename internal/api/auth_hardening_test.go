@@ -239,6 +239,7 @@ type fakeIdP struct {
 	sid  string
 	iat  time.Time // the ID token's iat; zero means now
 	fail string
+	role string // the ID token's role claim; empty sends none
 }
 
 func newFakeIdP(t *testing.T) *fakeIdP {
@@ -270,8 +271,12 @@ func newFakeIdP(t *testing.T) *fakeIdP {
 				iat = time.Now()
 			}
 			header, _ := json.Marshal(map[string]string{"alg": "RS256", "kid": "k1", "typ": "JWT"})
-			claims, _ := json.Marshal(map[string]any{"iss": issuer, "aud": "pulse", "sub": idp.sub, "sid": idp.sid, "nonce": "n1",
-				"preferred_username": idp.sub, "iat": iat.Unix(), "exp": time.Now().Add(time.Minute).Unix()})
+			fields := map[string]any{"iss": issuer, "aud": "pulse", "sub": idp.sub, "sid": idp.sid, "nonce": "n1",
+				"preferred_username": idp.sub, "iat": iat.Unix(), "exp": time.Now().Add(time.Minute).Unix()}
+			if idp.role != "" {
+				fields["role"] = idp.role
+			}
+			claims, _ := json.Marshal(fields)
 			input := b64(header) + "." + b64(claims)
 			digest := sha256.Sum256([]byte(input))
 			sig, _ := rsa.SignPKCS1v15(rand.Reader, key, crypto.SHA256, digest[:])
