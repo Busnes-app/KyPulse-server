@@ -75,16 +75,16 @@ func main() {
 	runServer(lg)
 }
 
-// shutdownTimeout drains in-flight HTTP requests. Short on purpose: it is spent before the
-// backup wait below, and both must fit inside the deployment's stop_grace_period.
+// shutdownTimeout drains in-flight HTTP requests. Backup work is cancelled before the drain
+// starts, so an interrupted deposit request can still answer inside it.
 const shutdownTimeout = 5 * time.Second
 
-// backupWaitTimeout bounds the wait for detached backup work. recoveryclient caps one deposit
-// at 15 minutes (its uploadTimeout, for a container of at most capsule.MaxContainerBytes,
-// 384 MiB); the extra two minutes cover sealing and the local copy either side of the upload.
-// docker-compose.yml's stop_grace_period must exceed shutdownTimeout + backupWaitTimeout, and
-// TestComposeGracePeriodCoversTheShutdownBudget holds the two in step.
-const backupWaitTimeout = 17 * time.Minute
+// backupWaitTimeout bounds the wait for cancelled backup work to unwind. The snapshot and the
+// upload stop at once; what may still be running is the sealing and local copy of one capsule
+// already collected, and the database writes that record the outcome. The two timeouts
+// together must stay inside Kubernetes' default 30s termination grace and docker-compose.yml's
+// stop_grace_period; TestShutdownBudgetFitsTheGracePeriods holds them in step.
+const backupWaitTimeout = 10 * time.Second
 
 func runServer(lg *logging.Logger) {
 	cfg, err := config.LoadFromEnv()
@@ -144,8 +144,10 @@ func runServer(lg *logging.Logger) {
 		log.Printf("[KYYARD] the stored pairing cannot be read; pair again in Settings")
 	}
 	srv := api.NewServer(cfg, st, lg, mon, yard)
+	backupCtx, stopBackups := context.WithCancel(ctx)
+	defer stopBackups()
 	backupDone := make(chan struct{})
-	go backupLoop(ctx, cfg, st, backupDone)
+	go backupLoop(backupCtx, cfg, st, recoveryclient.NewClient(recoveryclient.Options{AllowPrivate: cfg.Backup.AllowPrivateRecovery}), time.Minute, backupDone)
 	monitorDone := make(chan struct{})
 	go monitorLoop(ctx, mon, pl, monitorDone)
 	kyyardDone := make(chan struct{})
@@ -187,6 +189,11 @@ func runServer(lg *logging.Logger) {
 	closeSetup()
 	log.Println("[KYPULSE] Shutting down gracefully...")
 
+	// Backups first: a snapshot or upload in flight is aborted now and runs again after the
+	// restart, so the waits below take seconds whatever the backup was doing.
+	stopBackups()
+	srv.StopDetached()
+
 	shutdownCtx, shutdownCancel := context.WithTimeout(context.Background(), shutdownTimeout)
 	defer shutdownCancel()
 
@@ -207,21 +214,17 @@ func runServer(lg *logging.Logger) {
 }
 
 // waitForBackupWork blocks until the scheduler loop, every detached handler, the poller and
-// the KyYard puller have finished, or until ctx expires. Backup work ignores cancellation once
-// bytes are moving: the scheduler's run, and the pair, pin-key and deposit handlers, all detach
-// from their caller. They are waited out before the store closes, or they write into a closed
-// store -- a key pinned on disk with no row recording it, or a capsule at KyRecovery with no
-// receipt this side. The poller and the KyYard puller are waited out for the same reason: an
-// in-flight poll or pull observed after the store closes cannot record its result (KyYard's
-// snapshot is in-memory only, but its own pairing read goes through the store).
+// the KyYard puller have finished, or until ctx expires. Their slow steps are already
+// cancelled: a backup's snapshot and upload stop at once, a delivery in flight gets the alert
+// sender's ShutdownGrace (5s), polls and pulls end with their context. What is waited out here
+// is the unwinding, so the receipt, key pin, poll results and audit rows are written before
+// the store closes.
 //
 // All waits start before any blocks, and all are bounded by the one context rather than a
 // timer channel: a timer channel delivers its value once, so whichever wait consumed it would
-// leave the others unbounded -- exactly the stuck-deposit case this is written for. Starting them
-// together matters as much: waited one after the other, a hung scheduled deposit spends the whole
-// budget on its own and a later wait is read only once the deadline has already passed, giving
-// live work no time at all. Past the deadline the work is abandoned and said so; a SIGKILL would
-// have been silent.
+// leave the others unbounded. Starting them together matters as much: waited one after the
+// other, a stuck scheduled run spends the whole budget and a later wait gets no time at all.
+// Past the deadline the work is abandoned and said so; a SIGKILL would have been silent.
 func waitForBackupWork(ctx context.Context, backupDone, monitorDone, kyyardDone <-chan struct{}, waitDetached func()) {
 	handlersDone := make(chan struct{})
 	go func() { defer close(handlersDone); waitDetached() }()
@@ -229,17 +232,17 @@ func waitForBackupWork(ctx context.Context, backupDone, monitorDone, kyyardDone 
 	select {
 	case <-backupDone:
 	default:
-		log.Println("[KYPULSE] waiting for the scheduled backup in flight...")
+		log.Println("[KYPULSE] waiting for the interrupted scheduled backup to unwind...")
 		select {
 		case <-backupDone:
 		case <-ctx.Done():
-			log.Printf("[KYPULSE] abandoning a scheduled deposit still running after %s; its receipt may be unrecorded", backupWaitTimeout)
+			log.Printf("[KYPULSE] abandoning a scheduled backup still unwinding after %s; its outcome may be unrecorded", backupWaitTimeout)
 		}
 	}
 	select {
 	case <-handlersDone:
 	case <-ctx.Done():
-		log.Printf("[KYPULSE] abandoning a detached backup handler still running after %s; its writes may be unrecorded", backupWaitTimeout)
+		log.Printf("[KYPULSE] abandoning a detached backup handler still unwinding after %s; its writes may be unrecorded", backupWaitTimeout)
 	}
 	select {
 	case <-monitorDone:
@@ -261,15 +264,14 @@ func runBackup(ctx context.Context, cfg *config.Config, st store.Store) (recover
 		return recoveryclient.Result{}, err
 	}
 	client := recoveryclient.NewClient(recoveryclient.Options{AllowPrivate: cfg.Backup.AllowPrivateRecovery})
-	return recoveryclient.Run(ctx, rc, backup.Settings(ctx, st.Settings()),
-		func() (recoveryclient.Payload, error) { return backup.Collect(ctx, cfg, appversion.String()) }, client)
+	return backup.Run(ctx, cfg, rc, st.Settings(), client)
 }
 
-// backupLoop polls the admin's schedule once a minute; a change in the UI needs no restart
-// and a restart never loses its place, the last attempt is in the database. The wait honours
-// shutdown; the run does not, and done is closed only once the loop is between runs, so
-// SIGTERM cannot land between KyRecovery storing a capsule and the receipt being written.
-func backupLoop(ctx context.Context, cfg *config.Config, st store.Store, done chan<- struct{}) {
+// backupLoop polls the admin's schedule every tick; a change in the UI needs no restart and a
+// restart never loses its place, the last attempt is in the database. Cancelling ctx stops the
+// wait and interrupts a run in flight (backup.Run); done is closed once the loop has returned,
+// after the interrupted run's outcome is recorded.
+func backupLoop(ctx context.Context, cfg *config.Config, st store.Store, client recoveryclient.Depositor, tick time.Duration, done chan<- struct{}) {
 	defer close(done)
 	// Built once: a deployment key that cannot seal is a configuration fault, not a run that
 	// might succeed next minute. Run never gets far enough to stamp the attempt, so retrying
@@ -279,8 +281,7 @@ func backupLoop(ctx context.Context, cfg *config.Config, st store.Store, done ch
 		log.Printf("[BACKUP] scheduler disabled: %v", err)
 		return
 	}
-	client := recoveryclient.NewClient(recoveryclient.Options{AllowPrivate: cfg.Backup.AllowPrivateRecovery})
-	ticker := time.NewTicker(time.Minute)
+	ticker := time.NewTicker(tick)
 	defer ticker.Stop()
 	for {
 		select {
@@ -296,13 +297,11 @@ func backupLoop(ctx context.Context, cfg *config.Config, st store.Store, done ch
 		if !on || time.Now().Before(next) {
 			continue
 		}
-		runCtx := context.WithoutCancel(ctx)
-		res, err := recoveryclient.Run(runCtx, rc, backup.Settings(runCtx, st.Settings()),
-			func() (recoveryclient.Payload, error) { return backup.Collect(runCtx, cfg, appversion.String()) }, client)
+		res, err := backup.Run(ctx, cfg, rc, st.Settings(), client)
 		if errors.Is(err, recoveryclient.ErrNotPaired) || errors.Is(err, recoveryclient.ErrNoDestination) {
 			continue // never configured; nothing to report
 		}
-		recordRun(runCtx, st, "system", res, err)
+		recordRun(context.WithoutCancel(ctx), st, "system", res, err)
 	}
 }
 
