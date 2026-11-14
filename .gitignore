@@ -1,5 +1,6 @@
 # Binaries (root build output; web/dist is committed on purpose, CI checks it)
 /kypulse
+/server
 *.exe
 *.dll
 *.so

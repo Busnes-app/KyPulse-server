@@ -17,6 +17,9 @@
 **/coverage.out
 **/node_modules
 /kypulse
+/kypulse-send
+/server
+/.browser/
 .claude/
 .codex/
 .superpowers/
