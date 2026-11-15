@@ -3,13 +3,15 @@
 // Owns a disposable data directory and port 5392 (hold /tmp/ky-integ-test.lock). Targets are
 // seeded straight into the owned SQLite database with a recent poll and an hour's interval, so
 // nothing is dialled and the screens show fixed certificate states.
-import { chromium } from '@playwright/test';
+import { createRequire } from 'node:module';
 import { mkdtemp, rm, mkdir } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { spawn, execFileSync } from 'node:child_process';
 import { DatabaseSync } from 'node:sqlite';
 import { fileURLToPath } from 'node:url';
+
+const { chromium } = createRequire(fileURLToPath(new URL('../../web/package.json', import.meta.url)))('@playwright/test');
 
 const [binary, phase] = process.argv.slice(2);
 const out = fileURLToPath(new URL(`./screenshots/${phase}/`, import.meta.url));
