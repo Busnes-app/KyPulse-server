@@ -5,6 +5,7 @@ import { LicenseFooter } from './components/LicenseFooter';
 import { PageBanner } from './components/PageHead';
 import { Status } from './pages/Status';
 import { Alerts } from './pages/Alerts';
+import { Certificates } from './pages/Certificates';
 import { Logs } from './pages/Logs';
 import { Activity } from './pages/Activity';
 import { AppDetail } from './pages/AppDetail';
@@ -91,7 +92,7 @@ export const App: React.FC = () => {
     if (!signedIn) return;
     const moved = movedRoute(route.path);
     if (moved) { redirect(moved); return; }
-    const known = ['status', 'alerts', 'apps', 'settings', 'backup', 'logs', 'activity'];
+    const known = ['status', 'alerts', 'certificates', 'apps', 'settings', 'backup', 'logs', 'activity'];
     const head = route.parts[0] ?? 'status';
     const badSection = head === 'settings' && (route.parts.length !== 2 || !settingsSections.some((s) => s.id === route.parts[1]));
     if (!known.includes(head) || (['backup', 'logs', 'activity'].includes(head) && !isAdmin) || (head === 'apps' && route.parts.length !== 2) || badSection) redirect('/status');
@@ -165,6 +166,7 @@ export const App: React.FC = () => {
         <PageBanner.Provider value={<AlertBar status={status} loading={statusLoading} isAdmin={isAdmin} />}>
         {head === 'status' && <Status user={user} onChanged={refreshStatus} />}
         {head === 'alerts' && <Alerts user={user} />}
+        {head === 'certificates' && <Certificates user={user} />}
         {head === 'apps' && route.parts[1] && <AppDetail key={`${route.parts[1]}:${user.id}:${user.role}`} id={route.parts[1]} user={user} onChanged={refreshStatus} />}
         {head === 'logs' && isAdmin && <Logs user={user} />}
         {head === 'activity' && isAdmin && <Activity user={user} />}

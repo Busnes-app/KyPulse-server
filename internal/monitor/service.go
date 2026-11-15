@@ -96,11 +96,15 @@ func (s *Service) remember(id string, b Beat) {
 // instead of sending.
 type delivery struct {
 	targetID   string
+	lane       string // "" for health, certPrefix for the certificate: each lane keeps its own order
 	eventID    int64
 	msg        notify.Message
 	done       chan struct{}
 	persistent bool // offboarding alert survives cancellation for the next process
 }
+
+// key holds one overflow message per target and lane.
+func (d delivery) key() string { return d.targetID + "/" + d.lane }
 
 func (s *Service) init() {
 	s.once.Do(func() {
@@ -217,9 +221,18 @@ func (s *Service) now() time.Time {
 // Track decodes a target's stored track and overlays the silence columns, which are the
 // source of truth for silencing: they are never carried in the track JSON.
 func Track(t *store.Target) alerts.Track {
+	return overlay(t, t.TrackJSON)
+}
+
+// CertTrack is Track for the certificate's track. The target's silence covers both.
+func CertTrack(t *store.Target) alerts.Track {
+	return overlay(t, t.CertTrack)
+}
+
+func overlay(t *store.Target, raw string) alerts.Track {
 	var tr alerts.Track
-	if t.TrackJSON != "" {
-		_ = json.Unmarshal([]byte(t.TrackJSON), &tr)
+	if raw != "" {
+		_ = json.Unmarshal([]byte(raw), &tr)
 	}
 	if tr.State == "" {
 		tr.State, tr.Since = alerts.Pending, t.CreatedAt
@@ -248,7 +261,7 @@ func (s *Service) Due(ctx context.Context, now time.Time) ([]poller.Target, erro
 		if t.LastPolledAt != nil && now.Before(t.LastPolledAt.Add(interval)) {
 			continue
 		}
-		due = append(due, poller.Target{ID: t.ID, Name: t.Name, URL: t.URL})
+		due = append(due, poller.Target{ID: t.ID, Name: t.Name, URL: t.URL, SNI: t.SNI, AllowLocal: t.AllowLocal})
 	}
 	return due, nil
 }
@@ -260,14 +273,29 @@ func (s *Service) Observe(ctx context.Context, o poller.Observation) {
 	if err != nil {
 		return // deleted while in flight
 	}
-	if tg.URL != o.Target.URL {
-		return // the URL was edited while this poll was in flight: it says nothing about the new one
+	if tg.URL != o.Target.URL || tg.SNI != o.Target.SNI {
+		return // edited while this poll was in flight: it says nothing about the new endpoint
 	}
 	before := Track(tg)
 	track, tr := alerts.Next(before, o.Result, o.At)
 	decision, track := alerts.Decide(track, tr, o.At)
 
-	if before.UntilFixed && !track.UntilFixed {
+	// The certificate track runs while the target has ever shown a certificate, so its
+	// reminders go on through a poll that got none (a refused connection).
+	certTrack := CertTrack(tg)
+	certOn := o.Result.Cert != nil || tg.CertTrack != ""
+	var certTr *alerts.Transition
+	var certDecision alerts.Decision
+	if o.Result.Cert != nil {
+		warn, critical := Thresholds(ctx, s.Store.Settings())
+		level, cause := alerts.CertLevel(o.Result.Cert, o.At, warn, critical)
+		certTrack, certTr = alerts.NextCert(certTrack, level, cause, o.At)
+	}
+	if certOn {
+		certDecision, certTrack = alerts.Decide(certTrack, certTr, o.At)
+	}
+
+	if before.UntilFixed && (!track.UntilFixed || certOn && !certTrack.UntilFixed) {
 		// Recovery cleared the silence: the columns are the source of truth, so clear them
 		// too, unless an admin set a new silence since this poll read the row.
 		if err := s.Store.Targets().ClearUntilFixed(ctx, tg.ID); err != nil {
@@ -276,12 +304,19 @@ func (s *Service) Observe(ctx context.Context, o poller.Observation) {
 	}
 	// The silence columns own this state; never let a stale copy ride along in the JSON.
 	track.SilencedUntil, track.UntilFixed = time.Time{}, false
+	certTrack.SilencedUntil, certTrack.UntilFixed = time.Time{}, false
+	certJSON := ""
+	if certOn {
+		b, _ := json.Marshal(certTrack)
+		certJSON = string(b)
+	}
 
 	trackJSON, _ := json.Marshal(track)
 	resultJSON, _ := json.Marshal(o.Result)
 	err = s.Store.Targets().RecordPoll(ctx, tg.ID, store.PollUpdate{
 		URL: o.Target.URL, PolledAt: o.At, LatencyMS: o.Latency.Milliseconds(), LastResult: string(resultJSON),
 		TrackJSON: string(trackJSON), State: string(track.State), StateSince: track.Since, Cause: track.Cause,
+		SNI: o.Target.SNI, CertTrack: certJSON,
 	})
 	if err != nil {
 		if errors.Is(err, store.ErrNotFound) {
@@ -291,19 +326,34 @@ func (s *Service) Observe(ctx context.Context, o poller.Observation) {
 		return
 	}
 	s.remember(tg.ID, Beat{At: o.At, State: o.Result.State, LatencyMS: o.Latency.Milliseconds()})
-	// Each transition and each flapping notice is its own event; the last one recorded is what
-	// a send reports. Without either, a send is a reminder about the current state.
+	s.emit(ctx, tg, o.At, tr, decision, track, "")
+	if certOn {
+		s.emit(ctx, tg, o.At, certTr, certDecision, certTrack, certPrefix)
+	}
+}
+
+// certPrefix names certificate states in events and messages (cert_ok, cert_warning, …), so
+// they never read as health states: TransitionsSince and the uptime measure skip them.
+const certPrefix = "cert_"
+
+// emit records a track's transition or notice and queues what decision says to send. Each
+// transition and each flapping notice is its own event; the last one recorded is what a send
+// reports. Without either, a send is a reminder about the current state.
+func (s *Service) emit(ctx context.Context, tg *store.Target, at time.Time, tr *alerts.Transition, decision alerts.Decision, track alerts.Track, prefix string) {
 	var ev *store.TargetEvent
 	record := func(from, to alerts.State, cause string) bool {
-		ev = &store.TargetEvent{TargetID: tg.ID, At: o.At, FromState: string(from), ToState: string(to), Cause: cause, Reminder: decision.Reminder}
+		ev = &store.TargetEvent{TargetID: tg.ID, At: at, FromState: prefix + string(from), ToState: prefix + string(to), Cause: cause, Reminder: decision.Reminder}
 		if err := s.Store.Targets().RecordEvent(ctx, ev); err != nil {
 			s.Logger.Log(ctx, evPollStoreError, logging.TargetID(tg.ID), logging.Err(err))
 			return false
 		}
 		return true
 	}
-	if tr != nil {
-		s.Logger.Log(ctx, evStateChanged, logging.TargetID(tg.ID), fState(string(tr.To)), fPrevious(string(tr.From)), logging.ReasonCode(tr.Cause))
+	// A fresh certificate settling on ok is not news; a fresh health target's first ok is
+	// kept, as before.
+	quiet := prefix != "" && tr != nil && tr.From == alerts.Pending && tr.To == alerts.OK
+	if tr != nil && !quiet {
+		s.Logger.Log(ctx, evStateChanged, logging.TargetID(tg.ID), fState(prefix+string(tr.To)), fPrevious(prefix+string(tr.From)), logging.ReasonCode(tr.Cause))
 		if !record(tr.From, tr.To, tr.Cause) {
 			return
 		}
@@ -315,12 +365,12 @@ func (s *Service) Observe(ctx context.Context, o poller.Observation) {
 	} else if tr == nil && decision.Send && !record(track.State, track.State, track.Cause) {
 		return
 	}
-	if !decision.Send {
+	if !decision.Send || ev == nil {
 		return
 	}
 	msg := notify.Message{App: tg.Name, State: ev.ToState, Previous: ev.FromState, Reason: ev.Cause,
-		Time: o.At, URL: s.AppURL + "/#/apps/" + tg.ID, Reminder: decision.Reminder}
-	s.enqueue(ctx, delivery{targetID: tg.ID, eventID: ev.ID, msg: msg})
+		Time: at, URL: s.AppURL + "/#/apps/" + tg.ID, Reminder: decision.Reminder}
+	s.enqueue(ctx, delivery{targetID: tg.ID, lane: prefix, eventID: ev.ID, msg: msg})
 }
 
 // enqueue never blocks a poll worker. On a full queue a reminder is dropped, but any other
@@ -331,12 +381,12 @@ func (s *Service) enqueue(ctx context.Context, d delivery) {
 	s.init()
 	var dropped *delivery
 	s.mu.Lock()
-	held, isHeld := s.overflow[d.targetID]
+	held, isHeld := s.overflow[d.key()]
 	switch {
 	case isHeld && d.msg.Reminder:
 		dropped = &d
 	case isHeld:
-		s.overflow[d.targetID], dropped = d, &held // the newer message supersedes it
+		s.overflow[d.key()], dropped = d, &held // the newer message supersedes it
 	default:
 		select {
 		case s.queue <- d:
@@ -344,7 +394,7 @@ func (s *Service) enqueue(ctx context.Context, d delivery) {
 			if d.msg.Reminder {
 				dropped = &d
 			} else {
-				s.overflow[d.targetID] = d
+				s.overflow[d.key()] = d
 			}
 		}
 	}

@@ -106,8 +106,13 @@ type Target struct {
 	LastResult    string     `json:"last_result"` // poller.Result JSON, "" before the first poll
 	LastPolledAt  *time.Time `json:"last_polled_at,omitempty"`
 	LastLatencyMS int64      `json:"last_latency_ms"`
-	CreatedAt     time.Time  `json:"created_at"`
-	UpdatedAt     time.Time  `json:"updated_at"`
+	// SNI and AllowLocal configure a TLS-only target (URL tls://host:port). CertTrack is the
+	// certificate's alerts.Track JSON, owned by internal/monitor like TrackJSON.
+	SNI        string    `json:"sni,omitempty"`
+	AllowLocal bool      `json:"allow_local"`
+	CertTrack  string    `json:"-"`
+	CreatedAt  time.Time `json:"created_at"`
+	UpdatedAt  time.Time `json:"updated_at"`
 }
 
 // TargetEvent is one transition or reminder, the unit the Alerts tab lists.
@@ -133,4 +138,6 @@ type PollUpdate struct {
 	State      string
 	StateSince time.Time
 	Cause      string
+	SNI        string // like URL: the row is updated only while it is still the target's SNI
+	CertTrack  string
 }

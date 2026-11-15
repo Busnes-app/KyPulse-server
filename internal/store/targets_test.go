@@ -246,3 +246,33 @@ func TestRecordPollRefusesAnEditedURL(t *testing.T) {
 		t.Fatal("stale poll stamped the target")
 	}
 }
+
+// A TLS target keeps its SNI and local permission; a new SNI resets only the certificate track.
+func TestTLSTargetColumns(t *testing.T) {
+	ctx := context.Background()
+	st := newTestStore(t)
+	tg := &store.Target{ID: "e", Name: "edge", URL: "tls://edge.lan:443", SNI: "edge.lan", AllowLocal: true, IntervalSec: 30, Enabled: true}
+	if err := st.Targets().CreateTarget(ctx, tg); err != nil {
+		t.Fatal(err)
+	}
+	now := time.Now().UTC()
+	if err := st.Targets().RecordPoll(ctx, "e", store.PollUpdate{URL: tg.URL, SNI: "edge.lan", PolledAt: now, State: "ok", StateSince: now,
+		TrackJSON: `{"state":"ok"}`, CertTrack: `{"state":"warning"}`}); err != nil {
+		t.Fatal(err)
+	}
+	got, _ := st.Targets().GetTarget(ctx, "e")
+	if got.SNI != "edge.lan" || !got.AllowLocal || got.CertTrack != `{"state":"warning"}` {
+		t.Fatalf("stored %+v", got)
+	}
+	if err := st.Targets().RecordPoll(ctx, "e", store.PollUpdate{URL: tg.URL, SNI: "old.lan", PolledAt: now, State: "ok", StateSince: now}); !errors.Is(err, store.ErrNotFound) {
+		t.Fatalf("stale SNI recorded: %v", err)
+	}
+	tg.SNI, tg.AllowLocal = "proxy.lan", false
+	if err := st.Targets().UpdateTarget(ctx, tg); err != nil {
+		t.Fatal(err)
+	}
+	got, _ = st.Targets().GetTarget(ctx, "e")
+	if got.SNI != "proxy.lan" || got.AllowLocal || got.CertTrack != "" || got.TrackJSON == "" {
+		t.Fatalf("after SNI edit %+v", got)
+	}
+}

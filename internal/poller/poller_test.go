@@ -2,6 +2,8 @@ package poller
 
 import (
 	"context"
+	"crypto/tls"
+	"crypto/x509"
 	"errors"
 	"fmt"
 	"sync"
@@ -16,6 +18,7 @@ type fakeGetter struct {
 	calls     map[string]int
 	release   chan struct{} // when non-nil, Get blocks until closed
 	ignoreCtx bool          // a Get that does not honour cancellation, like a stuck dial
+	state     *tls.ConnectionState
 }
 
 func (g *fakeGetter) Get(ctx context.Context, url string) (*egress.Response, error) {
@@ -39,6 +42,22 @@ func (g *fakeGetter) Get(ctx context.Context, url string) (*egress.Response, err
 		return nil, errors.New("dial tcp: connection refused")
 	}
 	return &egress.Response{StatusCode: 200, Body: []byte(`{"status":"ok"}`)}, nil
+}
+
+func (g *fakeGetter) Handshake(_ context.Context, hostport, _ string, _ bool) (*tls.ConnectionState, error) {
+	g.mu.Lock()
+	if g.calls == nil {
+		g.calls = map[string]int{}
+	}
+	g.calls["tls://"+hostport]++
+	g.mu.Unlock()
+	switch hostport {
+	case "edge.lan:443":
+		return g.state, nil
+	case "bad-cert.lan:443":
+		return nil, &tls.CertificateVerificationError{UnverifiedCertificates: g.state.PeerCertificates, Err: x509.UnknownAuthorityError{}}
+	}
+	return nil, errors.New("dial tcp: connection refused")
 }
 
 func (g *fakeGetter) count(url string) int {
@@ -160,6 +179,10 @@ type getterFunc func(context.Context, string) (*egress.Response, error)
 
 func (f getterFunc) Get(ctx context.Context, url string) (*egress.Response, error) {
 	return f(ctx, url)
+}
+
+func (f getterFunc) Handshake(context.Context, string, string, bool) (*tls.ConnectionState, error) {
+	return nil, errors.New("unused")
 }
 
 func TestRunStopsWithContextAfterDrainingPolls(t *testing.T) {

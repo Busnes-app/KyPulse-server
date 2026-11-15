@@ -2,6 +2,11 @@ package poller
 
 import (
 	"context"
+	"crypto/tls"
+	"errors"
+	"net"
+	"net/url"
+	"strings"
 	"sync"
 	"time"
 
@@ -12,7 +17,11 @@ import (
 type Target struct {
 	ID   string
 	Name string
-	URL  string
+	URL  string // http(s)://… health URL, or tls://host:port for a TLS-only target
+	// SNI and AllowLocal apply to a TLS-only target: the server name to send (the host when
+	// empty) and the administrator's permission to dial loopback or link-local.
+	SNI        string
+	AllowLocal bool
 }
 
 // Observation is one completed poll, handed to Observe.
@@ -26,6 +35,7 @@ type Observation struct {
 // Getter is the slice of egress.Client the poller uses; a fake stands in for tests.
 type Getter interface {
 	Get(ctx context.Context, url string) (*egress.Response, error)
+	Handshake(ctx context.Context, hostport, serverName string, allowLocal bool) (*tls.ConnectionState, error)
 }
 
 // Poller runs polls on a bounded worker pool, so one slow app never delays the others.
@@ -99,6 +109,39 @@ func (p *Poller) Tick(ctx context.Context, now time.Time) {
 func (p *Poller) poll(ctx context.Context, tg Target) {
 	defer func() { <-p.slots; p.inflight.Delete(tg.ID); p.wg.Done() }()
 	start := time.Now()
-	resp, err := p.Get.Get(ctx, tg.URL)
-	p.Observe(ctx, Observation{Target: tg, Result: Normalize(resp, err), At: start, Latency: time.Since(start)})
+	var res Result
+	if hostport, ok := strings.CutPrefix(tg.URL, TLSScheme); ok {
+		res = p.handshake(ctx, hostport, tg)
+	} else {
+		resp, err := p.Get.Get(ctx, tg.URL)
+		res = Normalize(resp, err)
+		if u, perr := url.Parse(tg.URL); perr == nil && u.Scheme == "https" {
+			var state *tls.ConnectionState
+			if resp != nil {
+				state = resp.TLS
+			}
+			res.Cert = CertOf(state, err, u.Hostname())
+		}
+	}
+	p.Observe(ctx, Observation{Target: tg, Result: res, At: start, Latency: time.Since(start)})
+}
+
+// TLSScheme prefixes a TLS-only target's host:port.
+const TLSScheme = "tls://"
+
+// handshake probes a TLS-only target. Its health is reachability: ok once the server
+// presented a certificate, whatever is wrong with it; the certificate track judges that.
+func (p *Poller) handshake(ctx context.Context, hostport string, tg Target) Result {
+	state, err := p.Get.Handshake(ctx, hostport, tg.SNI, tg.AllowLocal)
+	name := tg.SNI
+	if name == "" {
+		name, _, _ = net.SplitHostPort(hostport)
+	}
+	if c := CertOf(state, err, name); c != nil {
+		return Result{State: OK, Basic: true, Cert: c}
+	}
+	if err == nil {
+		err = errors.New("tls: no certificate")
+	}
+	return Result{State: Down, Cause: egress.Cause(err)}
 }

@@ -372,6 +372,16 @@ DELETE FROM sessions WHERE sso_sid = '' AND user_id IN (SELECT id FROM users WHE
 		SQLite:   `ALTER TABLE sessions ADD COLUMN step_up_at DATETIME;`,
 		Postgres: `ALTER TABLE sessions ADD COLUMN step_up_at TIMESTAMPTZ;`,
 	},
+	// A TLS-only target (url tls://host:port) has an optional SNI and the administrator's
+	// explicit loopback/link-local permission; cert_track is the certificate's alert track.
+	{Version: 15, Name: "tls_certificates",
+		SQLite: `ALTER TABLE targets ADD COLUMN sni TEXT NOT NULL DEFAULT '';
+ALTER TABLE targets ADD COLUMN allow_local INTEGER NOT NULL DEFAULT 0;
+ALTER TABLE targets ADD COLUMN cert_track TEXT NOT NULL DEFAULT '';`,
+		Postgres: `ALTER TABLE targets ADD COLUMN sni TEXT NOT NULL DEFAULT '';
+ALTER TABLE targets ADD COLUMN allow_local BOOLEAN NOT NULL DEFAULT FALSE;
+ALTER TABLE targets ADD COLUMN cert_track TEXT NOT NULL DEFAULT '';`,
+	},
 }
 
 // lockKey is the Postgres session advisory lock Run holds, so replicas starting together

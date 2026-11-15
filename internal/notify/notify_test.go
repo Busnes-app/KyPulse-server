@@ -203,3 +203,22 @@ func TestReasonIsAFixedVocabulary(t *testing.T) {
 		}
 	}
 }
+
+func TestCertificateTitles(t *testing.T) {
+	for _, tc := range []struct {
+		m    Message
+		want string
+	}{
+		{Message{App: "Edge", State: "cert_warning", Previous: "cert_ok"}, "KyPulse: Edge certificate warning"},
+		{Message{App: "Edge", State: "cert_failed", Reminder: true}, "KyPulse: Edge certificate still failed"},
+		{Message{App: "Edge", State: "cert_ok", Previous: "cert_critical"}, "KyPulse: Edge certificate is fine again"},
+	} {
+		if got := tc.m.Title(); got != tc.want {
+			t.Errorf("got %q want %q", got, tc.want)
+		}
+	}
+	r, _ := Build(Config{Preset: Ntfy, URL: "https://ntfy.example/t"}, Message{App: "Edge", State: "cert_critical"})
+	if r.Headers["Priority"] != "5" {
+		t.Errorf("critical certificate priority %s", r.Headers["Priority"])
+	}
+}

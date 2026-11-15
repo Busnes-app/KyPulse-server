@@ -1,6 +1,6 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import {
-  ApiError, getStatus, silenceTarget, sinceLabel, sortTargets, stateLabel, webhookFailing, type StatusSummary, type Target,
+  ApiError, causeLabel, daysLeftLabel, getStatus, stateWord, silenceTarget, sinceLabel, sortTargets, stateLabel, webhookFailing, type StatusSummary, type Target,
 } from './monitor';
 
 function target(over: Partial<Target>): Target {
@@ -70,4 +70,13 @@ describe('monitor client', () => {
     expect(new Headers(init.headers).get('X-CSRF-Token')).toBe('abc');
     expect(init.body).toBe(JSON.stringify({ for: 'until_fixed' }));
   });
+});
+
+it('reads certificate states and causes as words', () => {
+  expect(stateWord('cert_warning')).toBe('Certificate warning');
+  expect(stateWord('cert_ok')).toBe('Certificate OK');
+  expect(causeLabel('cert_untrusted')).toBe('certificate not trusted');
+  expect(causeLabel('status_503')).toBe('HTTP 503');
+  expect(daysLeftLabel(1)).toBe('1 day left');
+  expect(daysLeftLabel(-1)).toBe('expired');
 });

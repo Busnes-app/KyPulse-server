@@ -440,6 +440,8 @@ func (s *Server) routes() {
 	s.mux.HandleFunc("PUT /api/targets/{id}", s.requireAdmin(s.handleUpdateTarget))
 	s.mux.HandleFunc("DELETE /api/targets/{id}", s.requireAdmin(s.handleDeleteTarget))
 	s.mux.HandleFunc("POST /api/targets/{id}/silence", s.requireAdmin(s.handleSilence))
+	s.mux.HandleFunc("GET /api/certificates", s.requireSession(s.handleListCertificates))
+	s.mux.HandleFunc("PUT /api/certificates/thresholds", s.requireAdmin(s.handleSetCertThresholds))
 	s.mux.HandleFunc("GET /api/alerts", s.requireSession(s.handleListAlerts))
 	s.mux.HandleFunc("GET /api/alerts/webhook", s.requireAdmin(s.handleGetWebhook))
 	s.mux.HandleFunc("PUT /api/alerts/webhook", s.requireAdmin(s.handleSetWebhook))
