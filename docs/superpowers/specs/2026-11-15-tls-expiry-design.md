@@ -94,3 +94,5 @@ because KyPulse cannot read its health through it; that is two alerts with two m
 - No STARTTLS (SMTP/IMAP) probing; a TLS target is direct TLS only.
 - No certificate checks for plain `http://` targets.
 - No separate certificate silence: the target's silence covers both of its tracks.
+- Certificate levels do not change an app's health state, the Status counts or the alert
+  bar; they show on Certificates, app detail and Alerts, and go out as webhook messages.
