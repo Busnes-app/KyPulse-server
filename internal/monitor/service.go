@@ -483,7 +483,11 @@ func (s *Service) recordMail(d delivery, err error, onEvent bool) {
 		s.Logger.Log(ctx, evAlertSent, logging.TargetID(d.targetID), fState(d.msg.State))
 	}
 	if onEvent {
-		_ = s.Store.Targets().SetEventNotified(ctx, d.eventID, err == nil, reason)
+		notifyError := reason
+		if d.persistent && reason == "cancelled" {
+			notifyError = "pending" // an offboarding alert cut off by shutdown goes again at restart
+		}
+		_ = s.Store.Targets().SetEventNotified(ctx, d.eventID, err == nil, notifyError)
 	}
 	_ = s.Store.Audit().LogAudit(ctx, &store.AuditRecord{UserID: "system", Action: action, Resource: d.targetID, Details: details})
 }
