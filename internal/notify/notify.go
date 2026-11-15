@@ -64,6 +64,15 @@ type Message struct {
 
 // Title is the one-line summary every preset uses.
 func (m Message) Title() string {
+	if level, ok := strings.CutPrefix(m.State, "cert_"); ok && !m.Test {
+		switch {
+		case m.Reminder:
+			return fmt.Sprintf("KyPulse: %s certificate still %s", m.App, level)
+		case level == "ok":
+			return fmt.Sprintf("KyPulse: %s certificate is fine again", m.App)
+		}
+		return fmt.Sprintf("KyPulse: %s certificate %s", m.App, level)
+	}
 	switch {
 	case m.Test:
 		return "KyPulse: test alert"
@@ -73,6 +82,12 @@ func (m Message) Title() string {
 		return fmt.Sprintf("KyPulse: %s recovered", m.App)
 	}
 	return fmt.Sprintf("KyPulse: %s is %s", m.App, m.State)
+}
+
+// urgent is a state that needs someone now: an app down, or a certificate failing or about
+// to.
+func (m Message) urgent() bool {
+	return m.State == "down" || m.State == "cert_failed" || m.State == "cert_critical"
 }
 
 func (m Message) text() string {
@@ -99,7 +114,7 @@ func Build(c Config, m Message) (Request, error) {
 	case Ntfy:
 		h["Title"] = m.Title()
 		h["Priority"] = "3"
-		if m.State == "down" && !m.Reminder {
+		if m.urgent() && !m.Reminder {
 			h["Priority"] = "5"
 		}
 		if c.Token != "" {
@@ -111,7 +126,7 @@ func Build(c Config, m Message) (Request, error) {
 			h["X-Gotify-Key"] = c.Token
 		}
 		prio := 5
-		if m.State == "down" {
+		if m.urgent() {
 			prio = 8
 		}
 		u, err := url.Parse(c.URL)

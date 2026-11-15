@@ -33,8 +33,9 @@ func (t *targetStore) CreateTarget(ctx context.Context, tg *Target) error {
 	q := t.store.rebind(`
 INSERT INTO targets (
     id, name, url, interval_sec, enabled, container, state, state_since, cause,
-    silenced_until, until_fixed, track_json, last_result, last_polled_at, last_latency_ms, created_at, updated_at
-) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+    silenced_until, until_fixed, track_json, last_result, last_polled_at, last_latency_ms, created_at, updated_at,
+    sni, allow_local, cert_track
+) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
 `)
 	var lastPolled, silencedUntil sql.NullTime
 	if tg.LastPolledAt != nil {
@@ -46,6 +47,7 @@ INSERT INTO targets (
 	_, err := t.store.db.ExecContext(ctx, q,
 		tg.ID, tg.Name, tg.URL, tg.IntervalSec, tg.Enabled, tg.Container, tg.State, tg.StateSince, tg.Cause,
 		silencedUntil, tg.UntilFixed, tg.TrackJSON, tg.LastResult, lastPolled, tg.LastLatencyMS, tg.CreatedAt, tg.UpdatedAt,
+		tg.SNI, tg.AllowLocal, tg.CertTrack,
 	)
 	if err != nil {
 		if strings.Contains(err.Error(), "UNIQUE") || strings.Contains(err.Error(), "duplicate key") {
@@ -62,6 +64,7 @@ func (t *targetStore) scanTarget(row interface{ Scan(...any) error }) (*Target, 
 	err := row.Scan(
 		&tg.ID, &tg.Name, &tg.URL, &tg.IntervalSec, &tg.Enabled, &tg.Container, &tg.State, &tg.StateSince, &tg.Cause,
 		&silencedUntil, &tg.UntilFixed, &tg.TrackJSON, &tg.LastResult, &lastPolled, &tg.LastLatencyMS, &tg.CreatedAt, &tg.UpdatedAt,
+		&tg.SNI, &tg.AllowLocal, &tg.CertTrack,
 	)
 	if err != nil {
 		if errorsIs(err, sql.ErrNoRows) {
@@ -79,7 +82,8 @@ func (t *targetStore) scanTarget(row interface{ Scan(...any) error }) (*Target, 
 }
 
 const targetColumns = `id, name, url, interval_sec, enabled, container, state, state_since, cause,
-       silenced_until, until_fixed, track_json, last_result, last_polled_at, last_latency_ms, created_at, updated_at`
+       silenced_until, until_fixed, track_json, last_result, last_polled_at, last_latency_ms, created_at, updated_at,
+       sni, allow_local, cert_track`
 
 func (t *targetStore) GetTarget(ctx context.Context, id string) (*Target, error) {
 	q := t.store.rebind(`SELECT ` + targetColumns + ` FROM targets WHERE id = ?`)
@@ -112,6 +116,7 @@ func (t *targetStore) UpdateTarget(ctx context.Context, tg *Target) error {
 	// SET expressions read the old row, so "url <> ?" compares against the stored URL.
 	q := t.store.rebind(`UPDATE targets SET
     track_json = CASE WHEN url <> ? THEN '' ELSE track_json END,
+    cert_track = CASE WHEN url <> ? OR sni <> ? THEN '' ELSE cert_track END,
     last_result = CASE WHEN url <> ? THEN '' ELSE last_result END,
     last_polled_at = CASE WHEN url <> ? THEN NULL ELSE last_polled_at END,
     last_latency_ms = CASE WHEN url <> ? THEN 0 ELSE last_latency_ms END,
@@ -119,10 +124,10 @@ func (t *targetStore) UpdateTarget(ctx context.Context, tg *Target) error {
     state_since = CASE WHEN url <> ? THEN ? ELSE state_since END,
     cause = CASE WHEN url <> ? THEN '' ELSE cause END,
     until_fixed = CASE WHEN url <> ? THEN FALSE ELSE until_fixed END,
-    name = ?, url = ?, interval_sec = ?, enabled = ?, container = ?, updated_at = ? WHERE id = ?`)
+    name = ?, url = ?, interval_sec = ?, enabled = ?, container = ?, sni = ?, allow_local = ?, updated_at = ? WHERE id = ?`)
 	u := tg.URL
-	res, err := t.store.db.ExecContext(ctx, q, u, u, u, u, u, u, tg.UpdatedAt, u, u,
-		tg.Name, tg.URL, tg.IntervalSec, tg.Enabled, tg.Container, tg.UpdatedAt, tg.ID)
+	res, err := t.store.db.ExecContext(ctx, q, u, u, tg.SNI, u, u, u, u, u, tg.UpdatedAt, u, u,
+		tg.Name, tg.URL, tg.IntervalSec, tg.Enabled, tg.Container, tg.SNI, tg.AllowLocal, tg.UpdatedAt, tg.ID)
 	if err != nil {
 		if strings.Contains(err.Error(), "UNIQUE") || strings.Contains(err.Error(), "duplicate key") {
 			return ErrAlreadyExists
@@ -176,11 +181,11 @@ func (t *targetStore) DeleteTarget(ctx context.Context, id string) error {
 func (t *targetStore) RecordPoll(ctx context.Context, id string, u PollUpdate) error {
 	q := t.store.rebind(`
 UPDATE targets SET last_polled_at = ?, last_latency_ms = ?, last_result = ?, track_json = ?,
-    state = ?, state_since = ?, cause = ?, updated_at = ?
-WHERE id = ? AND url = ?
+    state = ?, state_since = ?, cause = ?, cert_track = ?, updated_at = ?
+WHERE id = ? AND url = ? AND sni = ?
 `)
 	res, err := t.store.db.ExecContext(ctx, q, u.PolledAt, u.LatencyMS, u.LastResult, u.TrackJSON,
-		u.State, u.StateSince, u.Cause, time.Now().UTC(), id, u.URL)
+		u.State, u.StateSince, u.Cause, u.CertTrack, time.Now().UTC(), id, u.URL, u.SNI)
 	if err != nil {
 		return err
 	}

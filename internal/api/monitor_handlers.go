@@ -5,11 +5,13 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"net"
 	"net/http"
 	"net/url"
 	"regexp"
 	"sort"
 	"strconv"
+	"strings"
 	"time"
 
 	"github.com/Busnes-app/kypulse-server/internal/alerts"
@@ -32,7 +34,12 @@ type targetInput struct {
 	IntervalSec int    `json:"interval_sec"`
 	Enabled     *bool  `json:"enabled"` // nil on create means true
 	Container   string `json:"container"`
+	SNI         string `json:"sni"`         // TLS-only targets
+	AllowLocal  bool   `json:"allow_local"` // TLS-only targets: admit loopback and link-local
 }
+
+// sniRe is a DNS name: dot-separated labels of letters, digits and inner hyphens.
+var sniRe = regexp.MustCompile(`^(?i)[a-z0-9]([a-z0-9-]{0,61}[a-z0-9])?(\.[a-z0-9]([a-z0-9-]{0,61}[a-z0-9])?)*$`)
 
 // validateTargetInput checks an admin's target write. Health targets may always be plain
 // http; KYPULSE_ALERT_ALLOW_HTTP gates only the outbound webhook.
@@ -40,8 +47,20 @@ func validateTargetInput(in targetInput) error {
 	if !targetNameRe.MatchString(in.Name) {
 		return errors.New("name must be 1-64 characters, starting with a letter or digit")
 	}
-	if err := egress.ValidateURL(in.URL, true); err != nil {
-		return err
+	if hostport, ok := strings.CutPrefix(in.URL, poller.TLSScheme); ok {
+		if err := egress.ValidateHostPort(hostport, in.AllowLocal); err != nil {
+			return err
+		}
+		if in.SNI != "" && (len(in.SNI) > 253 || !sniRe.MatchString(in.SNI) || net.ParseIP(in.SNI) != nil) {
+			return errors.New("sni must be a DNS name")
+		}
+	} else {
+		if in.SNI != "" || in.AllowLocal {
+			return errors.New("sni and allow_local apply only to a tls:// target")
+		}
+		if err := egress.ValidateURL(in.URL, true); err != nil {
+			return err
+		}
 	}
 	if in.IntervalSec != 0 && (in.IntervalSec < 10 || in.IntervalSec > 3600) {
 		return errors.New("interval_sec must be between 10 and 3600 seconds")
@@ -64,6 +83,14 @@ func targetView(t *store.Target) map[string]any {
 		_ = json.Unmarshal([]byte(t.LastResult), &res)
 	}
 	out["basic"] = res.Basic
+	out["cert"] = res.Cert
+	if t.CertTrack != "" {
+		ct := monitor.CertTrack(t)
+		out["cert_state"], out["cert_cause"], out["cert_since"] = ct.State, ct.Cause, ct.Since
+	}
+	if res.Cert != nil {
+		out["cert_days_left"] = alerts.DaysLeft(res.Cert.NotAfter, time.Now())
+	}
 	return out
 }
 
@@ -187,14 +214,15 @@ func (s *Server) handleCreateTarget(w http.ResponseWriter, r *http.Request) {
 		IntervalSec: in.IntervalSec,
 		Enabled:     enabled,
 		Container:   in.Container,
+		SNI:         in.SNI,
+		AllowLocal:  in.AllowLocal,
 	}
 	if err := s.store.Targets().CreateTarget(r.Context(), t); err != nil {
 		s.writeTargetError(w, err)
 		return
 	}
 	actor := s.actorID(r)
-	s.audit(r.Context(), actor, r, "admin.target_create", t.ID,
-		fmt.Sprintf("name=%s url=%s", auditValue(t.Name), auditValue(t.URL)))
+	s.audit(r.Context(), actor, r, "admin.target_create", t.ID, targetAudit(t))
 	s.writeJSON(w, http.StatusCreated, map[string]any{"target": targetView(t)})
 }
 
@@ -221,16 +249,28 @@ func (s *Server) handleUpdateTarget(w http.ResponseWriter, r *http.Request) {
 	if in.Enabled != nil {
 		enabled = *in.Enabled
 	}
-	existing.Name, existing.URL, existing.IntervalSec, existing.Enabled, existing.Container =
-		in.Name, in.URL, in.IntervalSec, enabled, in.Container
+	existing.Name, existing.URL, existing.IntervalSec, existing.Enabled, existing.Container, existing.SNI, existing.AllowLocal =
+		in.Name, in.URL, in.IntervalSec, enabled, in.Container, in.SNI, in.AllowLocal
 	if err := s.store.Targets().UpdateTarget(r.Context(), existing); err != nil {
 		s.writeTargetError(w, err)
 		return
 	}
 	actor := s.actorID(r)
-	s.audit(r.Context(), actor, r, "admin.target_update", id,
-		fmt.Sprintf("name=%s url=%s", auditValue(existing.Name), auditValue(existing.URL)))
+	s.audit(r.Context(), actor, r, "admin.target_update", id, targetAudit(existing))
 	s.writeJSON(w, http.StatusOK, map[string]any{"target": targetView(existing)})
+}
+
+// targetAudit names what a target write set; a TLS target's local permission is recorded
+// because it widens the egress policy.
+func targetAudit(t *store.Target) string {
+	d := fmt.Sprintf("name=%s url=%s", auditValue(t.Name), auditValue(t.URL))
+	if t.SNI != "" {
+		d += " sni=" + auditValue(t.SNI)
+	}
+	if t.AllowLocal {
+		d += " allow_local=true"
+	}
+	return d
 }
 
 func (s *Server) handleDeleteTarget(w http.ResponseWriter, r *http.Request) {

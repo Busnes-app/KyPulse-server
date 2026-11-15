@@ -15,6 +15,7 @@ import (
 	"net"
 	"net/http"
 	"net/url"
+	"strconv"
 	"strings"
 	"time"
 )
@@ -43,6 +44,7 @@ type Response struct {
 	StatusCode int
 	Header     http.Header
 	Body       []byte
+	TLS        *tls.ConnectionState // the handshake that carried it; nil over plain http
 }
 
 type lookupFunc func(ctx context.Context, network, host string) ([]net.IP, error)
@@ -55,8 +57,12 @@ const fallbackDial = 2 * time.Second
 // Client is safe for concurrent use.
 type Client struct {
 	http      *http.Client
+	tls       *tls.Config // shared with the transport; Handshake clones it
 	allowHTTP bool
 	maxBody   int64
+	timeout   time.Duration
+	lookup    lookupFunc
+	dial      dialFunc
 }
 
 // New builds a Client with the system resolver.
@@ -71,58 +77,61 @@ func newClient(o Options, lookup lookupFunc, dial dialFunc) *Client {
 	if o.MaxBody <= 0 {
 		o.MaxBody = DefaultMaxBody
 	}
+	c := &Client{allowHTTP: o.AllowHTTP, maxBody: o.MaxBody, timeout: o.Timeout, lookup: lookup, dial: dial,
+		tls: &tls.Config{MinVersion: tls.VersionTLS12}}
 	transport := &http.Transport{
-		TLSClientConfig: &tls.Config{MinVersion: tls.VersionTLS12},
+		TLSClientConfig: c.tls,
 		DialContext: func(ctx context.Context, network, address string) (net.Conn, error) {
-			host, port, err := net.SplitHostPort(address)
-			if err != nil {
-				return nil, err
-			}
-			ips, err := lookup(ctx, "ip", host)
-			if err != nil {
-				return nil, err
-			}
-			var allowed []net.IP
-			for _, ip := range ips {
-				if allowedIP(ip) {
-					allowed = append(allowed, ip)
-				}
-			}
-			// Try each allowed address in turn, as the standard dialer would: one dead address
-			// of a multi-homed name must not fail the whole request. The dial context carries no
-			// request deadline, so each attempt but the last is capped at fallbackDial (or its
-			// share of the client timeout, if smaller): one that never answers cannot use the
-			// whole budget before a live address is tried.
-			share := o.Timeout / time.Duration(max(len(allowed), 1))
-			if share > fallbackDial {
-				share = fallbackDial
-			}
-			dialErr := error(ErrRefusedAddress)
-			for i, ip := range allowed {
-				attempt, cancel := ctx, context.CancelFunc(func() {})
-				if i < len(allowed)-1 {
-					attempt, cancel = context.WithTimeout(ctx, share)
-				}
-				conn, err := dial(attempt, network, net.JoinHostPort(ip.String(), port))
-				cancel()
-				if err == nil {
-					return conn, nil
-				}
-				dialErr = err
-				if ctx.Err() != nil {
-					break
-				}
-			}
-			return nil, dialErr
+			return c.guardedDial(ctx, network, address, allowedIP)
 		},
 	}
-	return &Client{
-		http:      &http.Client{Timeout: o.Timeout, Transport: transport, CheckRedirect: refuseRedirect},
-		allowHTTP: o.AllowHTTP,
-		maxBody:   o.MaxBody,
-	}
+	c.http = &http.Client{Timeout: o.Timeout, Transport: transport, CheckRedirect: refuseRedirect}
+	return c
 }
 
+// guardedDial resolves address and dials only the addresses allow admits.
+func (c *Client) guardedDial(ctx context.Context, network, address string, allow func(net.IP) bool) (net.Conn, error) {
+	host, port, err := net.SplitHostPort(address)
+	if err != nil {
+		return nil, err
+	}
+	ips, err := c.lookup(ctx, "ip", host)
+	if err != nil {
+		return nil, err
+	}
+	var allowed []net.IP
+	for _, ip := range ips {
+		if allow(ip) {
+			allowed = append(allowed, ip)
+		}
+	}
+	// Try each allowed address in turn, as the standard dialer would: one dead address
+	// of a multi-homed name must not fail the whole request. The dial context carries no
+	// request deadline, so each attempt but the last is capped at fallbackDial (or its
+	// share of the client timeout, if smaller): one that never answers cannot use the
+	// whole budget before a live address is tried.
+	share := c.timeout / time.Duration(max(len(allowed), 1))
+	if share > fallbackDial {
+		share = fallbackDial
+	}
+	dialErr := error(ErrRefusedAddress)
+	for i, ip := range allowed {
+		attempt, cancel := ctx, context.CancelFunc(func() {})
+		if i < len(allowed)-1 {
+			attempt, cancel = context.WithTimeout(ctx, share)
+		}
+		conn, err := c.dial(attempt, network, net.JoinHostPort(ip.String(), port))
+		cancel()
+		if err == nil {
+			return conn, nil
+		}
+		dialErr = err
+		if ctx.Err() != nil {
+			break
+		}
+	}
+	return nil, dialErr
+}
 func refuseRedirect(*http.Request, []*http.Request) error { return ErrRedirect }
 
 // ValidateURL is the check a URL gets when an admin saves it: scheme, host, no credentials,
@@ -184,7 +193,77 @@ func (c *Client) do(ctx context.Context, method, rawURL, contentType string, bod
 	if int64(len(data)) > c.maxBody {
 		return nil, ErrBodyTooLarge
 	}
-	return &Response{StatusCode: resp.StatusCode, Header: resp.Header, Body: data}, nil
+	return &Response{StatusCode: resp.StatusCode, Header: resp.Header, Body: data, TLS: resp.TLS}, nil
+}
+
+// Handshake dials hostport through the address guard, completes one TLS handshake with
+// serverName (the host when empty) and closes without sending application data. allowLocal
+// additionally admits loopback and link-local, never the metadata addresses. A failed
+// verification returns the *tls.CertificateVerificationError, which carries the chain.
+func (c *Client) Handshake(ctx context.Context, hostport, serverName string, allowLocal bool) (*tls.ConnectionState, error) {
+	if err := ValidateHostPort(hostport, allowLocal); err != nil {
+		return nil, err
+	}
+	host, _, _ := net.SplitHostPort(hostport)
+	if serverName == "" {
+		serverName = host
+	}
+	ctx, cancel := context.WithTimeout(ctx, c.timeout)
+	defer cancel()
+	allow := allowedIP
+	if allowLocal {
+		allow = localIP
+	}
+	raw, err := c.guardedDial(ctx, "tcp", hostport, allow)
+	if err != nil {
+		return nil, err
+	}
+	defer raw.Close()
+	cfg := c.tls.Clone()
+	cfg.ServerName = serverName
+	conn := tls.Client(raw, cfg)
+	if err := conn.HandshakeContext(ctx); err != nil {
+		return nil, err
+	}
+	state := conn.ConnectionState()
+	return &state, nil
+}
+
+// ValidateHostPort is the save-time check for a TLS target: a host and a numeric port, and
+// a literal IP judged as the dialer will judge it.
+func ValidateHostPort(hostport string, allowLocal bool) error {
+	host, port, err := net.SplitHostPort(hostport)
+	if err != nil || host == "" || len(host) > 253 || strings.ContainsAny(host, "/@?#% ") {
+		return ErrScheme
+	}
+	if n, err := strconv.Atoi(port); err != nil || n < 1 || n > 65535 {
+		return ErrScheme
+	}
+	if ip := net.ParseIP(host); ip != nil {
+		if allowLocal && !localIP(ip) || !allowLocal && !allowedIP(ip) {
+			return ErrRefusedAddress
+		}
+	}
+	return nil
+}
+
+var metadataIPs = mustCIDRs("169.254.169.254/32", "169.254.170.2/32")
+
+// localIP is allowedIP plus loopback and link-local unicast, for a target an administrator
+// explicitly marked local. Cloud metadata addresses stay refused.
+func localIP(ip net.IP) bool {
+	if allowedIP(ip) {
+		return true
+	}
+	if ip == nil || !(ip.IsLoopback() || ip.IsLinkLocalUnicast()) {
+		return false
+	}
+	for _, n := range metadataIPs {
+		if n.Contains(ip) {
+			return false
+		}
+	}
+	return true
 }
 
 // Cause names why a request failed, in a fixed vocabulary the UI can show and tests can pin.

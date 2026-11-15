@@ -30,6 +30,7 @@ type Result struct {
 	Cause   string               `json:"cause,omitempty"`
 	Service string               `json:"service,omitempty"`
 	Checks  []health.CheckResult `json:"checks,omitempty"`
+	Cert    *Cert                `json:"cert,omitempty"`
 }
 
 // Normalize applies the spec's four rules in order: a ky.health/1 document, a known status

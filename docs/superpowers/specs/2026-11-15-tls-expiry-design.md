@@ -38,12 +38,12 @@ Migration 15 adds three columns to `targets`:
 | `allow_local` | Administrator's explicit loopback/link-local permission (TLS targets only) |
 | `cert_track` | The certificate's `alerts.Track` JSON, owned by `internal/monitor` |
 
-The last observed certificate (`not_after`, `issuer`, `name_match`, `trusted`, `cause`)
-rides in the existing `last_result` JSON as `cert`. A standalone TLS target is a normal
-target row whose URL is `tls://host:port`; it shares create/edit/delete, silence, Alerts
-and the detail page. Two server settings hold the thresholds: `cert_warn_days` (default 21)
-and `cert_critical_days` (default 7). Certificate transitions are `target_events` rows whose
-states are `cert_ok|cert_warning|cert_critical|cert_failed`, so the uptime measure, which
+The last observed certificate (`not_after`, `issuer`, `name_match`, and `problem` when the
+handshake refused it) rides in the existing `last_result` JSON as `cert`. A standalone TLS
+target is a normal target row whose URL is `tls://host:port`; it shares create/edit/delete,
+silence, Alerts and the detail page. One server setting, `cert_thresholds`
+(`"<warn>,<critical>"`, default 21 and 7 days), holds both thresholds, so a write is atomic.
+Certificate transitions are `target_events` rows whose states are `cert_ok|cert_warning|cert_critical|cert_failed`, so the uptime measure, which
 reads only health states, ignores them.
 
 ## Levels and the state machine
@@ -52,7 +52,7 @@ Each poll that produced a certificate classifies it, worst first:
 
 | Condition | Level | Cause |
 |---|---|---|
-| `now ≥ NotAfter` | failed | `cert_expired` |
+| `now ≥ NotAfter` | failed | `cert_expired` (`cert_not_yet_valid` before `NotBefore`) |
 | leaf does not cover the host (or SNI) | failed | `cert_name_mismatch` |
 | chain does not verify | failed | `cert_untrusted` |
 | days left ≤ critical | critical | `cert_expiring` |

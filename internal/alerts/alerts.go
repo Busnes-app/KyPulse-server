@@ -63,6 +63,10 @@ type Track struct {
 	// SilencedUntil suppresses webhooks until then; UntilFixed silences until the next OK.
 	SilencedUntil time.Time `json:"silenced_until,omitempty"`
 	UntilFixed    bool      `json:"until_fixed,omitempty"`
+	// Candidate is a certificate level seen CandidateStreak polls in a row but not yet
+	// settled (NextCert); health tracks leave it empty.
+	Candidate       State `json:"candidate,omitempty"`
+	CandidateStreak int   `json:"candidate_streak,omitempty"`
 }
 
 // Transition is one state change, the unit the Alerts tab lists.
