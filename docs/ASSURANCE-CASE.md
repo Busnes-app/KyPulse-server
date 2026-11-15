@@ -67,6 +67,10 @@ publishes on loopback by default; TLS is the reverse proxy's job.
    sends no application data; only an administrator's explicit, audited per-target permission
    admits loopback and link-local there, and never the metadata addresses. The one other `http.Client` in the module, in `internal/sender/docker.go`, dials only a
    local Docker Unix socket.
+   KyPost alert mail (`internal/kypost`, contract `docs/KYPOST.md`) is one signed
+   `syncauth` request through the same egress client under a KyIdentity pair secret held in
+   memory; KyPost, not KyPulse, enforces the member's opt-in, confirmed recipients and rate
+   limit. Recipients are sealed at rest and never logged or audited.
 3. **Senders and KyYard → KyPulse.** Log batches arrive with a source Bearer token, are capped at
    1 MiB and validated as a whole before anything is stored (`internal/ingest`). KyYard replies are
    parsed under size caps (`internal/kyyard`). Stored text is sanitised for display

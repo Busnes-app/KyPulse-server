@@ -2,6 +2,7 @@ import React from 'react';
 import { Database, UserRound } from 'lucide-react';
 import { WebhookForm } from '../components/WebhookForm';
 import { KyYardCard } from '../components/KyYardCard';
+import { KyPostMailCard } from '../components/KyPostMailCard';
 import { PasswordCard } from '../components/PasswordCard';
 import { PageHead } from '../components/PageHead';
 import { Appearance } from './Appearance';
@@ -77,6 +78,7 @@ function Server({ settings, isAdmin, onChanged }: { settings: any; isAdmin: bool
   return (
     <div className="settings-stack">
       {isAdmin && <WebhookForm onChanged={onChanged} />}
+      {isAdmin && <KyPostMailCard onChanged={onChanged} />}
       {isAdmin && <KyYardCard onChanged={onChanged} />}
       <section className="panel" aria-labelledby="storage-title">
         <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '12px' }}>

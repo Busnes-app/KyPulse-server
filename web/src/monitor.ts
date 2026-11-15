@@ -117,6 +117,18 @@ export interface WebhookInfo {
   last?: DeliveryStatus | null;
 }
 
+export interface KyPostMailInfo {
+  available: boolean;
+  paired?: boolean;
+  reason?: string;
+  owners?: { id: string; name: string }[];
+  configured?: boolean;
+  unreadable?: boolean;
+  owner_id?: string;
+  recipients?: string[];
+  last?: DeliveryStatus | null;
+}
+
 export interface TargetInput {
   name: string;
   url: string;
@@ -231,6 +243,12 @@ export const saveWebhook = (input: { preset: string; url: string; token: string;
   secureFetch('/api/alerts/webhook', { method: 'PUT', ...json(input) }).then((r) => readJSON<WebhookInfo>(r));
 export const deleteWebhook = () => secureFetch('/api/alerts/webhook', { method: 'DELETE' }).then((r) => readJSON<void>(r));
 export const testWebhook = () => secureFetch('/api/alerts/webhook/test', { method: 'POST' }).then((r) => readJSON<{ ok: boolean }>(r));
+
+export const getKyPostMail = () => fetch('/api/alerts/kypost').then((r) => readJSON<KyPostMailInfo>(r));
+export const saveKyPostMail = (input: { owner_id: string; recipients: string[] }) =>
+  secureFetch('/api/alerts/kypost', { method: 'PUT', ...json(input) }).then((r) => readJSON<KyPostMailInfo>(r));
+export const deleteKyPostMail = () => secureFetch('/api/alerts/kypost', { method: 'DELETE' }).then((r) => readJSON<void>(r));
+export const testKyPostMail = () => secureFetch('/api/alerts/kypost/test', { method: 'POST' }).then((r) => readJSON<{ ok: boolean }>(r));
 
 export const getKyYard = (signal?: AbortSignal) => fetch('/api/kyyard', { signal }).then((r) => readJSON<KyYardStatus>(r));
 export const pairKyYard = (input: { url: string; pairing_code: string }) =>

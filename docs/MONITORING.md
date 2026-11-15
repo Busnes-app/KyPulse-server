@@ -72,6 +72,19 @@ continued failure raises "Alerts not being delivered" in the alert bar. Messages
 app name, the transition, a reason code, the time and a link, never log lines, user names or
 IPs. Webhook URLs must be https unless `KYPULSE_ALERT_ALLOW_HTTP=true`.
 
+## Email through KyPost
+
+A second alert channel, under Settings → Server, for deployments that sign in through
+KyIdentity with KyPost paired to KyPulse there. Every alert the webhook gets is also mailed,
+as plain text, from the KyPost mailbox of the member you pick, to up to 11 recipients.
+KyPost decides what goes out: the member must turn on "Let KyPulse send alerts from my
+mailbox" in KyPost Settings and list the recipients there (an address other than their own
+confirms by link), and KyPost sends at most 30 alerts an hour per mailbox, each with a
+`[KyPulse]` subject. When KyPost refuses, its reason code shows beside the channel.
+
+If KyPost runs on the same host as the app that failed, it can fail with it. Keep the
+webhook to an off-host receiver as the main path. The contract is `docs/KYPOST.md`.
+
 ## KyYard
 
 KyPulse can read one KyYard organization with a read-only service token.

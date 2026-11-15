@@ -84,6 +84,10 @@ Owns HTTP routing, request parsing, session cookie validation, CORS headers, and
 | GET | `/api/alerts/webhook` | admin | `{configured, preset, url_origin, has_url, has_token, last}`; never the token or the URL past scheme and host (PUT answers the same shape) |
 | PUT | `/api/alerts/webhook` | admin | body `{preset,url,token,clear_token}`; an empty `token` keeps the stored one only when preset, URL scheme and host (including port) are unchanged; `clear_token` removes it only for presets where a token is optional. Gotify requires a nonblank app token; invalid edits return 400 and preserve the stored webhook |
 | DELETE | `/api/alerts/webhook` | admin | 204 |
+| GET | `/api/alerts/kypost` | admin | `{available, reason}` without KyIdentity sign-in; else `{available, paired, reason, owners:[{id,name}], configured, owner_id, recipients, last}`. Owners are active KySignOn accounts |
+| PUT | `/api/alerts/kypost` | admin | `{owner_id, recipients}`: an eligible owner, 1–11 distinct bare addresses (lowercased); 409 without KyIdentity sign-in; audited `admin.kypost_mail_set` with owner ID and count only |
+| DELETE | `/api/alerts/kypost` | admin | 204; audited |
+| POST | `/api/alerts/kypost/test` | admin | one attempt; `{ok:true}`, 412 not set up, 502 `{error: kypost.Reason}` |
 | POST | `/api/alerts/webhook/test` | admin | `{ok:true}`; 412 no webhook; 502 `{error: notify.Reason}` on failed delivery, never the error text; one attempt, no retries |
 | GET | `/api/kyyard` | session | `kyyard.StatusView`; never the token |
 | POST | `/api/kyyard/pair` | admin | body `{url, pairing_code}` → 200 `StatusView` with `paired:true, stale:true`, no `fetched_at` ("first pull pending" — the response never waits for a pull); 400 for a bad URL, a refused address (loopback, link-local, `localhost` by name, or a name resolving to one at dial time), or plain http without `KYPULSE_KYYARD_ALLOW_HTTP`; 403 KyYard refused the code; 429 rate-limited; 502 `{error, reason}` (only those two keys) for any other network or status failure, `reason` from `kyyard.Reason` |

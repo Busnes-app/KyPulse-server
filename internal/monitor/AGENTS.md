@@ -4,7 +4,7 @@
 Glues the poller, the alerts state machine and the notifier to the store: what is due, what an observation means, what is recorded, what is sent.
 
 ## Ownership
-Owns `Service` (Due, Observe, Recent, Start, Drain, DueFailed, Silence, SendTest), `Webhooks` (sealed webhook config and delivery status), the `alerts.Track`/`poller.Result` JSON stored on target rows, and the monitoring log events (`target_state_changed`, `alert_sent`, `alert_send_failed`, `alert_dropped`, `alert_cancelled`, `poll_store_error`, `poll_due_failed`).
+Owns `Service` (Due, Observe, Recent, Start, Drain, DueFailed, Silence, SendTest), `Webhooks` (sealed webhook config and delivery status), `Mail` (sealed KyPost channel and its status), the `alerts.Track`/`poller.Result` JSON stored on target rows, and the monitoring log events (`target_state_changed`, `alert_sent`, `alert_send_failed`, `alert_dropped`, `alert_cancelled`, `poll_store_error`, `poll_due_failed`).
 
 ## Local Contracts
 - Observe writes the poll result and the transition, then enqueues the webhook; a failed send is recorded on the event and in `alert_webhook_status`, never lost. An observation whose URL no longer matches the stored target (edited while the poll was in flight) is dropped. Editing the URL also ends an "until fixed" silence.
@@ -28,6 +28,7 @@ Owns `Service` (Due, Observe, Recent, Start, Drain, DueFailed, Silence, SendTest
 - Silence lives in the target's `silenced_until`/`until_fixed` columns, not in the track JSON: `Silence` writes only those columns, so a poll landing in between never overwrites or loses it. `Track` overlays the columns onto the decoded track for `alerts.Decide`; a recovery that clears `until_fixed` also clears the column through `ClearUntilFixed`, which leaves a timed silence set meanwhile in place; a failure is logged as `poll_store_error`.
 - Status, `notify_error` and audit details hold `notify.Reason(err)`, never `err.Error()`.
 - An unreadable webhook (`Webhooks.Load` returns `notify.ErrUnreadable`, e.g. a rotated deployment key) is a delivery failure, not a silent no-op: logged, recorded in `alert_webhook_status`, `notify_error` `unreadable`, and audited as `alert.send_failed` with `reason=unreadable`.
+- `Mail` ("Email through KyPost", nil-safe) is a second channel on the same sender: every delivery the webhook gets also goes to KyPost under event ID `kypulse-alert-<event id>`, retried over the webhook backoff on `kypost.ErrRetry`. Its config (`{owner_id, recipients}`) is sealed under `kypulse:setting:alert_kypost` (`alert_kypost_enc`); `alert_kypost_status` holds only the last `kypost.Reason`. The owner must be `Eligible` (active, KySignOn subject) at send time, else `owner_unavailable`. Audits are `alert.mail_sent|alert.mail_failed` with target, state and reason; with no webhook configured the event's `notified`/`notify_error` carry the mail outcome. Never an address.
 - `SendTest` makes one attempt with no retries, so the answer arrives inside the HTTP request.
 
 ## Verification
