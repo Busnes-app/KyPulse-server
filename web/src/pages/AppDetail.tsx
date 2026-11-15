@@ -6,7 +6,7 @@ import { KyYardFacts } from '../components/KyYardFacts';
 import { PageHead } from '../components/PageHead';
 import { hrefFor, navigate } from '../router';
 import {
-  ApiError, deleteTarget, getKyYard, getTarget, isSilenced, kyStatus, kyYardContainers, kyYardPending, silenceTarget, sinceLabel, stateClass, stateLabel, stateWord, timeLabel, updateTarget, uptimeLabel, causeLabel,
+  ApiError, certStatus, certWord, daysLeftLabel, TLS_SCHEME, deleteTarget, getKyYard, getTarget, isSilenced, kyStatus, kyYardContainers, kyYardPending, silenceTarget, sinceLabel, stateClass, stateLabel, stateWord, timeLabel, updateTarget, uptimeLabel, causeLabel,
   type ContainerFacts, type KyYardStatus, type LastResult, type SilenceFor, type Suggestion, type Target, type TargetEvent, type TargetInput,
 } from '../monitor';
 import type { PageUser } from './Status';
@@ -143,7 +143,7 @@ export const AppDetail: React.FC<AppDetailProps> = ({ id, user, onChanged }) => 
           <div className="detail-incident">
             {failing && (
               <div className="detail-incident-facts">
-                <p className="dr-mono">GET {target.url} → {causeLabel(target.cause || last?.cause) || stateWord(last?.state ?? 'unknown')}</p>
+                <p className="dr-mono">{target.url.startsWith(TLS_SCHEME) ? 'TLS handshake' : 'GET'} {target.url} → {causeLabel(target.cause || last?.cause) || stateWord(last?.state ?? 'unknown')}</p>
                 <p>Since {timeLabel(target.state_since)}</p>
               </div>
             )}
@@ -183,12 +183,27 @@ export const AppDetail: React.FC<AppDetailProps> = ({ id, user, onChanged }) => 
         <div className="dr-section">
           <h2>Settings</h2>
           <div className="dr-facts">
-            <div className="dr-fact"><span className="dr-fact-label">Health URL</span><span className="dr-fact-value dr-mono">{target.url}</span></div>
+            <div className="dr-fact"><span className="dr-fact-label">{target.url.startsWith(TLS_SCHEME) ? 'TLS endpoint' : 'Health URL'}</span><span className="dr-fact-value dr-mono">{target.url}</span></div>
+            {target.sni && <div className="dr-fact"><span className="dr-fact-label">Server name</span><span className="dr-fact-value dr-mono">{target.sni}</span></div>}
+            {target.allow_local && <div className="dr-fact"><span className="dr-fact-label">Local address</span><span className="dr-fact-value">allowed</span></div>}
             <div className="dr-fact"><span className="dr-fact-label">Interval</span><span className="dr-fact-value">{target.interval_sec} s</span></div>
             <div className="dr-fact"><span className="dr-fact-label">Polling</span><span className="dr-fact-value">{target.enabled ? 'enabled' : 'paused'}</span></div>
           </div>
         </div>
       </div>
+
+      {target.cert && (
+        <div className="dr-section">
+          <h2>Certificate</h2>
+          <div className="dr-facts">
+            <div className="dr-fact"><span className="dr-fact-label">Expires<span className="ky-status" data-ky-status={certStatus(target.cert_state)}>{certWord(target.cert_state)}</span></span>
+              <span className="dr-fact-value">{daysLeftLabel(target.cert_days_left)} · {timeLabel(target.cert.not_after)}</span></div>
+            {target.cert_state !== 'ok' && target.cert_cause && <div className="dr-fact"><span className="dr-fact-label">Reason</span><span className="dr-fact-value">{causeLabel(target.cert_cause)}</span></div>}
+            <div className="dr-fact"><span className="dr-fact-label">Issuer</span><span className="dr-fact-value">{target.cert.issuer || '—'}</span></div>
+            <div className="dr-fact"><span className="dr-fact-label">Names this host</span><span className="dr-fact-value">{target.cert.name_match ? 'yes' : 'no'}</span></div>
+          </div>
+        </div>
+      )}
 
       <div className="dr-section">
         <h2>Alert history</h2>

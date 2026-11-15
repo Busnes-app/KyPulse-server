@@ -415,6 +415,10 @@ dialog.modal-window::backdrop {
 .dr-page a { color: var(--ink-strong); text-underline-offset: 3px; }
 .form-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 12px; margin-bottom: 12px; }
 .form-grid label { display: flex; flex-direction: column; gap: 4px; font-size: 13px; color: var(--ink); }
+.form-grid .form-choice { grid-column: 1 / -1; display: flex; flex-wrap: wrap; gap: 8px 16px; border: 0; padding: 0; margin: 0; font-size: 13px; color: var(--ink); }
+.form-grid .form-choice legend { padding: 0; margin-bottom: 4px; }
+.form-grid .form-choice label { flex-direction: row; align-items: center; gap: 8px; min-height: 40px; }
+.form-grid .form-choice input { width: auto; }
 .form-error { color: var(--danger); font-size: 13px; margin: 0 0 12px; }
 .form-ok { color: var(--success); font-size: 13px; margin: 0 0 12px; }
 /* Phones: the bar may wrap, so every pill stays whole. */

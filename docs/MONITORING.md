@@ -28,6 +28,31 @@ or degraded, a reminder goes out every hour. Silencing (1 h, 8 h or until fixed)
 webhook messages only; the alert bar and Alerts keep showing the problem, and "until fixed"
 ends at the next recovery.
 
+## Certificates
+
+Every `https://` app's leaf certificate is read from its health poll's own TLS handshake;
+nothing is dialled twice. Certificates has one row per certificate, soonest expiry first,
+and app detail shows days left, expiry, issuer and whether it names the host.
+
+| Level | When |
+|---|---|
+| Warning | 21 days or fewer left |
+| Critical | 7 days or fewer left |
+| Failed | expired, not yet valid, does not name the host, or does not chain to a trusted root |
+
+Administrators change the two thresholds on the Certificates page (1 ≤ critical < warning ≤
+365). A level change needs two polls in a row, then sends one webhook message; reminders go
+out hourly and the app's silence covers its certificate. A certificate that fails verification
+also makes the health poll fail, so such an app is down as well.
+
+For a service KyPulse does not otherwise poll, such as the edge proxy, add an app with
+**TLS certificate only**: `host:port` and an optional server name (SNI). KyPulse completes a
+TLS handshake and closes without sending a request; the app is ok while the handshake
+returns a certificate, and the certificate track judges the rest. It goes through the same
+address guard. A host that is or resolves to loopback or link-local is refused unless you tick
+**Allow a loopback or link-local address** on that app (audited); cloud metadata addresses
+stay refused either way.
+
 ## Alert webhook
 
 Set in Settings by an admin, sealed at rest with the deployment key. Presets:

@@ -27,6 +27,24 @@ export interface Target {
   recent?: Beat[] | null;
   uptime_24h?: number | null;
   incidents_24h?: number;
+  // TLS-only targets (url tls://host:port): server name and the local-address permission.
+  sni?: string;
+  allow_local?: boolean;
+  // Certificate, once a handshake showed one: the leaf and its settled level.
+  cert?: Cert | null;
+  cert_state?: CertState;
+  cert_cause?: string;
+  cert_since?: string;
+  cert_days_left?: number;
+}
+
+export type CertState = 'pending' | 'ok' | 'warning' | 'critical' | 'failed';
+
+export interface Cert {
+  not_after: string;
+  issuer?: string;
+  name_match: boolean;
+  problem?: string;
 }
 
 // Beat is one poll's raw answer, before the thresholds settle a state.
@@ -105,6 +123,8 @@ export interface TargetInput {
   interval_sec: number;
   enabled: boolean;
   container?: string;
+  sni?: string;
+  allow_local?: boolean;
 }
 
 export interface CollectorStatus {
@@ -201,6 +221,11 @@ export const deleteTarget = (id: string) =>
 export const silenceTarget = (id: string, f: SilenceFor) =>
   secureFetch(`/api/targets/${encodeURIComponent(id)}/silence`, { method: 'POST', ...json({ for: f }) })
     .then((r) => readJSON<{ silenced_until: string | null; until_fixed: boolean }>(r));
+export const listCertificates = () =>
+  fetch('/api/certificates').then((r) => readJSON<{ certificates: Target[]; warn_days: number; critical_days: number }>(r));
+export const setCertThresholds = (warn_days: number, critical_days: number) =>
+  secureFetch('/api/certificates/thresholds', { method: 'PUT', ...json({ warn_days, critical_days }) })
+    .then((r) => readJSON<{ warn_days: number; critical_days: number }>(r));
 export const getWebhook = () => fetch('/api/alerts/webhook').then((r) => readJSON<WebhookInfo>(r));
 export const saveWebhook = (input: { preset: string; url: string; token: string; clear_token: boolean }) =>
   secureFetch('/api/alerts/webhook', { method: 'PUT', ...json(input) }).then((r) => readJSON<WebhookInfo>(r));
@@ -227,7 +252,9 @@ export function sortTargets(list: Target[]): Target[] {
 }
 
 // stateWord is how a state reads on screen: OK, Degraded, Down, Pending, Paused.
+// Certificate states (cert_ok, cert_warning, …) read as "Certificate OK", "Certificate warning".
 export function stateWord(s: string): string {
+  if (s.startsWith('cert_')) return `Certificate ${s === 'cert_ok' ? 'OK' : s.slice(5)}`;
   return s === 'ok' ? 'OK' : s.charAt(0).toUpperCase() + s.slice(1);
 }
 
@@ -240,8 +267,34 @@ export function stateLabel(t: Target): string {
 
 // causeLabel shows the poller's status_<code> as HTTP <code>; other causes are already words.
 export function causeLabel(cause: string | undefined): string {
-  return (cause ?? '').replace(/^status_(\d{3})$/, 'HTTP $1');
+  return certCauses[cause ?? ''] ?? (cause ?? '').replace(/^status_(\d{3})$/, 'HTTP $1');
 }
+
+const certCauses: Record<string, string> = {
+  cert_expiring: 'certificate expiring',
+  cert_expired: 'certificate expired',
+  cert_not_yet_valid: 'certificate not yet valid',
+  cert_name_mismatch: 'certificate does not name this host',
+  cert_untrusted: 'certificate not trusted',
+};
+
+// certStatus is the .ky-status tone for a certificate level.
+export function certStatus(state: CertState | undefined): 'danger' | 'warning' | 'success' | undefined {
+  return ({ failed: 'danger', critical: 'danger', warning: 'warning', ok: 'success' } as const)[state as 'ok'];
+}
+
+export function certWord(state: CertState | undefined): string {
+  return ({ ok: 'OK', warning: 'Warning', critical: 'Critical', failed: 'Failed' } as Record<string, string>)[state ?? ''] ?? 'Pending';
+}
+
+// daysLeftLabel says how long a certificate has: "12 days left", "expired".
+export function daysLeftLabel(days: number | undefined): string {
+  if (days === undefined) return '—';
+  if (days < 0) return 'expired';
+  return days === 1 ? '1 day left' : `${days} days left`;
+}
+
+export const TLS_SCHEME = 'tls://';
 
 // stateClass is the CSS suffix for a dot or badge: ok|degraded|down|pending|paused.
 // kyStatus maps a state to ky-ui's .ky-status tone; pending and paused stay neutral.
@@ -295,5 +348,5 @@ export function uptimeLabel(u: number | null | undefined): string {
 
 // hostPath is a health URL without its scheme: the row already says it is a health check.
 export function hostPath(url: string): string {
-  return url.replace(/^https?:\/\//, '');
+  return url.replace(/^(https?|tls):\/\//, '');
 }

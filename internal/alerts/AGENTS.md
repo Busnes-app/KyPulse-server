@@ -14,6 +14,8 @@ Owns `Track` (persisted by the store as JSON), `Next`, `Decide` and `Measure`.
 - `Measure` reads a target's past day from its transitions: uptime is the share of classified (not pending) time spent ok, incidents count moves from ok or pending into degraded or down. Time while KyPulse is stopped keeps the last recorded state.
 - Silence stops webhooks only: transitions are still recorded. "Until fixed" ends on a recovery from a problem, not on a fresh target's first ok; that recovery is not sent, because the problem never was.
 
+- Certificates: `CertLevel` classifies failed (expired, a refused handshake, a name mismatch), then critical and warning at the administrator's days-left thresholds (defaults 21 and 7). `NextCert` settles a level after `CertAfter` (2) consecutive polls, one from a fresh track; a recovery to ok ends until-fixed. The certificate track then goes through the same `Decide`.
+
 ## Verification
 - `go test ./internal/alerts/`
 

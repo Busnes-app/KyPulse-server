@@ -63,7 +63,9 @@ publishes on loopback by default; TLS is the reverse proxy's job.
    another service goes through `internal/egress`: loopback, link-local (which includes
    `169.254.169.254`), unspecified, multicast, documentation, reserved and two named metadata
    addresses are refused on every resolved IP at dial time, redirects are refused, and bodies are
-   capped. The one other `http.Client` in the module, in `internal/sender/docker.go`, dials only a
+   capped. A TLS-only target (`tls://host:port`) uses the same dial guard for a bare handshake that
+   sends no application data; only an administrator's explicit, audited per-target permission
+   admits loopback and link-local there, and never the metadata addresses. The one other `http.Client` in the module, in `internal/sender/docker.go`, dials only a
    local Docker Unix socket.
 3. **Senders and KyYard → KyPulse.** Log batches arrive with a source Bearer token, are capped at
    1 MiB and validated as a whole before anything is stored (`internal/ingest`). KyYard replies are

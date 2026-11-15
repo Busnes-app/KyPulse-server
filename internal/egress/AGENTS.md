@@ -10,6 +10,7 @@ transport integration; local Docker reads use a separate Unix-socket client.
 
 ## Local Contracts
 - `ValidateURL` is the save-time check; the dialer repeats the address check on every resolved IP, so a DNS rebind cannot pass, and dials the allowed addresses in turn until one connects.
+- `Handshake` (TLS-only targets) dials through the same guard, completes one handshake and closes without sending application data. `allowLocal` (the target's explicit, audited administrator permission) additionally admits loopback and link-local unicast, never `169.254.169.254`, `169.254.170.2` or the other refused ranges; `ValidateHostPort` is its save-time check. `Response.TLS` carries the health request's own handshake, so a certificate is never fetched over a second connection.
 - `AllowHTTP` is per client: on for health targets, off for webhooks unless `KYPULSE_ALERT_ALLOW_HTTP`, always off for KyYard.
 - A body over `MaxBody` is `ErrBodyTooLarge`, never a truncated success.
 - `Cause` is the fixed vocabulary the UI shows and tests pin.
