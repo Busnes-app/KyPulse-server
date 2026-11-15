@@ -32,6 +32,7 @@ import (
 	"github.com/Busnes-app/kypulse-server/internal/config"
 	"github.com/Busnes-app/kypulse-server/internal/crypto"
 	"github.com/Busnes-app/kypulse-server/internal/egress"
+	"github.com/Busnes-app/kypulse-server/internal/kypost"
 	"github.com/Busnes-app/kypulse-server/internal/kyyard"
 	"github.com/Busnes-app/kypulse-server/internal/monitor"
 	"github.com/Busnes-app/kypulse-server/internal/notify"
@@ -60,6 +61,13 @@ func setupTestServer(t *testing.T) (*api.Server, store.Store, *config.Config) {
 // when yardHTTP is non-nil (a fake that answers every read 404 otherwise).
 func setupTestServerWith(t *testing.T, poster notify.Poster, yardHTTP kyyard.HTTP) (*api.Server, store.Store, *config.Config) {
 	t.Helper()
+	return setupTestServerLinked(t, poster, yardHTTP, &kypost.Link{})
+}
+
+// setupTestServerLinked also sets the KyPost link behind "Email through KyPost"; the default
+// link is unavailable, as when KyPulse does not sign in through KyIdentity.
+func setupTestServerLinked(t *testing.T, poster notify.Poster, yardHTTP kyyard.HTTP, link *kypost.Link) (*api.Server, store.Store, *config.Config) {
+	t.Helper()
 	t.Setenv("KYPULSE_DATA_DIR", t.TempDir())
 	cfg, _ := config.LoadFromEnv()
 	db := testdb.Config(t)
@@ -81,6 +89,10 @@ func setupTestServerWith(t *testing.T, poster notify.Poster, yardHTTP kyyard.HTT
 		t.Fatalf("logger: %v", err)
 	}
 	mon := newTestMonitor(t, cfg, st, lg)
+	if mon.Mail, err = monitor.NewMail(cfg, st, link); err != nil {
+		t.Fatal(err)
+	}
+	mon.Mail.Backoff = nil
 	if poster != nil {
 		mon.Notifier.Post = poster
 	}

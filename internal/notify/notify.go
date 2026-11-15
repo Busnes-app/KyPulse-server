@@ -90,7 +90,8 @@ func (m Message) urgent() bool {
 	return m.State == "down" || m.State == "cert_failed" || m.State == "cert_critical"
 }
 
-func (m Message) text() string {
+// Text is the plain-text body every preset and the KyPost mail channel use.
+func (m Message) Text() string {
 	s := m.Title()
 	if m.Reason != "" {
 		s += " (" + m.Reason + ")"
@@ -120,7 +121,7 @@ func Build(c Config, m Message) (Request, error) {
 		if c.Token != "" {
 			h["Authorization"] = "Bearer " + c.Token
 		}
-		return Request{URL: c.URL, ContentType: "text/plain", Headers: h, Body: []byte(m.text())}, nil
+		return Request{URL: c.URL, ContentType: "text/plain", Headers: h, Body: []byte(m.Text())}, nil
 	case Gotify:
 		if c.Token != "" {
 			h["X-Gotify-Key"] = c.Token
@@ -133,11 +134,11 @@ func Build(c Config, m Message) (Request, error) {
 		if err != nil {
 			return Request{}, err
 		}
-		body, _ := json.Marshal(map[string]any{"title": m.Title(), "message": m.text(), "priority": prio})
+		body, _ := json.Marshal(map[string]any{"title": m.Title(), "message": m.Text(), "priority": prio})
 		return Request{URL: u.JoinPath("message").String(), ContentType: "application/json", Headers: h, Body: body}, nil
 	case Discord:
 		// Discord's webhook URL already carries its secret; c.Token is unused here.
-		body, _ := json.Marshal(map[string]string{"content": m.text()})
+		body, _ := json.Marshal(map[string]string{"content": m.Text()})
 		return Request{URL: c.URL, ContentType: "application/json", Headers: h, Body: body}, nil
 	case Generic:
 		if c.Token != "" {
