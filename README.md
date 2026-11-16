@@ -65,3 +65,12 @@ Container-local installer setup and its current acceptance limits are documented
 - [Development](docs/DEVELOPMENT.md) — API, Develop. <a id="api"></a><a id="develop"></a>
 - [Verifying releases](docs/VERIFYING-RELEASES.md) — Check a release image's signature and source commit, and rebuild its binary to the same bytes.
 - [Assurance case](docs/ASSURANCE-CASE.md) — Threat model, trust boundaries, and why the security requirements are met.
+
+## User manual
+
+Read the [online manual](https://busnes.app/manuals/kypulse-server/) or browse its
+[Markdown sources](docs/src/introduction.md).
+
+Build and check it with `mdbook build docs` and `python3 docs/check-links.py`,
+then open `docs/book/index.html`. The documentation workflow also provides a
+downloadable `documentation-book` artifact.
