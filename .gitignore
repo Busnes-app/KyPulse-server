@@ -40,3 +40,6 @@ coverage.out
 .idea/
 .vscode/
 /kypulse-send
+
+# Generated mdBook manual
+/docs/book/
