@@ -447,6 +447,10 @@ func (s *Server) routes() {
 	s.mux.HandleFunc("PUT /api/alerts/webhook", s.requireAdmin(s.handleSetWebhook))
 	s.mux.HandleFunc("DELETE /api/alerts/webhook", s.requireAdmin(s.handleDeleteWebhook))
 	s.mux.HandleFunc("POST /api/alerts/webhook/test", s.tracked(s.requireAdmin(s.handleTestWebhook)))
+	s.mux.HandleFunc("GET /api/alerts/kypost", s.requireAdmin(s.handleGetKyPostMail))
+	s.mux.HandleFunc("PUT /api/alerts/kypost", s.requireAdmin(s.handleSetKyPostMail))
+	s.mux.HandleFunc("DELETE /api/alerts/kypost", s.requireAdmin(s.handleDeleteKyPostMail))
+	s.mux.HandleFunc("POST /api/alerts/kypost/test", s.tracked(s.requireAdmin(s.handleTestKyPostMail)))
 
 	// KyYard: any session reads the pairing status (the alert bar shows stale); pairing,
 	// unpairing and container suggestions (they prefill the admin's add form) are admin-only.

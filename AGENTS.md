@@ -75,7 +75,7 @@ Design authority: `docs/superpowers/specs/2026-09-26-kypulse-design.md`. Plans l
 - Follow the suite root's engineering principles and the KyRecovery integration contract.
 - Business rules (health normalisation, alert transitions, retention) are pure functions the
   handlers and scheduler call.
-- Monitoring, KyYard, webhook and sender network HTTP goes through `internal/egress`:
+- Monitoring, KyYard, webhook, KyPost alert mail and sender network HTTP goes through `internal/egress`:
   private/LAN targets allowed, loopback and link-local refused, no redirects.
   OIDC and recovery retain their maintained libraries' transport integration;
   SSO and the shared recovery client own their additional policy. Local Docker
@@ -116,6 +116,7 @@ Design authority: `docs/superpowers/specs/2026-09-26-kypulse-design.md`. Plans l
 - `internal/alerts/AGENTS.md`: alert thresholds, transitions, reminders, silences.
 - `internal/notify/AGENTS.md`: webhook presets and delivery retries.
 - `internal/monitor/AGENTS.md`: glues polling, alerts and delivery to the store.
+- `internal/kypost/AGENTS.md`: alert mail through a member's KyPost mailbox (contract `docs/KYPOST.md`).
 - `internal/kyyard/AGENTS.md`: KyYard pairing, inventory/sample snapshots, durable log/audit collection.
 - `web/AGENTS.md`: PWA, themes, ky-ui vendoring, browser regressions.
 

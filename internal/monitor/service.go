@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"errors"
+	"fmt"
 	"log/slog"
 	"slices"
 	"sync"
@@ -11,6 +12,7 @@ import (
 
 	"github.com/Busnes-app/ky-primitives/logging"
 	"github.com/Busnes-app/kypulse-server/internal/alerts"
+	"github.com/Busnes-app/kypulse-server/internal/kypost"
 	"github.com/Busnes-app/kypulse-server/internal/notify"
 	"github.com/Busnes-app/kypulse-server/internal/poller"
 	"github.com/Busnes-app/kypulse-server/internal/store"
@@ -42,6 +44,7 @@ type Service struct {
 	Store     store.Store
 	Webhooks  *Webhooks
 	Notifier  *notify.Notifier
+	Mail      *Mail // "Email through KyPost"; nil when unavailable
 	Logger    *logging.Logger
 	AppURL    string
 	Now       func() time.Time
@@ -440,18 +443,61 @@ func (s *Service) send(ctx context.Context, d delivery) {
 	defer stop()
 
 	cfg, ok, err := s.Webhooks.Load(sendCtx)
-	if !ok && err == nil {
+	hook := ok || err != nil
+	mailCfg, mailOK, mailErr := s.Mail.Load(sendCtx)
+	mail := mailOK || mailErr != nil
+	if !hook && !mail {
 		if d.persistent {
 			_ = s.Store.Targets().SetEventNotified(sendCtx, d.eventID, false, "unconfigured")
 		}
-		return // no webhook configured: nothing to send, nothing to record
+		return // no channel configured: nothing to send, nothing to record
 	}
 	// An unreadable webhook (e.g. a rotated deployment key) is a failed delivery, recorded
 	// like any other. Only notify.Reason is stored: err.Error() can name the webhook URL.
-	if err == nil {
-		err = s.Notifier.Send(sendCtx, cfg, d.msg)
+	if hook {
+		if err == nil {
+			err = s.Notifier.Send(sendCtx, cfg, d.msg)
+		}
+		s.record(d, err)
 	}
-	s.record(d, err)
+	if mail {
+		if mailErr == nil {
+			mailErr = s.Mail.Send(sendCtx, mailCfg, fmt.Sprintf("kypulse-alert-%d", d.eventID), d.msg, true)
+		}
+		s.recordMail(d, mailErr, !hook)
+	}
+}
+
+// recordMail records the KyPost channel's outcome: its status, an audit row and, when no
+// webhook is configured, the event itself. Only kypost.Reason is stored.
+func (s *Service) recordMail(d delivery, err error, onEvent bool) {
+	ctx, cancel := context.WithTimeout(context.Background(), recordBudget)
+	defer cancel()
+	reason := mailReason(err)
+	_ = s.Mail.SetStatus(ctx, DeliveryStatus{At: s.now(), OK: err == nil, Error: reason})
+	action, details := "alert.mail_sent", "target="+d.targetID+" state="+d.msg.State
+	if err != nil {
+		action, details = "alert.mail_failed", details+" reason="+reason
+		s.Logger.Log(ctx, evAlertFailed, logging.TargetID(d.targetID), fState(d.msg.State), logging.ReasonCode(reason))
+	} else {
+		s.Logger.Log(ctx, evAlertSent, logging.TargetID(d.targetID), fState(d.msg.State))
+	}
+	if onEvent {
+		notifyError := reason
+		if d.persistent && reason == "cancelled" {
+			notifyError = "pending" // an offboarding alert cut off by shutdown goes again at restart
+		}
+		_ = s.Store.Targets().SetEventNotified(ctx, d.eventID, err == nil, notifyError)
+	}
+	_ = s.Store.Audit().LogAudit(ctx, &store.AuditRecord{UserID: "system", Action: action, Resource: d.targetID, Details: details})
+}
+
+// mailReason is the stored code: an unreadable channel is "unreadable", like the webhook's.
+func mailReason(err error) string {
+	if errors.Is(err, notify.ErrUnreadable) {
+		return "unreadable"
+	}
+	return kypost.Reason(err)
 }
 
 // cancelled records a delivery that was never attempted because the process is stopping.

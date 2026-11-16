@@ -154,6 +154,10 @@ func TestPrivilegedEndpointsRequireAdmin(t *testing.T) {
 		{"GET", "/api/logs"},
 		{"GET", "/api/activity"},
 		{"PUT", "/api/certificates/thresholds"},
+		{"GET", "/api/alerts/kypost"},
+		{"PUT", "/api/alerts/kypost"},
+		{"DELETE", "/api/alerts/kypost"},
+		{"POST", "/api/alerts/kypost/test"},
 	}
 
 	for _, tc := range cases {
