@@ -130,3 +130,7 @@ Design authority: `docs/superpowers/specs/2026-09-26-kypulse-design.md`. Plans l
 ## README and topic guides
 
 Keep `README.md` as the concise product overview and navigation. Detailed procedures live in `docs/RUNNING.md`, `docs/LOG-COLLECTION.md`, `docs/MONITORING.md`, `docs/CONFIGURATION.md`, `docs/OPERATIONS.md`, `docs/DEVELOPMENT.md` (including the coding standard), `docs/VERIFYING-RELEASES.md`. `docs/ASSURANCE-CASE.md` is the security argument: a change that moves a trust boundary or a security requirement updates it in the same change. Update the owning topic guide and preserve README links when a procedure changes. Commands in these guides run from the repository root.
+
+## Release notes
+
+- `CHANGELOG.md` owns pending application release notes and upgrade impact. A version bump alone does not publish a release.
