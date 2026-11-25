@@ -109,17 +109,49 @@ services:
   #   KYPULSE_DB_DSN=postgres://postgres:<POSTGRES_PASSWORD>@postgres:5432/kypulse?sslmode=disable
   # (An unset password cannot be a `:?` error here: Compose interpolates every profile, so it
   # would break the default SQLite install too.)
+  # PostgreSQL 18 keeps its data in the `postgres` volume. An install that ran 17 (volume
+  # `pgdata`) is moved on the first `up`: postgres-17-dump dumps it once, then the 18 service
+  # restores that dump before it starts. `pgdata` is only read and never removed
+  # (docs/CONFIGURATION.md, PostgreSQL 17 to 18).
   postgres:
-    image: postgres:17-alpine
+    image: postgres:18.7-alpine3.24@sha256:0115267ab5a509022df9319c77be365cef335adb71556c75f60f5360ee247e71
     container_name: kypulse_postgres
     restart: unless-stopped
+    # Room for a clean shutdown, so the data never needs crash recovery on the next start.
+    stop_grace_period: 2m
     profiles: ["postgres"]
+    entrypoint: [bash, /ky/postgres-17-to-18.sh, restore]
+    command: [postgres]
+    depends_on:
+      postgres-17-dump:
+        condition: service_completed_successfully
     environment:
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-}
       POSTGRES_DB: kypulse
     volumes:
+      - postgres:/var/lib/postgresql
+      - ./scripts/postgres-17-to-18.sh:/ky/postgres-17-to-18.sh:ro
+
+  # One-shot, no network: dumps PostgreSQL 17 data from `pgdata` into `postgres` once, and
+  # exits at once when there is nothing to move or the move is done.
+  postgres-17-dump:
+    image: postgres:17.12-alpine3.24@sha256:f9cf3e1f0066f0eb0c48707d864f0ac5941e9ff454a072077d97a4d278d07d73
+    restart: "no"
+    stop_grace_period: 2m
+    profiles: ["postgres"]
+    network_mode: none
+    entrypoint: [bash, /ky/postgres-17-to-18.sh, dump]
+    environment:
+      POSTGRES_USER: postgres
+      OLD: /var/lib/postgresql/data
+      NEW: /pg18
+    volumes:
       - pgdata:/var/lib/postgresql/data
+      - postgres:/pg18
+      - ./scripts/postgres-17-to-18.sh:/ky/postgres-17-to-18.sh:ro
 
 volumes:
+  # PostgreSQL 17 data, kept for rollback until the operator removes it.
   pgdata:
+  postgres:
