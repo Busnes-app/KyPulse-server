@@ -27,7 +27,7 @@ fail() { echo "FAIL: $*" >&2; dc "$new" logs postgres-17-dump postgres 2>&1 | ta
 cid() { dc "$1" ps -aq postgres; }
 in_vol() { docker run --rm -v "${p}_$1:/v" "$P18" sh -c "$2"; }
 # Ready over TCP, so the entrypoint's socket-only init server does not count.
-ready() { local c; for _ in $(seq 1 180); do c=$(cid "$1"); [ -n "$c" ] && docker exec "$c" pg_isready -q -h 127.0.0.1 -U postgres -d kypulse 2>/dev/null && return 0; read -rt 1 <> <(:) || true; done; return 1; }
+ready() { local c; for _ in $(seq 1 180); do c=$(cid "$1"); [ -n "$c" ] && docker exec "$c" pg_isready -q -h 127.0.0.1 -U postgres -d kypulse 2>/dev/null && return 0; sleep 1; done; return 1; }
 # q <compose file> <user> <password> <database> <sql>: from another container on the compose
 # network, as the app connects (inside the container, 127.0.0.1 is trusted without a password).
 q() { docker run --rm --network "${p}_default" -e PGPASSWORD="$3" "$P18" psql -h postgres -U "$2" -d "$4" -XAtc "$5"; }
@@ -81,7 +81,7 @@ dc "$new" logs postgres | grep -q 'restored' && fail "rerun restored again"
 dc "$new" down >/dev/null 2>&1
 in_vol postgres 'mv /v/18/docker /v/18/docker.saved && echo "THIS IS NOT SQL;" >> /v/upgrade-from-17/dump.sql'
 dc "$new" up -d postgres >/dev/null 2>&1 || fail "up with a bad dump failed early"
-for _ in $(seq 1 180); do [ "$(docker inspect -f '{{.RestartCount}}' "$(cid "$new")")" -ge 2 ] && break; read -rt 1 <> <(:) || true; done
+for _ in $(seq 1 180); do [ "$(docker inspect -f '{{.RestartCount}}' "$(cid "$new")")" -ge 2 ] && break; sleep 1; done
 [ "$(docker inspect -f '{{.RestartCount}}' "$(cid "$new")")" -ge 2 ] || fail "bad dump: postgres did not fail and restart"
 dc "$new" stop postgres >/dev/null 2>&1
 in_vol postgres 'test ! -e /v/18/docker' || fail "bad dump produced a cluster"
