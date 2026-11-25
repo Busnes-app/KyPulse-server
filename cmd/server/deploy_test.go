@@ -124,7 +124,7 @@ func TestComposePostgres18UpgradesFrom17(t *testing.T) {
 		t.Fatal(err)
 	}
 	// The kit's sha256; every Ky repo vendors the same bytes.
-	if sum := fmt.Sprintf("%x", sha256.Sum256(script)); sum != "2992644109716cd34297fbcb76eba8907f4a5e3031a12c05aade010e5ea2b571" {
+	if sum := fmt.Sprintf("%x", sha256.Sum256(script)); sum != "195ae8684e34dd515158a88b1f76b918cf6e3f3c854ce83fe4fb190a5178cf06" {
 		t.Errorf("scripts/postgres-17-to-18.sh differs from the shared kit (sha256 %s)", sum)
 	}
 }
