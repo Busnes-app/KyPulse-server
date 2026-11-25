@@ -87,5 +87,31 @@ compose network. Point KyPulse at it with `KYPULSE_DB_DRIVER=postgres` and
 `KYPULSE_DB_DSN=postgres://postgres:<password>@postgres:5432/kypulse?sslmode=disable`. Backups
 snapshot SQLite only, so a PostgreSQL deployment backs up its database separately.
 
+### PostgreSQL 17 to 18
+
+The bundled database is PostgreSQL 18, with its data in the `postgres` volume. Earlier
+releases ran 17 with its data in the `pgdata` volume, which 18 cannot open. The next
+`docker compose --profile postgres up -d` moves it. Nothing needs to be done by hand:
+
+- The one-shot `postgres-17-dump` service (the 17 image, no network) dumps `pgdata` once
+  into `upgrade-from-17/` in the `postgres` volume. 18 then restores that dump before it
+  starts, so roles, passwords and data come across. A restore that is interrupted runs
+  again on the next start. A dump that does not restore never leaves an empty database:
+  postgres keeps failing, with the error in `docker compose logs postgres`. Later starts
+  skip both steps. A fresh install has nothing to move and initialises 18.
+- **Space:** about twice the size of the 17 data, free on the `postgres` volume's disk. The
+  dump checks first and refuses with the amount it needs, writing nothing.
+- **Time:** about as long as a `pg_dump` and a restore of the same data. A small KyPulse
+  database takes seconds. Until postgres accepts connections, the app fails its start and
+  Compose restarts it, as on any slow postgres start.
+- **Rollback:** `pgdata` is only read and never removed, so 17 can still run on it. Stop
+  the stack, check out the previous release's `docker-compose.yml` and start it. Rows
+  written while on 18 are not carried back.
+- **Clean-up**, once you are satisfied with 18, and only if you want it. The volume names
+  carry your Compose project name, `kypulse-server` by default, so check them with
+  `docker volume ls`. Run `docker volume rm <project>_pgdata` to drop the 17 data and
+  `docker compose --profile postgres run --rm --no-deps --entrypoint rm postgres -r
+  /var/lib/postgresql/upgrade-from-17` to drop the dump.
+
 The published image is `ghcr.io/busnes-app/kypulse-server`. `docker-compose.yml` explains how
 to pin a commit by digest (`KYPULSE_IMAGE`) and verify its build attestation first.

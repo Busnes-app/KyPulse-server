@@ -40,6 +40,11 @@ updates:
 
   - package-ecosystem: github-actions
     directory: /
+    # PostgreSQL majors move by hand with a data upgrade (docker-compose.yml); a bump would
+    # also turn the one-shot 17 dump image into 18.
+    ignore:
+      - dependency-name: postgres
+        update-types: ["version-update:semver-major"]
     schedule:
       interval: weekly
     cooldown:
@@ -52,6 +57,11 @@ updates:
 
   - package-ecosystem: docker
     directory: /
+    # PostgreSQL majors move by hand with a data upgrade (docker-compose.yml); a bump would
+    # also turn the one-shot 17 dump image into 18.
+    ignore:
+      - dependency-name: postgres
+        update-types: ["version-update:semver-major"]
     schedule:
       interval: weekly
     cooldown:

@@ -22,7 +22,7 @@ test-race:
 
 # Runs the same suite against PostgreSQL; needs a reachable server. The default DSN matches
 # CI's throwaway one, e.g. docker run --rm -d -p 127.0.0.1:5432:5432 -e POSTGRES_USER=ci
-# -e POSTGRES_PASSWORD=ci -e POSTGRES_DB=ci_test postgres:17-alpine
+# -e POSTGRES_PASSWORD=ci -e POSTGRES_DB=ci_test postgres:18.7-alpine3.24@sha256:0115267ab5a509022df9319c77be365cef335adb71556c75f60f5360ee247e71
 test-postgres:
 	@echo "==> Running test suite against PostgreSQL..."
 	@KYPULSE_TEST_POSTGRES_DSN="$${KYPULSE_TEST_POSTGRES_DSN:-postgres://ci:ci@127.0.0.1:5432/ci_test?sslmode=disable}" go test -count=1 ./...

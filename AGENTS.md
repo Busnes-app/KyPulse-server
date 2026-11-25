@@ -20,7 +20,7 @@ Design authority: `docs/superpowers/specs/2026-09-26-kypulse-design.md`. Plans l
 - `internal/egress`, `internal/poller`, `internal/alerts`, `internal/notify`, `internal/monitor`,
   `internal/kyyard`: the monitoring backend; each has its own AGENTS.md.
 - `web/`: the React PWA, embedded into the binary from `web/dist`.
-- `scripts/`: smoke test.
+- `scripts/`: smoke test; `postgres-17-to-18.sh` is the shared Ky kit, vendored byte for byte (never edit it here), and `test-postgres-17-to-18.sh` proves it on `docker-compose.yml`.
 - `docs/RESTORE.md`: restore runbook.
 - `docs/STRONG-CRYPTO.md`, `docker-compose.strong-crypto.yml` and
   `docs/check-strong-crypto-compose.py`: supported key/TLS configuration,
