@@ -107,11 +107,25 @@ releases ran 17 with its data in the `pgdata` volume, which 18 cannot open. The 
 - **Rollback:** `pgdata` is only read and never removed, so 17 can still run on it. Stop
   the stack, check out the previous release's `docker-compose.yml` and start it. Rows
   written while on 18 are not carried back.
+- **Back to 18 after a rollback:** once 17 has run again, 18 lacks what 17 wrote since the
+  move, so the next `up` with this release refuses: `postgres-17-dump` exits with "has run
+  on ... since it was moved to 18" and postgres does not start. Nothing is deleted. Choose
+  one, then `up` again:
+  - **Move 17 again** (18 gets what 17 holds now; rows written on 18 since the first move are
+    not carried over): stop the stack and rename `18` and `upgrade-from-17` in the `postgres`
+    volume with a suffix, for example `docker compose --profile postgres run --rm --no-deps
+    --entrypoint sh postgres -c 'cd /var/lib/postgresql && mv 18 18.replaced && { [ ! -e
+    upgrade-from-17 ] || mv upgrade-from-17 upgrade-from-17.replaced; }'`. The renamed
+    copies stay until you remove them.
+  - **Keep 18 as it is** (what 17 wrote during the rollback stays only in `pgdata`): delete
+    the marker with `docker compose --profile postgres run --rm --no-deps --entrypoint rm
+    postgres /var/lib/postgresql/18/moved-from-17.checkpoint`.
 - **Clean-up**, once you are satisfied with 18, and only if you want it. The volume names
   carry your Compose project name, `kypulse-server` by default, so check them with
-  `docker volume ls`. Run `docker volume rm <project>_pgdata` to drop the 17 data and
-  `docker compose --profile postgres run --rm --no-deps --entrypoint rm postgres -r
-  /var/lib/postgresql/upgrade-from-17` to drop the dump.
+  `docker volume ls`. `docker compose --profile postgres run --rm --no-deps --entrypoint rm
+  postgres -r /var/lib/postgresql/upgrade-from-17` drops the dump; it is safe, later starts
+  go on and a rollback is still caught. Removing the 17 data is a separate choice: `docker
+  volume rm <project>_pgdata`, after which there is no rollback.
 
 The published image is `ghcr.io/busnes-app/kypulse-server`. `docker-compose.yml` explains how
 to pin a commit by digest (`KYPULSE_IMAGE`) and verify its build attestation first.
