@@ -100,8 +100,6 @@ Design authority: `docs/superpowers/specs/2026-09-26-kypulse-design.md`. Plans l
 
 - `docs/AGENTS.md` — mdBook manual, chapter ownership and documentation checks.
 
-- `docs/ui-pulse-eight/AGENTS.md`: sequential UI council captures, source provenance, scores and audits.
-
 - `internal/api/AGENTS.md`: HTTP routes, auth wrappers, backup handlers, `/healthz`, SPA hosting.
 - `internal/auth/AGENTS.md`: password policy, sessions, PoW CAPTCHA.
 - `internal/backup/AGENTS.md`: KyRecovery adapter over `ky-primitives/recoveryclient`.

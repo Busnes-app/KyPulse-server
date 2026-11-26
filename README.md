@@ -1,9 +1,10 @@
 # KyPulse
 
-Supported cryptographic configuration and upgrades: [Key strength and TLS](docs/STRONG-CRYPTO.md).
-
 [![OpenSSF Best Practices](https://www.bestpractices.dev/projects/15931/badge)](https://www.bestpractices.dev/projects/15931)
 [![OpenSSF Scorecard](https://api.scorecard.dev/projects/github.com/Busnes-app/KyPulse-server/badge)](https://scorecard.dev/viewer/?uri=github.com/Busnes-app/KyPulse-server)
+[![OctoCounts](https://api.octocounts.com/badge/Busnes-app/KyPulse-server/branch/master)](https://octocounts.com/github/Busnes-app/KyPulse-server/tree/master)
+
+Supported cryptographic configuration and upgrades: [Key strength and TLS](docs/STRONG-CRYPTO.md).
 
 **Start here:** [Standalone installation](INSTALL.md). Local operator sign-in works without KyIdentity; the first `admin` password is written to `initial-admin-password` in the data directory, never to the log. Add health endpoints to monitor any compatible service; KyYard integration is optional for container information and log collection. Alerts require a configured, reachable webhook.
 
@@ -34,34 +35,28 @@ Design: [`docs/superpowers/specs/2026-09-26-kypulse-design.md`](docs/superpowers
 - **Status**, the home tab. Every watched app as a tile, broken first. Admins add apps here.
 - **Alerts**. State changes and hourly reminders with their delivery result, and current
   silences.
+- **Certificates**. Watched `https://` and TLS-only targets ordered by soonest certificate expiry.
 - **App detail** (`#/apps/<id>`, the link webhook messages carry). Current state with the
   exact failing request, the checks from the last response, alert history, KyYard container
   facts, and, for admins, silence (1 h, 8 h, until fixed), edit and delete.
 - **Logs** (admins). Filtered log timeline, raw text, source pairing/revocation and collection status.
 - **Activity** (admins). Imported audit events, filters, failed-sign-in burst hints and collection status.
-- **Settings**. Password change for local accounts, the alert webhook, KyYard pairing/collector ages (admins), theme, database driver.
+- **Settings**. Password change for local accounts, Appearance themes, alert webhook and KyPost alert mail (admins), KyYard pairing/collector ages (admins), database driver.
 - **Backup** (admins). KyRecovery pairing, schedule, local copies, restore drill.
 
-Roles are `admin` and `viewer`. A viewer sees Status, Alerts, app detail and a read-only
+Roles are `admin` and `viewer`. A viewer sees Status, Alerts, Certificates, app detail and a read-only
 Settings; every write and Backup are admin-only, and the server enforces it.
 Collected Logs and imported Activity, including app-detail log queries, are admin-only.
-
-## License
-
-See [`LICENSE.txt`](LICENSE.txt).
-
-Container-local installer setup and its current acceptance limits are documented in
-[installer setup](docs/INSTALLER_SETUP.md).
-
-[![OctoCounts](https://api.octocounts.com/badge/Busnes-app/KyPulse-server/branch/master)](https://octocounts.com/github/Busnes-app/KyPulse-server/tree/master)
 
 ## Documentation
 
 - [Running](docs/RUNNING.md) — Quick start. <a id="quick-start"></a><a id="without-root-named-volumes"></a><a id="upgrading-port-8080-now-on-loopback"></a><a id="upgrading-to-a-non-root-container"></a><a id="audit-key"></a>
 - [Log collection](docs/LOG-COLLECTION.md) — Sending logs. <a id="sending-logs"></a><a id="linux-sender"></a>
-- [Monitoring](docs/MONITORING.md) — Watching apps, Alert webhook, KyYard. <a id="watching-apps"></a><a id="alert-webhook"></a><a id="kyyard"></a>
+- [Monitoring](docs/MONITORING.md) — Watching apps, Certificates, Alert webhook, KyYard. <a id="watching-apps"></a><a id="alert-webhook"></a><a id="kyyard"></a>
+- [Alert mail through KyPost](docs/KYPOST.md) — Server-to-server contract for KyPost alert email delivery.
 - [Configuration](docs/CONFIGURATION.md) — Configuration, Compose overlays. <a id="configuration"></a><a id="compose-overlays"></a>
 - [Operations](docs/OPERATIONS.md) — Backup and restore, Command line. <a id="backup-and-restore"></a><a id="command-line"></a>
+- [Installer setup](docs/INSTALLER_SETUP.md) — Container-local installer setup and current acceptance limits.
 - [Development](docs/DEVELOPMENT.md) — API, Develop. <a id="api"></a><a id="develop"></a>
 - [Verifying releases](docs/VERIFYING-RELEASES.md) — Check a release image's signature and source commit, and rebuild its binary to the same bytes.
 - [Assurance case](docs/ASSURANCE-CASE.md) — Threat model, trust boundaries, and why the security requirements are met.
@@ -74,3 +69,7 @@ Read the [online manual](https://busnes.app/manuals/kypulse-server/) or browse i
 Build and check it with `mdbook build docs` and `python3 docs/check-links.py`,
 then open `docs/book/index.html`. The documentation workflow also provides a
 downloadable `documentation-book` artifact.
+
+## License
+
+See [`LICENSE.txt`](LICENSE.txt).
