@@ -2,7 +2,7 @@
 
 ## Health and alerts
 
-Start with Status and Alerts, then open the affected application's details. Distinguish a failed health probe from stale container facts. kyPulse reports observations; use the owning product or KyYard to make a deliberate repair.
+Start with Status and Alerts, then open the affected application's details. Distinguish a failed health probe from stale container facts. KyPulse reports observations; use the owning product or KyYard to make a deliberate repair.
 
 ## Logs and activity
 

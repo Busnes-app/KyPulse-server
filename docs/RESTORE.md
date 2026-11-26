@@ -1,6 +1,6 @@
-# Restoring a kyPulse server from a capsule
+# Restoring a KyPulse server from a capsule
 
-This is the procedure for bringing a server built on this scaffold back from a `.kycap`
+This is the procedure for bringing a KyPulse server back from a `.kycap`
 backup after the original is gone. It needs three things, held by three different parties by
 design:
 
@@ -17,7 +17,7 @@ procedure once as a drill before you ever need it.
 The `docker compose` commands below use the base file alone, which runs the published
 image. Source install: confirm the `COMPOSE_FILE` line in `.env` contains `docker-compose.build.yml`
 before the first command; extra overlays beside it, such as `docker-compose.lan-dns.yml`, are
-fine (see README's "Run" section for the base command and "Compose overlays" for adding one).
+fine (see [Running](RUNNING.md) for the base command and [Compose overlays](CONFIGURATION.md#compose-overlays) for adding one).
 Check: `grep '^COMPOSE_FILE=' .env | grep -q
 docker-compose.build.yml && echo ok`. Otherwise a restore silently pulls a different binary than
 the one you built and are running.

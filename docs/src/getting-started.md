@@ -1,6 +1,6 @@
 # Getting started
 
-## Start kyPulse
+## Start KyPulse
 
 Prepare `data`, `backups` and `secrets` with ownership for container UID 10001, or use the documented named-volume alternative. Start Compose and read the bootstrap password privately with `docker compose exec app cat /app/data/initial-admin-password`. The password is not logged. Replace it at first sign-in and follow the installation guide's instruction to remove the bootstrap file.
 
